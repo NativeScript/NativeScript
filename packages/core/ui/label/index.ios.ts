@@ -113,10 +113,10 @@ export class Label extends TextBase implements LabelDefinition {
 
 		const nativeSize = view.textRectForBoundsLimitedToNumberOfLines(CGRectMake(0, 0, widthMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(width), heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(height)), view.numberOfLines).size;
 
-		nativeSize.width = layout.round(layout.toDevicePixels(nativeSize.width));
-		nativeSize.height = layout.round(layout.toDevicePixels(nativeSize.height));
-
-		return nativeSize;
+		return {
+			width: layout.round(layout.toDevicePixels(nativeSize.width)),
+			height: layout.round(layout.toDevicePixels(nativeSize.height)),
+		};
 	}
 
 	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {

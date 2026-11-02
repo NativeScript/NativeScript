@@ -56,6 +56,9 @@ export class View extends ViewCommon {
 	private _isTransformed = false;
 	private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
 	private _cachedFrame: CGRect;
+	private _lastLayoutPosition: { frame: CGRect; left: number; top: number; right: number; bottom: number };
+	private _framePosition: Position;
+	private _pendingFramePosition: Position;
 	private _suspendCATransaction = false;
 	/**
 	 * Native background states.
@@ -87,6 +90,8 @@ export class View extends ViewCommon {
 		super.disposeNativeView();
 
 		this._cachedFrame = null;
+		this._lastLayoutPosition = null;
+		this._framePosition = null;
 		this._isLaidOut = false;
 		this._isTransformed = false;
 	}
@@ -151,7 +156,7 @@ export class View extends ViewCommon {
 			if (this.nativeViewProtected && SDK_VERSION > 10) {
 				// on iOS 11+ it is possible to have a changed layout frame due to safe area insets
 				// get the frame and adjust the position, so that onLayout works correctly
-				position = IOSHelper.getPositionFromFrame(this.nativeViewProtected.frame);
+				position = (setFrame && !this._isTransformed && this._framePosition) || IOSHelper.getPositionFromFrame(this.nativeViewProtected.frame);
 			} else {
 				position = { left, top, right, bottom };
 			}
@@ -244,8 +249,11 @@ export class View extends ViewCommon {
 		nativeView.frame = frame;
 
 		const adjustedFrame = this.applySafeAreaInsets(frame);
-		if (adjustedFrame) {
+		if (adjustedFrame && adjustedFrame !== frame) {
 			nativeView.frame = adjustedFrame;
+			this._framePosition = null;
+		} else {
+			this._framePosition = this._pendingFramePosition;
 		}
 
 		if (transform != null) {
@@ -296,6 +304,11 @@ export class View extends ViewCommon {
 			return;
 		}
 
+		const last = this._lastLayoutPosition;
+		if (last && this._isLaidOut && last.frame === this._cachedFrame && last.left === left && last.top === top && last.right === right && last.bottom === bottom) {
+			return;
+		}
+
 		const nativeView = this.nativeViewProtected;
 		const frame = IOSHelper.getFrameFromPosition({
 			left,
@@ -303,7 +316,10 @@ export class View extends ViewCommon {
 			right,
 			bottom,
 		});
+		this._pendingFramePosition = IOSHelper.getPositionFromFramePosition(left, top, right, bottom);
 		this._setNativeViewFrame(nativeView, frame);
+		this._pendingFramePosition = null;
+		this._lastLayoutPosition = { frame: this._cachedFrame, left, top, right, bottom };
 	}
 
 	public _layoutParent() {
@@ -360,7 +376,6 @@ export class View extends ViewCommon {
 	}
 
 	public getSafeAreaInsets(): Position {
-		const safeAreaInsets = this.nativeViewProtected && this.nativeViewProtected.safeAreaInsets;
 		const insets = { left: 0, top: 0, right: 0, bottom: 0 };
 		if (this.iosIgnoreSafeArea) {
 			return insets;
@@ -370,6 +385,7 @@ export class View extends ViewCommon {
 		if (IOSHelper.hasIOSManagedInsetAncestor(this)) {
 			return insets;
 		}
+		const safeAreaInsets = this.nativeViewProtected && this.nativeViewProtected.safeAreaInsets;
 		if (safeAreaInsets) {
 			insets.left = layout.round(layout.toDevicePixels(safeAreaInsets.left));
 			insets.top = layout.round(layout.toDevicePixels(safeAreaInsets.top));
