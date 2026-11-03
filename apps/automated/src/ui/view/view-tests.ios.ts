@@ -1,9 +1,29 @@
-import { View, Page, Button, GridLayout, Color, Utils } from '@nativescript/core';
+import { View, Page, Button, GridLayout, Color, Utils, Frame } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 import * as TKUnit from '../../tk-unit';
 import { _createBackgroundColorView, _createLabelWithBorder } from './view-tests-common';
 
 export * from './view-tests-common';
+
+export function test_requestLayout_doesNotLoadFrameControllerView() {
+	const frame = new Frame();
+	const controller = frame.ios.controller;
+	TKUnit.assert(!controller.viewIfLoaded, 'A new Frame should keep its controller view unloaded.');
+	frame.requestLayout();
+	TKUnit.assert(!controller.viewIfLoaded, 'Layout invalidation must preserve lazy controller loading.');
+	TKUnit.assert(frame.isLayoutRequested, 'The deferred layout must remain requested.');
+}
+
+export function test_inheritedDirection_doesNotLoadFrameControllerView() {
+	const root = new GridLayout();
+	const frame = new Frame();
+	root.style.direction = 'ltr';
+	root.addChild(frame);
+	TKUnit.assertEqual(frame.style.direction, 'ltr', 'The Frame must inherit direction.');
+	TKUnit.assert(!frame.ios.controller.viewIfLoaded, 'Inherited direction must preserve lazy controller loading.');
+	TKUnit.assert(frame.isLayoutRequested, 'Inherited direction must still request layout.');
+	root.removeChild(frame);
+}
 
 class MyGrid extends GridLayout {
 	public backgroundDrawCount: number = 0;
