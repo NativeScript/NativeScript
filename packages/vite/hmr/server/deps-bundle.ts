@@ -33,7 +33,8 @@
  *    the live core realm.
  *  - Dynamic `import()` targets inside dep code are externalized back to
  *    their canonical `/ns/m/node_modules/...` URL, preserving lazy evaluation
- *    and per-URL identity for modules the boot never touched.
+ *    and per-URL identity. Their closures are still bundled (best effort),
+ *    so that URL serves a shim instead of a per-module fetch chain.
  *  - `@nativescript/vite` client modules stay per-module (dev tooling loads
  *    independently of the app dependency closure).
  *  - Everything else resolvable is internalized — platform-suffix resolution
@@ -434,7 +435,7 @@ const NODE_BUILTIN_SET = new Set(NODE_EXTERNALS);
  *    finishes and throws). Pass 2 registers every internalized file, keeping
  *    per-URL identity for all of them.
  */
-function createDepsImportRoutingPlugin(projectRoot: string, workspaceRoot: string | null, platform: string, flavor: string | undefined): esbuild.Plugin {
+function createDepsImportRoutingPlugin(projectRoot: string, workspaceRoot: string | null, platform: string, flavor: string | undefined, onDynamicImport?: (absPath: string) => void): esbuild.Plugin {
 	return {
 		name: 'ns-deps-import-routing',
 		setup(build) {
@@ -455,6 +456,7 @@ function createDepsImportRoutingPlugin(projectRoot: string, workspaceRoot: strin
 					if (probe.errors.length > 0 || !probe.path || probe.external) return probe;
 					const key = depsRegistryKeyForFile(probe.path);
 					if (!key) return probe;
+					if (!NEVER_BUNDLED_KEY_RE.test(key)) onDynamicImport?.(probe.path);
 					return { path: `/ns/m/${key.replace(SCRIPT_EXT_RE, '')}`, external: true };
 				}
 				if (spec.startsWith('.') || spec.startsWith('/') || /^[A-Za-z]:[\\/]/.test(spec)) return undefined;
@@ -733,12 +735,12 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	// createNodeBuiltinPolyfillEsbuildPlugin bundles installed npm polyfills
 	// (buffer, events, ...) that would otherwise leak as bare builtin externals
 	// the device cannot resolve.
-	const buildPlugins = (): esbuild.Plugin[] => [
+	const buildPlugins = (onDynamicImport?: (absPath: string) => void): esbuild.Plugin[] => [
 		createWebpackLoaderStubEsbuildPlugin(),
 		createNodeBuiltinPolyfillEsbuildPlugin(projectRoot, NODE_BUILTINS),
 		createNativeClassEsbuildPlugin(platform as Platform),
 		createVendorEsbuildPlugin(projectRoot),
-		createDepsImportRoutingPlugin(projectRoot, workspaceRoot, String(platform), flavor),
+		createDepsImportRoutingPlugin(projectRoot, workspaceRoot, String(platform), flavor, onDynamicImport),
 		...(flavor === 'angular' ? [createDepsAngularLinkerPlugin(projectRoot)] : []),
 		...(flavor === 'solid' ? [createSolidJsxEsbuildPlugin(projectRoot)] : []),
 		createUnicodeRegexEsbuildPlugin(projectRoot),
@@ -770,28 +772,58 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	// registers EVERY input, so any /ns/m URL that later resolves to a bundled
 	// file serves a shim into the single bundle realm.
 	const entryKeySet = new Set(entries.map((e) => e.key));
-	const discovery = await esbuild.build({
-		...sharedBuildOptions,
-		stdin: {
-			contents: entries.map((e) => `import ${JSON.stringify(e.absPath)};`).join('\n'),
-			resolveDir: projectRoot,
-			sourcefile: 'ns-deps-bundle-discovery.ts',
-			loader: 'ts',
-		},
-		metafile: true,
-		plugins: buildPlugins(),
-	});
+	const dynamicTargets = new Set<string>();
+	const discover = (absPaths: string[], metafile: boolean) =>
+		esbuild.build({
+			...sharedBuildOptions,
+			stdin: {
+				contents: absPaths.map((p) => `import ${JSON.stringify(p)};`).join('\n'),
+				resolveDir: projectRoot,
+				sourcefile: 'ns-deps-bundle-discovery.ts',
+				loader: 'ts',
+			},
+			metafile,
+			plugins: buildPlugins((absPath) => dynamicTargets.add(absPath)),
+		});
 
 	const files: DepsBundleEntryFile[] = entries.map(({ key, absPath }) => ({ key, absPath }));
-	for (const [input, meta] of Object.entries(discovery.metafile?.inputs ?? {})) {
-		if (input === '<stdin>' || input.includes(':') || !input.includes('node_modules/')) continue;
-		const absPath = path.resolve(projectRoot, input);
-		if (!existsSync(absPath)) continue;
-		const key = depsRegistryKeyForFile(absPath);
-		if (!key || entryKeySet.has(key) || NEVER_BUNDLED_KEY_RE.test(key)) continue;
-		entryKeySet.add(key);
-		// Evaluated on first use, as the dependency graph would, not up front.
-		files.push({ key, absPath, lazy: true, cjs: meta.format !== 'esm' });
+	const register = (metafile: esbuild.Metafile | undefined) => {
+		for (const [input, meta] of Object.entries(metafile?.inputs ?? {})) {
+			if (input === '<stdin>' || input.includes(':') || !input.includes('node_modules/')) continue;
+			const absPath = path.resolve(projectRoot, input);
+			if (!existsSync(absPath)) continue;
+			const key = depsRegistryKeyForFile(absPath);
+			if (!key || entryKeySet.has(key) || NEVER_BUNDLED_KEY_RE.test(key)) continue;
+			entryKeySet.add(key);
+			// Evaluated on first use, as the dependency graph would, not up front.
+			files.push({ key, absPath, lazy: true, cjs: meta.format !== 'esm' });
+		}
+	};
+	const entryPaths = entries.map((e) => e.absPath);
+	register((await discover(entryPaths, true)).metafile);
+
+	// Dynamic import() targets and their closures are registered too, so a
+	// module loaded on demand after boot comes from the bundle rather than one
+	// request per file. A target whose closure fails to build stays per-module.
+	// Probe builds run without `metafile`: esbuild 0.27 throws outside the
+	// build promise when a build with `metafile` set fails.
+	const discoverOptional = async (targets: string[]) => {
+		try {
+			await discover(targets, false);
+		} catch {
+			return false;
+		}
+		register((await discover(targets, true)).metafile);
+		return true;
+	};
+	const tried = new Set<string>();
+	for (;;) {
+		const pending = [...dynamicTargets].filter((p) => !tried.has(p) && !entryKeySet.has(depsRegistryKeyForFile(p)!));
+		if (!pending.length) break;
+		pending.forEach((p) => tried.add(p));
+		if (!(await discoverOptional(pending)) && pending.length > 1) {
+			for (const target of pending) await discoverOptional([target]);
+		}
 	}
 
 	const buildResult = await esbuild.build({
