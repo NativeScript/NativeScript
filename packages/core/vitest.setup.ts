@@ -18,6 +18,34 @@ global.__COMMONJS__ = false;
 global.__CSS_PARSER__ = 'css-tree';
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
+global.android = {
+	content: {
+		Intent: class {
+			static FLAG_ACTIVITY_NEW_TASK = 0x10000000;
+			static FLAG_ACTIVITY_MULTIPLE_TASK = 0x08000000;
+			static FLAG_ACTIVITY_NEW_DOCUMENT = 0x00080000;
+			static FLAG_ACTIVITY_LAUNCH_ADJACENT = 0x00001000;
+			component: any;
+			flags = 0;
+			extras = new Map<string, any>();
+			setClass(context: any, activityClass: any) {
+				this.component = activityClass;
+			}
+			setClassName(context: any, name: string) {
+				this.component = name;
+			}
+			setComponent(component: any) {
+				this.component = component;
+			}
+			setFlags(flags: number) {
+				this.flags = flags;
+			}
+			putExtra(key: string, value: any) {
+				this.extras.set(key, value);
+			}
+		},
+	},
+};
 global.NSBundle = {
 	mainBundle: {
 		bundleIdentifier: 'test',
