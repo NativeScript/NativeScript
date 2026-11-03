@@ -481,6 +481,22 @@ describe('ensureNativeScriptModuleBindings — package metadata NativeScript det
 		expect(text).toMatch(/(?:const|var)\s+SyncStatus\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*['"]SyncStatus['"]\)/);
 	});
 
+	it('keeps preserved imports in source order with re-exports', () => {
+		// Hoisting only `./html` evaluated it (and its ./web) before ./scroll: TDZ on `Scroll`.
+		const input = [`export { Scroll } from './scroll';`, `export * from './web';`, `import './html';`, `import { defineStore } from 'pinia';`, `export const s = defineStore;`].join('\n');
+
+		for (const out of [ensureNativeScriptModuleBindings(input), ensureNativeScriptModuleBindings(input.replace(/^import \{ defineStore.*$/m, ''))]) {
+			const scroll = out.indexOf(`export { Scroll } from './scroll';`);
+			const web = out.indexOf(`export * from './web';`);
+			const html = out.indexOf(`import './html';`);
+
+			expect(scroll).toBeGreaterThanOrEqual(0);
+			expect(web).toBeGreaterThan(scroll);
+			expect(html).toBeGreaterThan(web);
+			expect(out.split(`import './html';`)).toHaveLength(2);
+		}
+	});
+
 	it('is safe to run twice on the same module text', () => {
 		const input = `import { defineStore } from "pinia";\nexport const useServices = defineStore('services', () => ({}));\n`;
 		const once = ensureNativeScriptModuleBindings(input);
