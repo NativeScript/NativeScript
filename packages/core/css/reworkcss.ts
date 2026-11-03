@@ -8,7 +8,7 @@ export interface Position {
 }
 
 export interface Node {
-	type: 'rule' | 'keyframes' | 'declaration' | 'import' | 'media';
+	type: 'rule' | 'keyframes' | 'declaration' | 'import' | 'media' | 'layer';
 	position: Position;
 }
 
@@ -23,7 +23,7 @@ export interface Rule extends Node {
 }
 
 // @ts-ignore
-export type AtRule = KeyFrames | Media;
+export type AtRule = KeyFrames | Media | Layer;
 
 export interface Keyframes extends Rule {
 	name: string;
@@ -39,6 +39,12 @@ export interface KeyFrame extends Node {
 export interface Media extends Node {
 	media: string;
 	rules: Array<Rule | AtRule>;
+}
+
+export interface Layer extends Node {
+	/** Layer-name prelude — '' for an anonymous block. Statement form (`@layer a, b;`) leaves rules undefined. */
+	layer: string;
+	rules?: Array<Rule | AtRule>;
 }
 
 export interface StyleSheet {
