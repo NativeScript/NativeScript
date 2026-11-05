@@ -288,6 +288,10 @@ function initializeDialogFragment() {
 
 			dialog.setCanceledOnTouchOutside(this._cancelable);
 
+			dialog.getWindow().setBackgroundDrawable(
+      	new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+      );
+
 			return dialog;
 		}
 
