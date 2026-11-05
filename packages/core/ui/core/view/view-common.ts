@@ -385,7 +385,7 @@ export abstract class ViewCommon extends ViewBase {
 		return this._gestureObservers[type];
 	}
 
-	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean) {
+	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): this {
 		thisArg = thisArg || undefined;
 
 		// TODO: Remove this once we fully switch to the new event system
@@ -409,13 +409,15 @@ export abstract class ViewCommon extends ViewBase {
 		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
 		if (gestureType && !this._isEvent(normalizedName)) {
 			this._observe(gestureType, callback, thisArg);
-			return;
+			return this;
 		}
 
 		super.addEventListener(normalizedName, callback, thisArg, once);
+
+		return this;
 	}
 
-	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
+	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any): this {
 		thisArg = thisArg || undefined;
 
 		// TODO: Remove this once we fully switch to the new event system
@@ -439,10 +441,12 @@ export abstract class ViewCommon extends ViewBase {
 		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
 		if (gestureType && !this._isEvent(normalizedName)) {
 			this._disconnectGestureObservers(gestureType, callback, thisArg);
-			return;
+			return this;
 		}
 
 		super.removeEventListener(normalizedName, callback, thisArg);
+
+		return this;
 	}
 
 	public onBackPressed(): boolean {
