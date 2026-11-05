@@ -171,13 +171,13 @@ export interface PageBase {
 	 */
 	onAccessibilityPerformEscape?: () => boolean;
 
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
-	on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
-	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): this;
+	on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any): this;
+	on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any): this;
+	on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any): this;
+	on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any): this;
+	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any): this;
+	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any): this;
 }
 
 /**

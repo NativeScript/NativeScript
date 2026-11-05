@@ -141,27 +141,27 @@ export declare class Page extends PageBase {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	public on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void;
+	public on(eventName: string, callback: (data: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when navigation to the page has started.
 	 */
-	public on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when navigation to the page has finished.
 	 */
-	public on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when navigation from the page has started.
 	 */
-	public on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when navigation from the page has finished.
 	 */
-	public on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any): this;
 	//@private
 
 	/**

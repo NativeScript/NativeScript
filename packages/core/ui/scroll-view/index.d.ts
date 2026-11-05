@@ -125,12 +125,12 @@ export class ScrollView extends ContentView {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when a scroll event occurs.
 	 */
-	on(eventName: 'scroll', callback: (data: ScrollEventData) => void, thisArg?: any): void;
+	on(eventName: 'scroll', callback: (data: ScrollEventData) => void, thisArg?: any): this;
 
 	_onOrientationChanged(): void;
 }

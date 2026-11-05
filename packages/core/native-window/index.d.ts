@@ -81,28 +81,28 @@ export abstract class WindowBase extends Observable {
 	/**
 	 * Raised when the window becomes the active/focused window.
 	 */
-	on(event: 'activate', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'activate', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the window loses focus.
 	 */
-	on(event: 'deactivate', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'deactivate', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the window enters the background.
 	 */
-	on(event: 'background', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'background', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the window enters the foreground.
 	 */
-	on(event: 'foreground', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'foreground', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when a native surface is bound to the window - both on the first connect and
 	 * on every re-attach after a `detached`.
 	 */
-	on(event: 'attached', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'attached', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the native surface goes away while the window session stays alive
@@ -112,7 +112,7 @@ export abstract class WindowBase extends Observable {
 	 * instance is handed back when a surface re-attaches and handlers registered before the
 	 * detach keep working afterwards.
 	 */
-	on(event: 'detached', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'detached', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the window session ends for good.
@@ -122,48 +122,48 @@ export abstract class WindowBase extends Observable {
 	 * dispatched the framework drops every listener on the instance, so nothing registered
 	 * on a window outlives the window.
 	 */
-	on(event: 'close', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'close', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised after the window content has been displayed for the first time.
 	 */
-	on(event: 'displayed', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(event: 'displayed', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the orientation of this window changes.
 	 */
-	on(event: 'orientationChanged', callback: (data: WindowOrientationChangedEventData) => void, thisArg?: any): void;
+	on(event: 'orientationChanged', callback: (data: WindowOrientationChangedEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the system appearance of this window changes between light and dark.
 	 */
-	on(event: 'systemAppearanceChanged', callback: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): void;
+	on(event: 'systemAppearanceChanged', callback: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the layout direction of this window changes between ltr and rtl.
 	 */
-	on(event: 'layoutDirectionChanged', callback: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): void;
+	on(event: 'layoutDirectionChanged', callback: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): this;
 
-	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
-	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
-	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
-	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
-	on(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
-	on(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
-	on(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
+	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): this;
+	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): this;
+	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): this;
+	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): this;
+	on(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): this;
+	on(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): this;
+	on(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Adds a listener for the specified event name.
@@ -175,83 +175,83 @@ export abstract class WindowBase extends Observable {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
 
-	once(event: 'activate', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	once(event: 'deactivate', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	once(event: 'background', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	once(event: 'foreground', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	once(event: 'attached', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	once(event: 'detached', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	once(event: 'close', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	once(event: 'displayed', callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	once(event: 'orientationChanged', callback: (data: WindowOrientationChangedEventData) => void, thisArg?: any): void;
-	once(event: 'systemAppearanceChanged', callback: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): void;
-	once(event: 'layoutDirectionChanged', callback: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): void;
-	once(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	once(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	once(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	once(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	once(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	once(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	once(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	once(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
-	once(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
-	once(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
-	once(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
-	once(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
-	once(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
-	once(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
+	once(event: 'activate', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	once(event: 'deactivate', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	once(event: 'background', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	once(event: 'foreground', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	once(event: 'attached', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	once(event: 'detached', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	once(event: 'close', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	once(event: 'displayed', callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	once(event: 'orientationChanged', callback: (data: WindowOrientationChangedEventData) => void, thisArg?: any): this;
+	once(event: 'systemAppearanceChanged', callback: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): this;
+	once(event: 'layoutDirectionChanged', callback: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): this;
+	once(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	once(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	once(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	once(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	once(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	once(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	once(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	once(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): this;
+	once(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): this;
+	once(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): this;
+	once(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): this;
+	once(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): this;
+	once(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): this;
+	once(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Adds a listener for the specified event name that is removed as soon as it is raised
 	 * once.
 	 */
-	once(eventName: string, callback: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	once(eventName: string, callback: (data: WindowBaseEventData) => void, thisArg?: any): this;
 
-	off(event: 'activate', callback?: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	off(event: 'deactivate', callback?: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	off(event: 'background', callback?: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	off(event: 'foreground', callback?: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	off(event: 'attached', callback?: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	off(event: 'detached', callback?: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	off(event: 'close', callback?: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	off(event: 'displayed', callback?: (data: WindowBaseEventData) => void, thisArg?: any): void;
-	off(event: 'orientationChanged', callback?: (data: WindowOrientationChangedEventData) => void, thisArg?: any): void;
-	off(event: 'systemAppearanceChanged', callback?: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): void;
-	off(event: 'layoutDirectionChanged', callback?: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): void;
-	off(event: 'activityCreated', callback?: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	off(event: 'activityDestroyed', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	off(event: 'activityStarted', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	off(event: 'activityPaused', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	off(event: 'activityResumed', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	off(event: 'activityStopped', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	off(event: 'saveActivityState', callback?: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	off(event: 'activityResult', callback?: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
-	off(event: 'activityBackPressed', callback?: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
-	off(event: 'activityNewIntent', callback?: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
-	off(event: 'activityRequestPermissions', callback?: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
-	off(event: 'sceneWillConnect', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneDidActivate', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneWillResignActive', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneWillEnterForeground', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneDidEnterBackground', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneDidDisconnect', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneOpenURLContexts', callback?: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
-	off(event: 'sceneContinueUserActivity', callback?: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
-	off(event: 'scenePerformActionForShortcutItem', callback?: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
+	off(event: 'activate', callback?: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	off(event: 'deactivate', callback?: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	off(event: 'background', callback?: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	off(event: 'foreground', callback?: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	off(event: 'attached', callback?: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	off(event: 'detached', callback?: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	off(event: 'close', callback?: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	off(event: 'displayed', callback?: (data: WindowBaseEventData) => void, thisArg?: any): this;
+	off(event: 'orientationChanged', callback?: (data: WindowOrientationChangedEventData) => void, thisArg?: any): this;
+	off(event: 'systemAppearanceChanged', callback?: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): this;
+	off(event: 'layoutDirectionChanged', callback?: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): this;
+	off(event: 'activityCreated', callback?: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	off(event: 'activityDestroyed', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	off(event: 'activityStarted', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	off(event: 'activityPaused', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	off(event: 'activityResumed', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	off(event: 'activityStopped', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	off(event: 'saveActivityState', callback?: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	off(event: 'activityResult', callback?: (args: AndroidActivityResultEventData) => void, thisArg?: any): this;
+	off(event: 'activityBackPressed', callback?: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): this;
+	off(event: 'activityNewIntent', callback?: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): this;
+	off(event: 'activityRequestPermissions', callback?: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): this;
+	off(event: 'sceneWillConnect', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneDidActivate', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneWillResignActive', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneWillEnterForeground', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneDidEnterBackground', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneDidDisconnect', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneOpenURLContexts', callback?: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): this;
+	off(event: 'sceneContinueUserActivity', callback?: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): this;
+	off(event: 'scenePerformActionForShortcutItem', callback?: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Removes a listener for the specified event name. Omitting the callback removes every
 	 * listener registered for that event on this window.
 	 */
-	off(eventName: string, callback?: (data: WindowBaseEventData) => void, thisArg?: any): void;
+	off(eventName: string, callback?: (data: WindowBaseEventData) => void, thisArg?: any): this;
 }
 
 /**
@@ -318,109 +318,109 @@ export abstract class NativeWindow extends WindowBase {
 	 * content resolver, or the legacy `launch` bridge for the first window) ->
 	 * `contentLoaded` -> `activate` and `displayed`.
 	 */
-	on(event: 'contentLoaded', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'contentLoaded', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
 
 	// The whole inherited set is repeated below: an override only covers the overloads it
 	// lists, so declaring `contentLoaded` alone would hide every WindowBase event. See
 	// WindowBase for what each of them means.
-	on(event: 'activate', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	on(event: 'deactivate', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	on(event: 'background', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	on(event: 'foreground', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	on(event: 'attached', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	on(event: 'detached', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	on(event: 'close', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	on(event: 'displayed', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	on(event: 'orientationChanged', callback: (data: WindowOrientationChangedEventData) => void, thisArg?: any): void;
-	on(event: 'systemAppearanceChanged', callback: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): void;
-	on(event: 'layoutDirectionChanged', callback: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): void;
-	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
-	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
-	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
-	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
-	on(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	on(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
-	on(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
-	on(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
-	on(eventName: string, callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'activate', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	on(event: 'deactivate', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	on(event: 'background', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	on(event: 'foreground', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	on(event: 'attached', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	on(event: 'detached', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	on(event: 'close', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	on(event: 'displayed', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	on(event: 'orientationChanged', callback: (data: WindowOrientationChangedEventData) => void, thisArg?: any): this;
+	on(event: 'systemAppearanceChanged', callback: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): this;
+	on(event: 'layoutDirectionChanged', callback: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): this;
+	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): this;
+	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): this;
+	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): this;
+	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): this;
+	on(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	on(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): this;
+	on(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): this;
+	on(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): this;
+	on(eventName: string, callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
 
-	once(event: 'contentLoaded', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	once(event: 'activate', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	once(event: 'deactivate', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	once(event: 'background', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	once(event: 'foreground', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	once(event: 'attached', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	once(event: 'detached', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	once(event: 'close', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	once(event: 'displayed', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	once(event: 'orientationChanged', callback: (data: WindowOrientationChangedEventData) => void, thisArg?: any): void;
-	once(event: 'systemAppearanceChanged', callback: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): void;
-	once(event: 'layoutDirectionChanged', callback: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): void;
-	once(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	once(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	once(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	once(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	once(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	once(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	once(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	once(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
-	once(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
-	once(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
-	once(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
-	once(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
-	once(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
-	once(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
-	once(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
-	once(eventName: string, callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	once(event: 'contentLoaded', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	once(event: 'activate', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	once(event: 'deactivate', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	once(event: 'background', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	once(event: 'foreground', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	once(event: 'attached', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	once(event: 'detached', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	once(event: 'close', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	once(event: 'displayed', callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	once(event: 'orientationChanged', callback: (data: WindowOrientationChangedEventData) => void, thisArg?: any): this;
+	once(event: 'systemAppearanceChanged', callback: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): this;
+	once(event: 'layoutDirectionChanged', callback: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): this;
+	once(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	once(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	once(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	once(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	once(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	once(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	once(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	once(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): this;
+	once(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): this;
+	once(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): this;
+	once(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): this;
+	once(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): this;
+	once(event: 'sceneOpenURLContexts', callback: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): this;
+	once(event: 'sceneContinueUserActivity', callback: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): this;
+	once(event: 'scenePerformActionForShortcutItem', callback: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): this;
+	once(eventName: string, callback: (data: NativeWindowEventData) => void, thisArg?: any): this;
 
-	off(event: 'contentLoaded', callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	off(event: 'activate', callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	off(event: 'deactivate', callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	off(event: 'background', callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	off(event: 'foreground', callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	off(event: 'attached', callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	off(event: 'detached', callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	off(event: 'close', callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	off(event: 'displayed', callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
-	off(event: 'orientationChanged', callback?: (data: WindowOrientationChangedEventData) => void, thisArg?: any): void;
-	off(event: 'systemAppearanceChanged', callback?: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): void;
-	off(event: 'layoutDirectionChanged', callback?: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): void;
-	off(event: 'activityCreated', callback?: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	off(event: 'activityDestroyed', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	off(event: 'activityStarted', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	off(event: 'activityPaused', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	off(event: 'activityResumed', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	off(event: 'activityStopped', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	off(event: 'saveActivityState', callback?: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	off(event: 'activityResult', callback?: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
-	off(event: 'activityBackPressed', callback?: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
-	off(event: 'activityNewIntent', callback?: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
-	off(event: 'activityRequestPermissions', callback?: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
-	off(event: 'sceneWillConnect', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneDidActivate', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneWillResignActive', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneWillEnterForeground', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneDidEnterBackground', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneDidDisconnect', callback?: (args: SceneEventData) => void, thisArg?: any): void;
-	off(event: 'sceneOpenURLContexts', callback?: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): void;
-	off(event: 'sceneContinueUserActivity', callback?: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): void;
-	off(event: 'scenePerformActionForShortcutItem', callback?: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): void;
-	off(eventName: string, callback?: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	off(event: 'contentLoaded', callback?: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	off(event: 'activate', callback?: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	off(event: 'deactivate', callback?: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	off(event: 'background', callback?: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	off(event: 'foreground', callback?: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	off(event: 'attached', callback?: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	off(event: 'detached', callback?: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	off(event: 'close', callback?: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	off(event: 'displayed', callback?: (data: NativeWindowEventData) => void, thisArg?: any): this;
+	off(event: 'orientationChanged', callback?: (data: WindowOrientationChangedEventData) => void, thisArg?: any): this;
+	off(event: 'systemAppearanceChanged', callback?: (data: WindowSystemAppearanceChangedEventData) => void, thisArg?: any): this;
+	off(event: 'layoutDirectionChanged', callback?: (data: WindowLayoutDirectionChangedEventData) => void, thisArg?: any): this;
+	off(event: 'activityCreated', callback?: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	off(event: 'activityDestroyed', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	off(event: 'activityStarted', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	off(event: 'activityPaused', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	off(event: 'activityResumed', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	off(event: 'activityStopped', callback?: (args: AndroidActivityEventData) => void, thisArg?: any): this;
+	off(event: 'saveActivityState', callback?: (args: AndroidActivityBundleEventData) => void, thisArg?: any): this;
+	off(event: 'activityResult', callback?: (args: AndroidActivityResultEventData) => void, thisArg?: any): this;
+	off(event: 'activityBackPressed', callback?: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): this;
+	off(event: 'activityNewIntent', callback?: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): this;
+	off(event: 'activityRequestPermissions', callback?: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): this;
+	off(event: 'sceneWillConnect', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneDidActivate', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneWillResignActive', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneWillEnterForeground', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneDidEnterBackground', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneDidDisconnect', callback?: (args: SceneEventData) => void, thisArg?: any): this;
+	off(event: 'sceneOpenURLContexts', callback?: (args: SceneOpenURLContextsEventData) => void, thisArg?: any): this;
+	off(event: 'sceneContinueUserActivity', callback?: (args: SceneContinueUserActivityEventData) => void, thisArg?: any): this;
+	off(event: 'scenePerformActionForShortcutItem', callback?: (args: ScenePerformActionForShortcutItemEventData) => void, thisArg?: any): this;
+	off(eventName: string, callback?: (data: NativeWindowEventData) => void, thisArg?: any): this;
 }

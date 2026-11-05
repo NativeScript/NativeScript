@@ -85,12 +85,12 @@ export class SegmentedBar extends View implements AddChildFromBuilder, AddArrayF
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the selected index changes.
 	 */
-	on(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any): void;
+	on(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Called for every child element declared in xml.
