@@ -83,8 +83,8 @@ export class TextField extends TextFieldBase {
 				if (owner) owner.notify({ eventName: TextFieldBase.returnPressEvent, object: owner });
 			}
 		});
-		// AddHandler(KeyDownEvent) throws E_INVALIDARG (0x80070057) in the runtime's RoutedEvent
-		// projection: an uncaught throw jams frame navigation. Fall back to instance KeyDown.
+		// handledEventsToo: Enter still arrives when the TextBox handles it. A runtime that can't
+		// box the handler for AddHandler throws; the KeyDown event is the fallback.
 		try {
 			nv.AddHandler(Microsoft.UI.Xaml.UIElement.KeyDownEvent, this._keyDownDelegate, true);
 		} catch (_e) {

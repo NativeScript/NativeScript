@@ -1994,8 +1994,8 @@ export class View extends ViewCommon {
 						this._closeModalCallback();
 					}
 				};
-				//@ts-ignore
-				popup.AddHandler(Microsoft.UI.Xaml.Controls.Primitives.Popup.ClosedEvent, this._modalPopupClosedHandler, true);
+				// Popup.Closed is a plain event, not a routed one, so it can't go through AddHandler.
+				popup.Closed = this._modalPopupClosedHandler as never;
 
 			} catch (_e) { }
 
@@ -2040,8 +2040,8 @@ export class View extends ViewCommon {
 		this._isModalClosing = true;
 		try {
 			try {
-				if (this._modalPopup && this._modalPopupClosedHandler && typeof this._modalPopup.removeEventListener === 'function') {
-					try { this._modalPopup.removeEventListener('Closed', this._modalPopupClosedHandler); } catch (_e) { }
+				if (this._modalPopup && this._modalPopupClosedHandler) {
+					this._modalPopup.Closed = null;
 				}
 			} catch (_e) { }
 
