@@ -1,93 +1,73 @@
 import * as Common from './application-settings-common';
 
+// LocalSettings.Values is an IPropertySet: read and write through its IMap members.
+function values() {
+	return Windows.Storage.ApplicationData.Current.LocalSettings.Values;
+}
+
 export function hasKey(key: string): boolean | undefined {
 	if (!Common.checkKey(key)) {
 		return;
 	}
 
-	const localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-	return localSettings.Values.HasKey(key);
+	return values().HasKey(key);
 }
 
-export function getBoolean(key: string, defaultValue?: boolean): boolean | undefined {
+function getValue(key: string, defaultValue: any): any {
 	if (!Common.checkKey(key)) {
 		return undefined;
 	}
-	if (hasKey(key)) {
-		const localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-		return localSettings.Values[key] as never;
-	}
+	const settings = values();
+	return settings.HasKey(key) ? settings.Lookup(key) : defaultValue;
+}
 
-	return defaultValue;
+export function getBoolean(key: string, defaultValue?: boolean): boolean | undefined {
+	return getValue(key, defaultValue);
 }
 
 export function getString(key: string, defaultValue?: string): string | undefined {
-	if (!Common.checkKey(key)) {
-		return;
-	}
-	if (hasKey(key)) {
-		const localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-		return localSettings.Values[key] as never;
-	}
-
-	return defaultValue;
+	return getValue(key, defaultValue);
 }
 
 export function getNumber(key: string, defaultValue?: number): number | undefined {
+	return getValue(key, defaultValue);
+}
+
+function setValue(key: string, value: any, valueType: string): void {
 	if (!Common.checkKey(key)) {
 		return;
 	}
-	if (hasKey(key)) {
-		const localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-		return localSettings.Values[key] as never;
+	if (!Common.ensureValidValue(value, valueType)) {
+		return;
 	}
-
-	return defaultValue;
+	values().Insert(key, value);
 }
 
 export function setBoolean(key: string, value: boolean): void {
-	if (!Common.checkKey(key)) {
-		return;
-	}
-	if (!Common.ensureValidValue(value, 'boolean')) {
-		return;
-	}
-	const localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-	localSettings.Values[key] = value;
+	setValue(key, value, 'boolean');
 }
 
 export function setString(key: string, value: string): void {
-	if (!Common.checkKey(key)) {
-		return;
-	}
-	if (!Common.ensureValidValue(value, 'string')) {
-		return;
-	}
-	const localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-	localSettings.Values[key] = value;
+	setValue(key, value, 'string');
 }
 
 export function setNumber(key: string, value: number): void {
-	if (!Common.checkKey(key)) {
-		return;
-	}
-	if (!Common.ensureValidValue(value, 'number')) {
-		return;
-	}
-	const localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-	localSettings.Values[key] = value;
+	setValue(key, value, 'number');
 }
 
 export function remove(key: string): void {
 	if (!Common.checkKey(key)) {
 		return;
 	}
-	const localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-	localSettings.Values.Remove(key);
+	const settings = values();
+	// Remove throws E_BOUNDS for a missing key.
+	if (settings.HasKey(key)) {
+		settings.Remove(key);
+	}
 }
 
 export function clear(): void {
-	Windows.Storage.ApplicationData.Current.LocalSettings.Values.Clear();
+	values().Clear();
 }
 
 export function flush(): boolean {
@@ -96,12 +76,11 @@ export function flush(): boolean {
 }
 
 export function getAllKeys(): Array<string> {
-	const Values = Windows.Storage.ApplicationData.Current.LocalSettings.Values;
-	const first = Values.First();
+	const iterator = values().First();
 	const ret: string[] = [];
-	while (first && first.HasCurrent) {
-		ret.push(first.Current.Key);
-		first.MoveNext();
+	while (iterator && iterator.HasCurrent) {
+		ret.push(iterator.Current.Key);
+		iterator.MoveNext();
 	}
 
 	return ret;
