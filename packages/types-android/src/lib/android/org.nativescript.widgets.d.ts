@@ -1,6 +1,6 @@
-﻿declare namespace org {
-    namespace nativescript {
-        namespace widgets {
+﻿declare module org {
+    module nativescript {
+        module widgets {
             export class BoxShadowDrawable {
                 public constructor(drawable: android.graphics.drawable.Drawable, values: number[]);
                 public getWrappedDrawable(): android.graphics.drawable.Drawable;
@@ -12,7 +12,7 @@
                 public setResetOnTransitionEnd(resetOnTransitionEnd: boolean): void;
                 public getTransitionName(): string;
             }
-            export namespace Async {
+            export module Async {
                 export class CompleteCallback {
                     constructor(implementation: ICompleteCallback);
                     onComplete(result: Object, context: Object): void;
@@ -24,11 +24,11 @@
                     onError(error: string, context: Object): void;
                 }
 
-                export namespace Image {
+                export module Image {
                     export function download(url: string, callback: CompleteCallback, context: any);
                 }
 
-                export namespace File {
+                export module File {
                     export function copySync(src: string, dest: string, context: android.content.Context): boolean;
                     export function copy(src: java.io.InputStream, dest: java.io.OutputStream, callback: org.nativescript.widgets.Async.CompleteCallback, context: any): void;
 					export function copySync(src: java.io.InputStream, dest: java.io.OutputStream, context: any): boolean;
@@ -44,7 +44,7 @@
                     export function appendText(path: string, content: string, encoding: string, callback: CompleteCallback, context: any);
                 }
 
-                export namespace Http {
+                export module Http {
                     export class KeyValuePair {
                         public key: string;
                         public value: string;
@@ -277,7 +277,7 @@
                 public setPassThroughParent(value: boolean): void;
             }
 
-            export namespace LayoutBase {
+            export module LayoutBase {
                 	export class WindowInsetListener {
 					public constructor(implementation: {
 						onApplyWindowInsets(param0: java.nio.ByteBuffer): void;
@@ -720,9 +720,9 @@
     }
 }
 
-declare namespace org {
-	export namespace nativescript {
-		export namespace widgets {
+declare module org {
+	export module nativescript {
+		export module widgets {
 			export class FileHelper {
                 public static class: java.lang.Class<org.nativescript.widgets.FileHelper>;
 				public appendSync(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
@@ -758,7 +758,7 @@ declare namespace org {
 				public appendText(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
 				public getLastModified(): number;
 			}
-			export namespace FileHelper {
+			export module FileHelper {
 				export class Callback {
 					public static class: java.lang.Class<org.nativescript.widgets.FileHelper.Callback>;
 					/**
@@ -777,9 +777,9 @@ declare namespace org {
 	}
 }
 
-declare namespace org {
-	export namespace nativescript {
-		export namespace widgets {
+declare module org {
+	export module nativescript {
+		export module widgets {
 			export class Utils {
 				public static class: java.lang.Class<org.nativescript.widgets.Utils>;
                 public static getBitmapFromDrawable(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.graphics.Bitmap;
@@ -802,7 +802,7 @@ declare namespace org {
                 public static ignoreEdgeToEdgeOnOlderDevices: boolean;
 				public constructor();
 			}
-			export namespace Utils {
+			export module Utils {
 				export class AsyncImageCallback {
 					public static class: java.lang.Class<org.nativescript.widgets.Utils.AsyncImageCallback>;
 					/**

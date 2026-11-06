@@ -25,7 +25,7 @@ declare interface NativeScriptError extends Error {
 }
 
 //Augment the NodeJS global type with our own extensions
-declare namespace globalThis {
+declare module globalThis {
 	var NativeScriptHasPolyfilled: boolean;
 	var NativeScriptGlobals: {
 		/**
