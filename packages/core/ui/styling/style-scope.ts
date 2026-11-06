@@ -11,7 +11,7 @@ import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
 import { profile } from './styling-profile';
 
-import { Keyframes, KeyframeAnimationInfo, KeyframeAnimation } from '../animation/keyframe-animation';
+import { Keyframes, KeyframeAnimationInfo, KeyframeAnimation, KeyframeInfo } from '../animation/keyframe-animation';
 
 import { CssAnimationParser } from './css-animation-parser';
 import { sanitizeModuleName } from '../../utils/common';
@@ -66,6 +66,34 @@ const tagToScopeTag: Map<string | number, string> = new Map();
 let currentScopeTag: string = null;
 
 const animationsSymbol = Symbol('animations');
+const animationVariablesSymbol = Symbol('animationVariables');
+const keyframeVariablesSymbol = Symbol('keyframeVariables');
+
+function isAnimationDeclaration(declaration: { property: string }): boolean {
+	return declaration.property.startsWith('animation');
+}
+
+function keyframesUseVariables(keyframes: Keyframes): boolean {
+	return keyframes.keyframes.some((keyframe) => keyframe.declarations.some((declaration) => typeof declaration.value === 'string' && isCssVariableExpression(declaration.value)));
+}
+
+function keyframesArrayFromCSS(keyframes: Keyframes, view?: ViewBase): KeyframeInfo[] | null {
+	let unparsed = keyframes.keyframes;
+	if (view) {
+		unparsed = unparsed.map((keyframe) => ({
+			values: keyframe.values,
+			declarations: keyframe.declarations.map(({ property, value }) => ({ property, value: _evaluateCssVariableExpression(view, property, value) })),
+		}));
+	}
+
+	try {
+		return CssAnimationParser.keyframesArrayFromCSS(unparsed);
+	} catch (e) {
+		Trace.write(`Failed to parse keyframes [${keyframes.name}]${view ? ` for ${view}` : ''}. ${e}`, Trace.categories.Animation, Trace.messageType.warn);
+
+		return null;
+	}
+}
 const kebabCasePattern = /-([a-z])/g;
 const kebabCaseReplacementFunc = (g: string) => g[1].toUpperCase();
 const pattern = /('|")(.*?)\1/;
@@ -117,7 +145,12 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 	return value;
 }
 
-// Custom properties may refer to ones declared after them, so re-evaluate until they settle.
+function evaluateCssVariable(view: ViewBase, name: string, value: string): string | null {
+	const evaluated = evaluateCssExpressions(view, name, value);
+
+	return evaluated === unsetValue ? null : evaluated;
+}
+
 function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, string>) {
 	let names: string[];
 	for (const property in cssExpsProperties) {
@@ -126,7 +159,7 @@ function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, st
 				names = [];
 			}
 			names.push(property);
-			view.style.setScopedCssVariable(property, evaluateCssExpressions(view, property, cssExpsProperties[property]));
+			view.style.setScopedCssVariable(property, evaluateCssVariable(view, property, cssExpsProperties[property]));
 		}
 	}
 	if (!names || names.length < 2 || !hasForwardCssVariableReference(names, cssExpsProperties)) {
@@ -136,7 +169,7 @@ function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, st
 	for (let pass = 1; pass < names.length; pass++) {
 		let changed = false;
 		for (const name of names) {
-			const value = evaluateCssExpressions(view, name, cssExpsProperties[name]);
+			const value = evaluateCssVariable(view, name, cssExpsProperties[name]);
 			if (value !== view.style.getCssVariable(name)) {
 				view.style.setScopedCssVariable(name, value);
 				changed = true;
@@ -155,7 +188,6 @@ function hasForwardCssVariableReference(names: string[], values: Record<string, 
 			const ref = `var(${names[j]}`;
 			let at = value.indexOf(ref);
 			while (at !== -1) {
-				// `var(--a` must not match `var(--ab`.
 				const next = value[at + ref.length];
 				if (next === ')' || next === ',' || next === ' ' || next === undefined) {
 					return true;
@@ -432,6 +464,9 @@ class CSSSource {
 			if (rulesets && rulesets.length) {
 				rulesets.forEach((rule) => {
 					rule[animationsSymbol] = CssAnimationParser.keyframeAnimationsFromCSSDeclarations(rule.declarations);
+					if (rule[animationsSymbol] && rule.declarations.some((declaration) => isAnimationDeclaration(declaration) && isCssVariableExpression(declaration.value))) {
+						rule[animationVariablesSymbol] = true;
+					}
 				});
 			}
 
@@ -795,6 +830,14 @@ export class CssState {
 		return this.viewRef.get()._styleScope.getSelectorsVersion() === this._appliedSelectorsVersion;
 	}
 
+	/**
+	 * The value the cascade last resolved for a longhand, `undefined` if it resolved none.
+	 * Recorded even while a local value suppresses the write.
+	 */
+	public _getAppliedPropertyValue(property: string): unknown {
+		return this._appliedPropertyValues[property];
+	}
+
 	public onLoaded(): void {
 		if (this._matchInvalid) {
 			this.updateMatch();
@@ -857,9 +900,16 @@ export class CssState {
 		const animations: KeyframeAnimation[] = [];
 
 		matchingSelectors.forEach((selector) => {
-			const ruleAnimations: KeyframeAnimationInfo[] = selector.ruleset?.[animationsSymbol];
+			const ruleset = selector.ruleset;
+			let ruleAnimations: KeyframeAnimationInfo[] = ruleset?.[animationsSymbol];
+			if (ruleAnimations && ruleset[animationVariablesSymbol]) {
+				ruleAnimations = this.resolveAnimationVariables(ruleset);
+			}
 			if (ruleAnimations) {
-				for (const animationInfo of ruleAnimations) {
+				for (let animationInfo of ruleAnimations) {
+					if (animationInfo[keyframeVariablesSymbol]) {
+						animationInfo = this.resolveKeyframeVariables(animationInfo);
+					}
 					const animation = KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
 					if (animation) {
 						animations.push(animation);
@@ -880,6 +930,32 @@ export class CssState {
 			Object.freeze(animations);
 			this._appliedAnimations = animations;
 		}
+	}
+
+	private resolveAnimationVariables(ruleset: RuleSet): KeyframeAnimationInfo[] {
+		const view = this.viewRef.get();
+		const scope = view?._styleScope;
+		if (!scope) {
+			return null;
+		}
+
+		const declarations = ruleset.declarations.filter(isAnimationDeclaration).map(({ property, value }) => ({ property, value: _evaluateCssVariableExpression(view, property, value) }));
+		const animations = CssAnimationParser.keyframeAnimationsFromCSSDeclarations(declarations);
+		if (animations) {
+			for (const animation of animations) {
+				scope._applyKeyframes(animation);
+			}
+		}
+
+		return animations;
+	}
+
+	private resolveKeyframeVariables(animation: KeyframeAnimationInfo): KeyframeAnimationInfo {
+		const view = this.viewRef.get();
+		const resolved = Object.assign(new KeyframeAnimationInfo(), animation);
+		resolved.keyframes = view ? keyframesArrayFromCSS(animation[keyframeVariablesSymbol], view) : null;
+
+		return resolved;
 	}
 
 	private stopKeyframeAnimations(): void {
@@ -922,7 +998,14 @@ export class CssState {
 		}
 
 		const newPropertyValues = new view.style.PropertyBag();
-		matchingSelectors.forEach((selector) => selector.ruleset.declarations.forEach((declaration) => (newPropertyValues[declaration.property] = declaration.value)));
+		for (let i = 0, length = matchingSelectors.length; i < length; i++) {
+			const ruleset = matchingSelectors[i].ruleset;
+			ruleset.expandLateShorthands();
+			const declarations = ruleset.declarations;
+			for (let j = 0, count = declarations.length; j < count; j++) {
+				newPropertyValues[declarations[j].property] = declarations[j].value;
+			}
+		}
 
 		const oldProperties = this._appliedPropertyValues;
 		// A local write is the only thing that can drop a value the cascade already
@@ -1080,8 +1163,6 @@ export class CssState {
 				}
 			} catch (e) {
 				Trace.write(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
-				// A declaration invalid at computed-value time computes as `unset`, so the previous value must not stay applied.
-				// https://drafts.csswg.org/css-values-5/#invalid-substitution
 				delete newPropertyValues[property];
 				try {
 					if (inStyle) {
@@ -1242,7 +1323,7 @@ export class StyleScope {
 		const keyframeRule = this.findKeyframeRule(animationName);
 
 		const animation = new KeyframeAnimationInfo();
-		animation.keyframes = keyframeRule ? CssAnimationParser.keyframesArrayFromCSS(keyframeRule.keyframes) : null;
+		animation.keyframes = keyframeRule ? keyframesArrayFromCSS(keyframeRule) : null;
 
 		return animation;
 	}
@@ -1366,10 +1447,20 @@ export class StyleScope {
 
 			if (animations != null && animations.length) {
 				for (const animation of animations) {
-					const keyframeRule = this.findKeyframeRule(animation.name);
-					animation.keyframes = keyframeRule ? CssAnimationParser.keyframesArrayFromCSS(keyframeRule.keyframes) : null;
+					this._applyKeyframes(animation);
 				}
 			}
+		}
+	}
+
+	public _applyKeyframes(animation: KeyframeAnimationInfo): void {
+		const keyframeRule = this.findKeyframeRule(animation.name);
+		if (keyframeRule && keyframesUseVariables(keyframeRule)) {
+			animation[keyframeVariablesSymbol] = keyframeRule;
+			animation.keyframes = null;
+		} else {
+			animation[keyframeVariablesSymbol] = undefined;
+			animation.keyframes = keyframeRule ? keyframesArrayFromCSS(keyframeRule) : null;
 		}
 	}
 

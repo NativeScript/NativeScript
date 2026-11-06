@@ -43,6 +43,14 @@ function styled(css: string, className?: string): { view: any; scope: StyleScope
 	return { view, scope };
 }
 
+function styledWithParent(css: string, parentClassName: string): { view: any; parent: any; scope: StyleScope } {
+	const { view, scope } = styled(css);
+	const parent = view.parent;
+	parent.className = parentClassName;
+
+	return { view, parent, scope };
+}
+
 describe('CssState.setPropertyValues', () => {
 	it('applies matched declarations', () => {
 		const { view } = styled('label { color: red; }');
@@ -117,6 +125,30 @@ describe('CssState.setPropertyValues', () => {
 		view._cssState.onLoaded();
 
 		expect(view.style.color.toString()).toBe('#FF0000');
+	});
+
+	it('resolves a chain of custom properties that each refer to a later one', () => {
+		const { view } = styled('label { --a: var(--b); --b: var(--c); --c: var(--d); --d: red; color: var(--a); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.color.toString()).toBe('#FF0000');
+		expect(view.style.getCssVariable('--a')).toBe('red');
+	});
+
+	it('treats custom properties in a cycle as undefined, so var() falls back', () => {
+		const { view } = styled('label { --a: var(--b); --b: var(--a); color: var(--a, blue); }');
+		view._cssState.onLoaded();
+
+		expect(view.style.color.toString()).toBe('#0000FF');
+		expect(view.style.getCssVariable('--a')).toBeNull();
+	});
+
+	it('does not inherit a custom property this view declared with an unresolvable value', () => {
+		const { view, parent } = styledWithParent('.p { --a: green; } label { --a: var(--missing); color: var(--a, blue); }', 'p');
+		parent._cssState.onLoaded();
+		view._cssState.onLoaded();
+
+		expect(view.style.color.toString()).toBe('#0000FF');
 	});
 
 	it('evaluates properties after the custom properties they use, whatever the order', () => {
@@ -209,6 +241,15 @@ describe('CssState.setPropertyValues', () => {
 		view.addPseudoClass('highlighted');
 		// Unresolvable leaves the longhands unset, i.e. back to the property default.
 		expect(view.style.marginTop).toEqual(styled('').view.style.marginTop);
+	});
+
+	it('unsets a color whose nested variable cannot be resolved', () => {
+		const { view } = styled('label { color: red; } label:highlighted { color: color-mix(in srgb, var(--missing) 35%, transparent); }');
+		view._cssState.onLoaded();
+		expect(view.style.color.toString()).toBe('#FF0000');
+
+		view.addPseudoClass('highlighted');
+		expect(view.style.color).toBeUndefined();
 	});
 
 	it('applies an inline shorthand holding a variable', () => {

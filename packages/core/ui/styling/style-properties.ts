@@ -132,17 +132,23 @@ function parseBorderColorPositioning(value: string): ShorthandPositioning {
 	return positioningFromParts(splitOnTopLevelSpacesAndCommas(value.trim()), value);
 }
 
+const TRANSPARENT = new Color('transparent');
+
 function convertToBackgrounds(value: string): [CssProperty<any, any> | CssAnimationProperty<any, any>, any][] {
 	if (typeof value === 'string') {
 		const backgrounds = parseBackground(value).value;
 		let backgroundColor = unsetValue;
 		if (backgrounds.color) {
 			backgroundColor = backgrounds.color instanceof Color ? backgrounds.color : new Color(backgrounds.color);
+		} else if (backgrounds.image === 'none') {
+			backgroundColor = TRANSPARENT;
 		}
 
 		let backgroundImage: string | LinearGradient;
 		if (typeof backgrounds.image === 'object' && backgrounds.image) {
 			backgroundImage = LinearGradient.parse(backgrounds.image);
+		} else if (backgrounds.image === 'none') {
+			backgroundImage = unsetValue;
 		} else {
 			backgroundImage = backgrounds.image || unsetValue;
 		}
@@ -746,8 +752,6 @@ export const backgroundPositionProperty = new CssProperty<Style, string>({
 });
 backgroundPositionProperty.register(Style);
 
-
-
 // Border Color properties.
 const borderColorProperty = new ShorthandProperty<Style, string | Color>({
 	name: 'borderColor',
@@ -1197,6 +1201,10 @@ export const fontScaleInternalProperty = new InheritedCssProperty<Style, number>
 });
 fontScaleInternalProperty.register(Style);
 
+function parseFontSize(value: string): number {
+	return typeof value === 'string' && value.trim().endsWith('rem') ? <number>Length.parse(value) : parseFloat(value);
+}
+
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',
 	cssName: 'font-size',
@@ -1211,7 +1219,7 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
 		}
 	},
-	valueConverter: (v) => parseFloat(v),
+	valueConverter: parseFontSize,
 });
 fontSizeProperty.register(Style);
 
@@ -1263,7 +1271,7 @@ const fontProperty = new ShorthandProperty<Style, string>({
 			];
 		} else {
 			const font = parseFont(value);
-			const fontSize = parseFloat(font.fontSize);
+			const fontSize = parseFontSize(font.fontSize);
 
 			return [
 				[fontStyleProperty, font.fontStyle],

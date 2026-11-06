@@ -10,7 +10,7 @@ function decoderReplacer(encoded) {
 	if (leadingOnes < 5 && stringLen >= leadingOnes) {
 		codePoint = (codePoint << leadingOnes) >>> (24 + leadingOnes);
 		for (endPos = 1; endPos < leadingOnes; endPos = (endPos + 1) | 0) {
-			codePoint = (codePoint << 6) | (encoded.charCodeAt(endPos) & 0x3f) /*0b00111111*/;
+			codePoint = (codePoint << 6) | (encoded.charCodeAt(endPos) & 0x3f); /*0b00111111*/
 		}
 		if (codePoint <= 0xffff) {
 			// BMP code point
@@ -20,7 +20,7 @@ function decoderReplacer(encoded) {
 			codePoint = (codePoint - 0x10000) | 0;
 			result += String.fromCharCode(
 				((codePoint >> 10) + 0xd800) | 0, // highSurrogate
-				((codePoint & 0x3ff) + 0xdc00) | 0 // lowSurrogate
+				((codePoint & 0x3ff) + 0xdc00) | 0, // lowSurrogate
 			);
 		} else {
 			endPos = 0;
@@ -71,7 +71,7 @@ export class TextDecoder {
 		if (Object_prototype_toString.call(buffer) !== ArrayBufferString) {
 			throw Error("Failed to execute 'decode' on 'TextDecoder': The provided value is not of type '(ArrayBuffer or ArrayBufferView)'");
 		}
-		const inputAs8 = new Uint8Array(buffer);
+		const inputAs8 = ArrayBuffer.isView(input) ? new Uint8Array(input.buffer, input.byteOffset, input.byteLength) : new Uint8Array(buffer);
 		let resultingString = '';
 		for (let index = 0, len = inputAs8.length | 0; index < len; index = (index + 32768) | 0) {
 			resultingString += String.fromCharCode.apply(0, inputAs8.slice(index, (index + 32768) | 0));

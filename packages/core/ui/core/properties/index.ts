@@ -14,6 +14,8 @@ export { unsetValue } from './property-shared';
 const cssPropertyNames: string[] = [];
 const cssShorthandConverters = new Map<string, (value: string) => [any, any][]>();
 const cssShorthandLonghands = new Map<string, string[]>();
+// Bumped per shorthand registration, so rules parsed before it can still expand it.
+let cssShorthandsVersion = 0;
 const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
@@ -22,6 +24,8 @@ const cssSymbolPropertyMap = {};
 const CSS_VARIABLE_NAME_RE = /^--[^,\s]+?$/;
 const DIP_RE = /([0-9]+(\.[0-9]+)?)dip\b/g;
 const UNSET_RE = /unset/g;
+/** Stands in for an unresolved var() until the whole value is known; a NUL never occurs in css. */
+const UNRESOLVED_VAR = '\u0000';
 const INFINITY_RE = /infinity/g;
 
 const inheritableProperties = new Array<InheritedProperty<any, any>>();
@@ -41,8 +45,8 @@ const cssValueSourceKeys: Record<string, symbol> = Object.create(null);
 /**
  * Whether the style still carries what the cascade last wrote for the property.
  * A `CssProperty` keeps one value: a local value both suppresses the css write and
- * takes the slot, so clearing it leaves the property at its default with the css
- * value gone. The cascade has to write it again rather than skip it as unchanged.
+ * takes the slot, so the style can stop carrying what the cascade recorded. The
+ * cascade has to write it again rather than skip it as unchanged.
  */
 export function _isCssValueStillApplied(style: unknown, cssLocalName: string, value: unknown): boolean {
 	const sourceKey = cssValueSourceKeys[cssLocalName];
@@ -53,6 +57,16 @@ export function _isCssValueStillApplied(style: unknown, cssLocalName: string, va
 
 	// A reset leaves no source behind, so it is in effect precisely when nothing else claimed the property.
 	return style[sourceKey] === (isResetValue(value) ? undefined : ValueSource.Css);
+}
+
+/**
+ * What a released local value falls back to: the value the cascade last resolved for
+ * the property, or `undefined` when it resolved none.
+ */
+function cascadedCssValue(view: ViewBase, cssLocalName: string): unknown {
+	const value = view._cssState?._getAppliedPropertyValue(cssLocalName);
+
+	return value === '' || isResetValue(value) ? undefined : value;
 }
 
 function print(map) {
@@ -155,6 +169,16 @@ export function _pendingCssShorthandSubstitution(cssName: string, value: string)
 	return declarations;
 }
 
+/** Changes whenever a shorthand is registered. */
+export function _getCssShorthandsVersion(): number {
+	return cssShorthandsVersion;
+}
+
+/** Whether `cssName` is a registered shorthand. */
+export function _isCssShorthand(cssName: string): boolean {
+	return cssShorthandConverters.has(cssName);
+}
+
 /**
  * Expand a shorthand declaration into its longhand declarations, or `undefined`
  * when the property is not a shorthand, the value still has to be evaluated per
@@ -224,27 +248,28 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 			continue;
 		}
 
-		// The fallback is everything after the first comma, commas included.
 		const body = output.substring(idx + 4, endIdx);
 		const commaIdx = body.indexOf(',');
 		const cssVariableName = (commaIdx === -1 ? body : body.substring(0, commaIdx)).trim();
 		const fallback = commaIdx === -1 ? '' : body.substring(commaIdx + 1).trim();
 		let cssVariableValue = view.style.getCssVariable(cssVariableName);
-		if (cssVariableValue?.trim() === 'initial') {
+		if (typeof cssVariableValue === 'string' && cssVariableValue.trim() === 'initial') {
 			cssVariableValue = null;
 		}
 		if (cssVariableValue === null && fallback) {
 			cssVariableValue = _evaluateCssVariableExpression(view, cssName, fallback);
 		}
 
-		if (!cssVariableValue) {
-			cssVariableValue = 'unset';
+		if (!cssVariableValue || cssVariableValue === 'unset') {
+			cssVariableValue = UNRESOLVED_VAR;
 		}
 
 		output = `${output.substring(0, idx)}${cssVariableValue}${output.substring(endIdx + 1)}`;
 	}
 
-	return output;
+	// An unresolved var() invalidates the whole declaration, wherever it is nested,
+	// unless it sat in the fallback of a var() that resolved.
+	return output.includes(UNRESOLVED_VAR) ? 'unset' : output;
 }
 
 function findClosingParenthesis(value: string, openIdx: number): number {
@@ -796,14 +821,24 @@ export class CssProperty<T extends Style, U> {
 
 			this._localValueVersion++;
 
-			const reset = isResetValue(newValue) || newValue === '';
+			let reset = isResetValue(newValue) || newValue === '';
+			let valueSource = ValueSource.Local;
 			let value: U;
+
+			if (reset) {
+				const cssValue = cascadedCssValue(view, property.cssLocalName);
+				if (cssValue !== undefined) {
+					newValue = <U | string>cssValue;
+					valueSource = ValueSource.Css;
+					reset = false;
+				}
+			}
 
 			if (reset) {
 				value = defaultValue;
 				delete this[sourceKey];
 			} else {
-				this[sourceKey] = ValueSource.Local;
+				this[sourceKey] = valueSource;
 				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(this, newValue) : valueConverter(newValue)) : <U>newValue;
 			}
 
@@ -1226,6 +1261,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 		const getDefault = this.getDefault;
 		const setNative = this.setNative;
 		const defaultValueKey = this.defaultValueKey;
+		const cssLocalName = this.cssLocalName;
 		const eventName = propertyName + 'Change';
 		const defaultValue: U = options.defaultValue;
 
@@ -1269,7 +1305,17 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 					this._localValueVersion++;
 				}
 
-				const reset = isResetValue(boxedValue) || boxedValue === '';
+				let reset = isResetValue(boxedValue) || boxedValue === '';
+				let newValueSource = valueSource;
+				if (reset && isLocalWrite) {
+					const cssValue = cascadedCssValue(view, cssLocalName);
+					if (cssValue !== undefined) {
+						boxedValue = cssValue;
+						newValueSource = ValueSource.Css;
+						reset = false;
+					}
+				}
+
 				const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
 				if (reset) {
@@ -1302,7 +1348,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 						unsetNativeValue = true;
 					}
 				} else {
-					this[sourceKey] = valueSource;
+					this[sourceKey] = newValueSource;
 					if (valueConverter && typeof boxedValue === 'string') {
 						value = overrideConverter ? valueConverter.call(this, boxedValue) : valueConverter(boxedValue);
 					} else {
@@ -1406,6 +1452,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = `${options.cssName}`;
 		cssShorthandConverters.set(options.cssName, options.converter as (value: string) => [any, any][]);
+		cssShorthandsVersion++;
 
 		const converter = options.converter;
 
