@@ -87,7 +87,11 @@ export default function nativeClassDownlevelLoader(
 				),
 			);
 		}
-		const transpiledRaw = transpileResult.outputText;
+		// TS 6+ emits a "use strict" prologue for snippets without imports/exports; it must not be spliced into the host file.
+		const transpiledRaw = transpileResult.outputText.replace(
+			/^\s*(['"])use strict\1;?\s*/,
+			'',
+		);
 		// force enumerable:true
 		let transpiled = transpiledRaw.replace(
 			/(Object\.defineProperty\(.*?{.*?)(enumerable:\s*false)(.*?}\))/gs,

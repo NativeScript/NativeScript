@@ -32,7 +32,7 @@ declare module globalThis {
 		 * Global framework event handling
 		 */
 		events: {
-			[Key in keyof import('data/observable').Observable]: import('data/observable').Observable[Key];
+			[Key in keyof import('./data/observable').Observable]: import('./data/observable').Observable[Key];
 		};
 		launched: boolean;
 		// used by various classes to setup callbacks to wire up global app event handling when the app instance is ready
