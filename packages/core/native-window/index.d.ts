@@ -76,6 +76,11 @@ export abstract class WindowBase extends Observable {
 	readonly windows?: { readonly window: Microsoft.UI.Xaml.Window };
 
 	/**
+	 * The `GtkWindow*` backing this window on Linux, or `undefined` elsewhere or once closed.
+	 */
+	readonly linux?: { readonly window: interop.Pointer };
+
+	/**
 	 * Closes this window.
 	 *
 	 * Ends the window session: the native surface is dismissed, `close` is raised and the

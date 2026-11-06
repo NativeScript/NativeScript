@@ -167,7 +167,7 @@ isLoadingProperty.register(ImageBase);
 export const stretchProperty = new Property<ImageBase, CoreTypes.ImageStretchType>({
 	name: 'stretch',
 	defaultValue: 'aspectFit',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 });
 stretchProperty.register(ImageBase);
 

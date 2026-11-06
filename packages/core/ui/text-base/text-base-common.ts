@@ -304,7 +304,7 @@ textTransformProperty.register(Style);
 export const textShadowProperty = new InheritedCssProperty<Style, string | ShadowCSSValues>({
 	name: 'textShadow',
 	cssName: 'text-shadow',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: (value) => {
 		return parseCSSShadow(value);
 	},
@@ -314,7 +314,7 @@ textShadowProperty.register(Style);
 export const textStrokeProperty = new InheritedCssProperty<Style, string | StrokeCSSValues>({
 	name: 'textStroke',
 	cssName: 'text-stroke',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: (value) => {
 		return parseCSSStroke(value);
 	},
@@ -326,7 +326,7 @@ export const whiteSpaceProperty = new InheritedCssProperty<Style, CoreTypes.Whit
 	name: 'whiteSpace',
 	cssName: 'white-space',
 	defaultValue: 'initial',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: whiteSpaceConverter,
 });
 whiteSpaceProperty.register(Style);
@@ -336,7 +336,7 @@ export const textOverflowProperty = new CssProperty<Style, CoreTypes.TextOverflo
 	name: 'textOverflow',
 	cssName: 'text-overflow',
 	defaultValue: 'initial',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: textOverflowConverter,
 });
 textOverflowProperty.register(Style);
@@ -354,7 +354,7 @@ export const letterSpacingProperty = new InheritedCssProperty<Style, number>({
 	name: 'letterSpacing',
 	cssName: 'letter-spacing',
 	defaultValue: 0,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: (v) => parseFloat(v),
 });
 letterSpacingProperty.register(Style);
@@ -362,7 +362,7 @@ letterSpacingProperty.register(Style);
 export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 	name: 'lineHeight',
 	cssName: 'line-height',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: (v) => parseFloat(v),
 });
 lineHeightProperty.register(Style);

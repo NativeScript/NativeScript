@@ -145,6 +145,8 @@ interface IConfigAndroid extends IConfigPlatform {
 	enableMultithreadedJavascript?: boolean;
 }
 
+interface IConfigLinux extends IConfigPlatform {}
+
 interface IConfigWindows extends IConfigPlatform {
 	/**
 	 * Seal the app's webpack output into an encrypted app.nsbundle instead of shipping it as plaintext.
@@ -368,6 +370,10 @@ export interface NativeScriptConfig {
 	 * Various Windows specific configurations (WinUI 3 / windows-runtime).
 	 */
 	windows?: IConfigWindows;
+	/**
+	 * Linux specific configurations (GTK 4).
+	 */
+	linux?: IConfigLinux;
 	/**
 	 * Enable profiling for the application. Default: no profiling
 	 * In most cases when profiling, you will want to use "timeline"
