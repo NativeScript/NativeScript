@@ -28,6 +28,8 @@
 					"{workspaceRoot}/LICENSE",
 					"{projectRoot}/README.md",
 					"{projectRoot}/global-types.d.ts",
+					"{projectRoot}/plugin.props",
+					"{projectRoot}/plugin.targets",
 					{
 						"glob": "**/*",
 						"input": "{projectRoot}/platforms/",

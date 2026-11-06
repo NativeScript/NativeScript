@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, assertNsDevSessionDescriptor, readNsRuntimeDevHostApi } from './browser-runtime-contract.js';
+import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, assertNsDevSessionDescriptor, isNsDevPlatform, readNsRuntimeDevHostApi } from './browser-runtime-contract.js';
 
 describe('browser runtime contract', () => {
 	it('accepts a valid dev session descriptor', () => {
@@ -12,6 +12,25 @@ describe('browser runtime contract', () => {
 				clientUrl: 'http://localhost:5173/@vite/client',
 				wsUrl: 'ws://localhost:5173',
 				platform: 'ios',
+				hostModules: [...NS_DEFAULT_HOST_MODULES],
+				features: { ...NS_DEFAULT_DEV_FEATURE_FLAGS },
+			}),
+		).not.toThrow();
+	});
+
+	it('accepts every NativeScript dev platform, including windows', () => {
+		for (const platform of ['ios', 'android', 'visionos', 'windows']) {
+			expect(isNsDevPlatform(platform)).toBe(true);
+		}
+		expect(isNsDevPlatform('web')).toBe(false);
+		expect(() =>
+			assertNsDevSessionDescriptor({
+				sessionId: 'session-1',
+				origin: 'http://127.0.0.1:5173',
+				entryUrl: 'http://127.0.0.1:5173/src/main.ts',
+				clientUrl: 'http://127.0.0.1:5173/@vite/client',
+				wsUrl: 'ws://127.0.0.1:5173',
+				platform: 'windows',
 				hostModules: [...NS_DEFAULT_HOST_MODULES],
 				features: { ...NS_DEFAULT_DEV_FEATURE_FLAGS },
 			}),

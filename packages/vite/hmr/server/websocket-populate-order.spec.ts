@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createServer, type Plugin } from 'vite';
+import { createServer, normalizePath, type Plugin } from 'vite';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { getProjectAppPath } from '../../helpers/utils.js';
@@ -53,7 +53,7 @@ describe('HMR graph population start', () => {
 			await new Promise((resolve) => setTimeout(resolve, 300));
 			expect(configured).toBe(true);
 			expect(transformsBeforeConfigured).toEqual([]);
-			expect(transformsAfterConfigured).toContain(join(root, getProjectAppPath(), 'probe.ts'));
+			expect(transformsAfterConfigured).toContain(normalizePath(join(root, getProjectAppPath(), 'probe.ts')));
 		} finally {
 			await server.close();
 		}

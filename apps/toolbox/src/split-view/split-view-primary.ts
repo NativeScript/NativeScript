@@ -4,7 +4,9 @@ let page: Page;
 
 export function navigatingTo(args: EventData) {
 	page = <Page>args.object;
-	page.bindingContext = new SplitViewPrimaryModel();
+	const model = new SplitViewPrimaryModel();
+	page.bindingContext = model;
+	try { console.log('[Primary] navigatingTo, items.length=', model.items?.length); } catch (_e) {}
 }
 
 export class SplitViewPrimaryModel extends Observable {

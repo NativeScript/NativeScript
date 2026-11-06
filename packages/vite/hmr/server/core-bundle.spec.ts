@@ -91,6 +91,64 @@ describe('enumerateCoreModuleSubpaths', () => {
 	});
 });
 
+describe('enumerateCoreModuleSubpaths: windows files', () => {
+	const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'ns-core-enum-win-'));
+	afterAll(() => rmSync(fixtureRoot, { recursive: true, force: true }));
+
+	const write = (rel: string, contents = 'export const x = 1;') => {
+		const abs = path.join(fixtureRoot, rel);
+		mkdirSync(path.dirname(abs), { recursive: true });
+		writeFileSync(abs, contents);
+	};
+
+	write('index.ts');
+	write('application/index.ios.ts');
+	write('application/index.android.ts');
+	write('application/index.windows.ts');
+	write('application/window-helper.windows.ts');
+	write('ui/frame/index.ios.ts');
+	write('ui/frame/index.android.ts');
+	write('ui/frame/frame-helper-for-android.ts');
+	write('ui/frame/frame-helper-for-ios.ts');
+	write('ui/frame/frame-helper-for-windows.ts');
+	write('utils/index.ts');
+
+	it('never force-imports `.windows` files into android/ios bundles (regression)', () => {
+		for (const platform of ['android', 'ios', 'visionos']) {
+			const subs = enumerateCoreModuleSubpaths(fixtureRoot, platform);
+			// Previously `.windows` was not a known suffix, so these were treated
+			// as platform-neutral and emitted verbatim.
+			expect(subs.some((s) => s.includes('windows'))).toBe(false);
+			expect(subs).not.toContain('application/window-helper');
+			expect(subs).toContain('application');
+		}
+	});
+
+	it('includes windows variants on windows and skips other-platform-only modules', () => {
+		const subs = enumerateCoreModuleSubpaths(fixtureRoot, 'windows');
+		expect(subs).toContain('application');
+		expect(subs).toContain('application/window-helper');
+		expect(subs).toContain('utils');
+		expect(subs).toContain('ui/frame/frame-helper-for-windows');
+		// ios/android-only (no windows or neutral variant)
+		expect(subs).not.toContain('ui/frame');
+		expect(subs).not.toContain('ui/frame/frame-helper-for-android');
+		expect(subs).not.toContain('ui/frame/frame-helper-for-ios');
+		expect(subs.some((s) => /\.windows$/.test(s))).toBe(false);
+	});
+
+	it('keeps each platform on its own cross-platform helpers', () => {
+		const ios = enumerateCoreModuleSubpaths(fixtureRoot, 'ios');
+		expect(ios).toContain('ui/frame/frame-helper-for-ios');
+		expect(ios).not.toContain('ui/frame/frame-helper-for-android');
+		expect(ios).not.toContain('ui/frame/frame-helper-for-windows');
+		const android = enumerateCoreModuleSubpaths(fixtureRoot, 'android');
+		expect(android).toContain('ui/frame/frame-helper-for-android');
+		expect(android).not.toContain('ui/frame/frame-helper-for-ios');
+		expect(android).not.toContain('ui/frame/frame-helper-for-windows');
+	});
+});
+
 describe('isExpectedCoreBundleExclusion', () => {
 	it('recognizes deliberately excluded subs (the boot-time inspector/debugger set)', () => {
 		expect(isExpectedCoreBundleExclusion('bundle-entry-points')).toBe(true);

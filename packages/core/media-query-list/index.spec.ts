@@ -12,6 +12,18 @@ describe('media-query-list', () => {
 		it('should return false for an incorrect match', () => {
 			expect(checkIfMediaQueryMatches(`only screen and (max-width: ${widthDIPs - 1})`)).toBe(false);
 		});
+
+		it('measures a window context instead of the main screen', () => {
+			const narrow = { width: 1, height: 2, orientation: 'portrait' as const, systemAppearance: 'dark' as const };
+			const wide = { width: 1_000_000, height: 1, orientation: 'landscape' as const, systemAppearance: 'light' as const };
+
+			expect(checkIfMediaQueryMatches(`only screen and (max-width: ${widthDIPs})`, narrow)).toBe(true);
+			expect(checkIfMediaQueryMatches(`only screen and (max-width: ${widthDIPs})`, wide)).toBe(false);
+			expect(checkIfMediaQueryMatches('(orientation: portrait)', narrow)).toBe(true);
+			expect(checkIfMediaQueryMatches('(orientation: portrait)', wide)).toBe(false);
+			expect(checkIfMediaQueryMatches('(prefers-color-scheme: dark)', narrow)).toBe(true);
+			expect(checkIfMediaQueryMatches('(prefers-color-scheme: dark)', wide)).toBe(false);
+		});
 	});
 
 	describe('matchMedia', () => {

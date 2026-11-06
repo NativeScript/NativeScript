@@ -368,6 +368,11 @@ export class FooImpl extends NSObject {
 			expect(isNativeESClassesEnabled('android')).toBe(false);
 		});
 
+		it('never applies to Windows targets (no native ES-class registration)', () => {
+			process.env.NS_NATIVE_ES_CLASSES = '1';
+			expect(isNativeESClassesEnabled('windows')).toBe(false);
+		});
+
 		it('can be force-disabled with 0/false', () => {
 			process.env.NS_NATIVE_ES_CLASSES = '0';
 			expect(isNativeESClassesEnabled('ios')).toBe(false);
@@ -380,5 +385,31 @@ export class FooImpl extends NSObject {
 			const res = transformNativeClassSource(SAMPLE_TS, '/app/src/sample.ts');
 			expect(res).toBeNull();
 		});
+	});
+});
+
+describe('NativeClass transform on Windows', () => {
+	afterEach(() => {
+		delete process.env.NATIVESCRIPT_BUNDLER_ENV;
+		delete process.env.NS_NATIVE_ES_CLASSES;
+	});
+
+	it('still downlevels when native ES classes are requested', () => {
+		process.env.NATIVESCRIPT_BUNDLER_ENV = JSON.stringify({ windows: true });
+		process.env.NS_NATIVE_ES_CLASSES = '1';
+		expect(transformNativeClassSource(SAMPLE_TS, '/app/src/sample.ts')).not.toBeNull();
+	});
+
+	it('skips other-platform files and transforms .windows files', () => {
+		process.env.NATIVESCRIPT_BUNDLER_ENV = JSON.stringify({ windows: true });
+		expect(transformNativeClassSource(SAMPLE_TS, '/app/src/sample.ios.ts')).toBeNull();
+		expect(transformNativeClassSource(SAMPLE_TS, '/app/src/sample.android.ts')).toBeNull();
+		expect(transformNativeClassSource(SAMPLE_TS, '/app/src/sample.windows.ts')).not.toBeNull();
+	});
+
+	it('android builds skip .windows files', () => {
+		process.env.NATIVESCRIPT_BUNDLER_ENV = JSON.stringify({ android: true });
+		expect(transformNativeClassSource(SAMPLE_TS, '/app/src/sample.windows.ts')).toBeNull();
+		expect(transformNativeClassSource(SAMPLE_TS, '/app/src/sample.android.ts')).not.toBeNull();
 	});
 });

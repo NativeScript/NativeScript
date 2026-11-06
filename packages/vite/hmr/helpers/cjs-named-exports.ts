@@ -36,6 +36,7 @@
 import { createRequire } from 'node:module';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import { stripViteFsPrefix } from '../../helpers/normalize-id.js';
 
 const cache = new Map<string, string[] | null>();
 
@@ -69,18 +70,15 @@ export function getCjsNamedExportsCacheSize(): number {
  */
 export function normalizeAbsolutePathForRequire(input: string | null | undefined): string | null {
 	if (!input) return null;
-	let s = String(input).replace(/[?#].*$/, '');
 	// Vite serves absolute paths as `/@fs/<absolute>`; strip the prefix.
-	if (s.startsWith('/@fs/')) {
-		s = s.slice('/@fs'.length);
-	}
+	const s = stripViteFsPrefix(String(input).replace(/[?#].*$/, ''));
 	if (!path.isAbsolute(s)) return null;
 	try {
 		if (!fs.statSync(s).isFile()) return null;
 	} catch {
 		return null;
 	}
-	return s;
+	return path.normalize(s);
 }
 
 /**
@@ -99,7 +97,7 @@ export function getCjsNamedExports(absolutePath: string | null | undefined): str
 	if (!normalized) return [];
 
 	// Only enumerate node_modules paths — never execute user source via this code path.
-	if (!/(?:^|\/)node_modules\//.test(normalized)) return [];
+	if (!/(?:^|[\\/])node_modules[\\/]/.test(normalized)) return [];
 
 	const cached = cache.get(normalized);
 	if (cached !== undefined) return cached || [];

@@ -1,10 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import path from 'node:path';
 
 import { runHotUpdatePrologue, type NsHotUpdateContext } from './websocket-hot-update.js';
 import * as serverOriginModule from './server-origin.js';
 import * as appCssStateModule from '../../helpers/app-css-state.js';
 
 let originSpy: ReturnType<typeof vi.spyOn>;
+
+// Absolute forward-slash form that Vite's `config.root` and the app-css state
+// (see helpers/main-entry.ts) hold — `C:/proj` on Windows, `/proj` elsewhere.
+const fsPath = (p: string) => path.resolve(p).replace(/\\/g, '/');
 
 /** Inert stand-in for the (required, non-throwing) app-css refresh. */
 const noopRefresh = async () => ({ changed: true, changedSinceStartup: false });
@@ -58,7 +63,7 @@ function makeCtx(file: string, serverOverrides: Record<string, unknown> = {}) {
 	return {
 		file,
 		server: {
-			config: { root: '/proj', server: {} },
+			config: { root: fsPath('/proj'), server: {} },
 			transformRequest: vi.fn(async () => ({ code: '' })),
 			...serverOverrides,
 		},
@@ -154,7 +159,7 @@ describe('runHotUpdatePrologue', () => {
 		const strategy = { flavor: 'angular', ownsComponentStyleHmr } as any;
 		const deps = makeDeps({ wss, strategy, getHmrSourceRootsCached: () => ['/proj/src'] });
 		const ctx = makeCtx('/proj/src/app.css');
-		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>(), refresh: noopRefresh });
+		appCssStateModule.setAppCssState(ctx.server as any, { path: fsPath('/proj/src/app.css'), deps: new Set<string>(), refresh: noopRefresh });
 
 		const result = await runHotUpdatePrologue(ctx, deps);
 
@@ -171,7 +176,7 @@ describe('runHotUpdatePrologue', () => {
 		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src'] });
 		// Register app.css state so the edited file is recognized as the global entry.
 		const ctx = makeCtx('/proj/src/app.css');
-		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>(), refresh: noopRefresh });
+		appCssStateModule.setAppCssState(ctx.server as any, { path: fsPath('/proj/src/app.css'), deps: new Set<string>(), refresh: noopRefresh });
 		const result = await runHotUpdatePrologue(ctx, deps);
 		expect(result).toBeNull();
 		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
@@ -188,7 +193,7 @@ describe('runHotUpdatePrologue', () => {
 		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src', '/libs'] });
 		const ctx = makeCtx('/libs/theme/_buttons.css');
 		// The edited partial is an @import dep of app.css → refetch app.css.
-		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>(['/libs/theme/_buttons.css']), refresh: noopRefresh });
+		appCssStateModule.setAppCssState(ctx.server as any, { path: fsPath('/proj/src/app.css'), deps: new Set<string>([fsPath('/libs/theme/_buttons.css')]), refresh: noopRefresh });
 		const result = await runHotUpdatePrologue(ctx, deps);
 		expect(result).toBeNull();
 		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
@@ -213,7 +218,7 @@ describe('runHotUpdatePrologue', () => {
 		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src', '/repo/libs'] });
 		const ctx = makeCtx(libHtml);
 		const refresh = vi.fn(async () => ({ changed: true, changedSinceStartup: true }));
-		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>([libHtml]), refresh } as any);
+		appCssStateModule.setAppCssState(ctx.server as any, { path: fsPath('/proj/src/app.css'), deps: new Set<string>([fsPath(libHtml)]), refresh } as any);
 
 		const result = await runHotUpdatePrologue(ctx, deps);
 
@@ -235,7 +240,7 @@ describe('runHotUpdatePrologue', () => {
 		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src'] });
 		const ctx = makeCtx(file);
 		const refresh = vi.fn(async () => ({ changed: false, changedSinceStartup: false }));
-		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>([file]), refresh } as any);
+		appCssStateModule.setAppCssState(ctx.server as any, { path: fsPath('/proj/src/app.css'), deps: new Set<string>([fsPath(file)]), refresh } as any);
 
 		const result = await runHotUpdatePrologue(ctx, deps);
 
@@ -256,8 +261,8 @@ describe('runHotUpdatePrologue', () => {
 		appCssStateModule.setAppCssState(
 			ctx.server as any,
 			{
-				path: '/proj/src/app.css',
-				deps: new Set<string>([file]),
+				path: fsPath('/proj/src/app.css'),
+				deps: new Set<string>([fsPath(file)]),
 				refresh: vi.fn(async () => ({ changed: true, changedSinceStartup: true })),
 			} as any,
 		);
@@ -280,8 +285,8 @@ describe('runHotUpdatePrologue', () => {
 		appCssStateModule.setAppCssState(
 			ctx.server as any,
 			{
-				path: '/proj/src/app.css',
-				deps: new Set<string>([file]),
+				path: fsPath('/proj/src/app.css'),
+				deps: new Set<string>([fsPath(file)]),
 				refresh: vi.fn(async () => ({ changed: true, changedSinceStartup: true })),
 			} as any,
 		);

@@ -79,7 +79,7 @@ const TS_ONLY_SYNTAX_RE = new RegExp(
 // code untouched.
 const ANGULAR_DECORATOR_RE = /@(?:Component|Directive|Injectable|NgModule|Pipe)\s*\(/;
 
-const TS_FALLBACK_SKIP_ID_RE = /(?:^|\/)(?:node_modules|\.vite)\//;
+const TS_FALLBACK_SKIP_ID_RE = /(?:^|[\\/])(?:node_modules|\.vite)[\\/]/;
 
 export interface TsFallbackTransformPluginOptions {
 	verbose?: boolean;

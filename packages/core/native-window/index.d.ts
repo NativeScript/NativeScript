@@ -71,6 +71,11 @@ export abstract class WindowBase extends Observable {
 	readonly android?: { readonly activity: androidx.appcompat.app.AppCompatActivity };
 
 	/**
+	 * The Windows surface backing this window, or `undefined` elsewhere or once closed.
+	 */
+	readonly windows?: { readonly window: Microsoft.UI.Xaml.Window };
+
+	/**
 	 * Closes this window.
 	 *
 	 * Ends the window session: the native surface is dismissed, `close` is raised and the

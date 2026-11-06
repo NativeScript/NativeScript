@@ -73,16 +73,17 @@ function computeServerOrigin(server: ViteDevServer): string {
 
 /**
  * Resolve the device target platform from the CLI flags the dev server
- * was launched with. The `--env.android` / `--env.visionos` flags are
- * surfaced by the NativeScript CLI when it spawns Vite; iOS is the
- * safe default when no flag is set so the helper stays a pure
- * function and standalone `vite serve` sessions still get sensible
- * URLs.
+ * was launched with. The `--env.android` / `--env.windows` /
+ * `--env.visionos` flags are surfaced by the NativeScript CLI when it
+ * spawns Vite; iOS is the safe default when no flag is set so the
+ * helper stays a pure function and standalone `vite serve` sessions
+ * still get sensible URLs.
  */
 function detectDevHostPlatform(): DevHostPlatform {
 	try {
 		const flags = (getCliFlags() || {}) as Record<string, unknown>;
 		if (flags.android) return 'android';
+		if (flags.windows) return 'windows';
 		if (flags.visionos) return 'visionos';
 	} catch {}
 	return 'ios';

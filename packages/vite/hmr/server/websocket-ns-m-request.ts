@@ -202,13 +202,14 @@ export function resolveFsAnchoredSpec(spec: string, serverRoot: string, workspac
 	const roots = [serverRoot, ...(workspaceRoot && path.resolve(workspaceRoot) !== path.resolve(serverRoot) ? [workspaceRoot] : [])];
 	for (const root of roots) {
 		const rootPosix = root.replace(/\\/g, '/').replace(/\/$/, '');
-		const fsId = `/@fs${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
+		const fsId = `/@fs${rootPosix.startsWith('/') ? '' : '/'}${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
 		// The fs id is a guess composed under a root — serve the path the
 		// resolver actually found; a fallback hit can live in a linked
 		// dependency's node_modules, outside both roots.
 		const resolved = resolveCandidateFilePath(fsId, serverRoot, workspaceRoot);
 		if (resolved) {
-			return `/@fs${resolved.replace(/\\/g, '/')}`;
+			const resolvedPosix = resolved.replace(/\\/g, '/');
+			return `/@fs${resolvedPosix.startsWith('/') ? '' : '/'}${resolvedPosix}`;
 		}
 	}
 	return null;

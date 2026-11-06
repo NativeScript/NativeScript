@@ -10,7 +10,7 @@ function decoderReplacer(encoded) {
 	if (leadingOnes < 5 && stringLen >= leadingOnes) {
 		codePoint = (codePoint << leadingOnes) >>> (24 + leadingOnes);
 		for (endPos = 1; endPos < leadingOnes; endPos = (endPos + 1) | 0) {
-			codePoint = (codePoint << 6) | (encoded.charCodeAt(endPos) & 0x3f) /*0b00111111*/;
+			codePoint = (codePoint << 6) | (encoded.charCodeAt(endPos) & 0x3f); /*0b00111111*/
 		}
 		if (codePoint <= 0xffff) {
 			// BMP code point
@@ -20,7 +20,7 @@ function decoderReplacer(encoded) {
 			codePoint = (codePoint - 0x10000) | 0;
 			result += String.fromCharCode(
 				((codePoint >> 10) + 0xd800) | 0, // highSurrogate
-				((codePoint & 0x3ff) + 0xdc00) | 0 // lowSurrogate
+				((codePoint & 0x3ff) + 0xdc00) | 0, // lowSurrogate
 			);
 		} else {
 			endPos = 0;

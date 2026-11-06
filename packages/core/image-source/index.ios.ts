@@ -14,6 +14,7 @@ export { isFileOrResourcePath };
 export class ImageSource implements ImageSourceDefinition {
 	public android: android.graphics.Bitmap;
 	public ios: UIImage;
+	public windows: any;
 
 	get height(): number {
 		if (this.ios) {

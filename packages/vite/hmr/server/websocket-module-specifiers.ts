@@ -7,13 +7,14 @@ import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/regi
 import { getLinkedDependencyRoots, getMonorepoWorkspaceRoot, getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName, getPackageRuntimeInfo } from '../shared/package-classifier.js';
 import { getFlavorClientPackages } from '../framework-flavors.js';
+import { normalizeModuleId, stripViteFsPrefix } from '../../helpers/normalize-id.js';
 
 const ESM_FRAMEWORK_PACKAGE_ROOTS = new Set(['@nativescript/angular', 'nativescript-angular']);
 
-const BUILD_TIME_ONLY_PACKAGE_ROOTS = new Set(['@nativescript/vite', '@nativescript/webpack', '@nativescript/android', '@nativescript/ios', '@nativescript/visionos', 'vite', 'webpack', 'esbuild', 'typescript', 'ts-node', 'prettier']);
+const BUILD_TIME_ONLY_PACKAGE_ROOTS = new Set(['@nativescript/vite', '@nativescript/webpack', '@nativescript/android', '@nativescript/ios', '@nativescript/visionos', '@nativescript/windows', 'vite', 'webpack', 'esbuild', 'typescript', 'ts-node', 'prettier']);
 
 const BUILD_TIME_ONLY_PACKAGE_PREFIXES = ['@vitejs/', '@rollup/', '@babel/', '@angular-devkit/', '@angular/build', '@analogjs/', 'vite-plugin-'];
-const EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE = /(?:\.(?:ios|android|visionos))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i;
+const EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE = /(?:\.(?:ios|android|visionos|windows))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i;
 
 function hasExplicitRuntimePluginScriptExtension(segment: string): boolean {
 	return EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE.test(segment);
@@ -453,7 +454,7 @@ export function resolveCandidateFilePath(candidate: string, projectRoot: string,
 		let absPath: string | null = null;
 
 		if (cleaned.startsWith('/@fs/')) {
-			absPath = cleaned.slice('/@fs'.length);
+			absPath = stripViteFsPrefix(cleaned);
 		} else if (cleaned.includes('/node_modules/')) {
 			absPath = path.resolve(resolvedRoot, `.${cleaned}`);
 		} else if (/^(?:[A-Za-z]:)?\//.test(cleaned)) {
@@ -564,15 +565,13 @@ export function rewriteFsAbsoluteToNsM(spec: string, projectRoot: string, worksp
 
 	// /@fs/<abs-path> — strip the prefix to recover the absolute path.
 	// On posix this is "/Users/...". On Windows Vite emits "/@fs/C:/..."
-	// where the path retains its drive letter.
-	const absPath = cleanSpec.slice('/@fs'.length);
-	if (!absPath.startsWith('/')) return null;
+	// where the path retains its drive letter. The path and both roots go
+	// through the same resolve + normalize so they compare on any host.
+	const toComparable = (value: string) => normalizeModuleId(path.resolve(value)).replace(/\/+$/, '');
+	const absPath = toComparable(stripViteFsPrefix(cleanSpec));
 
-	const toPosix = (value: string) => value.replace(/\\/g, '/');
-	const stripTrailing = (value: string) => value.replace(/\/+$/, '');
-
-	const projectRootPosix = stripTrailing(toPosix(path.resolve(projectRoot)));
-	const workspaceRootPosix = workspaceRoot ? stripTrailing(toPosix(path.resolve(workspaceRoot))) : null;
+	const projectRootPosix = toComparable(projectRoot);
+	const workspaceRootPosix = workspaceRoot ? toComparable(workspaceRoot) : null;
 
 	const tryRoot = (root: string): string | null => {
 		if (!root) return null;
@@ -913,7 +912,7 @@ function subpathMatchesMainEntry(subpath: string, mainEntries: Set<string>): boo
 	if (mainEntries.has(subpath)) {
 		return true;
 	}
-	const normalize = (value: string) => value.replace(/\.(m|c)?(js|ts)$/, '').replace(/\.(ios|android|visionos)$/, '');
+	const normalize = (value: string) => value.replace(/\.(m|c)?(js|ts)$/, '').replace(/\.(ios|android|visionos|windows)$/, '');
 	const strippedSubpath = normalize(subpath);
 	if (mainEntries.has(strippedSubpath)) {
 		return true;
@@ -958,7 +957,7 @@ export function shouldPreserveBareRuntimePluginSubpathImport(spec: string, proje
 
 	if (!subpath.includes('/')) {
 		const packageBaseName = packageName.split('/').pop() || '';
-		const withoutPlatform = lastSegment.replace(/\.(ios|android|visionos)$/i, '');
+		const withoutPlatform = lastSegment.replace(/\.(ios|android|visionos|windows)$/i, '');
 		if (withoutPlatform === 'index' || withoutPlatform === packageBaseName || withoutPlatform.startsWith(`${packageBaseName}.`)) {
 			return false;
 		}
@@ -982,7 +981,7 @@ export function resolveVendorRouting(nodeModulesSpec: string, projectRoot: strin
 			return false;
 		}
 		const withoutExt = subpath.replace(/\.[^.]+$/, '');
-		const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos)$/i, '');
+		const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos|windows)$/i, '');
 		return withoutPlatform === 'index' || withoutPlatform === pkgBaseName;
 	})();
 
@@ -1011,11 +1010,11 @@ export function resolveVendorRouting(nodeModulesSpec: string, projectRoot: strin
 		return null;
 	}
 
-	if (/\.(ios|android|visionos)\.(js|ts|mjs|mts)$/i.test(nodeModulesSpec) && isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && isRootLevelMainEntry) {
+	if (/\.(ios|android|visionos|windows)\.(js|ts|mjs|mts)$/i.test(nodeModulesSpec) && isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot) && isRootLevelMainEntry) {
 		return { route: 'vendor', bareSpec: pkgName };
 	}
 
-	if (/\.(ios|android|visionos)\.(js|ts|mjs|mts)$/.test(nodeModulesSpec)) {
+	if (/\.(ios|android|visionos|windows)\.(js|ts|mjs|mts)$/.test(nodeModulesSpec)) {
 		return { route: 'http' };
 	}
 

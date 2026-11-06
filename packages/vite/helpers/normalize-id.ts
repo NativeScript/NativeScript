@@ -56,3 +56,15 @@ export function normalizeModuleId(id: string): string {
 	}
 	return normalized;
 }
+
+/**
+ * Recover the filesystem path from a Vite `/@fs/` URL, mirroring Vite's own
+ * `fsPathFromId`: `/@fs/Users/x` → `/Users/x`, and on Windows
+ * `/@fs/C:/x` → `C:/x` (not `/C:/x`, which matches no real root).
+ * Anything without the prefix is returned unchanged.
+ */
+export function stripViteFsPrefix(id: string): string {
+	if (!id.startsWith('/@fs/')) return id;
+	const rest = id.slice('/@fs/'.length);
+	return /^[A-Za-z]:/.test(rest) ? rest : `/${rest}`;
+}

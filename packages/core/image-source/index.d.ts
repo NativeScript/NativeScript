@@ -32,6 +32,11 @@ export class ImageSource {
 	android: any /* android.graphics.Bitmap */;
 
 	/**
+	 * The Windows-specific [image](https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.imagesource) instance. Will be undefined when running on iOS or Android.
+	 */
+	windows: any /* Windows.UI.Xaml.Media.ImageSource */;
+
+	/**
 	 * Loads this instance from the specified asset asynchronously.
 	 * @param asset The ImageAsset instance used to create ImageSource.
 	 */
