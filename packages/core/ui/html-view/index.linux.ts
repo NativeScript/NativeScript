@@ -1,10 +1,112 @@
 export * from './html-view-common';
 
-import { HtmlViewBase } from './html-view-common';
+import { HtmlViewBase, htmlProperty, selectableProperty, linkColorProperty } from './html-view-common';
+import { colorProperty, fontInternalProperty } from '../styling/style-properties';
+import { Color } from '../../color';
+import { Font } from '../styling/font';
+import { openUrl } from '../../utils';
+import { connect } from '../../utils/gtk.linux';
+import { setWidgetCss, setWidgetScopedCss } from '../styling/gtk-style.linux';
 
-// TODO(linux): placeholder until the GTK implementation lands
+const TAGS: Record<string, [string, string]> = {
+	b: ['<b>', '</b>'],
+	strong: ['<b>', '</b>'],
+	i: ['<i>', '</i>'],
+	em: ['<i>', '</i>'],
+	u: ['<u>', '</u>'],
+	s: ['<s>', '</s>'],
+	strike: ['<s>', '</s>'],
+	del: ['<s>', '</s>'],
+	sub: ['<sub>', '</sub>'],
+	sup: ['<sup>', '</sup>'],
+	small: ['<small>', '</small>'],
+	big: ['<big>', '</big>'],
+	code: ['<tt>', '</tt>'],
+	tt: ['<tt>', '</tt>'],
+	h1: ['<span size="xx-large" weight="bold">', '</span>\n'],
+	h2: ['<span size="x-large" weight="bold">', '</span>\n'],
+	h3: ['<span size="large" weight="bold">', '</span>\n'],
+};
+
+/** Basic HTML to Pango markup (inline formatting, links, paragraphs, lists). */
+export function htmlToMarkup(html: string): string {
+	let out = '';
+	const re = /<\s*(\/?)\s*([a-zA-Z0-9]+)([^>]*)>|([^<]+)/g;
+	let m: RegExpExecArray;
+	while ((m = re.exec(html || ''))) {
+		if (m[4] !== undefined) {
+			out += m[4].replace(/\s+/g, ' ').replace(/&(?!(amp|lt|gt|quot|apos|#\d+);)/g, '&amp;');
+			continue;
+		}
+		const closing = !!m[1];
+		const tag = m[2].toLowerCase();
+		if (tag === 'br') {
+			out += '\n';
+		} else if (tag === 'p' || tag === 'div') {
+			out += closing ? '\n\n' : '';
+		} else if (tag === 'li') {
+			out += closing ? '\n' : '• ';
+		} else if (tag === 'a') {
+			const href = /href\s*=\s*["']([^"']*)["']/i.exec(m[3])?.[1];
+			out += closing ? '</a>' : `<a href="${(href ?? '').replace(/"/g, '&quot;')}">`;
+		} else if (TAGS[tag]) {
+			out += closing ? TAGS[tag][1] : TAGS[tag][0];
+		}
+	}
+	return out.trim();
+}
+
+/** GtkLabel with Pango markup; links open with the desktop's handler. */
 export class HtmlView extends HtmlViewBase {
+	private _disconnect: () => void;
+
 	createNativeView() {
-		return gtk_label_new('HtmlView');
+		const label: any = gtk_label_new(null);
+		gtk_label_set_wrap(label, 1);
+		gtk_label_set_xalign(label, 0);
+		return label;
+	}
+
+	get linux(): any {
+		return this.nativeViewProtected;
+	}
+
+	initNativeView(): void {
+		super.initNativeView();
+		this._disconnect = connect(
+			this.nativeViewProtected,
+			'activate-link',
+			(_label: any, uri: any) => {
+				openUrl(interop.stringFromCString(uri));
+				return true;
+			},
+			{ args: 1, returnsBool: true },
+		);
+	}
+
+	disposeNativeView(): void {
+		this._disconnect?.();
+		super.disposeNativeView();
+	}
+
+	[htmlProperty.setNative](value: string) {
+		gtk_label_set_markup(this.nativeViewProtected, htmlToMarkup(value));
+		this.requestLayout();
+	}
+
+	[selectableProperty.setNative](value: boolean) {
+		gtk_label_set_selectable(this.nativeViewProtected, value ? 1 : 0);
+	}
+
+	[colorProperty.setNative](value: Color) {
+		setWidgetCss(this.nativeViewProtected, 'color', value instanceof Color ? `color:${value.linux};` : '');
+	}
+
+	[linkColorProperty.setNative](value: Color) {
+		setWidgetScopedCss(this.nativeViewProtected, 'links', value instanceof Color ? `& link{color:${value.linux};}` : '');
+	}
+
+	[fontInternalProperty.setNative](value: Font) {
+		setWidgetCss(this.nativeViewProtected, 'font', value instanceof Font ? (value as any).linuxCss : '');
 	}
 }

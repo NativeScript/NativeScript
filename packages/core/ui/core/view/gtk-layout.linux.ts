@@ -15,6 +15,7 @@ export interface LinuxLayoutView {
 	_linuxTransform(width: number, height: number): any;
 	/** Runs the NativeScript layout pass for a root view. */
 	_linuxLayoutRoot(width: number, height: number): void;
+	parent?: unknown;
 }
 
 const views = new Map<number, WeakRef<LinuxLayoutView>>();
@@ -31,10 +32,23 @@ export function viewForWidget(widget: any): LinuxLayoutView | undefined {
 	return views.get(addressOf(widget))?.deref();
 }
 
-/** A widget whose parent isn't one of our containers hosts a root view. */
-function isRoot(widget: any): boolean {
+/**
+ * Roots run the layout pass themselves: views without a NativeScript parent, and
+ * views a parent hosts in a GTK widget without laying them out (e.g. ActionBar.titleView).
+ */
+function isRoot(view: LinuxLayoutView): boolean {
+	return !view.parent || !view._linuxFrame;
+}
+
+/** Laid out by NativeScript but placed in a GTK container (e.g. a ScrollView's viewport). */
+function frameSizeFor(widget: any, orientation: number): number {
+	const view = viewForWidget(widget);
+	const frame = view?._linuxFrame;
 	const parent = gtk_widget_get_parent(widget);
-	return !parent || !viewForWidget(parent);
+	if (!frame || !parent || viewForWidget(parent)) {
+		return 0;
+	}
+	return orientation === GtkOrientation.HORIZONTAL ? frame[2] : frame[3];
 }
 
 const minimum = new interop.Reference(interop.types.int32, 0);
@@ -60,14 +74,16 @@ function layoutCallbacks() {
 	}
 	manager = {
 		requestMode: () => GtkSizeRequestMode.CONSTANT_SIZE,
-		// containers take whatever size they are given (the window can shrink freely)
-		measure: (_widget: any, _orientation: number, _forSize: number, min: any, nat: any) => {
-			if (min) new interop.Reference(interop.types.int32, min).value = 0;
-			if (nat) new interop.Reference(interop.types.int32, nat).value = 0;
+		// containers take whatever size they are given (the window can shrink freely),
+		// except inside GTK containers that size them (scrolling viewports)
+		measure: (widget: any, orientation: number, _forSize: number, min: any, nat: any) => {
+			const size = frameSizeFor(widget, orientation);
+			if (min) new interop.Reference(interop.types.int32, min).value = size;
+			if (nat) new interop.Reference(interop.types.int32, nat).value = size;
 		},
 		allocate: (widget: any, width: number, height: number) => {
 			const owner = viewForWidget(widget);
-			if (owner && isRoot(widget)) {
+			if (owner && isRoot(owner)) {
 				owner._linuxLayoutRoot(width, height);
 			}
 			for (let child = gtk_widget_get_first_child(widget); child; child = gtk_widget_get_next_sibling(child)) {

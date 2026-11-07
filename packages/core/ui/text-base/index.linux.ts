@@ -184,8 +184,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	private _padding(): void {
-		const s: any = this.style;
-		const values = [s.effectivePaddingTop, s.effectivePaddingRight, s.effectivePaddingBottom, s.effectivePaddingLeft];
+		const values = [this.effectivePaddingTop, this.effectivePaddingRight, this.effectivePaddingBottom, this.effectivePaddingLeft];
 		setWidgetCss(this.nativeViewProtected, 'padding', values.some((v) => v) ? `padding:${values.map((v) => px(v || 0)).join(' ')};` : '');
 	}
 
