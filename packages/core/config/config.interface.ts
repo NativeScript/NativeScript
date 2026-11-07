@@ -160,7 +160,8 @@ interface IConfigLinux extends IConfigPlatform {
 		title?: string;
 	};
 	/**
-	 * Light or dark GTK theme for the app, like a fixed light/dark app theme on Android.
+	 * Keeps the app's native controls light or dark whatever the desktop uses, like a fixed
+	 * light/dark app theme on Android or iOS.
 	 * Default: 'system' (follows the desktop)
 	 */
 	appearance?: 'system' | 'light' | 'dark';
@@ -390,7 +391,7 @@ export interface NativeScriptConfig {
 	 */
 	windows?: IConfigWindows;
 	/**
-	 * Linux specific configurations (GTK 4).
+	 * Linux specific configurations.
 	 */
 	linux?: IConfigLinux;
 	/**
