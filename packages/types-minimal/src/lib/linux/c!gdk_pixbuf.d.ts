@@ -1,4 +1,16 @@
 
+declare const GDK_PIXBUF_MAJOR: number;
+
+declare const GDK_PIXBUF_MICRO: number;
+
+declare const GDK_PIXBUF_MINOR: number;
+
+declare const GDK_PIXBUF_VERSION: string;
+
+declare const GDK_PIXBUF_VERSION_MAX_ALLOWED: number;
+
+declare const GDK_PIXBUF_VERSION_MIN_REQUIRED: number;
+
 declare const enum GdkColorspace {
 
 	GDK_COLORSPACE_RGB = 0

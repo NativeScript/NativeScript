@@ -1,4 +1,76 @@
 
+declare const CAIRO_FONT_TYPE_ATSUI: number;
+
+declare const CAIRO_HAS_FC_FONT: number;
+
+declare const CAIRO_HAS_FT_FONT: number;
+
+declare const CAIRO_HAS_GOBJECT_FUNCTIONS: number;
+
+declare const CAIRO_HAS_IMAGE_SURFACE: number;
+
+declare const CAIRO_HAS_MIME_SURFACE: number;
+
+declare const CAIRO_HAS_OBSERVER_SURFACE: number;
+
+declare const CAIRO_HAS_PDF_SURFACE: number;
+
+declare const CAIRO_HAS_PNG_FUNCTIONS: number;
+
+declare const CAIRO_HAS_PS_SURFACE: number;
+
+declare const CAIRO_HAS_RECORDING_SURFACE: number;
+
+declare const CAIRO_HAS_SCRIPT_SURFACE: number;
+
+declare const CAIRO_HAS_SVG_SURFACE: number;
+
+declare const CAIRO_HAS_TEE_SURFACE: number;
+
+declare const CAIRO_HAS_USER_FONT: number;
+
+declare const CAIRO_HAS_XCB_SHM_FUNCTIONS: number;
+
+declare const CAIRO_HAS_XCB_SURFACE: number;
+
+declare const CAIRO_HAS_XLIB_SURFACE: number;
+
+declare const CAIRO_HAS_XLIB_XRENDER_SURFACE: number;
+
+declare const CAIRO_MIME_TYPE_CCITT_FAX: string;
+
+declare const CAIRO_MIME_TYPE_CCITT_FAX_PARAMS: string;
+
+declare const CAIRO_MIME_TYPE_EPS: string;
+
+declare const CAIRO_MIME_TYPE_EPS_PARAMS: string;
+
+declare const CAIRO_MIME_TYPE_JBIG2: string;
+
+declare const CAIRO_MIME_TYPE_JBIG2_GLOBAL: string;
+
+declare const CAIRO_MIME_TYPE_JBIG2_GLOBAL_ID: string;
+
+declare const CAIRO_MIME_TYPE_JP2: string;
+
+declare const CAIRO_MIME_TYPE_JPEG: string;
+
+declare const CAIRO_MIME_TYPE_PNG: string;
+
+declare const CAIRO_MIME_TYPE_UNIQUE_ID: string;
+
+declare const CAIRO_MIME_TYPE_URI: string;
+
+declare const CAIRO_TAG_DEST: string;
+
+declare const CAIRO_TAG_LINK: string;
+
+declare const CAIRO_VERSION_MAJOR: number;
+
+declare const CAIRO_VERSION_MICRO: number;
+
+declare const CAIRO_VERSION_MINOR: number;
+
 interface _cairo_path_data_t {
 	header: { type: cairo_path_data_type_t; length: number; };
 	point: { x: number; y: number; };

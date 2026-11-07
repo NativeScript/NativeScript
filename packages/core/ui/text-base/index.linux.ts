@@ -28,8 +28,8 @@ function spanMarkup(span: Span, text: string): string {
 	if (style.color) attrs.push(`foreground="${hex(style.color)}"`);
 	if (style.backgroundColor) attrs.push(`background="${hex(style.backgroundColor)}"`);
 	if (style.fontFamily) attrs.push(`font_family="${escapeMarkup(style.fontFamily)}"`);
-	// Pango sizes are in 1024ths of a point (96 dpi: 0.75 pt per px)
-	if (style.fontSize) attrs.push(`size="${Math.round(style.fontSize * 0.75 * 1024)}"`);
+	// Pango sizes are in PANGO_SCALE units of a point (96 dpi: 0.75 pt per px)
+	if (style.fontSize) attrs.push(`size="${Math.round(style.fontSize * 0.75 * PANGO_SCALE)}"`);
 	if (style.fontWeight && style.fontWeight !== 'normal') attrs.push(`weight="${style.fontWeight === 'bold' ? 700 : style.fontWeight}"`);
 	if (style.fontStyle === 'italic') attrs.push('style="italic"');
 	const decoration = style.textDecoration || '';

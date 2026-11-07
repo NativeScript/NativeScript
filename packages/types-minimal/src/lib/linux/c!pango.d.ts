@@ -1,4 +1,58 @@
 
+declare const PANGO_ANALYSIS_FLAG_CENTERED_BASELINE: number;
+
+declare const PANGO_ANALYSIS_FLAG_IS_ELLIPSIS: number;
+
+declare const PANGO_ANALYSIS_FLAG_NEED_HYPHEN: number;
+
+declare const PANGO_ATTR_INDEX_FROM_TEXT_BEGINNING: number;
+
+declare const PANGO_ATTR_INDEX_TO_TEXT_END: number;
+
+declare const PANGO_ENGINE_TYPE_LANG: string;
+
+declare const PANGO_ENGINE_TYPE_SHAPE: string;
+
+declare const PANGO_GLYPH_EMPTY: number;
+
+declare const PANGO_GLYPH_INVALID_INPUT: number;
+
+declare const PANGO_GLYPH_UNKNOWN_FLAG: number;
+
+declare const PANGO_RENDER_TYPE_NONE: string;
+
+declare const PANGO_SCALE: number;
+
+declare const PANGO_SCALE_LARGE: number;
+
+declare const PANGO_SCALE_MEDIUM: number;
+
+declare const PANGO_SCALE_SMALL: number;
+
+declare const PANGO_SCALE_XX_LARGE: number;
+
+declare const PANGO_SCALE_XX_SMALL: number;
+
+declare const PANGO_SCALE_X_LARGE: number;
+
+declare const PANGO_SCALE_X_SMALL: number;
+
+declare const PANGO_UNKNOWN_GLYPH_HEIGHT: number;
+
+declare const PANGO_UNKNOWN_GLYPH_WIDTH: number;
+
+declare const PANGO_VERSION_MAJOR: number;
+
+declare const PANGO_VERSION_MAX_ALLOWED: number;
+
+declare const PANGO_VERSION_MICRO: number;
+
+declare const PANGO_VERSION_MINOR: number;
+
+declare const PANGO_VERSION_MIN_REQUIRED: number;
+
+declare const PANGO_VERSION_STRING: string;
+
 declare const enum PangoAlignment {
 
 	LEFT = 0,

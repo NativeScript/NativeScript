@@ -23,6 +23,7 @@
 		"platforms/android/**",
 		"!platforms/android/core.aar",
 		"platforms/windows/**",
+		"platforms/linux/**",
 		"plugin.props",
 		"plugin.targets",
 		"**/package.json"

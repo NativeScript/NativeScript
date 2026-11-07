@@ -1,4 +1,32 @@
 
+declare const HB_BUFFER_FLAGS_DEFAULT: number;
+
+declare const HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT: number;
+
+declare const HB_BUFFER_SERIALIZE_FLAGS_DEFAULT: number;
+
+declare const HB_FEATURE_GLOBAL_END: number;
+
+declare const HB_FEATURE_GLOBAL_START: number;
+
+declare const HB_MAP_VALUE_INVALID: number;
+
+declare const HB_SCRIPT_CANADIAN_ABORIGINAL: number;
+
+declare const HB_SET_VALUE_INVALID: number;
+
+declare const HB_UNICODE_MAX: number;
+
+declare const HB_UNICODE_MAX_DECOMPOSITION_LEN: number;
+
+declare const HB_VERSION_MAJOR: number;
+
+declare const HB_VERSION_MICRO: number;
+
+declare const HB_VERSION_MINOR: number;
+
+declare const HB_VERSION_STRING: string;
+
 declare function hb_blob_copy_writable_or_fail(blob: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare function hb_blob_create(data: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, length: number, mode: hb_memory_mode_t, user_data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, destroy: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>): interop.Pointer | interop.Reference<any> | null;

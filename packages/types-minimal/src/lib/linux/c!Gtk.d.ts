@@ -1,4 +1,4718 @@
 
+declare const GDK_ACTION_ALL: number;
+
+declare const GDK_BUTTON_MIDDLE: number;
+
+declare const GDK_BUTTON_PRIMARY: number;
+
+declare const GDK_BUTTON_SECONDARY: number;
+
+declare const GDK_CURRENT_TIME: number;
+
+declare const GDK_EVENT_PROPAGATE: number;
+
+declare const GDK_EVENT_STOP: number;
+
+declare const GDK_KEY_0: number;
+
+declare const GDK_KEY_1: number;
+
+declare const GDK_KEY_2: number;
+
+declare const GDK_KEY_3: number;
+
+declare const GDK_KEY_3270_AltCursor: number;
+
+declare const GDK_KEY_3270_Attn: number;
+
+declare const GDK_KEY_3270_BackTab: number;
+
+declare const GDK_KEY_3270_ChangeScreen: number;
+
+declare const GDK_KEY_3270_Copy: number;
+
+declare const GDK_KEY_3270_CursorBlink: number;
+
+declare const GDK_KEY_3270_CursorSelect: number;
+
+declare const GDK_KEY_3270_DeleteWord: number;
+
+declare const GDK_KEY_3270_Duplicate: number;
+
+declare const GDK_KEY_3270_Enter: number;
+
+declare const GDK_KEY_3270_EraseEOF: number;
+
+declare const GDK_KEY_3270_EraseInput: number;
+
+declare const GDK_KEY_3270_ExSelect: number;
+
+declare const GDK_KEY_3270_FieldMark: number;
+
+declare const GDK_KEY_3270_Ident: number;
+
+declare const GDK_KEY_3270_Jump: number;
+
+declare const GDK_KEY_3270_KeyClick: number;
+
+declare const GDK_KEY_3270_Left2: number;
+
+declare const GDK_KEY_3270_PA1: number;
+
+declare const GDK_KEY_3270_PA2: number;
+
+declare const GDK_KEY_3270_PA3: number;
+
+declare const GDK_KEY_3270_Play: number;
+
+declare const GDK_KEY_3270_PrintScreen: number;
+
+declare const GDK_KEY_3270_Quit: number;
+
+declare const GDK_KEY_3270_Record: number;
+
+declare const GDK_KEY_3270_Reset: number;
+
+declare const GDK_KEY_3270_Right2: number;
+
+declare const GDK_KEY_3270_Rule: number;
+
+declare const GDK_KEY_3270_Setup: number;
+
+declare const GDK_KEY_3270_Test: number;
+
+declare const GDK_KEY_4: number;
+
+declare const GDK_KEY_5: number;
+
+declare const GDK_KEY_6: number;
+
+declare const GDK_KEY_7: number;
+
+declare const GDK_KEY_8: number;
+
+declare const GDK_KEY_9: number;
+
+declare const GDK_KEY_A: number;
+
+declare const GDK_KEY_AE: number;
+
+declare const GDK_KEY_Aacute: number;
+
+declare const GDK_KEY_Abelowdot: number;
+
+declare const GDK_KEY_Abreve: number;
+
+declare const GDK_KEY_Abreveacute: number;
+
+declare const GDK_KEY_Abrevebelowdot: number;
+
+declare const GDK_KEY_Abrevegrave: number;
+
+declare const GDK_KEY_Abrevehook: number;
+
+declare const GDK_KEY_Abrevetilde: number;
+
+declare const GDK_KEY_AccessX_Enable: number;
+
+declare const GDK_KEY_AccessX_Feedback_Enable: number;
+
+declare const GDK_KEY_Acircumflex: number;
+
+declare const GDK_KEY_Acircumflexacute: number;
+
+declare const GDK_KEY_Acircumflexbelowdot: number;
+
+declare const GDK_KEY_Acircumflexgrave: number;
+
+declare const GDK_KEY_Acircumflexhook: number;
+
+declare const GDK_KEY_Acircumflextilde: number;
+
+declare const GDK_KEY_AddFavorite: number;
+
+declare const GDK_KEY_Adiaeresis: number;
+
+declare const GDK_KEY_Agrave: number;
+
+declare const GDK_KEY_Ahook: number;
+
+declare const GDK_KEY_Alt_L: number;
+
+declare const GDK_KEY_Alt_R: number;
+
+declare const GDK_KEY_Amacron: number;
+
+declare const GDK_KEY_Aogonek: number;
+
+declare const GDK_KEY_ApplicationLeft: number;
+
+declare const GDK_KEY_ApplicationRight: number;
+
+declare const GDK_KEY_Arabic_0: number;
+
+declare const GDK_KEY_Arabic_1: number;
+
+declare const GDK_KEY_Arabic_2: number;
+
+declare const GDK_KEY_Arabic_3: number;
+
+declare const GDK_KEY_Arabic_4: number;
+
+declare const GDK_KEY_Arabic_5: number;
+
+declare const GDK_KEY_Arabic_6: number;
+
+declare const GDK_KEY_Arabic_7: number;
+
+declare const GDK_KEY_Arabic_8: number;
+
+declare const GDK_KEY_Arabic_9: number;
+
+declare const GDK_KEY_Arabic_ain: number;
+
+declare const GDK_KEY_Arabic_alef: number;
+
+declare const GDK_KEY_Arabic_alefmaksura: number;
+
+declare const GDK_KEY_Arabic_beh: number;
+
+declare const GDK_KEY_Arabic_comma: number;
+
+declare const GDK_KEY_Arabic_dad: number;
+
+declare const GDK_KEY_Arabic_dal: number;
+
+declare const GDK_KEY_Arabic_damma: number;
+
+declare const GDK_KEY_Arabic_dammatan: number;
+
+declare const GDK_KEY_Arabic_ddal: number;
+
+declare const GDK_KEY_Arabic_farsi_yeh: number;
+
+declare const GDK_KEY_Arabic_fatha: number;
+
+declare const GDK_KEY_Arabic_fathatan: number;
+
+declare const GDK_KEY_Arabic_feh: number;
+
+declare const GDK_KEY_Arabic_fullstop: number;
+
+declare const GDK_KEY_Arabic_gaf: number;
+
+declare const GDK_KEY_Arabic_ghain: number;
+
+declare const GDK_KEY_Arabic_ha: number;
+
+declare const GDK_KEY_Arabic_hah: number;
+
+declare const GDK_KEY_Arabic_hamza: number;
+
+declare const GDK_KEY_Arabic_hamza_above: number;
+
+declare const GDK_KEY_Arabic_hamza_below: number;
+
+declare const GDK_KEY_Arabic_hamzaonalef: number;
+
+declare const GDK_KEY_Arabic_hamzaonwaw: number;
+
+declare const GDK_KEY_Arabic_hamzaonyeh: number;
+
+declare const GDK_KEY_Arabic_hamzaunderalef: number;
+
+declare const GDK_KEY_Arabic_heh: number;
+
+declare const GDK_KEY_Arabic_heh_doachashmee: number;
+
+declare const GDK_KEY_Arabic_heh_goal: number;
+
+declare const GDK_KEY_Arabic_jeem: number;
+
+declare const GDK_KEY_Arabic_jeh: number;
+
+declare const GDK_KEY_Arabic_kaf: number;
+
+declare const GDK_KEY_Arabic_kasra: number;
+
+declare const GDK_KEY_Arabic_kasratan: number;
+
+declare const GDK_KEY_Arabic_keheh: number;
+
+declare const GDK_KEY_Arabic_khah: number;
+
+declare const GDK_KEY_Arabic_lam: number;
+
+declare const GDK_KEY_Arabic_madda_above: number;
+
+declare const GDK_KEY_Arabic_maddaonalef: number;
+
+declare const GDK_KEY_Arabic_meem: number;
+
+declare const GDK_KEY_Arabic_noon: number;
+
+declare const GDK_KEY_Arabic_noon_ghunna: number;
+
+declare const GDK_KEY_Arabic_peh: number;
+
+declare const GDK_KEY_Arabic_percent: number;
+
+declare const GDK_KEY_Arabic_qaf: number;
+
+declare const GDK_KEY_Arabic_question_mark: number;
+
+declare const GDK_KEY_Arabic_ra: number;
+
+declare const GDK_KEY_Arabic_rreh: number;
+
+declare const GDK_KEY_Arabic_sad: number;
+
+declare const GDK_KEY_Arabic_seen: number;
+
+declare const GDK_KEY_Arabic_semicolon: number;
+
+declare const GDK_KEY_Arabic_shadda: number;
+
+declare const GDK_KEY_Arabic_sheen: number;
+
+declare const GDK_KEY_Arabic_sukun: number;
+
+declare const GDK_KEY_Arabic_superscript_alef: number;
+
+declare const GDK_KEY_Arabic_switch: number;
+
+declare const GDK_KEY_Arabic_tah: number;
+
+declare const GDK_KEY_Arabic_tatweel: number;
+
+declare const GDK_KEY_Arabic_tcheh: number;
+
+declare const GDK_KEY_Arabic_teh: number;
+
+declare const GDK_KEY_Arabic_tehmarbuta: number;
+
+declare const GDK_KEY_Arabic_thal: number;
+
+declare const GDK_KEY_Arabic_theh: number;
+
+declare const GDK_KEY_Arabic_tteh: number;
+
+declare const GDK_KEY_Arabic_veh: number;
+
+declare const GDK_KEY_Arabic_waw: number;
+
+declare const GDK_KEY_Arabic_yeh: number;
+
+declare const GDK_KEY_Arabic_yeh_baree: number;
+
+declare const GDK_KEY_Arabic_zah: number;
+
+declare const GDK_KEY_Arabic_zain: number;
+
+declare const GDK_KEY_Aring: number;
+
+declare const GDK_KEY_Armenian_AT: number;
+
+declare const GDK_KEY_Armenian_AYB: number;
+
+declare const GDK_KEY_Armenian_BEN: number;
+
+declare const GDK_KEY_Armenian_CHA: number;
+
+declare const GDK_KEY_Armenian_DA: number;
+
+declare const GDK_KEY_Armenian_DZA: number;
+
+declare const GDK_KEY_Armenian_E: number;
+
+declare const GDK_KEY_Armenian_FE: number;
+
+declare const GDK_KEY_Armenian_GHAT: number;
+
+declare const GDK_KEY_Armenian_GIM: number;
+
+declare const GDK_KEY_Armenian_HI: number;
+
+declare const GDK_KEY_Armenian_HO: number;
+
+declare const GDK_KEY_Armenian_INI: number;
+
+declare const GDK_KEY_Armenian_JE: number;
+
+declare const GDK_KEY_Armenian_KE: number;
+
+declare const GDK_KEY_Armenian_KEN: number;
+
+declare const GDK_KEY_Armenian_KHE: number;
+
+declare const GDK_KEY_Armenian_LYUN: number;
+
+declare const GDK_KEY_Armenian_MEN: number;
+
+declare const GDK_KEY_Armenian_NU: number;
+
+declare const GDK_KEY_Armenian_O: number;
+
+declare const GDK_KEY_Armenian_PE: number;
+
+declare const GDK_KEY_Armenian_PYUR: number;
+
+declare const GDK_KEY_Armenian_RA: number;
+
+declare const GDK_KEY_Armenian_RE: number;
+
+declare const GDK_KEY_Armenian_SE: number;
+
+declare const GDK_KEY_Armenian_SHA: number;
+
+declare const GDK_KEY_Armenian_TCHE: number;
+
+declare const GDK_KEY_Armenian_TO: number;
+
+declare const GDK_KEY_Armenian_TSA: number;
+
+declare const GDK_KEY_Armenian_TSO: number;
+
+declare const GDK_KEY_Armenian_TYUN: number;
+
+declare const GDK_KEY_Armenian_VEV: number;
+
+declare const GDK_KEY_Armenian_VO: number;
+
+declare const GDK_KEY_Armenian_VYUN: number;
+
+declare const GDK_KEY_Armenian_YECH: number;
+
+declare const GDK_KEY_Armenian_ZA: number;
+
+declare const GDK_KEY_Armenian_ZHE: number;
+
+declare const GDK_KEY_Armenian_accent: number;
+
+declare const GDK_KEY_Armenian_amanak: number;
+
+declare const GDK_KEY_Armenian_apostrophe: number;
+
+declare const GDK_KEY_Armenian_at: number;
+
+declare const GDK_KEY_Armenian_ayb: number;
+
+declare const GDK_KEY_Armenian_ben: number;
+
+declare const GDK_KEY_Armenian_but: number;
+
+declare const GDK_KEY_Armenian_cha: number;
+
+declare const GDK_KEY_Armenian_da: number;
+
+declare const GDK_KEY_Armenian_dza: number;
+
+declare const GDK_KEY_Armenian_e: number;
+
+declare const GDK_KEY_Armenian_exclam: number;
+
+declare const GDK_KEY_Armenian_fe: number;
+
+declare const GDK_KEY_Armenian_full_stop: number;
+
+declare const GDK_KEY_Armenian_ghat: number;
+
+declare const GDK_KEY_Armenian_gim: number;
+
+declare const GDK_KEY_Armenian_hi: number;
+
+declare const GDK_KEY_Armenian_ho: number;
+
+declare const GDK_KEY_Armenian_hyphen: number;
+
+declare const GDK_KEY_Armenian_ini: number;
+
+declare const GDK_KEY_Armenian_je: number;
+
+declare const GDK_KEY_Armenian_ke: number;
+
+declare const GDK_KEY_Armenian_ken: number;
+
+declare const GDK_KEY_Armenian_khe: number;
+
+declare const GDK_KEY_Armenian_ligature_ew: number;
+
+declare const GDK_KEY_Armenian_lyun: number;
+
+declare const GDK_KEY_Armenian_men: number;
+
+declare const GDK_KEY_Armenian_nu: number;
+
+declare const GDK_KEY_Armenian_o: number;
+
+declare const GDK_KEY_Armenian_paruyk: number;
+
+declare const GDK_KEY_Armenian_pe: number;
+
+declare const GDK_KEY_Armenian_pyur: number;
+
+declare const GDK_KEY_Armenian_question: number;
+
+declare const GDK_KEY_Armenian_ra: number;
+
+declare const GDK_KEY_Armenian_re: number;
+
+declare const GDK_KEY_Armenian_se: number;
+
+declare const GDK_KEY_Armenian_separation_mark: number;
+
+declare const GDK_KEY_Armenian_sha: number;
+
+declare const GDK_KEY_Armenian_shesht: number;
+
+declare const GDK_KEY_Armenian_tche: number;
+
+declare const GDK_KEY_Armenian_to: number;
+
+declare const GDK_KEY_Armenian_tsa: number;
+
+declare const GDK_KEY_Armenian_tso: number;
+
+declare const GDK_KEY_Armenian_tyun: number;
+
+declare const GDK_KEY_Armenian_verjaket: number;
+
+declare const GDK_KEY_Armenian_vev: number;
+
+declare const GDK_KEY_Armenian_vo: number;
+
+declare const GDK_KEY_Armenian_vyun: number;
+
+declare const GDK_KEY_Armenian_yech: number;
+
+declare const GDK_KEY_Armenian_yentamna: number;
+
+declare const GDK_KEY_Armenian_za: number;
+
+declare const GDK_KEY_Armenian_zhe: number;
+
+declare const GDK_KEY_Atilde: number;
+
+declare const GDK_KEY_AudibleBell_Enable: number;
+
+declare const GDK_KEY_AudioCycleTrack: number;
+
+declare const GDK_KEY_AudioForward: number;
+
+declare const GDK_KEY_AudioLowerVolume: number;
+
+declare const GDK_KEY_AudioMedia: number;
+
+declare const GDK_KEY_AudioMicMute: number;
+
+declare const GDK_KEY_AudioMute: number;
+
+declare const GDK_KEY_AudioNext: number;
+
+declare const GDK_KEY_AudioPause: number;
+
+declare const GDK_KEY_AudioPlay: number;
+
+declare const GDK_KEY_AudioPreset: number;
+
+declare const GDK_KEY_AudioPrev: number;
+
+declare const GDK_KEY_AudioRaiseVolume: number;
+
+declare const GDK_KEY_AudioRandomPlay: number;
+
+declare const GDK_KEY_AudioRecord: number;
+
+declare const GDK_KEY_AudioRepeat: number;
+
+declare const GDK_KEY_AudioRewind: number;
+
+declare const GDK_KEY_AudioStop: number;
+
+declare const GDK_KEY_Away: number;
+
+declare const GDK_KEY_B: number;
+
+declare const GDK_KEY_Babovedot: number;
+
+declare const GDK_KEY_Back: number;
+
+declare const GDK_KEY_BackForward: number;
+
+declare const GDK_KEY_BackSpace: number;
+
+declare const GDK_KEY_Battery: number;
+
+declare const GDK_KEY_Begin: number;
+
+declare const GDK_KEY_Blue: number;
+
+declare const GDK_KEY_Bluetooth: number;
+
+declare const GDK_KEY_Book: number;
+
+declare const GDK_KEY_BounceKeys_Enable: number;
+
+declare const GDK_KEY_Break: number;
+
+declare const GDK_KEY_BrightnessAdjust: number;
+
+declare const GDK_KEY_Byelorussian_SHORTU: number;
+
+declare const GDK_KEY_Byelorussian_shortu: number;
+
+declare const GDK_KEY_C: number;
+
+declare const GDK_KEY_CD: number;
+
+declare const GDK_KEY_CH: number;
+
+declare const GDK_KEY_C_H: number;
+
+declare const GDK_KEY_C_h: number;
+
+declare const GDK_KEY_Cabovedot: number;
+
+declare const GDK_KEY_Cacute: number;
+
+declare const GDK_KEY_Calculator: number;
+
+declare const GDK_KEY_Calendar: number;
+
+declare const GDK_KEY_Cancel: number;
+
+declare const GDK_KEY_Caps_Lock: number;
+
+declare const GDK_KEY_Ccaron: number;
+
+declare const GDK_KEY_Ccedilla: number;
+
+declare const GDK_KEY_Ccircumflex: number;
+
+declare const GDK_KEY_Ch: number;
+
+declare const GDK_KEY_Clear: number;
+
+declare const GDK_KEY_ClearGrab: number;
+
+declare const GDK_KEY_Close: number;
+
+declare const GDK_KEY_Codeinput: number;
+
+declare const GDK_KEY_ColonSign: number;
+
+declare const GDK_KEY_Community: number;
+
+declare const GDK_KEY_ContrastAdjust: number;
+
+declare const GDK_KEY_Control_L: number;
+
+declare const GDK_KEY_Control_R: number;
+
+declare const GDK_KEY_Copy: number;
+
+declare const GDK_KEY_CruzeiroSign: number;
+
+declare const GDK_KEY_Cut: number;
+
+declare const GDK_KEY_CycleAngle: number;
+
+declare const GDK_KEY_Cyrillic_A: number;
+
+declare const GDK_KEY_Cyrillic_BE: number;
+
+declare const GDK_KEY_Cyrillic_CHE: number;
+
+declare const GDK_KEY_Cyrillic_CHE_descender: number;
+
+declare const GDK_KEY_Cyrillic_CHE_vertstroke: number;
+
+declare const GDK_KEY_Cyrillic_DE: number;
+
+declare const GDK_KEY_Cyrillic_DZHE: number;
+
+declare const GDK_KEY_Cyrillic_E: number;
+
+declare const GDK_KEY_Cyrillic_EF: number;
+
+declare const GDK_KEY_Cyrillic_EL: number;
+
+declare const GDK_KEY_Cyrillic_EM: number;
+
+declare const GDK_KEY_Cyrillic_EN: number;
+
+declare const GDK_KEY_Cyrillic_EN_descender: number;
+
+declare const GDK_KEY_Cyrillic_ER: number;
+
+declare const GDK_KEY_Cyrillic_ES: number;
+
+declare const GDK_KEY_Cyrillic_GHE: number;
+
+declare const GDK_KEY_Cyrillic_GHE_bar: number;
+
+declare const GDK_KEY_Cyrillic_HA: number;
+
+declare const GDK_KEY_Cyrillic_HARDSIGN: number;
+
+declare const GDK_KEY_Cyrillic_HA_descender: number;
+
+declare const GDK_KEY_Cyrillic_I: number;
+
+declare const GDK_KEY_Cyrillic_IE: number;
+
+declare const GDK_KEY_Cyrillic_IO: number;
+
+declare const GDK_KEY_Cyrillic_I_macron: number;
+
+declare const GDK_KEY_Cyrillic_JE: number;
+
+declare const GDK_KEY_Cyrillic_KA: number;
+
+declare const GDK_KEY_Cyrillic_KA_descender: number;
+
+declare const GDK_KEY_Cyrillic_KA_vertstroke: number;
+
+declare const GDK_KEY_Cyrillic_LJE: number;
+
+declare const GDK_KEY_Cyrillic_NJE: number;
+
+declare const GDK_KEY_Cyrillic_O: number;
+
+declare const GDK_KEY_Cyrillic_O_bar: number;
+
+declare const GDK_KEY_Cyrillic_PE: number;
+
+declare const GDK_KEY_Cyrillic_SCHWA: number;
+
+declare const GDK_KEY_Cyrillic_SHA: number;
+
+declare const GDK_KEY_Cyrillic_SHCHA: number;
+
+declare const GDK_KEY_Cyrillic_SHHA: number;
+
+declare const GDK_KEY_Cyrillic_SHORTI: number;
+
+declare const GDK_KEY_Cyrillic_SOFTSIGN: number;
+
+declare const GDK_KEY_Cyrillic_TE: number;
+
+declare const GDK_KEY_Cyrillic_TSE: number;
+
+declare const GDK_KEY_Cyrillic_U: number;
+
+declare const GDK_KEY_Cyrillic_U_macron: number;
+
+declare const GDK_KEY_Cyrillic_U_straight: number;
+
+declare const GDK_KEY_Cyrillic_U_straight_bar: number;
+
+declare const GDK_KEY_Cyrillic_VE: number;
+
+declare const GDK_KEY_Cyrillic_YA: number;
+
+declare const GDK_KEY_Cyrillic_YERU: number;
+
+declare const GDK_KEY_Cyrillic_YU: number;
+
+declare const GDK_KEY_Cyrillic_ZE: number;
+
+declare const GDK_KEY_Cyrillic_ZHE: number;
+
+declare const GDK_KEY_Cyrillic_ZHE_descender: number;
+
+declare const GDK_KEY_Cyrillic_a: number;
+
+declare const GDK_KEY_Cyrillic_be: number;
+
+declare const GDK_KEY_Cyrillic_che: number;
+
+declare const GDK_KEY_Cyrillic_che_descender: number;
+
+declare const GDK_KEY_Cyrillic_che_vertstroke: number;
+
+declare const GDK_KEY_Cyrillic_de: number;
+
+declare const GDK_KEY_Cyrillic_dzhe: number;
+
+declare const GDK_KEY_Cyrillic_e: number;
+
+declare const GDK_KEY_Cyrillic_ef: number;
+
+declare const GDK_KEY_Cyrillic_el: number;
+
+declare const GDK_KEY_Cyrillic_em: number;
+
+declare const GDK_KEY_Cyrillic_en: number;
+
+declare const GDK_KEY_Cyrillic_en_descender: number;
+
+declare const GDK_KEY_Cyrillic_er: number;
+
+declare const GDK_KEY_Cyrillic_es: number;
+
+declare const GDK_KEY_Cyrillic_ghe: number;
+
+declare const GDK_KEY_Cyrillic_ghe_bar: number;
+
+declare const GDK_KEY_Cyrillic_ha: number;
+
+declare const GDK_KEY_Cyrillic_ha_descender: number;
+
+declare const GDK_KEY_Cyrillic_hardsign: number;
+
+declare const GDK_KEY_Cyrillic_i: number;
+
+declare const GDK_KEY_Cyrillic_i_macron: number;
+
+declare const GDK_KEY_Cyrillic_ie: number;
+
+declare const GDK_KEY_Cyrillic_io: number;
+
+declare const GDK_KEY_Cyrillic_je: number;
+
+declare const GDK_KEY_Cyrillic_ka: number;
+
+declare const GDK_KEY_Cyrillic_ka_descender: number;
+
+declare const GDK_KEY_Cyrillic_ka_vertstroke: number;
+
+declare const GDK_KEY_Cyrillic_lje: number;
+
+declare const GDK_KEY_Cyrillic_nje: number;
+
+declare const GDK_KEY_Cyrillic_o: number;
+
+declare const GDK_KEY_Cyrillic_o_bar: number;
+
+declare const GDK_KEY_Cyrillic_pe: number;
+
+declare const GDK_KEY_Cyrillic_schwa: number;
+
+declare const GDK_KEY_Cyrillic_sha: number;
+
+declare const GDK_KEY_Cyrillic_shcha: number;
+
+declare const GDK_KEY_Cyrillic_shha: number;
+
+declare const GDK_KEY_Cyrillic_shorti: number;
+
+declare const GDK_KEY_Cyrillic_softsign: number;
+
+declare const GDK_KEY_Cyrillic_te: number;
+
+declare const GDK_KEY_Cyrillic_tse: number;
+
+declare const GDK_KEY_Cyrillic_u: number;
+
+declare const GDK_KEY_Cyrillic_u_macron: number;
+
+declare const GDK_KEY_Cyrillic_u_straight: number;
+
+declare const GDK_KEY_Cyrillic_u_straight_bar: number;
+
+declare const GDK_KEY_Cyrillic_ve: number;
+
+declare const GDK_KEY_Cyrillic_ya: number;
+
+declare const GDK_KEY_Cyrillic_yeru: number;
+
+declare const GDK_KEY_Cyrillic_yu: number;
+
+declare const GDK_KEY_Cyrillic_ze: number;
+
+declare const GDK_KEY_Cyrillic_zhe: number;
+
+declare const GDK_KEY_Cyrillic_zhe_descender: number;
+
+declare const GDK_KEY_D: number;
+
+declare const GDK_KEY_DOS: number;
+
+declare const GDK_KEY_Dabovedot: number;
+
+declare const GDK_KEY_Dcaron: number;
+
+declare const GDK_KEY_Delete: number;
+
+declare const GDK_KEY_Display: number;
+
+declare const GDK_KEY_Documents: number;
+
+declare const GDK_KEY_DongSign: number;
+
+declare const GDK_KEY_Down: number;
+
+declare const GDK_KEY_Dstroke: number;
+
+declare const GDK_KEY_E: number;
+
+declare const GDK_KEY_ENG: number;
+
+declare const GDK_KEY_ETH: number;
+
+declare const GDK_KEY_EZH: number;
+
+declare const GDK_KEY_Eabovedot: number;
+
+declare const GDK_KEY_Eacute: number;
+
+declare const GDK_KEY_Ebelowdot: number;
+
+declare const GDK_KEY_Ecaron: number;
+
+declare const GDK_KEY_Ecircumflex: number;
+
+declare const GDK_KEY_Ecircumflexacute: number;
+
+declare const GDK_KEY_Ecircumflexbelowdot: number;
+
+declare const GDK_KEY_Ecircumflexgrave: number;
+
+declare const GDK_KEY_Ecircumflexhook: number;
+
+declare const GDK_KEY_Ecircumflextilde: number;
+
+declare const GDK_KEY_EcuSign: number;
+
+declare const GDK_KEY_Ediaeresis: number;
+
+declare const GDK_KEY_Egrave: number;
+
+declare const GDK_KEY_Ehook: number;
+
+declare const GDK_KEY_Eisu_Shift: number;
+
+declare const GDK_KEY_Eisu_toggle: number;
+
+declare const GDK_KEY_Eject: number;
+
+declare const GDK_KEY_Emacron: number;
+
+declare const GDK_KEY_End: number;
+
+declare const GDK_KEY_Eogonek: number;
+
+declare const GDK_KEY_Escape: number;
+
+declare const GDK_KEY_Eth: number;
+
+declare const GDK_KEY_Etilde: number;
+
+declare const GDK_KEY_EuroSign: number;
+
+declare const GDK_KEY_Excel: number;
+
+declare const GDK_KEY_Execute: number;
+
+declare const GDK_KEY_Explorer: number;
+
+declare const GDK_KEY_F: number;
+
+declare const GDK_KEY_F1: number;
+
+declare const GDK_KEY_F10: number;
+
+declare const GDK_KEY_F11: number;
+
+declare const GDK_KEY_F12: number;
+
+declare const GDK_KEY_F13: number;
+
+declare const GDK_KEY_F14: number;
+
+declare const GDK_KEY_F15: number;
+
+declare const GDK_KEY_F16: number;
+
+declare const GDK_KEY_F17: number;
+
+declare const GDK_KEY_F18: number;
+
+declare const GDK_KEY_F19: number;
+
+declare const GDK_KEY_F2: number;
+
+declare const GDK_KEY_F20: number;
+
+declare const GDK_KEY_F21: number;
+
+declare const GDK_KEY_F22: number;
+
+declare const GDK_KEY_F23: number;
+
+declare const GDK_KEY_F24: number;
+
+declare const GDK_KEY_F25: number;
+
+declare const GDK_KEY_F26: number;
+
+declare const GDK_KEY_F27: number;
+
+declare const GDK_KEY_F28: number;
+
+declare const GDK_KEY_F29: number;
+
+declare const GDK_KEY_F3: number;
+
+declare const GDK_KEY_F30: number;
+
+declare const GDK_KEY_F31: number;
+
+declare const GDK_KEY_F32: number;
+
+declare const GDK_KEY_F33: number;
+
+declare const GDK_KEY_F34: number;
+
+declare const GDK_KEY_F35: number;
+
+declare const GDK_KEY_F4: number;
+
+declare const GDK_KEY_F5: number;
+
+declare const GDK_KEY_F6: number;
+
+declare const GDK_KEY_F7: number;
+
+declare const GDK_KEY_F8: number;
+
+declare const GDK_KEY_F9: number;
+
+declare const GDK_KEY_FFrancSign: number;
+
+declare const GDK_KEY_Fabovedot: number;
+
+declare const GDK_KEY_Farsi_0: number;
+
+declare const GDK_KEY_Farsi_1: number;
+
+declare const GDK_KEY_Farsi_2: number;
+
+declare const GDK_KEY_Farsi_3: number;
+
+declare const GDK_KEY_Farsi_4: number;
+
+declare const GDK_KEY_Farsi_5: number;
+
+declare const GDK_KEY_Farsi_6: number;
+
+declare const GDK_KEY_Farsi_7: number;
+
+declare const GDK_KEY_Farsi_8: number;
+
+declare const GDK_KEY_Farsi_9: number;
+
+declare const GDK_KEY_Farsi_yeh: number;
+
+declare const GDK_KEY_Favorites: number;
+
+declare const GDK_KEY_Finance: number;
+
+declare const GDK_KEY_Find: number;
+
+declare const GDK_KEY_First_Virtual_Screen: number;
+
+declare const GDK_KEY_Forward: number;
+
+declare const GDK_KEY_FrameBack: number;
+
+declare const GDK_KEY_FrameForward: number;
+
+declare const GDK_KEY_G: number;
+
+declare const GDK_KEY_Gabovedot: number;
+
+declare const GDK_KEY_Game: number;
+
+declare const GDK_KEY_Gbreve: number;
+
+declare const GDK_KEY_Gcaron: number;
+
+declare const GDK_KEY_Gcedilla: number;
+
+declare const GDK_KEY_Gcircumflex: number;
+
+declare const GDK_KEY_Georgian_an: number;
+
+declare const GDK_KEY_Georgian_ban: number;
+
+declare const GDK_KEY_Georgian_can: number;
+
+declare const GDK_KEY_Georgian_char: number;
+
+declare const GDK_KEY_Georgian_chin: number;
+
+declare const GDK_KEY_Georgian_cil: number;
+
+declare const GDK_KEY_Georgian_don: number;
+
+declare const GDK_KEY_Georgian_en: number;
+
+declare const GDK_KEY_Georgian_fi: number;
+
+declare const GDK_KEY_Georgian_gan: number;
+
+declare const GDK_KEY_Georgian_ghan: number;
+
+declare const GDK_KEY_Georgian_hae: number;
+
+declare const GDK_KEY_Georgian_har: number;
+
+declare const GDK_KEY_Georgian_he: number;
+
+declare const GDK_KEY_Georgian_hie: number;
+
+declare const GDK_KEY_Georgian_hoe: number;
+
+declare const GDK_KEY_Georgian_in: number;
+
+declare const GDK_KEY_Georgian_jhan: number;
+
+declare const GDK_KEY_Georgian_jil: number;
+
+declare const GDK_KEY_Georgian_kan: number;
+
+declare const GDK_KEY_Georgian_khar: number;
+
+declare const GDK_KEY_Georgian_las: number;
+
+declare const GDK_KEY_Georgian_man: number;
+
+declare const GDK_KEY_Georgian_nar: number;
+
+declare const GDK_KEY_Georgian_on: number;
+
+declare const GDK_KEY_Georgian_par: number;
+
+declare const GDK_KEY_Georgian_phar: number;
+
+declare const GDK_KEY_Georgian_qar: number;
+
+declare const GDK_KEY_Georgian_rae: number;
+
+declare const GDK_KEY_Georgian_san: number;
+
+declare const GDK_KEY_Georgian_shin: number;
+
+declare const GDK_KEY_Georgian_tan: number;
+
+declare const GDK_KEY_Georgian_tar: number;
+
+declare const GDK_KEY_Georgian_un: number;
+
+declare const GDK_KEY_Georgian_vin: number;
+
+declare const GDK_KEY_Georgian_we: number;
+
+declare const GDK_KEY_Georgian_xan: number;
+
+declare const GDK_KEY_Georgian_zen: number;
+
+declare const GDK_KEY_Georgian_zhar: number;
+
+declare const GDK_KEY_Go: number;
+
+declare const GDK_KEY_Greek_ALPHA: number;
+
+declare const GDK_KEY_Greek_ALPHAaccent: number;
+
+declare const GDK_KEY_Greek_BETA: number;
+
+declare const GDK_KEY_Greek_CHI: number;
+
+declare const GDK_KEY_Greek_DELTA: number;
+
+declare const GDK_KEY_Greek_EPSILON: number;
+
+declare const GDK_KEY_Greek_EPSILONaccent: number;
+
+declare const GDK_KEY_Greek_ETA: number;
+
+declare const GDK_KEY_Greek_ETAaccent: number;
+
+declare const GDK_KEY_Greek_GAMMA: number;
+
+declare const GDK_KEY_Greek_IOTA: number;
+
+declare const GDK_KEY_Greek_IOTAaccent: number;
+
+declare const GDK_KEY_Greek_IOTAdiaeresis: number;
+
+declare const GDK_KEY_Greek_IOTAdieresis: number;
+
+declare const GDK_KEY_Greek_KAPPA: number;
+
+declare const GDK_KEY_Greek_LAMBDA: number;
+
+declare const GDK_KEY_Greek_LAMDA: number;
+
+declare const GDK_KEY_Greek_MU: number;
+
+declare const GDK_KEY_Greek_NU: number;
+
+declare const GDK_KEY_Greek_OMEGA: number;
+
+declare const GDK_KEY_Greek_OMEGAaccent: number;
+
+declare const GDK_KEY_Greek_OMICRON: number;
+
+declare const GDK_KEY_Greek_OMICRONaccent: number;
+
+declare const GDK_KEY_Greek_PHI: number;
+
+declare const GDK_KEY_Greek_PI: number;
+
+declare const GDK_KEY_Greek_PSI: number;
+
+declare const GDK_KEY_Greek_RHO: number;
+
+declare const GDK_KEY_Greek_SIGMA: number;
+
+declare const GDK_KEY_Greek_TAU: number;
+
+declare const GDK_KEY_Greek_THETA: number;
+
+declare const GDK_KEY_Greek_UPSILON: number;
+
+declare const GDK_KEY_Greek_UPSILONaccent: number;
+
+declare const GDK_KEY_Greek_UPSILONdieresis: number;
+
+declare const GDK_KEY_Greek_XI: number;
+
+declare const GDK_KEY_Greek_ZETA: number;
+
+declare const GDK_KEY_Greek_accentdieresis: number;
+
+declare const GDK_KEY_Greek_alpha: number;
+
+declare const GDK_KEY_Greek_alphaaccent: number;
+
+declare const GDK_KEY_Greek_beta: number;
+
+declare const GDK_KEY_Greek_chi: number;
+
+declare const GDK_KEY_Greek_delta: number;
+
+declare const GDK_KEY_Greek_epsilon: number;
+
+declare const GDK_KEY_Greek_epsilonaccent: number;
+
+declare const GDK_KEY_Greek_eta: number;
+
+declare const GDK_KEY_Greek_etaaccent: number;
+
+declare const GDK_KEY_Greek_finalsmallsigma: number;
+
+declare const GDK_KEY_Greek_gamma: number;
+
+declare const GDK_KEY_Greek_horizbar: number;
+
+declare const GDK_KEY_Greek_iota: number;
+
+declare const GDK_KEY_Greek_iotaaccent: number;
+
+declare const GDK_KEY_Greek_iotaaccentdieresis: number;
+
+declare const GDK_KEY_Greek_iotadieresis: number;
+
+declare const GDK_KEY_Greek_kappa: number;
+
+declare const GDK_KEY_Greek_lambda: number;
+
+declare const GDK_KEY_Greek_lamda: number;
+
+declare const GDK_KEY_Greek_mu: number;
+
+declare const GDK_KEY_Greek_nu: number;
+
+declare const GDK_KEY_Greek_omega: number;
+
+declare const GDK_KEY_Greek_omegaaccent: number;
+
+declare const GDK_KEY_Greek_omicron: number;
+
+declare const GDK_KEY_Greek_omicronaccent: number;
+
+declare const GDK_KEY_Greek_phi: number;
+
+declare const GDK_KEY_Greek_pi: number;
+
+declare const GDK_KEY_Greek_psi: number;
+
+declare const GDK_KEY_Greek_rho: number;
+
+declare const GDK_KEY_Greek_sigma: number;
+
+declare const GDK_KEY_Greek_switch: number;
+
+declare const GDK_KEY_Greek_tau: number;
+
+declare const GDK_KEY_Greek_theta: number;
+
+declare const GDK_KEY_Greek_upsilon: number;
+
+declare const GDK_KEY_Greek_upsilonaccent: number;
+
+declare const GDK_KEY_Greek_upsilonaccentdieresis: number;
+
+declare const GDK_KEY_Greek_upsilondieresis: number;
+
+declare const GDK_KEY_Greek_xi: number;
+
+declare const GDK_KEY_Greek_zeta: number;
+
+declare const GDK_KEY_Green: number;
+
+declare const GDK_KEY_H: number;
+
+declare const GDK_KEY_Hangul: number;
+
+declare const GDK_KEY_Hangul_A: number;
+
+declare const GDK_KEY_Hangul_AE: number;
+
+declare const GDK_KEY_Hangul_AraeA: number;
+
+declare const GDK_KEY_Hangul_AraeAE: number;
+
+declare const GDK_KEY_Hangul_Banja: number;
+
+declare const GDK_KEY_Hangul_Cieuc: number;
+
+declare const GDK_KEY_Hangul_Codeinput: number;
+
+declare const GDK_KEY_Hangul_Dikeud: number;
+
+declare const GDK_KEY_Hangul_E: number;
+
+declare const GDK_KEY_Hangul_EO: number;
+
+declare const GDK_KEY_Hangul_EU: number;
+
+declare const GDK_KEY_Hangul_End: number;
+
+declare const GDK_KEY_Hangul_Hanja: number;
+
+declare const GDK_KEY_Hangul_Hieuh: number;
+
+declare const GDK_KEY_Hangul_I: number;
+
+declare const GDK_KEY_Hangul_Ieung: number;
+
+declare const GDK_KEY_Hangul_J_Cieuc: number;
+
+declare const GDK_KEY_Hangul_J_Dikeud: number;
+
+declare const GDK_KEY_Hangul_J_Hieuh: number;
+
+declare const GDK_KEY_Hangul_J_Ieung: number;
+
+declare const GDK_KEY_Hangul_J_Jieuj: number;
+
+declare const GDK_KEY_Hangul_J_Khieuq: number;
+
+declare const GDK_KEY_Hangul_J_Kiyeog: number;
+
+declare const GDK_KEY_Hangul_J_KiyeogSios: number;
+
+declare const GDK_KEY_Hangul_J_KkogjiDalrinIeung: number;
+
+declare const GDK_KEY_Hangul_J_Mieum: number;
+
+declare const GDK_KEY_Hangul_J_Nieun: number;
+
+declare const GDK_KEY_Hangul_J_NieunHieuh: number;
+
+declare const GDK_KEY_Hangul_J_NieunJieuj: number;
+
+declare const GDK_KEY_Hangul_J_PanSios: number;
+
+declare const GDK_KEY_Hangul_J_Phieuf: number;
+
+declare const GDK_KEY_Hangul_J_Pieub: number;
+
+declare const GDK_KEY_Hangul_J_PieubSios: number;
+
+declare const GDK_KEY_Hangul_J_Rieul: number;
+
+declare const GDK_KEY_Hangul_J_RieulHieuh: number;
+
+declare const GDK_KEY_Hangul_J_RieulKiyeog: number;
+
+declare const GDK_KEY_Hangul_J_RieulMieum: number;
+
+declare const GDK_KEY_Hangul_J_RieulPhieuf: number;
+
+declare const GDK_KEY_Hangul_J_RieulPieub: number;
+
+declare const GDK_KEY_Hangul_J_RieulSios: number;
+
+declare const GDK_KEY_Hangul_J_RieulTieut: number;
+
+declare const GDK_KEY_Hangul_J_Sios: number;
+
+declare const GDK_KEY_Hangul_J_SsangKiyeog: number;
+
+declare const GDK_KEY_Hangul_J_SsangSios: number;
+
+declare const GDK_KEY_Hangul_J_Tieut: number;
+
+declare const GDK_KEY_Hangul_J_YeorinHieuh: number;
+
+declare const GDK_KEY_Hangul_Jamo: number;
+
+declare const GDK_KEY_Hangul_Jeonja: number;
+
+declare const GDK_KEY_Hangul_Jieuj: number;
+
+declare const GDK_KEY_Hangul_Khieuq: number;
+
+declare const GDK_KEY_Hangul_Kiyeog: number;
+
+declare const GDK_KEY_Hangul_KiyeogSios: number;
+
+declare const GDK_KEY_Hangul_KkogjiDalrinIeung: number;
+
+declare const GDK_KEY_Hangul_Mieum: number;
+
+declare const GDK_KEY_Hangul_MultipleCandidate: number;
+
+declare const GDK_KEY_Hangul_Nieun: number;
+
+declare const GDK_KEY_Hangul_NieunHieuh: number;
+
+declare const GDK_KEY_Hangul_NieunJieuj: number;
+
+declare const GDK_KEY_Hangul_O: number;
+
+declare const GDK_KEY_Hangul_OE: number;
+
+declare const GDK_KEY_Hangul_PanSios: number;
+
+declare const GDK_KEY_Hangul_Phieuf: number;
+
+declare const GDK_KEY_Hangul_Pieub: number;
+
+declare const GDK_KEY_Hangul_PieubSios: number;
+
+declare const GDK_KEY_Hangul_PostHanja: number;
+
+declare const GDK_KEY_Hangul_PreHanja: number;
+
+declare const GDK_KEY_Hangul_PreviousCandidate: number;
+
+declare const GDK_KEY_Hangul_Rieul: number;
+
+declare const GDK_KEY_Hangul_RieulHieuh: number;
+
+declare const GDK_KEY_Hangul_RieulKiyeog: number;
+
+declare const GDK_KEY_Hangul_RieulMieum: number;
+
+declare const GDK_KEY_Hangul_RieulPhieuf: number;
+
+declare const GDK_KEY_Hangul_RieulPieub: number;
+
+declare const GDK_KEY_Hangul_RieulSios: number;
+
+declare const GDK_KEY_Hangul_RieulTieut: number;
+
+declare const GDK_KEY_Hangul_RieulYeorinHieuh: number;
+
+declare const GDK_KEY_Hangul_Romaja: number;
+
+declare const GDK_KEY_Hangul_SingleCandidate: number;
+
+declare const GDK_KEY_Hangul_Sios: number;
+
+declare const GDK_KEY_Hangul_Special: number;
+
+declare const GDK_KEY_Hangul_SsangDikeud: number;
+
+declare const GDK_KEY_Hangul_SsangJieuj: number;
+
+declare const GDK_KEY_Hangul_SsangKiyeog: number;
+
+declare const GDK_KEY_Hangul_SsangPieub: number;
+
+declare const GDK_KEY_Hangul_SsangSios: number;
+
+declare const GDK_KEY_Hangul_Start: number;
+
+declare const GDK_KEY_Hangul_SunkyeongeumMieum: number;
+
+declare const GDK_KEY_Hangul_SunkyeongeumPhieuf: number;
+
+declare const GDK_KEY_Hangul_SunkyeongeumPieub: number;
+
+declare const GDK_KEY_Hangul_Tieut: number;
+
+declare const GDK_KEY_Hangul_U: number;
+
+declare const GDK_KEY_Hangul_WA: number;
+
+declare const GDK_KEY_Hangul_WAE: number;
+
+declare const GDK_KEY_Hangul_WE: number;
+
+declare const GDK_KEY_Hangul_WEO: number;
+
+declare const GDK_KEY_Hangul_WI: number;
+
+declare const GDK_KEY_Hangul_YA: number;
+
+declare const GDK_KEY_Hangul_YAE: number;
+
+declare const GDK_KEY_Hangul_YE: number;
+
+declare const GDK_KEY_Hangul_YEO: number;
+
+declare const GDK_KEY_Hangul_YI: number;
+
+declare const GDK_KEY_Hangul_YO: number;
+
+declare const GDK_KEY_Hangul_YU: number;
+
+declare const GDK_KEY_Hangul_YeorinHieuh: number;
+
+declare const GDK_KEY_Hangul_switch: number;
+
+declare const GDK_KEY_Hankaku: number;
+
+declare const GDK_KEY_Hcircumflex: number;
+
+declare const GDK_KEY_Hebrew_switch: number;
+
+declare const GDK_KEY_Help: number;
+
+declare const GDK_KEY_Henkan: number;
+
+declare const GDK_KEY_Henkan_Mode: number;
+
+declare const GDK_KEY_Hibernate: number;
+
+declare const GDK_KEY_Hiragana: number;
+
+declare const GDK_KEY_Hiragana_Katakana: number;
+
+declare const GDK_KEY_History: number;
+
+declare const GDK_KEY_Home: number;
+
+declare const GDK_KEY_HomePage: number;
+
+declare const GDK_KEY_HotLinks: number;
+
+declare const GDK_KEY_Hstroke: number;
+
+declare const GDK_KEY_Hyper_L: number;
+
+declare const GDK_KEY_Hyper_R: number;
+
+declare const GDK_KEY_I: number;
+
+declare const GDK_KEY_ISO_Center_Object: number;
+
+declare const GDK_KEY_ISO_Continuous_Underline: number;
+
+declare const GDK_KEY_ISO_Discontinuous_Underline: number;
+
+declare const GDK_KEY_ISO_Emphasize: number;
+
+declare const GDK_KEY_ISO_Enter: number;
+
+declare const GDK_KEY_ISO_Fast_Cursor_Down: number;
+
+declare const GDK_KEY_ISO_Fast_Cursor_Left: number;
+
+declare const GDK_KEY_ISO_Fast_Cursor_Right: number;
+
+declare const GDK_KEY_ISO_Fast_Cursor_Up: number;
+
+declare const GDK_KEY_ISO_First_Group: number;
+
+declare const GDK_KEY_ISO_First_Group_Lock: number;
+
+declare const GDK_KEY_ISO_Group_Latch: number;
+
+declare const GDK_KEY_ISO_Group_Lock: number;
+
+declare const GDK_KEY_ISO_Group_Shift: number;
+
+declare const GDK_KEY_ISO_Last_Group: number;
+
+declare const GDK_KEY_ISO_Last_Group_Lock: number;
+
+declare const GDK_KEY_ISO_Left_Tab: number;
+
+declare const GDK_KEY_ISO_Level2_Latch: number;
+
+declare const GDK_KEY_ISO_Level3_Latch: number;
+
+declare const GDK_KEY_ISO_Level3_Lock: number;
+
+declare const GDK_KEY_ISO_Level3_Shift: number;
+
+declare const GDK_KEY_ISO_Level5_Latch: number;
+
+declare const GDK_KEY_ISO_Level5_Lock: number;
+
+declare const GDK_KEY_ISO_Level5_Shift: number;
+
+declare const GDK_KEY_ISO_Lock: number;
+
+declare const GDK_KEY_ISO_Move_Line_Down: number;
+
+declare const GDK_KEY_ISO_Move_Line_Up: number;
+
+declare const GDK_KEY_ISO_Next_Group: number;
+
+declare const GDK_KEY_ISO_Next_Group_Lock: number;
+
+declare const GDK_KEY_ISO_Partial_Line_Down: number;
+
+declare const GDK_KEY_ISO_Partial_Line_Up: number;
+
+declare const GDK_KEY_ISO_Partial_Space_Left: number;
+
+declare const GDK_KEY_ISO_Partial_Space_Right: number;
+
+declare const GDK_KEY_ISO_Prev_Group: number;
+
+declare const GDK_KEY_ISO_Prev_Group_Lock: number;
+
+declare const GDK_KEY_ISO_Release_Both_Margins: number;
+
+declare const GDK_KEY_ISO_Release_Margin_Left: number;
+
+declare const GDK_KEY_ISO_Release_Margin_Right: number;
+
+declare const GDK_KEY_ISO_Set_Margin_Left: number;
+
+declare const GDK_KEY_ISO_Set_Margin_Right: number;
+
+declare const GDK_KEY_Iabovedot: number;
+
+declare const GDK_KEY_Iacute: number;
+
+declare const GDK_KEY_Ibelowdot: number;
+
+declare const GDK_KEY_Ibreve: number;
+
+declare const GDK_KEY_Icircumflex: number;
+
+declare const GDK_KEY_Idiaeresis: number;
+
+declare const GDK_KEY_Igrave: number;
+
+declare const GDK_KEY_Ihook: number;
+
+declare const GDK_KEY_Imacron: number;
+
+declare const GDK_KEY_Insert: number;
+
+declare const GDK_KEY_Iogonek: number;
+
+declare const GDK_KEY_Itilde: number;
+
+declare const GDK_KEY_J: number;
+
+declare const GDK_KEY_Jcircumflex: number;
+
+declare const GDK_KEY_K: number;
+
+declare const GDK_KEY_KP_0: number;
+
+declare const GDK_KEY_KP_1: number;
+
+declare const GDK_KEY_KP_2: number;
+
+declare const GDK_KEY_KP_3: number;
+
+declare const GDK_KEY_KP_4: number;
+
+declare const GDK_KEY_KP_5: number;
+
+declare const GDK_KEY_KP_6: number;
+
+declare const GDK_KEY_KP_7: number;
+
+declare const GDK_KEY_KP_8: number;
+
+declare const GDK_KEY_KP_9: number;
+
+declare const GDK_KEY_KP_Add: number;
+
+declare const GDK_KEY_KP_Begin: number;
+
+declare const GDK_KEY_KP_Decimal: number;
+
+declare const GDK_KEY_KP_Delete: number;
+
+declare const GDK_KEY_KP_Divide: number;
+
+declare const GDK_KEY_KP_Down: number;
+
+declare const GDK_KEY_KP_End: number;
+
+declare const GDK_KEY_KP_Enter: number;
+
+declare const GDK_KEY_KP_Equal: number;
+
+declare const GDK_KEY_KP_F1: number;
+
+declare const GDK_KEY_KP_F2: number;
+
+declare const GDK_KEY_KP_F3: number;
+
+declare const GDK_KEY_KP_F4: number;
+
+declare const GDK_KEY_KP_Home: number;
+
+declare const GDK_KEY_KP_Insert: number;
+
+declare const GDK_KEY_KP_Left: number;
+
+declare const GDK_KEY_KP_Multiply: number;
+
+declare const GDK_KEY_KP_Next: number;
+
+declare const GDK_KEY_KP_Page_Down: number;
+
+declare const GDK_KEY_KP_Page_Up: number;
+
+declare const GDK_KEY_KP_Prior: number;
+
+declare const GDK_KEY_KP_Right: number;
+
+declare const GDK_KEY_KP_Separator: number;
+
+declare const GDK_KEY_KP_Space: number;
+
+declare const GDK_KEY_KP_Subtract: number;
+
+declare const GDK_KEY_KP_Tab: number;
+
+declare const GDK_KEY_KP_Up: number;
+
+declare const GDK_KEY_Kana_Lock: number;
+
+declare const GDK_KEY_Kana_Shift: number;
+
+declare const GDK_KEY_Kanji: number;
+
+declare const GDK_KEY_Kanji_Bangou: number;
+
+declare const GDK_KEY_Katakana: number;
+
+declare const GDK_KEY_KbdBrightnessDown: number;
+
+declare const GDK_KEY_KbdBrightnessUp: number;
+
+declare const GDK_KEY_KbdLightOnOff: number;
+
+declare const GDK_KEY_Kcedilla: number;
+
+declare const GDK_KEY_Keyboard: number;
+
+declare const GDK_KEY_Korean_Won: number;
+
+declare const GDK_KEY_L: number;
+
+declare const GDK_KEY_L1: number;
+
+declare const GDK_KEY_L10: number;
+
+declare const GDK_KEY_L2: number;
+
+declare const GDK_KEY_L3: number;
+
+declare const GDK_KEY_L4: number;
+
+declare const GDK_KEY_L5: number;
+
+declare const GDK_KEY_L6: number;
+
+declare const GDK_KEY_L7: number;
+
+declare const GDK_KEY_L8: number;
+
+declare const GDK_KEY_L9: number;
+
+declare const GDK_KEY_Lacute: number;
+
+declare const GDK_KEY_Last_Virtual_Screen: number;
+
+declare const GDK_KEY_Launch0: number;
+
+declare const GDK_KEY_Launch1: number;
+
+declare const GDK_KEY_Launch2: number;
+
+declare const GDK_KEY_Launch3: number;
+
+declare const GDK_KEY_Launch4: number;
+
+declare const GDK_KEY_Launch5: number;
+
+declare const GDK_KEY_Launch6: number;
+
+declare const GDK_KEY_Launch7: number;
+
+declare const GDK_KEY_Launch8: number;
+
+declare const GDK_KEY_Launch9: number;
+
+declare const GDK_KEY_LaunchA: number;
+
+declare const GDK_KEY_LaunchB: number;
+
+declare const GDK_KEY_LaunchC: number;
+
+declare const GDK_KEY_LaunchD: number;
+
+declare const GDK_KEY_LaunchE: number;
+
+declare const GDK_KEY_LaunchF: number;
+
+declare const GDK_KEY_Lbelowdot: number;
+
+declare const GDK_KEY_Lcaron: number;
+
+declare const GDK_KEY_Lcedilla: number;
+
+declare const GDK_KEY_Left: number;
+
+declare const GDK_KEY_LightBulb: number;
+
+declare const GDK_KEY_Linefeed: number;
+
+declare const GDK_KEY_LiraSign: number;
+
+declare const GDK_KEY_LogGrabInfo: number;
+
+declare const GDK_KEY_LogOff: number;
+
+declare const GDK_KEY_LogWindowTree: number;
+
+declare const GDK_KEY_Lstroke: number;
+
+declare const GDK_KEY_M: number;
+
+declare const GDK_KEY_Mabovedot: number;
+
+declare const GDK_KEY_Macedonia_DSE: number;
+
+declare const GDK_KEY_Macedonia_GJE: number;
+
+declare const GDK_KEY_Macedonia_KJE: number;
+
+declare const GDK_KEY_Macedonia_dse: number;
+
+declare const GDK_KEY_Macedonia_gje: number;
+
+declare const GDK_KEY_Macedonia_kje: number;
+
+declare const GDK_KEY_Mae_Koho: number;
+
+declare const GDK_KEY_Mail: number;
+
+declare const GDK_KEY_MailForward: number;
+
+declare const GDK_KEY_Market: number;
+
+declare const GDK_KEY_Massyo: number;
+
+declare const GDK_KEY_Meeting: number;
+
+declare const GDK_KEY_Memo: number;
+
+declare const GDK_KEY_Menu: number;
+
+declare const GDK_KEY_MenuKB: number;
+
+declare const GDK_KEY_MenuPB: number;
+
+declare const GDK_KEY_Messenger: number;
+
+declare const GDK_KEY_Meta_L: number;
+
+declare const GDK_KEY_Meta_R: number;
+
+declare const GDK_KEY_MillSign: number;
+
+declare const GDK_KEY_ModeLock: number;
+
+declare const GDK_KEY_Mode_switch: number;
+
+declare const GDK_KEY_MonBrightnessDown: number;
+
+declare const GDK_KEY_MonBrightnessUp: number;
+
+declare const GDK_KEY_MouseKeys_Accel_Enable: number;
+
+declare const GDK_KEY_MouseKeys_Enable: number;
+
+declare const GDK_KEY_Muhenkan: number;
+
+declare const GDK_KEY_Multi_key: number;
+
+declare const GDK_KEY_MultipleCandidate: number;
+
+declare const GDK_KEY_Music: number;
+
+declare const GDK_KEY_MyComputer: number;
+
+declare const GDK_KEY_MySites: number;
+
+declare const GDK_KEY_N: number;
+
+declare const GDK_KEY_Nacute: number;
+
+declare const GDK_KEY_NairaSign: number;
+
+declare const GDK_KEY_Ncaron: number;
+
+declare const GDK_KEY_Ncedilla: number;
+
+declare const GDK_KEY_New: number;
+
+declare const GDK_KEY_NewSheqelSign: number;
+
+declare const GDK_KEY_News: number;
+
+declare const GDK_KEY_Next: number;
+
+declare const GDK_KEY_Next_VMode: number;
+
+declare const GDK_KEY_Next_Virtual_Screen: number;
+
+declare const GDK_KEY_Ntilde: number;
+
+declare const GDK_KEY_Num_Lock: number;
+
+declare const GDK_KEY_O: number;
+
+declare const GDK_KEY_OE: number;
+
+declare const GDK_KEY_Oacute: number;
+
+declare const GDK_KEY_Obarred: number;
+
+declare const GDK_KEY_Obelowdot: number;
+
+declare const GDK_KEY_Ocaron: number;
+
+declare const GDK_KEY_Ocircumflex: number;
+
+declare const GDK_KEY_Ocircumflexacute: number;
+
+declare const GDK_KEY_Ocircumflexbelowdot: number;
+
+declare const GDK_KEY_Ocircumflexgrave: number;
+
+declare const GDK_KEY_Ocircumflexhook: number;
+
+declare const GDK_KEY_Ocircumflextilde: number;
+
+declare const GDK_KEY_Odiaeresis: number;
+
+declare const GDK_KEY_Odoubleacute: number;
+
+declare const GDK_KEY_OfficeHome: number;
+
+declare const GDK_KEY_Ograve: number;
+
+declare const GDK_KEY_Ohook: number;
+
+declare const GDK_KEY_Ohorn: number;
+
+declare const GDK_KEY_Ohornacute: number;
+
+declare const GDK_KEY_Ohornbelowdot: number;
+
+declare const GDK_KEY_Ohorngrave: number;
+
+declare const GDK_KEY_Ohornhook: number;
+
+declare const GDK_KEY_Ohorntilde: number;
+
+declare const GDK_KEY_Omacron: number;
+
+declare const GDK_KEY_Ooblique: number;
+
+declare const GDK_KEY_Open: number;
+
+declare const GDK_KEY_OpenURL: number;
+
+declare const GDK_KEY_Option: number;
+
+declare const GDK_KEY_Oslash: number;
+
+declare const GDK_KEY_Otilde: number;
+
+declare const GDK_KEY_Overlay1_Enable: number;
+
+declare const GDK_KEY_Overlay2_Enable: number;
+
+declare const GDK_KEY_P: number;
+
+declare const GDK_KEY_Pabovedot: number;
+
+declare const GDK_KEY_Page_Down: number;
+
+declare const GDK_KEY_Page_Up: number;
+
+declare const GDK_KEY_Paste: number;
+
+declare const GDK_KEY_Pause: number;
+
+declare const GDK_KEY_PesetaSign: number;
+
+declare const GDK_KEY_Phone: number;
+
+declare const GDK_KEY_Pictures: number;
+
+declare const GDK_KEY_Pointer_Accelerate: number;
+
+declare const GDK_KEY_Pointer_Button1: number;
+
+declare const GDK_KEY_Pointer_Button2: number;
+
+declare const GDK_KEY_Pointer_Button3: number;
+
+declare const GDK_KEY_Pointer_Button4: number;
+
+declare const GDK_KEY_Pointer_Button5: number;
+
+declare const GDK_KEY_Pointer_Button_Dflt: number;
+
+declare const GDK_KEY_Pointer_DblClick1: number;
+
+declare const GDK_KEY_Pointer_DblClick2: number;
+
+declare const GDK_KEY_Pointer_DblClick3: number;
+
+declare const GDK_KEY_Pointer_DblClick4: number;
+
+declare const GDK_KEY_Pointer_DblClick5: number;
+
+declare const GDK_KEY_Pointer_DblClick_Dflt: number;
+
+declare const GDK_KEY_Pointer_DfltBtnNext: number;
+
+declare const GDK_KEY_Pointer_DfltBtnPrev: number;
+
+declare const GDK_KEY_Pointer_Down: number;
+
+declare const GDK_KEY_Pointer_DownLeft: number;
+
+declare const GDK_KEY_Pointer_DownRight: number;
+
+declare const GDK_KEY_Pointer_Drag1: number;
+
+declare const GDK_KEY_Pointer_Drag2: number;
+
+declare const GDK_KEY_Pointer_Drag3: number;
+
+declare const GDK_KEY_Pointer_Drag4: number;
+
+declare const GDK_KEY_Pointer_Drag5: number;
+
+declare const GDK_KEY_Pointer_Drag_Dflt: number;
+
+declare const GDK_KEY_Pointer_EnableKeys: number;
+
+declare const GDK_KEY_Pointer_Left: number;
+
+declare const GDK_KEY_Pointer_Right: number;
+
+declare const GDK_KEY_Pointer_Up: number;
+
+declare const GDK_KEY_Pointer_UpLeft: number;
+
+declare const GDK_KEY_Pointer_UpRight: number;
+
+declare const GDK_KEY_PowerDown: number;
+
+declare const GDK_KEY_PowerOff: number;
+
+declare const GDK_KEY_Prev_VMode: number;
+
+declare const GDK_KEY_Prev_Virtual_Screen: number;
+
+declare const GDK_KEY_PreviousCandidate: number;
+
+declare const GDK_KEY_Print: number;
+
+declare const GDK_KEY_Prior: number;
+
+declare const GDK_KEY_Q: number;
+
+declare const GDK_KEY_R: number;
+
+declare const GDK_KEY_R1: number;
+
+declare const GDK_KEY_R10: number;
+
+declare const GDK_KEY_R11: number;
+
+declare const GDK_KEY_R12: number;
+
+declare const GDK_KEY_R13: number;
+
+declare const GDK_KEY_R14: number;
+
+declare const GDK_KEY_R15: number;
+
+declare const GDK_KEY_R2: number;
+
+declare const GDK_KEY_R3: number;
+
+declare const GDK_KEY_R4: number;
+
+declare const GDK_KEY_R5: number;
+
+declare const GDK_KEY_R6: number;
+
+declare const GDK_KEY_R7: number;
+
+declare const GDK_KEY_R8: number;
+
+declare const GDK_KEY_R9: number;
+
+declare const GDK_KEY_RFKill: number;
+
+declare const GDK_KEY_Racute: number;
+
+declare const GDK_KEY_Rcaron: number;
+
+declare const GDK_KEY_Rcedilla: number;
+
+declare const GDK_KEY_Red: number;
+
+declare const GDK_KEY_Redo: number;
+
+declare const GDK_KEY_Refresh: number;
+
+declare const GDK_KEY_Reload: number;
+
+declare const GDK_KEY_RepeatKeys_Enable: number;
+
+declare const GDK_KEY_Reply: number;
+
+declare const GDK_KEY_Return: number;
+
+declare const GDK_KEY_Right: number;
+
+declare const GDK_KEY_RockerDown: number;
+
+declare const GDK_KEY_RockerEnter: number;
+
+declare const GDK_KEY_RockerUp: number;
+
+declare const GDK_KEY_Romaji: number;
+
+declare const GDK_KEY_RotateWindows: number;
+
+declare const GDK_KEY_RotationKB: number;
+
+declare const GDK_KEY_RotationPB: number;
+
+declare const GDK_KEY_RupeeSign: number;
+
+declare const GDK_KEY_S: number;
+
+declare const GDK_KEY_SCHWA: number;
+
+declare const GDK_KEY_Sabovedot: number;
+
+declare const GDK_KEY_Sacute: number;
+
+declare const GDK_KEY_Save: number;
+
+declare const GDK_KEY_Scaron: number;
+
+declare const GDK_KEY_Scedilla: number;
+
+declare const GDK_KEY_Scircumflex: number;
+
+declare const GDK_KEY_ScreenSaver: number;
+
+declare const GDK_KEY_ScrollClick: number;
+
+declare const GDK_KEY_ScrollDown: number;
+
+declare const GDK_KEY_ScrollUp: number;
+
+declare const GDK_KEY_Scroll_Lock: number;
+
+declare const GDK_KEY_Search: number;
+
+declare const GDK_KEY_Select: number;
+
+declare const GDK_KEY_SelectButton: number;
+
+declare const GDK_KEY_Send: number;
+
+declare const GDK_KEY_Serbian_DJE: number;
+
+declare const GDK_KEY_Serbian_DZE: number;
+
+declare const GDK_KEY_Serbian_JE: number;
+
+declare const GDK_KEY_Serbian_LJE: number;
+
+declare const GDK_KEY_Serbian_NJE: number;
+
+declare const GDK_KEY_Serbian_TSHE: number;
+
+declare const GDK_KEY_Serbian_dje: number;
+
+declare const GDK_KEY_Serbian_dze: number;
+
+declare const GDK_KEY_Serbian_je: number;
+
+declare const GDK_KEY_Serbian_lje: number;
+
+declare const GDK_KEY_Serbian_nje: number;
+
+declare const GDK_KEY_Serbian_tshe: number;
+
+declare const GDK_KEY_Shift_L: number;
+
+declare const GDK_KEY_Shift_Lock: number;
+
+declare const GDK_KEY_Shift_R: number;
+
+declare const GDK_KEY_Shop: number;
+
+declare const GDK_KEY_SingleCandidate: number;
+
+declare const GDK_KEY_Sinh_a: number;
+
+declare const GDK_KEY_Sinh_aa: number;
+
+declare const GDK_KEY_Sinh_aa2: number;
+
+declare const GDK_KEY_Sinh_ae: number;
+
+declare const GDK_KEY_Sinh_ae2: number;
+
+declare const GDK_KEY_Sinh_aee: number;
+
+declare const GDK_KEY_Sinh_aee2: number;
+
+declare const GDK_KEY_Sinh_ai: number;
+
+declare const GDK_KEY_Sinh_ai2: number;
+
+declare const GDK_KEY_Sinh_al: number;
+
+declare const GDK_KEY_Sinh_au: number;
+
+declare const GDK_KEY_Sinh_au2: number;
+
+declare const GDK_KEY_Sinh_ba: number;
+
+declare const GDK_KEY_Sinh_bha: number;
+
+declare const GDK_KEY_Sinh_ca: number;
+
+declare const GDK_KEY_Sinh_cha: number;
+
+declare const GDK_KEY_Sinh_dda: number;
+
+declare const GDK_KEY_Sinh_ddha: number;
+
+declare const GDK_KEY_Sinh_dha: number;
+
+declare const GDK_KEY_Sinh_dhha: number;
+
+declare const GDK_KEY_Sinh_e: number;
+
+declare const GDK_KEY_Sinh_e2: number;
+
+declare const GDK_KEY_Sinh_ee: number;
+
+declare const GDK_KEY_Sinh_ee2: number;
+
+declare const GDK_KEY_Sinh_fa: number;
+
+declare const GDK_KEY_Sinh_ga: number;
+
+declare const GDK_KEY_Sinh_gha: number;
+
+declare const GDK_KEY_Sinh_h2: number;
+
+declare const GDK_KEY_Sinh_ha: number;
+
+declare const GDK_KEY_Sinh_i: number;
+
+declare const GDK_KEY_Sinh_i2: number;
+
+declare const GDK_KEY_Sinh_ii: number;
+
+declare const GDK_KEY_Sinh_ii2: number;
+
+declare const GDK_KEY_Sinh_ja: number;
+
+declare const GDK_KEY_Sinh_jha: number;
+
+declare const GDK_KEY_Sinh_jnya: number;
+
+declare const GDK_KEY_Sinh_ka: number;
+
+declare const GDK_KEY_Sinh_kha: number;
+
+declare const GDK_KEY_Sinh_kunddaliya: number;
+
+declare const GDK_KEY_Sinh_la: number;
+
+declare const GDK_KEY_Sinh_lla: number;
+
+declare const GDK_KEY_Sinh_lu: number;
+
+declare const GDK_KEY_Sinh_lu2: number;
+
+declare const GDK_KEY_Sinh_luu: number;
+
+declare const GDK_KEY_Sinh_luu2: number;
+
+declare const GDK_KEY_Sinh_ma: number;
+
+declare const GDK_KEY_Sinh_mba: number;
+
+declare const GDK_KEY_Sinh_na: number;
+
+declare const GDK_KEY_Sinh_ndda: number;
+
+declare const GDK_KEY_Sinh_ndha: number;
+
+declare const GDK_KEY_Sinh_ng: number;
+
+declare const GDK_KEY_Sinh_ng2: number;
+
+declare const GDK_KEY_Sinh_nga: number;
+
+declare const GDK_KEY_Sinh_nja: number;
+
+declare const GDK_KEY_Sinh_nna: number;
+
+declare const GDK_KEY_Sinh_nya: number;
+
+declare const GDK_KEY_Sinh_o: number;
+
+declare const GDK_KEY_Sinh_o2: number;
+
+declare const GDK_KEY_Sinh_oo: number;
+
+declare const GDK_KEY_Sinh_oo2: number;
+
+declare const GDK_KEY_Sinh_pa: number;
+
+declare const GDK_KEY_Sinh_pha: number;
+
+declare const GDK_KEY_Sinh_ra: number;
+
+declare const GDK_KEY_Sinh_ri: number;
+
+declare const GDK_KEY_Sinh_rii: number;
+
+declare const GDK_KEY_Sinh_ru2: number;
+
+declare const GDK_KEY_Sinh_ruu2: number;
+
+declare const GDK_KEY_Sinh_sa: number;
+
+declare const GDK_KEY_Sinh_sha: number;
+
+declare const GDK_KEY_Sinh_ssha: number;
+
+declare const GDK_KEY_Sinh_tha: number;
+
+declare const GDK_KEY_Sinh_thha: number;
+
+declare const GDK_KEY_Sinh_tta: number;
+
+declare const GDK_KEY_Sinh_ttha: number;
+
+declare const GDK_KEY_Sinh_u: number;
+
+declare const GDK_KEY_Sinh_u2: number;
+
+declare const GDK_KEY_Sinh_uu: number;
+
+declare const GDK_KEY_Sinh_uu2: number;
+
+declare const GDK_KEY_Sinh_va: number;
+
+declare const GDK_KEY_Sinh_ya: number;
+
+declare const GDK_KEY_Sleep: number;
+
+declare const GDK_KEY_SlowKeys_Enable: number;
+
+declare const GDK_KEY_Spell: number;
+
+declare const GDK_KEY_SplitScreen: number;
+
+declare const GDK_KEY_Standby: number;
+
+declare const GDK_KEY_Start: number;
+
+declare const GDK_KEY_StickyKeys_Enable: number;
+
+declare const GDK_KEY_Stop: number;
+
+declare const GDK_KEY_Subtitle: number;
+
+declare const GDK_KEY_Super_L: number;
+
+declare const GDK_KEY_Super_R: number;
+
+declare const GDK_KEY_Support: number;
+
+declare const GDK_KEY_Suspend: number;
+
+declare const GDK_KEY_Switch_VT_1: number;
+
+declare const GDK_KEY_Switch_VT_10: number;
+
+declare const GDK_KEY_Switch_VT_11: number;
+
+declare const GDK_KEY_Switch_VT_12: number;
+
+declare const GDK_KEY_Switch_VT_2: number;
+
+declare const GDK_KEY_Switch_VT_3: number;
+
+declare const GDK_KEY_Switch_VT_4: number;
+
+declare const GDK_KEY_Switch_VT_5: number;
+
+declare const GDK_KEY_Switch_VT_6: number;
+
+declare const GDK_KEY_Switch_VT_7: number;
+
+declare const GDK_KEY_Switch_VT_8: number;
+
+declare const GDK_KEY_Switch_VT_9: number;
+
+declare const GDK_KEY_Sys_Req: number;
+
+declare const GDK_KEY_T: number;
+
+declare const GDK_KEY_THORN: number;
+
+declare const GDK_KEY_Tab: number;
+
+declare const GDK_KEY_Tabovedot: number;
+
+declare const GDK_KEY_TaskPane: number;
+
+declare const GDK_KEY_Tcaron: number;
+
+declare const GDK_KEY_Tcedilla: number;
+
+declare const GDK_KEY_Terminal: number;
+
+declare const GDK_KEY_Terminate_Server: number;
+
+declare const GDK_KEY_Thai_baht: number;
+
+declare const GDK_KEY_Thai_bobaimai: number;
+
+declare const GDK_KEY_Thai_chochan: number;
+
+declare const GDK_KEY_Thai_chochang: number;
+
+declare const GDK_KEY_Thai_choching: number;
+
+declare const GDK_KEY_Thai_chochoe: number;
+
+declare const GDK_KEY_Thai_dochada: number;
+
+declare const GDK_KEY_Thai_dodek: number;
+
+declare const GDK_KEY_Thai_fofa: number;
+
+declare const GDK_KEY_Thai_fofan: number;
+
+declare const GDK_KEY_Thai_hohip: number;
+
+declare const GDK_KEY_Thai_honokhuk: number;
+
+declare const GDK_KEY_Thai_khokhai: number;
+
+declare const GDK_KEY_Thai_khokhon: number;
+
+declare const GDK_KEY_Thai_khokhuat: number;
+
+declare const GDK_KEY_Thai_khokhwai: number;
+
+declare const GDK_KEY_Thai_khorakhang: number;
+
+declare const GDK_KEY_Thai_kokai: number;
+
+declare const GDK_KEY_Thai_lakkhangyao: number;
+
+declare const GDK_KEY_Thai_lekchet: number;
+
+declare const GDK_KEY_Thai_lekha: number;
+
+declare const GDK_KEY_Thai_lekhok: number;
+
+declare const GDK_KEY_Thai_lekkao: number;
+
+declare const GDK_KEY_Thai_leknung: number;
+
+declare const GDK_KEY_Thai_lekpaet: number;
+
+declare const GDK_KEY_Thai_leksam: number;
+
+declare const GDK_KEY_Thai_leksi: number;
+
+declare const GDK_KEY_Thai_leksong: number;
+
+declare const GDK_KEY_Thai_leksun: number;
+
+declare const GDK_KEY_Thai_lochula: number;
+
+declare const GDK_KEY_Thai_loling: number;
+
+declare const GDK_KEY_Thai_lu: number;
+
+declare const GDK_KEY_Thai_maichattawa: number;
+
+declare const GDK_KEY_Thai_maiek: number;
+
+declare const GDK_KEY_Thai_maihanakat: number;
+
+declare const GDK_KEY_Thai_maihanakat_maitho: number;
+
+declare const GDK_KEY_Thai_maitaikhu: number;
+
+declare const GDK_KEY_Thai_maitho: number;
+
+declare const GDK_KEY_Thai_maitri: number;
+
+declare const GDK_KEY_Thai_maiyamok: number;
+
+declare const GDK_KEY_Thai_moma: number;
+
+declare const GDK_KEY_Thai_ngongu: number;
+
+declare const GDK_KEY_Thai_nikhahit: number;
+
+declare const GDK_KEY_Thai_nonen: number;
+
+declare const GDK_KEY_Thai_nonu: number;
+
+declare const GDK_KEY_Thai_oang: number;
+
+declare const GDK_KEY_Thai_paiyannoi: number;
+
+declare const GDK_KEY_Thai_phinthu: number;
+
+declare const GDK_KEY_Thai_phophan: number;
+
+declare const GDK_KEY_Thai_phophung: number;
+
+declare const GDK_KEY_Thai_phosamphao: number;
+
+declare const GDK_KEY_Thai_popla: number;
+
+declare const GDK_KEY_Thai_rorua: number;
+
+declare const GDK_KEY_Thai_ru: number;
+
+declare const GDK_KEY_Thai_saraa: number;
+
+declare const GDK_KEY_Thai_saraaa: number;
+
+declare const GDK_KEY_Thai_saraae: number;
+
+declare const GDK_KEY_Thai_saraaimaimalai: number;
+
+declare const GDK_KEY_Thai_saraaimaimuan: number;
+
+declare const GDK_KEY_Thai_saraam: number;
+
+declare const GDK_KEY_Thai_sarae: number;
+
+declare const GDK_KEY_Thai_sarai: number;
+
+declare const GDK_KEY_Thai_saraii: number;
+
+declare const GDK_KEY_Thai_sarao: number;
+
+declare const GDK_KEY_Thai_sarau: number;
+
+declare const GDK_KEY_Thai_saraue: number;
+
+declare const GDK_KEY_Thai_sarauee: number;
+
+declare const GDK_KEY_Thai_sarauu: number;
+
+declare const GDK_KEY_Thai_sorusi: number;
+
+declare const GDK_KEY_Thai_sosala: number;
+
+declare const GDK_KEY_Thai_soso: number;
+
+declare const GDK_KEY_Thai_sosua: number;
+
+declare const GDK_KEY_Thai_thanthakhat: number;
+
+declare const GDK_KEY_Thai_thonangmontho: number;
+
+declare const GDK_KEY_Thai_thophuthao: number;
+
+declare const GDK_KEY_Thai_thothahan: number;
+
+declare const GDK_KEY_Thai_thothan: number;
+
+declare const GDK_KEY_Thai_thothong: number;
+
+declare const GDK_KEY_Thai_thothung: number;
+
+declare const GDK_KEY_Thai_topatak: number;
+
+declare const GDK_KEY_Thai_totao: number;
+
+declare const GDK_KEY_Thai_wowaen: number;
+
+declare const GDK_KEY_Thai_yoyak: number;
+
+declare const GDK_KEY_Thai_yoying: number;
+
+declare const GDK_KEY_Thorn: number;
+
+declare const GDK_KEY_Time: number;
+
+declare const GDK_KEY_ToDoList: number;
+
+declare const GDK_KEY_Tools: number;
+
+declare const GDK_KEY_TopMenu: number;
+
+declare const GDK_KEY_TouchpadOff: number;
+
+declare const GDK_KEY_TouchpadOn: number;
+
+declare const GDK_KEY_TouchpadToggle: number;
+
+declare const GDK_KEY_Touroku: number;
+
+declare const GDK_KEY_Travel: number;
+
+declare const GDK_KEY_Tslash: number;
+
+declare const GDK_KEY_U: number;
+
+declare const GDK_KEY_UWB: number;
+
+declare const GDK_KEY_Uacute: number;
+
+declare const GDK_KEY_Ubelowdot: number;
+
+declare const GDK_KEY_Ubreve: number;
+
+declare const GDK_KEY_Ucircumflex: number;
+
+declare const GDK_KEY_Udiaeresis: number;
+
+declare const GDK_KEY_Udoubleacute: number;
+
+declare const GDK_KEY_Ugrave: number;
+
+declare const GDK_KEY_Uhook: number;
+
+declare const GDK_KEY_Uhorn: number;
+
+declare const GDK_KEY_Uhornacute: number;
+
+declare const GDK_KEY_Uhornbelowdot: number;
+
+declare const GDK_KEY_Uhorngrave: number;
+
+declare const GDK_KEY_Uhornhook: number;
+
+declare const GDK_KEY_Uhorntilde: number;
+
+declare const GDK_KEY_Ukrainian_GHE_WITH_UPTURN: number;
+
+declare const GDK_KEY_Ukrainian_I: number;
+
+declare const GDK_KEY_Ukrainian_IE: number;
+
+declare const GDK_KEY_Ukrainian_YI: number;
+
+declare const GDK_KEY_Ukrainian_ghe_with_upturn: number;
+
+declare const GDK_KEY_Ukrainian_i: number;
+
+declare const GDK_KEY_Ukrainian_ie: number;
+
+declare const GDK_KEY_Ukrainian_yi: number;
+
+declare const GDK_KEY_Ukranian_I: number;
+
+declare const GDK_KEY_Ukranian_JE: number;
+
+declare const GDK_KEY_Ukranian_YI: number;
+
+declare const GDK_KEY_Ukranian_i: number;
+
+declare const GDK_KEY_Ukranian_je: number;
+
+declare const GDK_KEY_Ukranian_yi: number;
+
+declare const GDK_KEY_Umacron: number;
+
+declare const GDK_KEY_Undo: number;
+
+declare const GDK_KEY_Ungrab: number;
+
+declare const GDK_KEY_Uogonek: number;
+
+declare const GDK_KEY_Up: number;
+
+declare const GDK_KEY_Uring: number;
+
+declare const GDK_KEY_User1KB: number;
+
+declare const GDK_KEY_User2KB: number;
+
+declare const GDK_KEY_UserPB: number;
+
+declare const GDK_KEY_Utilde: number;
+
+declare const GDK_KEY_V: number;
+
+declare const GDK_KEY_VendorHome: number;
+
+declare const GDK_KEY_Video: number;
+
+declare const GDK_KEY_View: number;
+
+declare const GDK_KEY_VoidSymbol: number;
+
+declare const GDK_KEY_W: number;
+
+declare const GDK_KEY_WLAN: number;
+
+declare const GDK_KEY_WWAN: number;
+
+declare const GDK_KEY_WWW: number;
+
+declare const GDK_KEY_Wacute: number;
+
+declare const GDK_KEY_WakeUp: number;
+
+declare const GDK_KEY_Wcircumflex: number;
+
+declare const GDK_KEY_Wdiaeresis: number;
+
+declare const GDK_KEY_WebCam: number;
+
+declare const GDK_KEY_Wgrave: number;
+
+declare const GDK_KEY_WheelButton: number;
+
+declare const GDK_KEY_WindowClear: number;
+
+declare const GDK_KEY_WonSign: number;
+
+declare const GDK_KEY_Word: number;
+
+declare const GDK_KEY_X: number;
+
+declare const GDK_KEY_Xabovedot: number;
+
+declare const GDK_KEY_Xfer: number;
+
+declare const GDK_KEY_Y: number;
+
+declare const GDK_KEY_Yacute: number;
+
+declare const GDK_KEY_Ybelowdot: number;
+
+declare const GDK_KEY_Ycircumflex: number;
+
+declare const GDK_KEY_Ydiaeresis: number;
+
+declare const GDK_KEY_Yellow: number;
+
+declare const GDK_KEY_Ygrave: number;
+
+declare const GDK_KEY_Yhook: number;
+
+declare const GDK_KEY_Ytilde: number;
+
+declare const GDK_KEY_Z: number;
+
+declare const GDK_KEY_Zabovedot: number;
+
+declare const GDK_KEY_Zacute: number;
+
+declare const GDK_KEY_Zcaron: number;
+
+declare const GDK_KEY_Zen_Koho: number;
+
+declare const GDK_KEY_Zenkaku: number;
+
+declare const GDK_KEY_Zenkaku_Hankaku: number;
+
+declare const GDK_KEY_ZoomIn: number;
+
+declare const GDK_KEY_ZoomOut: number;
+
+declare const GDK_KEY_Zstroke: number;
+
+declare const GDK_KEY_a: number;
+
+declare const GDK_KEY_aacute: number;
+
+declare const GDK_KEY_abelowdot: number;
+
+declare const GDK_KEY_abovedot: number;
+
+declare const GDK_KEY_abreve: number;
+
+declare const GDK_KEY_abreveacute: number;
+
+declare const GDK_KEY_abrevebelowdot: number;
+
+declare const GDK_KEY_abrevegrave: number;
+
+declare const GDK_KEY_abrevehook: number;
+
+declare const GDK_KEY_abrevetilde: number;
+
+declare const GDK_KEY_acircumflex: number;
+
+declare const GDK_KEY_acircumflexacute: number;
+
+declare const GDK_KEY_acircumflexbelowdot: number;
+
+declare const GDK_KEY_acircumflexgrave: number;
+
+declare const GDK_KEY_acircumflexhook: number;
+
+declare const GDK_KEY_acircumflextilde: number;
+
+declare const GDK_KEY_acute: number;
+
+declare const GDK_KEY_adiaeresis: number;
+
+declare const GDK_KEY_ae: number;
+
+declare const GDK_KEY_agrave: number;
+
+declare const GDK_KEY_ahook: number;
+
+declare const GDK_KEY_amacron: number;
+
+declare const GDK_KEY_ampersand: number;
+
+declare const GDK_KEY_aogonek: number;
+
+declare const GDK_KEY_apostrophe: number;
+
+declare const GDK_KEY_approxeq: number;
+
+declare const GDK_KEY_approximate: number;
+
+declare const GDK_KEY_aring: number;
+
+declare const GDK_KEY_asciicircum: number;
+
+declare const GDK_KEY_asciitilde: number;
+
+declare const GDK_KEY_asterisk: number;
+
+declare const GDK_KEY_at: number;
+
+declare const GDK_KEY_atilde: number;
+
+declare const GDK_KEY_b: number;
+
+declare const GDK_KEY_babovedot: number;
+
+declare const GDK_KEY_backslash: number;
+
+declare const GDK_KEY_ballotcross: number;
+
+declare const GDK_KEY_bar: number;
+
+declare const GDK_KEY_because: number;
+
+declare const GDK_KEY_blank: number;
+
+declare const GDK_KEY_botintegral: number;
+
+declare const GDK_KEY_botleftparens: number;
+
+declare const GDK_KEY_botleftsqbracket: number;
+
+declare const GDK_KEY_botleftsummation: number;
+
+declare const GDK_KEY_botrightparens: number;
+
+declare const GDK_KEY_botrightsqbracket: number;
+
+declare const GDK_KEY_botrightsummation: number;
+
+declare const GDK_KEY_bott: number;
+
+declare const GDK_KEY_botvertsummationconnector: number;
+
+declare const GDK_KEY_braceleft: number;
+
+declare const GDK_KEY_braceright: number;
+
+declare const GDK_KEY_bracketleft: number;
+
+declare const GDK_KEY_bracketright: number;
+
+declare const GDK_KEY_braille_blank: number;
+
+declare const GDK_KEY_braille_dot_1: number;
+
+declare const GDK_KEY_braille_dot_10: number;
+
+declare const GDK_KEY_braille_dot_2: number;
+
+declare const GDK_KEY_braille_dot_3: number;
+
+declare const GDK_KEY_braille_dot_4: number;
+
+declare const GDK_KEY_braille_dot_5: number;
+
+declare const GDK_KEY_braille_dot_6: number;
+
+declare const GDK_KEY_braille_dot_7: number;
+
+declare const GDK_KEY_braille_dot_8: number;
+
+declare const GDK_KEY_braille_dot_9: number;
+
+declare const GDK_KEY_braille_dots_1: number;
+
+declare const GDK_KEY_braille_dots_12: number;
+
+declare const GDK_KEY_braille_dots_123: number;
+
+declare const GDK_KEY_braille_dots_1234: number;
+
+declare const GDK_KEY_braille_dots_12345: number;
+
+declare const GDK_KEY_braille_dots_123456: number;
+
+declare const GDK_KEY_braille_dots_1234567: number;
+
+declare const GDK_KEY_braille_dots_12345678: number;
+
+declare const GDK_KEY_braille_dots_1234568: number;
+
+declare const GDK_KEY_braille_dots_123457: number;
+
+declare const GDK_KEY_braille_dots_1234578: number;
+
+declare const GDK_KEY_braille_dots_123458: number;
+
+declare const GDK_KEY_braille_dots_12346: number;
+
+declare const GDK_KEY_braille_dots_123467: number;
+
+declare const GDK_KEY_braille_dots_1234678: number;
+
+declare const GDK_KEY_braille_dots_123468: number;
+
+declare const GDK_KEY_braille_dots_12347: number;
+
+declare const GDK_KEY_braille_dots_123478: number;
+
+declare const GDK_KEY_braille_dots_12348: number;
+
+declare const GDK_KEY_braille_dots_1235: number;
+
+declare const GDK_KEY_braille_dots_12356: number;
+
+declare const GDK_KEY_braille_dots_123567: number;
+
+declare const GDK_KEY_braille_dots_1235678: number;
+
+declare const GDK_KEY_braille_dots_123568: number;
+
+declare const GDK_KEY_braille_dots_12357: number;
+
+declare const GDK_KEY_braille_dots_123578: number;
+
+declare const GDK_KEY_braille_dots_12358: number;
+
+declare const GDK_KEY_braille_dots_1236: number;
+
+declare const GDK_KEY_braille_dots_12367: number;
+
+declare const GDK_KEY_braille_dots_123678: number;
+
+declare const GDK_KEY_braille_dots_12368: number;
+
+declare const GDK_KEY_braille_dots_1237: number;
+
+declare const GDK_KEY_braille_dots_12378: number;
+
+declare const GDK_KEY_braille_dots_1238: number;
+
+declare const GDK_KEY_braille_dots_124: number;
+
+declare const GDK_KEY_braille_dots_1245: number;
+
+declare const GDK_KEY_braille_dots_12456: number;
+
+declare const GDK_KEY_braille_dots_124567: number;
+
+declare const GDK_KEY_braille_dots_1245678: number;
+
+declare const GDK_KEY_braille_dots_124568: number;
+
+declare const GDK_KEY_braille_dots_12457: number;
+
+declare const GDK_KEY_braille_dots_124578: number;
+
+declare const GDK_KEY_braille_dots_12458: number;
+
+declare const GDK_KEY_braille_dots_1246: number;
+
+declare const GDK_KEY_braille_dots_12467: number;
+
+declare const GDK_KEY_braille_dots_124678: number;
+
+declare const GDK_KEY_braille_dots_12468: number;
+
+declare const GDK_KEY_braille_dots_1247: number;
+
+declare const GDK_KEY_braille_dots_12478: number;
+
+declare const GDK_KEY_braille_dots_1248: number;
+
+declare const GDK_KEY_braille_dots_125: number;
+
+declare const GDK_KEY_braille_dots_1256: number;
+
+declare const GDK_KEY_braille_dots_12567: number;
+
+declare const GDK_KEY_braille_dots_125678: number;
+
+declare const GDK_KEY_braille_dots_12568: number;
+
+declare const GDK_KEY_braille_dots_1257: number;
+
+declare const GDK_KEY_braille_dots_12578: number;
+
+declare const GDK_KEY_braille_dots_1258: number;
+
+declare const GDK_KEY_braille_dots_126: number;
+
+declare const GDK_KEY_braille_dots_1267: number;
+
+declare const GDK_KEY_braille_dots_12678: number;
+
+declare const GDK_KEY_braille_dots_1268: number;
+
+declare const GDK_KEY_braille_dots_127: number;
+
+declare const GDK_KEY_braille_dots_1278: number;
+
+declare const GDK_KEY_braille_dots_128: number;
+
+declare const GDK_KEY_braille_dots_13: number;
+
+declare const GDK_KEY_braille_dots_134: number;
+
+declare const GDK_KEY_braille_dots_1345: number;
+
+declare const GDK_KEY_braille_dots_13456: number;
+
+declare const GDK_KEY_braille_dots_134567: number;
+
+declare const GDK_KEY_braille_dots_1345678: number;
+
+declare const GDK_KEY_braille_dots_134568: number;
+
+declare const GDK_KEY_braille_dots_13457: number;
+
+declare const GDK_KEY_braille_dots_134578: number;
+
+declare const GDK_KEY_braille_dots_13458: number;
+
+declare const GDK_KEY_braille_dots_1346: number;
+
+declare const GDK_KEY_braille_dots_13467: number;
+
+declare const GDK_KEY_braille_dots_134678: number;
+
+declare const GDK_KEY_braille_dots_13468: number;
+
+declare const GDK_KEY_braille_dots_1347: number;
+
+declare const GDK_KEY_braille_dots_13478: number;
+
+declare const GDK_KEY_braille_dots_1348: number;
+
+declare const GDK_KEY_braille_dots_135: number;
+
+declare const GDK_KEY_braille_dots_1356: number;
+
+declare const GDK_KEY_braille_dots_13567: number;
+
+declare const GDK_KEY_braille_dots_135678: number;
+
+declare const GDK_KEY_braille_dots_13568: number;
+
+declare const GDK_KEY_braille_dots_1357: number;
+
+declare const GDK_KEY_braille_dots_13578: number;
+
+declare const GDK_KEY_braille_dots_1358: number;
+
+declare const GDK_KEY_braille_dots_136: number;
+
+declare const GDK_KEY_braille_dots_1367: number;
+
+declare const GDK_KEY_braille_dots_13678: number;
+
+declare const GDK_KEY_braille_dots_1368: number;
+
+declare const GDK_KEY_braille_dots_137: number;
+
+declare const GDK_KEY_braille_dots_1378: number;
+
+declare const GDK_KEY_braille_dots_138: number;
+
+declare const GDK_KEY_braille_dots_14: number;
+
+declare const GDK_KEY_braille_dots_145: number;
+
+declare const GDK_KEY_braille_dots_1456: number;
+
+declare const GDK_KEY_braille_dots_14567: number;
+
+declare const GDK_KEY_braille_dots_145678: number;
+
+declare const GDK_KEY_braille_dots_14568: number;
+
+declare const GDK_KEY_braille_dots_1457: number;
+
+declare const GDK_KEY_braille_dots_14578: number;
+
+declare const GDK_KEY_braille_dots_1458: number;
+
+declare const GDK_KEY_braille_dots_146: number;
+
+declare const GDK_KEY_braille_dots_1467: number;
+
+declare const GDK_KEY_braille_dots_14678: number;
+
+declare const GDK_KEY_braille_dots_1468: number;
+
+declare const GDK_KEY_braille_dots_147: number;
+
+declare const GDK_KEY_braille_dots_1478: number;
+
+declare const GDK_KEY_braille_dots_148: number;
+
+declare const GDK_KEY_braille_dots_15: number;
+
+declare const GDK_KEY_braille_dots_156: number;
+
+declare const GDK_KEY_braille_dots_1567: number;
+
+declare const GDK_KEY_braille_dots_15678: number;
+
+declare const GDK_KEY_braille_dots_1568: number;
+
+declare const GDK_KEY_braille_dots_157: number;
+
+declare const GDK_KEY_braille_dots_1578: number;
+
+declare const GDK_KEY_braille_dots_158: number;
+
+declare const GDK_KEY_braille_dots_16: number;
+
+declare const GDK_KEY_braille_dots_167: number;
+
+declare const GDK_KEY_braille_dots_1678: number;
+
+declare const GDK_KEY_braille_dots_168: number;
+
+declare const GDK_KEY_braille_dots_17: number;
+
+declare const GDK_KEY_braille_dots_178: number;
+
+declare const GDK_KEY_braille_dots_18: number;
+
+declare const GDK_KEY_braille_dots_2: number;
+
+declare const GDK_KEY_braille_dots_23: number;
+
+declare const GDK_KEY_braille_dots_234: number;
+
+declare const GDK_KEY_braille_dots_2345: number;
+
+declare const GDK_KEY_braille_dots_23456: number;
+
+declare const GDK_KEY_braille_dots_234567: number;
+
+declare const GDK_KEY_braille_dots_2345678: number;
+
+declare const GDK_KEY_braille_dots_234568: number;
+
+declare const GDK_KEY_braille_dots_23457: number;
+
+declare const GDK_KEY_braille_dots_234578: number;
+
+declare const GDK_KEY_braille_dots_23458: number;
+
+declare const GDK_KEY_braille_dots_2346: number;
+
+declare const GDK_KEY_braille_dots_23467: number;
+
+declare const GDK_KEY_braille_dots_234678: number;
+
+declare const GDK_KEY_braille_dots_23468: number;
+
+declare const GDK_KEY_braille_dots_2347: number;
+
+declare const GDK_KEY_braille_dots_23478: number;
+
+declare const GDK_KEY_braille_dots_2348: number;
+
+declare const GDK_KEY_braille_dots_235: number;
+
+declare const GDK_KEY_braille_dots_2356: number;
+
+declare const GDK_KEY_braille_dots_23567: number;
+
+declare const GDK_KEY_braille_dots_235678: number;
+
+declare const GDK_KEY_braille_dots_23568: number;
+
+declare const GDK_KEY_braille_dots_2357: number;
+
+declare const GDK_KEY_braille_dots_23578: number;
+
+declare const GDK_KEY_braille_dots_2358: number;
+
+declare const GDK_KEY_braille_dots_236: number;
+
+declare const GDK_KEY_braille_dots_2367: number;
+
+declare const GDK_KEY_braille_dots_23678: number;
+
+declare const GDK_KEY_braille_dots_2368: number;
+
+declare const GDK_KEY_braille_dots_237: number;
+
+declare const GDK_KEY_braille_dots_2378: number;
+
+declare const GDK_KEY_braille_dots_238: number;
+
+declare const GDK_KEY_braille_dots_24: number;
+
+declare const GDK_KEY_braille_dots_245: number;
+
+declare const GDK_KEY_braille_dots_2456: number;
+
+declare const GDK_KEY_braille_dots_24567: number;
+
+declare const GDK_KEY_braille_dots_245678: number;
+
+declare const GDK_KEY_braille_dots_24568: number;
+
+declare const GDK_KEY_braille_dots_2457: number;
+
+declare const GDK_KEY_braille_dots_24578: number;
+
+declare const GDK_KEY_braille_dots_2458: number;
+
+declare const GDK_KEY_braille_dots_246: number;
+
+declare const GDK_KEY_braille_dots_2467: number;
+
+declare const GDK_KEY_braille_dots_24678: number;
+
+declare const GDK_KEY_braille_dots_2468: number;
+
+declare const GDK_KEY_braille_dots_247: number;
+
+declare const GDK_KEY_braille_dots_2478: number;
+
+declare const GDK_KEY_braille_dots_248: number;
+
+declare const GDK_KEY_braille_dots_25: number;
+
+declare const GDK_KEY_braille_dots_256: number;
+
+declare const GDK_KEY_braille_dots_2567: number;
+
+declare const GDK_KEY_braille_dots_25678: number;
+
+declare const GDK_KEY_braille_dots_2568: number;
+
+declare const GDK_KEY_braille_dots_257: number;
+
+declare const GDK_KEY_braille_dots_2578: number;
+
+declare const GDK_KEY_braille_dots_258: number;
+
+declare const GDK_KEY_braille_dots_26: number;
+
+declare const GDK_KEY_braille_dots_267: number;
+
+declare const GDK_KEY_braille_dots_2678: number;
+
+declare const GDK_KEY_braille_dots_268: number;
+
+declare const GDK_KEY_braille_dots_27: number;
+
+declare const GDK_KEY_braille_dots_278: number;
+
+declare const GDK_KEY_braille_dots_28: number;
+
+declare const GDK_KEY_braille_dots_3: number;
+
+declare const GDK_KEY_braille_dots_34: number;
+
+declare const GDK_KEY_braille_dots_345: number;
+
+declare const GDK_KEY_braille_dots_3456: number;
+
+declare const GDK_KEY_braille_dots_34567: number;
+
+declare const GDK_KEY_braille_dots_345678: number;
+
+declare const GDK_KEY_braille_dots_34568: number;
+
+declare const GDK_KEY_braille_dots_3457: number;
+
+declare const GDK_KEY_braille_dots_34578: number;
+
+declare const GDK_KEY_braille_dots_3458: number;
+
+declare const GDK_KEY_braille_dots_346: number;
+
+declare const GDK_KEY_braille_dots_3467: number;
+
+declare const GDK_KEY_braille_dots_34678: number;
+
+declare const GDK_KEY_braille_dots_3468: number;
+
+declare const GDK_KEY_braille_dots_347: number;
+
+declare const GDK_KEY_braille_dots_3478: number;
+
+declare const GDK_KEY_braille_dots_348: number;
+
+declare const GDK_KEY_braille_dots_35: number;
+
+declare const GDK_KEY_braille_dots_356: number;
+
+declare const GDK_KEY_braille_dots_3567: number;
+
+declare const GDK_KEY_braille_dots_35678: number;
+
+declare const GDK_KEY_braille_dots_3568: number;
+
+declare const GDK_KEY_braille_dots_357: number;
+
+declare const GDK_KEY_braille_dots_3578: number;
+
+declare const GDK_KEY_braille_dots_358: number;
+
+declare const GDK_KEY_braille_dots_36: number;
+
+declare const GDK_KEY_braille_dots_367: number;
+
+declare const GDK_KEY_braille_dots_3678: number;
+
+declare const GDK_KEY_braille_dots_368: number;
+
+declare const GDK_KEY_braille_dots_37: number;
+
+declare const GDK_KEY_braille_dots_378: number;
+
+declare const GDK_KEY_braille_dots_38: number;
+
+declare const GDK_KEY_braille_dots_4: number;
+
+declare const GDK_KEY_braille_dots_45: number;
+
+declare const GDK_KEY_braille_dots_456: number;
+
+declare const GDK_KEY_braille_dots_4567: number;
+
+declare const GDK_KEY_braille_dots_45678: number;
+
+declare const GDK_KEY_braille_dots_4568: number;
+
+declare const GDK_KEY_braille_dots_457: number;
+
+declare const GDK_KEY_braille_dots_4578: number;
+
+declare const GDK_KEY_braille_dots_458: number;
+
+declare const GDK_KEY_braille_dots_46: number;
+
+declare const GDK_KEY_braille_dots_467: number;
+
+declare const GDK_KEY_braille_dots_4678: number;
+
+declare const GDK_KEY_braille_dots_468: number;
+
+declare const GDK_KEY_braille_dots_47: number;
+
+declare const GDK_KEY_braille_dots_478: number;
+
+declare const GDK_KEY_braille_dots_48: number;
+
+declare const GDK_KEY_braille_dots_5: number;
+
+declare const GDK_KEY_braille_dots_56: number;
+
+declare const GDK_KEY_braille_dots_567: number;
+
+declare const GDK_KEY_braille_dots_5678: number;
+
+declare const GDK_KEY_braille_dots_568: number;
+
+declare const GDK_KEY_braille_dots_57: number;
+
+declare const GDK_KEY_braille_dots_578: number;
+
+declare const GDK_KEY_braille_dots_58: number;
+
+declare const GDK_KEY_braille_dots_6: number;
+
+declare const GDK_KEY_braille_dots_67: number;
+
+declare const GDK_KEY_braille_dots_678: number;
+
+declare const GDK_KEY_braille_dots_68: number;
+
+declare const GDK_KEY_braille_dots_7: number;
+
+declare const GDK_KEY_braille_dots_78: number;
+
+declare const GDK_KEY_braille_dots_8: number;
+
+declare const GDK_KEY_breve: number;
+
+declare const GDK_KEY_brokenbar: number;
+
+declare const GDK_KEY_c: number;
+
+declare const GDK_KEY_c_h: number;
+
+declare const GDK_KEY_cabovedot: number;
+
+declare const GDK_KEY_cacute: number;
+
+declare const GDK_KEY_careof: number;
+
+declare const GDK_KEY_caret: number;
+
+declare const GDK_KEY_caron: number;
+
+declare const GDK_KEY_ccaron: number;
+
+declare const GDK_KEY_ccedilla: number;
+
+declare const GDK_KEY_ccircumflex: number;
+
+declare const GDK_KEY_cedilla: number;
+
+declare const GDK_KEY_cent: number;
+
+declare const GDK_KEY_ch: number;
+
+declare const GDK_KEY_checkerboard: number;
+
+declare const GDK_KEY_checkmark: number;
+
+declare const GDK_KEY_circle: number;
+
+declare const GDK_KEY_club: number;
+
+declare const GDK_KEY_colon: number;
+
+declare const GDK_KEY_comma: number;
+
+declare const GDK_KEY_containsas: number;
+
+declare const GDK_KEY_copyright: number;
+
+declare const GDK_KEY_cr: number;
+
+declare const GDK_KEY_crossinglines: number;
+
+declare const GDK_KEY_cuberoot: number;
+
+declare const GDK_KEY_currency: number;
+
+declare const GDK_KEY_cursor: number;
+
+declare const GDK_KEY_d: number;
+
+declare const GDK_KEY_dabovedot: number;
+
+declare const GDK_KEY_dagger: number;
+
+declare const GDK_KEY_dcaron: number;
+
+declare const GDK_KEY_dead_A: number;
+
+declare const GDK_KEY_dead_E: number;
+
+declare const GDK_KEY_dead_I: number;
+
+declare const GDK_KEY_dead_O: number;
+
+declare const GDK_KEY_dead_U: number;
+
+declare const GDK_KEY_dead_a: number;
+
+declare const GDK_KEY_dead_abovecomma: number;
+
+declare const GDK_KEY_dead_abovedot: number;
+
+declare const GDK_KEY_dead_abovereversedcomma: number;
+
+declare const GDK_KEY_dead_abovering: number;
+
+declare const GDK_KEY_dead_aboveverticalline: number;
+
+declare const GDK_KEY_dead_acute: number;
+
+declare const GDK_KEY_dead_belowbreve: number;
+
+declare const GDK_KEY_dead_belowcircumflex: number;
+
+declare const GDK_KEY_dead_belowcomma: number;
+
+declare const GDK_KEY_dead_belowdiaeresis: number;
+
+declare const GDK_KEY_dead_belowdot: number;
+
+declare const GDK_KEY_dead_belowmacron: number;
+
+declare const GDK_KEY_dead_belowring: number;
+
+declare const GDK_KEY_dead_belowtilde: number;
+
+declare const GDK_KEY_dead_belowverticalline: number;
+
+declare const GDK_KEY_dead_breve: number;
+
+declare const GDK_KEY_dead_capital_schwa: number;
+
+declare const GDK_KEY_dead_caron: number;
+
+declare const GDK_KEY_dead_cedilla: number;
+
+declare const GDK_KEY_dead_circumflex: number;
+
+declare const GDK_KEY_dead_currency: number;
+
+declare const GDK_KEY_dead_dasia: number;
+
+declare const GDK_KEY_dead_diaeresis: number;
+
+declare const GDK_KEY_dead_doubleacute: number;
+
+declare const GDK_KEY_dead_doublegrave: number;
+
+declare const GDK_KEY_dead_e: number;
+
+declare const GDK_KEY_dead_grave: number;
+
+declare const GDK_KEY_dead_greek: number;
+
+declare const GDK_KEY_dead_hook: number;
+
+declare const GDK_KEY_dead_horn: number;
+
+declare const GDK_KEY_dead_i: number;
+
+declare const GDK_KEY_dead_invertedbreve: number;
+
+declare const GDK_KEY_dead_iota: number;
+
+declare const GDK_KEY_dead_longsolidusoverlay: number;
+
+declare const GDK_KEY_dead_lowline: number;
+
+declare const GDK_KEY_dead_macron: number;
+
+declare const GDK_KEY_dead_o: number;
+
+declare const GDK_KEY_dead_ogonek: number;
+
+declare const GDK_KEY_dead_perispomeni: number;
+
+declare const GDK_KEY_dead_psili: number;
+
+declare const GDK_KEY_dead_semivoiced_sound: number;
+
+declare const GDK_KEY_dead_small_schwa: number;
+
+declare const GDK_KEY_dead_stroke: number;
+
+declare const GDK_KEY_dead_tilde: number;
+
+declare const GDK_KEY_dead_u: number;
+
+declare const GDK_KEY_dead_voiced_sound: number;
+
+declare const GDK_KEY_decimalpoint: number;
+
+declare const GDK_KEY_degree: number;
+
+declare const GDK_KEY_diaeresis: number;
+
+declare const GDK_KEY_diamond: number;
+
+declare const GDK_KEY_digitspace: number;
+
+declare const GDK_KEY_dintegral: number;
+
+declare const GDK_KEY_division: number;
+
+declare const GDK_KEY_dollar: number;
+
+declare const GDK_KEY_doubbaselinedot: number;
+
+declare const GDK_KEY_doubleacute: number;
+
+declare const GDK_KEY_doubledagger: number;
+
+declare const GDK_KEY_doublelowquotemark: number;
+
+declare const GDK_KEY_downarrow: number;
+
+declare const GDK_KEY_downcaret: number;
+
+declare const GDK_KEY_downshoe: number;
+
+declare const GDK_KEY_downstile: number;
+
+declare const GDK_KEY_downtack: number;
+
+declare const GDK_KEY_dstroke: number;
+
+declare const GDK_KEY_e: number;
+
+declare const GDK_KEY_eabovedot: number;
+
+declare const GDK_KEY_eacute: number;
+
+declare const GDK_KEY_ebelowdot: number;
+
+declare const GDK_KEY_ecaron: number;
+
+declare const GDK_KEY_ecircumflex: number;
+
+declare const GDK_KEY_ecircumflexacute: number;
+
+declare const GDK_KEY_ecircumflexbelowdot: number;
+
+declare const GDK_KEY_ecircumflexgrave: number;
+
+declare const GDK_KEY_ecircumflexhook: number;
+
+declare const GDK_KEY_ecircumflextilde: number;
+
+declare const GDK_KEY_ediaeresis: number;
+
+declare const GDK_KEY_egrave: number;
+
+declare const GDK_KEY_ehook: number;
+
+declare const GDK_KEY_eightsubscript: number;
+
+declare const GDK_KEY_eightsuperior: number;
+
+declare const GDK_KEY_elementof: number;
+
+declare const GDK_KEY_ellipsis: number;
+
+declare const GDK_KEY_em3space: number;
+
+declare const GDK_KEY_em4space: number;
+
+declare const GDK_KEY_emacron: number;
+
+declare const GDK_KEY_emdash: number;
+
+declare const GDK_KEY_emfilledcircle: number;
+
+declare const GDK_KEY_emfilledrect: number;
+
+declare const GDK_KEY_emopencircle: number;
+
+declare const GDK_KEY_emopenrectangle: number;
+
+declare const GDK_KEY_emptyset: number;
+
+declare const GDK_KEY_emspace: number;
+
+declare const GDK_KEY_endash: number;
+
+declare const GDK_KEY_enfilledcircbullet: number;
+
+declare const GDK_KEY_enfilledsqbullet: number;
+
+declare const GDK_KEY_eng: number;
+
+declare const GDK_KEY_enopencircbullet: number;
+
+declare const GDK_KEY_enopensquarebullet: number;
+
+declare const GDK_KEY_enspace: number;
+
+declare const GDK_KEY_eogonek: number;
+
+declare const GDK_KEY_equal: number;
+
+declare const GDK_KEY_eth: number;
+
+declare const GDK_KEY_etilde: number;
+
+declare const GDK_KEY_exclam: number;
+
+declare const GDK_KEY_exclamdown: number;
+
+declare const GDK_KEY_ezh: number;
+
+declare const GDK_KEY_f: number;
+
+declare const GDK_KEY_fabovedot: number;
+
+declare const GDK_KEY_femalesymbol: number;
+
+declare const GDK_KEY_ff: number;
+
+declare const GDK_KEY_figdash: number;
+
+declare const GDK_KEY_filledlefttribullet: number;
+
+declare const GDK_KEY_filledrectbullet: number;
+
+declare const GDK_KEY_filledrighttribullet: number;
+
+declare const GDK_KEY_filledtribulletdown: number;
+
+declare const GDK_KEY_filledtribulletup: number;
+
+declare const GDK_KEY_fiveeighths: number;
+
+declare const GDK_KEY_fivesixths: number;
+
+declare const GDK_KEY_fivesubscript: number;
+
+declare const GDK_KEY_fivesuperior: number;
+
+declare const GDK_KEY_fourfifths: number;
+
+declare const GDK_KEY_foursubscript: number;
+
+declare const GDK_KEY_foursuperior: number;
+
+declare const GDK_KEY_fourthroot: number;
+
+declare const GDK_KEY_function: number;
+
+declare const GDK_KEY_g: number;
+
+declare const GDK_KEY_gabovedot: number;
+
+declare const GDK_KEY_gbreve: number;
+
+declare const GDK_KEY_gcaron: number;
+
+declare const GDK_KEY_gcedilla: number;
+
+declare const GDK_KEY_gcircumflex: number;
+
+declare const GDK_KEY_grave: number;
+
+declare const GDK_KEY_greater: number;
+
+declare const GDK_KEY_greaterthanequal: number;
+
+declare const GDK_KEY_guillemotleft: number;
+
+declare const GDK_KEY_guillemotright: number;
+
+declare const GDK_KEY_h: number;
+
+declare const GDK_KEY_hairspace: number;
+
+declare const GDK_KEY_hcircumflex: number;
+
+declare const GDK_KEY_heart: number;
+
+declare const GDK_KEY_hebrew_aleph: number;
+
+declare const GDK_KEY_hebrew_ayin: number;
+
+declare const GDK_KEY_hebrew_bet: number;
+
+declare const GDK_KEY_hebrew_beth: number;
+
+declare const GDK_KEY_hebrew_chet: number;
+
+declare const GDK_KEY_hebrew_dalet: number;
+
+declare const GDK_KEY_hebrew_daleth: number;
+
+declare const GDK_KEY_hebrew_doublelowline: number;
+
+declare const GDK_KEY_hebrew_finalkaph: number;
+
+declare const GDK_KEY_hebrew_finalmem: number;
+
+declare const GDK_KEY_hebrew_finalnun: number;
+
+declare const GDK_KEY_hebrew_finalpe: number;
+
+declare const GDK_KEY_hebrew_finalzade: number;
+
+declare const GDK_KEY_hebrew_finalzadi: number;
+
+declare const GDK_KEY_hebrew_gimel: number;
+
+declare const GDK_KEY_hebrew_gimmel: number;
+
+declare const GDK_KEY_hebrew_he: number;
+
+declare const GDK_KEY_hebrew_het: number;
+
+declare const GDK_KEY_hebrew_kaph: number;
+
+declare const GDK_KEY_hebrew_kuf: number;
+
+declare const GDK_KEY_hebrew_lamed: number;
+
+declare const GDK_KEY_hebrew_mem: number;
+
+declare const GDK_KEY_hebrew_nun: number;
+
+declare const GDK_KEY_hebrew_pe: number;
+
+declare const GDK_KEY_hebrew_qoph: number;
+
+declare const GDK_KEY_hebrew_resh: number;
+
+declare const GDK_KEY_hebrew_samech: number;
+
+declare const GDK_KEY_hebrew_samekh: number;
+
+declare const GDK_KEY_hebrew_shin: number;
+
+declare const GDK_KEY_hebrew_taf: number;
+
+declare const GDK_KEY_hebrew_taw: number;
+
+declare const GDK_KEY_hebrew_tet: number;
+
+declare const GDK_KEY_hebrew_teth: number;
+
+declare const GDK_KEY_hebrew_waw: number;
+
+declare const GDK_KEY_hebrew_yod: number;
+
+declare const GDK_KEY_hebrew_zade: number;
+
+declare const GDK_KEY_hebrew_zadi: number;
+
+declare const GDK_KEY_hebrew_zain: number;
+
+declare const GDK_KEY_hebrew_zayin: number;
+
+declare const GDK_KEY_hexagram: number;
+
+declare const GDK_KEY_horizconnector: number;
+
+declare const GDK_KEY_horizlinescan1: number;
+
+declare const GDK_KEY_horizlinescan3: number;
+
+declare const GDK_KEY_horizlinescan5: number;
+
+declare const GDK_KEY_horizlinescan7: number;
+
+declare const GDK_KEY_horizlinescan9: number;
+
+declare const GDK_KEY_hstroke: number;
+
+declare const GDK_KEY_ht: number;
+
+declare const GDK_KEY_hyphen: number;
+
+declare const GDK_KEY_i: number;
+
+declare const GDK_KEY_iTouch: number;
+
+declare const GDK_KEY_iacute: number;
+
+declare const GDK_KEY_ibelowdot: number;
+
+declare const GDK_KEY_ibreve: number;
+
+declare const GDK_KEY_icircumflex: number;
+
+declare const GDK_KEY_identical: number;
+
+declare const GDK_KEY_idiaeresis: number;
+
+declare const GDK_KEY_idotless: number;
+
+declare const GDK_KEY_ifonlyif: number;
+
+declare const GDK_KEY_igrave: number;
+
+declare const GDK_KEY_ihook: number;
+
+declare const GDK_KEY_imacron: number;
+
+declare const GDK_KEY_implies: number;
+
+declare const GDK_KEY_includedin: number;
+
+declare const GDK_KEY_includes: number;
+
+declare const GDK_KEY_infinity: number;
+
+declare const GDK_KEY_integral: number;
+
+declare const GDK_KEY_intersection: number;
+
+declare const GDK_KEY_iogonek: number;
+
+declare const GDK_KEY_itilde: number;
+
+declare const GDK_KEY_j: number;
+
+declare const GDK_KEY_jcircumflex: number;
+
+declare const GDK_KEY_jot: number;
+
+declare const GDK_KEY_k: number;
+
+declare const GDK_KEY_kana_A: number;
+
+declare const GDK_KEY_kana_CHI: number;
+
+declare const GDK_KEY_kana_E: number;
+
+declare const GDK_KEY_kana_FU: number;
+
+declare const GDK_KEY_kana_HA: number;
+
+declare const GDK_KEY_kana_HE: number;
+
+declare const GDK_KEY_kana_HI: number;
+
+declare const GDK_KEY_kana_HO: number;
+
+declare const GDK_KEY_kana_HU: number;
+
+declare const GDK_KEY_kana_I: number;
+
+declare const GDK_KEY_kana_KA: number;
+
+declare const GDK_KEY_kana_KE: number;
+
+declare const GDK_KEY_kana_KI: number;
+
+declare const GDK_KEY_kana_KO: number;
+
+declare const GDK_KEY_kana_KU: number;
+
+declare const GDK_KEY_kana_MA: number;
+
+declare const GDK_KEY_kana_ME: number;
+
+declare const GDK_KEY_kana_MI: number;
+
+declare const GDK_KEY_kana_MO: number;
+
+declare const GDK_KEY_kana_MU: number;
+
+declare const GDK_KEY_kana_N: number;
+
+declare const GDK_KEY_kana_NA: number;
+
+declare const GDK_KEY_kana_NE: number;
+
+declare const GDK_KEY_kana_NI: number;
+
+declare const GDK_KEY_kana_NO: number;
+
+declare const GDK_KEY_kana_NU: number;
+
+declare const GDK_KEY_kana_O: number;
+
+declare const GDK_KEY_kana_RA: number;
+
+declare const GDK_KEY_kana_RE: number;
+
+declare const GDK_KEY_kana_RI: number;
+
+declare const GDK_KEY_kana_RO: number;
+
+declare const GDK_KEY_kana_RU: number;
+
+declare const GDK_KEY_kana_SA: number;
+
+declare const GDK_KEY_kana_SE: number;
+
+declare const GDK_KEY_kana_SHI: number;
+
+declare const GDK_KEY_kana_SO: number;
+
+declare const GDK_KEY_kana_SU: number;
+
+declare const GDK_KEY_kana_TA: number;
+
+declare const GDK_KEY_kana_TE: number;
+
+declare const GDK_KEY_kana_TI: number;
+
+declare const GDK_KEY_kana_TO: number;
+
+declare const GDK_KEY_kana_TSU: number;
+
+declare const GDK_KEY_kana_TU: number;
+
+declare const GDK_KEY_kana_U: number;
+
+declare const GDK_KEY_kana_WA: number;
+
+declare const GDK_KEY_kana_WO: number;
+
+declare const GDK_KEY_kana_YA: number;
+
+declare const GDK_KEY_kana_YO: number;
+
+declare const GDK_KEY_kana_YU: number;
+
+declare const GDK_KEY_kana_a: number;
+
+declare const GDK_KEY_kana_closingbracket: number;
+
+declare const GDK_KEY_kana_comma: number;
+
+declare const GDK_KEY_kana_conjunctive: number;
+
+declare const GDK_KEY_kana_e: number;
+
+declare const GDK_KEY_kana_fullstop: number;
+
+declare const GDK_KEY_kana_i: number;
+
+declare const GDK_KEY_kana_middledot: number;
+
+declare const GDK_KEY_kana_o: number;
+
+declare const GDK_KEY_kana_openingbracket: number;
+
+declare const GDK_KEY_kana_switch: number;
+
+declare const GDK_KEY_kana_tsu: number;
+
+declare const GDK_KEY_kana_tu: number;
+
+declare const GDK_KEY_kana_u: number;
+
+declare const GDK_KEY_kana_ya: number;
+
+declare const GDK_KEY_kana_yo: number;
+
+declare const GDK_KEY_kana_yu: number;
+
+declare const GDK_KEY_kappa: number;
+
+declare const GDK_KEY_kcedilla: number;
+
+declare const GDK_KEY_kra: number;
+
+declare const GDK_KEY_l: number;
+
+declare const GDK_KEY_lacute: number;
+
+declare const GDK_KEY_latincross: number;
+
+declare const GDK_KEY_lbelowdot: number;
+
+declare const GDK_KEY_lcaron: number;
+
+declare const GDK_KEY_lcedilla: number;
+
+declare const GDK_KEY_leftanglebracket: number;
+
+declare const GDK_KEY_leftarrow: number;
+
+declare const GDK_KEY_leftcaret: number;
+
+declare const GDK_KEY_leftdoublequotemark: number;
+
+declare const GDK_KEY_leftmiddlecurlybrace: number;
+
+declare const GDK_KEY_leftopentriangle: number;
+
+declare const GDK_KEY_leftpointer: number;
+
+declare const GDK_KEY_leftradical: number;
+
+declare const GDK_KEY_leftshoe: number;
+
+declare const GDK_KEY_leftsinglequotemark: number;
+
+declare const GDK_KEY_leftt: number;
+
+declare const GDK_KEY_lefttack: number;
+
+declare const GDK_KEY_less: number;
+
+declare const GDK_KEY_lessthanequal: number;
+
+declare const GDK_KEY_lf: number;
+
+declare const GDK_KEY_logicaland: number;
+
+declare const GDK_KEY_logicalor: number;
+
+declare const GDK_KEY_lowleftcorner: number;
+
+declare const GDK_KEY_lowrightcorner: number;
+
+declare const GDK_KEY_lstroke: number;
+
+declare const GDK_KEY_m: number;
+
+declare const GDK_KEY_mabovedot: number;
+
+declare const GDK_KEY_macron: number;
+
+declare const GDK_KEY_malesymbol: number;
+
+declare const GDK_KEY_maltesecross: number;
+
+declare const GDK_KEY_marker: number;
+
+declare const GDK_KEY_masculine: number;
+
+declare const GDK_KEY_minus: number;
+
+declare const GDK_KEY_minutes: number;
+
+declare const GDK_KEY_mu: number;
+
+declare const GDK_KEY_multiply: number;
+
+declare const GDK_KEY_musicalflat: number;
+
+declare const GDK_KEY_musicalsharp: number;
+
+declare const GDK_KEY_n: number;
+
+declare const GDK_KEY_nabla: number;
+
+declare const GDK_KEY_nacute: number;
+
+declare const GDK_KEY_ncaron: number;
+
+declare const GDK_KEY_ncedilla: number;
+
+declare const GDK_KEY_ninesubscript: number;
+
+declare const GDK_KEY_ninesuperior: number;
+
+declare const GDK_KEY_nl: number;
+
+declare const GDK_KEY_nobreakspace: number;
+
+declare const GDK_KEY_notapproxeq: number;
+
+declare const GDK_KEY_notelementof: number;
+
+declare const GDK_KEY_notequal: number;
+
+declare const GDK_KEY_notidentical: number;
+
+declare const GDK_KEY_notsign: number;
+
+declare const GDK_KEY_ntilde: number;
+
+declare const GDK_KEY_numbersign: number;
+
+declare const GDK_KEY_numerosign: number;
+
+declare const GDK_KEY_o: number;
+
+declare const GDK_KEY_oacute: number;
+
+declare const GDK_KEY_obarred: number;
+
+declare const GDK_KEY_obelowdot: number;
+
+declare const GDK_KEY_ocaron: number;
+
+declare const GDK_KEY_ocircumflex: number;
+
+declare const GDK_KEY_ocircumflexacute: number;
+
+declare const GDK_KEY_ocircumflexbelowdot: number;
+
+declare const GDK_KEY_ocircumflexgrave: number;
+
+declare const GDK_KEY_ocircumflexhook: number;
+
+declare const GDK_KEY_ocircumflextilde: number;
+
+declare const GDK_KEY_odiaeresis: number;
+
+declare const GDK_KEY_odoubleacute: number;
+
+declare const GDK_KEY_oe: number;
+
+declare const GDK_KEY_ogonek: number;
+
+declare const GDK_KEY_ograve: number;
+
+declare const GDK_KEY_ohook: number;
+
+declare const GDK_KEY_ohorn: number;
+
+declare const GDK_KEY_ohornacute: number;
+
+declare const GDK_KEY_ohornbelowdot: number;
+
+declare const GDK_KEY_ohorngrave: number;
+
+declare const GDK_KEY_ohornhook: number;
+
+declare const GDK_KEY_ohorntilde: number;
+
+declare const GDK_KEY_omacron: number;
+
+declare const GDK_KEY_oneeighth: number;
+
+declare const GDK_KEY_onefifth: number;
+
+declare const GDK_KEY_onehalf: number;
+
+declare const GDK_KEY_onequarter: number;
+
+declare const GDK_KEY_onesixth: number;
+
+declare const GDK_KEY_onesubscript: number;
+
+declare const GDK_KEY_onesuperior: number;
+
+declare const GDK_KEY_onethird: number;
+
+declare const GDK_KEY_ooblique: number;
+
+declare const GDK_KEY_openrectbullet: number;
+
+declare const GDK_KEY_openstar: number;
+
+declare const GDK_KEY_opentribulletdown: number;
+
+declare const GDK_KEY_opentribulletup: number;
+
+declare const GDK_KEY_ordfeminine: number;
+
+declare const GDK_KEY_oslash: number;
+
+declare const GDK_KEY_otilde: number;
+
+declare const GDK_KEY_overbar: number;
+
+declare const GDK_KEY_overline: number;
+
+declare const GDK_KEY_p: number;
+
+declare const GDK_KEY_pabovedot: number;
+
+declare const GDK_KEY_paragraph: number;
+
+declare const GDK_KEY_parenleft: number;
+
+declare const GDK_KEY_parenright: number;
+
+declare const GDK_KEY_partdifferential: number;
+
+declare const GDK_KEY_partialderivative: number;
+
+declare const GDK_KEY_percent: number;
+
+declare const GDK_KEY_period: number;
+
+declare const GDK_KEY_periodcentered: number;
+
+declare const GDK_KEY_permille: number;
+
+declare const GDK_KEY_phonographcopyright: number;
+
+declare const GDK_KEY_plus: number;
+
+declare const GDK_KEY_plusminus: number;
+
+declare const GDK_KEY_prescription: number;
+
+declare const GDK_KEY_prolongedsound: number;
+
+declare const GDK_KEY_punctspace: number;
+
+declare const GDK_KEY_q: number;
+
+declare const GDK_KEY_quad: number;
+
+declare const GDK_KEY_question: number;
+
+declare const GDK_KEY_questiondown: number;
+
+declare const GDK_KEY_quotedbl: number;
+
+declare const GDK_KEY_quoteleft: number;
+
+declare const GDK_KEY_quoteright: number;
+
+declare const GDK_KEY_r: number;
+
+declare const GDK_KEY_racute: number;
+
+declare const GDK_KEY_radical: number;
+
+declare const GDK_KEY_rcaron: number;
+
+declare const GDK_KEY_rcedilla: number;
+
+declare const GDK_KEY_registered: number;
+
+declare const GDK_KEY_rightanglebracket: number;
+
+declare const GDK_KEY_rightarrow: number;
+
+declare const GDK_KEY_rightcaret: number;
+
+declare const GDK_KEY_rightdoublequotemark: number;
+
+declare const GDK_KEY_rightmiddlecurlybrace: number;
+
+declare const GDK_KEY_rightmiddlesummation: number;
+
+declare const GDK_KEY_rightopentriangle: number;
+
+declare const GDK_KEY_rightpointer: number;
+
+declare const GDK_KEY_rightshoe: number;
+
+declare const GDK_KEY_rightsinglequotemark: number;
+
+declare const GDK_KEY_rightt: number;
+
+declare const GDK_KEY_righttack: number;
+
+declare const GDK_KEY_s: number;
+
+declare const GDK_KEY_sabovedot: number;
+
+declare const GDK_KEY_sacute: number;
+
+declare const GDK_KEY_scaron: number;
+
+declare const GDK_KEY_scedilla: number;
+
+declare const GDK_KEY_schwa: number;
+
+declare const GDK_KEY_scircumflex: number;
+
+declare const GDK_KEY_script_switch: number;
+
+declare const GDK_KEY_seconds: number;
+
+declare const GDK_KEY_section: number;
+
+declare const GDK_KEY_semicolon: number;
+
+declare const GDK_KEY_semivoicedsound: number;
+
+declare const GDK_KEY_seveneighths: number;
+
+declare const GDK_KEY_sevensubscript: number;
+
+declare const GDK_KEY_sevensuperior: number;
+
+declare const GDK_KEY_signaturemark: number;
+
+declare const GDK_KEY_signifblank: number;
+
+declare const GDK_KEY_similarequal: number;
+
+declare const GDK_KEY_singlelowquotemark: number;
+
+declare const GDK_KEY_sixsubscript: number;
+
+declare const GDK_KEY_sixsuperior: number;
+
+declare const GDK_KEY_slash: number;
+
+declare const GDK_KEY_soliddiamond: number;
+
+declare const GDK_KEY_space: number;
+
+declare const GDK_KEY_squareroot: number;
+
+declare const GDK_KEY_ssharp: number;
+
+declare const GDK_KEY_sterling: number;
+
+declare const GDK_KEY_stricteq: number;
+
+declare const GDK_KEY_t: number;
+
+declare const GDK_KEY_tabovedot: number;
+
+declare const GDK_KEY_tcaron: number;
+
+declare const GDK_KEY_tcedilla: number;
+
+declare const GDK_KEY_telephone: number;
+
+declare const GDK_KEY_telephonerecorder: number;
+
+declare const GDK_KEY_therefore: number;
+
+declare const GDK_KEY_thinspace: number;
+
+declare const GDK_KEY_thorn: number;
+
+declare const GDK_KEY_threeeighths: number;
+
+declare const GDK_KEY_threefifths: number;
+
+declare const GDK_KEY_threequarters: number;
+
+declare const GDK_KEY_threesubscript: number;
+
+declare const GDK_KEY_threesuperior: number;
+
+declare const GDK_KEY_tintegral: number;
+
+declare const GDK_KEY_topintegral: number;
+
+declare const GDK_KEY_topleftparens: number;
+
+declare const GDK_KEY_topleftradical: number;
+
+declare const GDK_KEY_topleftsqbracket: number;
+
+declare const GDK_KEY_topleftsummation: number;
+
+declare const GDK_KEY_toprightparens: number;
+
+declare const GDK_KEY_toprightsqbracket: number;
+
+declare const GDK_KEY_toprightsummation: number;
+
+declare const GDK_KEY_topt: number;
+
+declare const GDK_KEY_topvertsummationconnector: number;
+
+declare const GDK_KEY_trademark: number;
+
+declare const GDK_KEY_trademarkincircle: number;
+
+declare const GDK_KEY_tslash: number;
+
+declare const GDK_KEY_twofifths: number;
+
+declare const GDK_KEY_twosubscript: number;
+
+declare const GDK_KEY_twosuperior: number;
+
+declare const GDK_KEY_twothirds: number;
+
+declare const GDK_KEY_u: number;
+
+declare const GDK_KEY_uacute: number;
+
+declare const GDK_KEY_ubelowdot: number;
+
+declare const GDK_KEY_ubreve: number;
+
+declare const GDK_KEY_ucircumflex: number;
+
+declare const GDK_KEY_udiaeresis: number;
+
+declare const GDK_KEY_udoubleacute: number;
+
+declare const GDK_KEY_ugrave: number;
+
+declare const GDK_KEY_uhook: number;
+
+declare const GDK_KEY_uhorn: number;
+
+declare const GDK_KEY_uhornacute: number;
+
+declare const GDK_KEY_uhornbelowdot: number;
+
+declare const GDK_KEY_uhorngrave: number;
+
+declare const GDK_KEY_uhornhook: number;
+
+declare const GDK_KEY_uhorntilde: number;
+
+declare const GDK_KEY_umacron: number;
+
+declare const GDK_KEY_underbar: number;
+
+declare const GDK_KEY_underscore: number;
+
+declare const GDK_KEY_union: number;
+
+declare const GDK_KEY_uogonek: number;
+
+declare const GDK_KEY_uparrow: number;
+
+declare const GDK_KEY_upcaret: number;
+
+declare const GDK_KEY_upleftcorner: number;
+
+declare const GDK_KEY_uprightcorner: number;
+
+declare const GDK_KEY_upshoe: number;
+
+declare const GDK_KEY_upstile: number;
+
+declare const GDK_KEY_uptack: number;
+
+declare const GDK_KEY_uring: number;
+
+declare const GDK_KEY_utilde: number;
+
+declare const GDK_KEY_v: number;
+
+declare const GDK_KEY_variation: number;
+
+declare const GDK_KEY_vertbar: number;
+
+declare const GDK_KEY_vertconnector: number;
+
+declare const GDK_KEY_voicedsound: number;
+
+declare const GDK_KEY_vt: number;
+
+declare const GDK_KEY_w: number;
+
+declare const GDK_KEY_wacute: number;
+
+declare const GDK_KEY_wcircumflex: number;
+
+declare const GDK_KEY_wdiaeresis: number;
+
+declare const GDK_KEY_wgrave: number;
+
+declare const GDK_KEY_x: number;
+
+declare const GDK_KEY_xabovedot: number;
+
+declare const GDK_KEY_y: number;
+
+declare const GDK_KEY_yacute: number;
+
+declare const GDK_KEY_ybelowdot: number;
+
+declare const GDK_KEY_ycircumflex: number;
+
+declare const GDK_KEY_ydiaeresis: number;
+
+declare const GDK_KEY_yen: number;
+
+declare const GDK_KEY_ygrave: number;
+
+declare const GDK_KEY_yhook: number;
+
+declare const GDK_KEY_ytilde: number;
+
+declare const GDK_KEY_z: number;
+
+declare const GDK_KEY_zabovedot: number;
+
+declare const GDK_KEY_zacute: number;
+
+declare const GDK_KEY_zcaron: number;
+
+declare const GDK_KEY_zerosubscript: number;
+
+declare const GDK_KEY_zerosuperior: number;
+
+declare const GDK_KEY_zstroke: number;
+
+declare const GDK_MAJOR_VERSION: number;
+
+declare const GDK_MEMORY_DEFAULT: number;
+
+declare const GDK_MICRO_VERSION: number;
+
+declare const GDK_MINOR_VERSION: number;
+
+declare const GDK_MODIFIER_MASK: number;
+
+declare const GDK_PRIORITY_EVENTS: number;
+
+declare const GDK_PRIORITY_REDRAW: number;
+
+declare const GDK_VERSION_MAX_ALLOWED: number;
+
+declare const GDK_VERSION_MIN_REQUIRED: number;
+
+declare const GTK_ACCESSIBLE_VALUE_UNDEFINED: number;
+
+declare const GTK_BINARY_AGE: number;
+
+declare const GTK_ENTRY_BUFFER_MAX_SIZE: number;
+
+declare const GTK_INPUT_ERROR: number;
+
+declare const GTK_INTERFACE_AGE: number;
+
+declare const GTK_INVALID_LIST_POSITION: number;
+
+declare const GTK_LEVEL_BAR_OFFSET_FULL: string;
+
+declare const GTK_LEVEL_BAR_OFFSET_HIGH: string;
+
+declare const GTK_LEVEL_BAR_OFFSET_LOW: string;
+
+declare const GTK_MAJOR_VERSION: number;
+
+declare const GTK_MAX_COMPOSE_LEN: number;
+
+declare const GTK_MEDIA_FILE_EXTENSION_POINT_NAME: string;
+
+declare const GTK_MICRO_VERSION: number;
+
+declare const GTK_MINOR_VERSION: number;
+
+declare const GTK_PAPER_NAME_A3: string;
+
+declare const GTK_PAPER_NAME_A4: string;
+
+declare const GTK_PAPER_NAME_A5: string;
+
+declare const GTK_PAPER_NAME_B5: string;
+
+declare const GTK_PAPER_NAME_EXECUTIVE: string;
+
+declare const GTK_PAPER_NAME_LEGAL: string;
+
+declare const GTK_PAPER_NAME_LETTER: string;
+
+declare const GTK_PRINT_SETTINGS_COLLATE: string;
+
+declare const GTK_PRINT_SETTINGS_DEFAULT_SOURCE: string;
+
+declare const GTK_PRINT_SETTINGS_DITHER: string;
+
+declare const GTK_PRINT_SETTINGS_DUPLEX: string;
+
+declare const GTK_PRINT_SETTINGS_FINISHINGS: string;
+
+declare const GTK_PRINT_SETTINGS_MEDIA_TYPE: string;
+
+declare const GTK_PRINT_SETTINGS_NUMBER_UP: string;
+
+declare const GTK_PRINT_SETTINGS_NUMBER_UP_LAYOUT: string;
+
+declare const GTK_PRINT_SETTINGS_N_COPIES: string;
+
+declare const GTK_PRINT_SETTINGS_ORIENTATION: string;
+
+declare const GTK_PRINT_SETTINGS_OUTPUT_BASENAME: string;
+
+declare const GTK_PRINT_SETTINGS_OUTPUT_BIN: string;
+
+declare const GTK_PRINT_SETTINGS_OUTPUT_DIR: string;
+
+declare const GTK_PRINT_SETTINGS_OUTPUT_FILE_FORMAT: string;
+
+declare const GTK_PRINT_SETTINGS_OUTPUT_URI: string;
+
+declare const GTK_PRINT_SETTINGS_PAGE_RANGES: string;
+
+declare const GTK_PRINT_SETTINGS_PAGE_SET: string;
+
+declare const GTK_PRINT_SETTINGS_PAPER_FORMAT: string;
+
+declare const GTK_PRINT_SETTINGS_PAPER_HEIGHT: string;
+
+declare const GTK_PRINT_SETTINGS_PAPER_WIDTH: string;
+
+declare const GTK_PRINT_SETTINGS_PRINTER: string;
+
+declare const GTK_PRINT_SETTINGS_PRINTER_LPI: string;
+
+declare const GTK_PRINT_SETTINGS_PRINT_PAGES: string;
+
+declare const GTK_PRINT_SETTINGS_QUALITY: string;
+
+declare const GTK_PRINT_SETTINGS_RESOLUTION: string;
+
+declare const GTK_PRINT_SETTINGS_RESOLUTION_X: string;
+
+declare const GTK_PRINT_SETTINGS_RESOLUTION_Y: string;
+
+declare const GTK_PRINT_SETTINGS_REVERSE: string;
+
+declare const GTK_PRINT_SETTINGS_SCALE: string;
+
+declare const GTK_PRINT_SETTINGS_USE_COLOR: string;
+
+declare const GTK_PRINT_SETTINGS_WIN32_DRIVER_EXTRA: string;
+
+declare const GTK_PRINT_SETTINGS_WIN32_DRIVER_VERSION: string;
+
+declare const GTK_PRIORITY_RESIZE: number;
+
+declare const GTK_STYLE_PROVIDER_PRIORITY_APPLICATION: number;
+
+declare const GTK_STYLE_PROVIDER_PRIORITY_FALLBACK: number;
+
+declare const GTK_STYLE_PROVIDER_PRIORITY_SETTINGS: number;
+
+declare const GTK_STYLE_PROVIDER_PRIORITY_THEME: number;
+
+declare const GTK_STYLE_PROVIDER_PRIORITY_USER: number;
+
+declare const GTK_TEXT_VIEW_PRIORITY_VALIDATE: number;
+
+declare const GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID: number;
+
+declare const GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID: number;
+
+declare const GTK_UNIT_PIXEL: number;
+
 declare const enum GdkAnchorHints {
 
 	FLIP_X = 1,

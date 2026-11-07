@@ -6,7 +6,7 @@ import { addressOf } from '../../utils/gtk.linux';
 import { viewForWidget } from '../core/view/gtk-layout.linux';
 
 // above themes and the app's user CSS
-const PRIORITY = 800;
+const PRIORITY = GTK_STYLE_PROVIDER_PRIORITY_USER;
 
 interface WidgetStyle {
 	provider: any;

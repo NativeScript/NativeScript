@@ -1,4 +1,30 @@
 
+declare const GRAPHENE_HAS_SCALAR: number;
+
+declare const GRAPHENE_HAS_SSE: number;
+
+declare const GRAPHENE_MAJOR_VERSION: number;
+
+declare const GRAPHENE_MICRO_VERSION: number;
+
+declare const GRAPHENE_MINOR_VERSION: number;
+
+declare const GRAPHENE_PI: number;
+
+declare const GRAPHENE_PI_2: number;
+
+declare const GRAPHENE_SIMD_S: string;
+
+declare const GRAPHENE_VEC2_LEN: number;
+
+declare const GRAPHENE_VEC3_LEN: number;
+
+declare const GRAPHENE_VEC4_LEN: number;
+
+declare const GRAPHENE_VERSION_MAX_ALLOWED: number;
+
+declare const GRAPHENE_VERSION_MIN_REQUIRED: number;
+
 interface _graphene_point3d_t {
 	x: number;
 	y: number;

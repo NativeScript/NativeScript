@@ -1,4 +1,6 @@
 
+declare const FALSE: number;
+
 declare const enum GAppInfoCreateFlags {
 
 	NONE = 0,
@@ -1056,6 +1058,36 @@ declare const enum GKeyFileFlags {
 
 	KEEP_TRANSLATIONS = 2
 }
+
+declare const GLIB_MAJOR_VERSION: number;
+
+declare const GLIB_MICRO_VERSION: number;
+
+declare const GLIB_MINOR_VERSION: number;
+
+declare const GLIB_SIZEOF_LONG: number;
+
+declare const GLIB_SIZEOF_SIZE_T: number;
+
+declare const GLIB_SIZEOF_SSIZE_T: number;
+
+declare const GLIB_SIZEOF_VOID_P: number;
+
+declare const GLIB_SYSDEF_AF_INET: number;
+
+declare const GLIB_SYSDEF_AF_INET6: number;
+
+declare const GLIB_SYSDEF_AF_UNIX: number;
+
+declare const GLIB_SYSDEF_MSG_DONTROUTE: number;
+
+declare const GLIB_SYSDEF_MSG_OOB: number;
+
+declare const GLIB_SYSDEF_MSG_PEEK: number;
+
+declare const GLIB_VERSION_MAX_ALLOWED: number;
+
+declare const GLIB_VERSION_MIN_REQUIRED: number;
 
 interface GListStoreClass {
 	parent_class: _GObjectClass;
@@ -2898,6 +2930,620 @@ declare const enum GZlibCompressorFormat {
 
 	RAW = 2
 }
+
+declare const G_ALLOCATOR_LIST: number;
+
+declare const G_ALLOCATOR_NODE: number;
+
+declare const G_ALLOCATOR_SLIST: number;
+
+declare const G_ALLOC_AND_FREE: number;
+
+declare const G_ALLOC_ONLY: number;
+
+declare const G_ANALYZER_ANALYZING: number;
+
+declare const G_ASCII_DTOSTR_BUF_SIZE: number;
+
+declare const G_BIG_ENDIAN: number;
+
+declare const G_BYTE_ORDER: number;
+
+declare const G_CSET_A_2_Z: string;
+
+declare const G_CSET_DIGITS: string;
+
+declare const G_CSET_LATINC: string;
+
+declare const G_CSET_LATINS: string;
+
+declare const G_CSET_a_2_z: string;
+
+declare const G_DATALIST_FLAGS_MASK: number;
+
+declare const G_DATE_BAD_DAY: number;
+
+declare const G_DATE_BAD_JULIAN: number;
+
+declare const G_DATE_BAD_YEAR: number;
+
+declare const G_DBUS_METHOD_INVOCATION_HANDLED: number;
+
+declare const G_DBUS_METHOD_INVOCATION_UNHANDLED: number;
+
+declare const G_DEBUG_CONTROLLER_EXTENSION_POINT_NAME: string;
+
+declare const G_DIR_SEPARATOR: number;
+
+declare const G_DIR_SEPARATOR_S: string;
+
+declare const G_DRIVE_IDENTIFIER_KIND_UNIX_DEVICE: string;
+
+declare const G_E: number;
+
+declare const G_FILE_ATTRIBUTE_ACCESS_CAN_DELETE: string;
+
+declare const G_FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE: string;
+
+declare const G_FILE_ATTRIBUTE_ACCESS_CAN_READ: string;
+
+declare const G_FILE_ATTRIBUTE_ACCESS_CAN_RENAME: string;
+
+declare const G_FILE_ATTRIBUTE_ACCESS_CAN_TRASH: string;
+
+declare const G_FILE_ATTRIBUTE_ACCESS_CAN_WRITE: string;
+
+declare const G_FILE_ATTRIBUTE_DOS_IS_ARCHIVE: string;
+
+declare const G_FILE_ATTRIBUTE_DOS_IS_MOUNTPOINT: string;
+
+declare const G_FILE_ATTRIBUTE_DOS_IS_SYSTEM: string;
+
+declare const G_FILE_ATTRIBUTE_DOS_REPARSE_POINT_TAG: string;
+
+declare const G_FILE_ATTRIBUTE_ETAG_VALUE: string;
+
+declare const G_FILE_ATTRIBUTE_FILESYSTEM_FREE: string;
+
+declare const G_FILE_ATTRIBUTE_FILESYSTEM_READONLY: string;
+
+declare const G_FILE_ATTRIBUTE_FILESYSTEM_REMOTE: string;
+
+declare const G_FILE_ATTRIBUTE_FILESYSTEM_SIZE: string;
+
+declare const G_FILE_ATTRIBUTE_FILESYSTEM_TYPE: string;
+
+declare const G_FILE_ATTRIBUTE_FILESYSTEM_USED: string;
+
+declare const G_FILE_ATTRIBUTE_FILESYSTEM_USE_PREVIEW: string;
+
+declare const G_FILE_ATTRIBUTE_GVFS_BACKEND: string;
+
+declare const G_FILE_ATTRIBUTE_ID_FILE: string;
+
+declare const G_FILE_ATTRIBUTE_ID_FILESYSTEM: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_CAN_EJECT: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_CAN_MOUNT: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_CAN_POLL: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_CAN_START: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_CAN_START_DEGRADED: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_CAN_STOP: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_CAN_UNMOUNT: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_HAL_UDI: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_IS_MEDIA_CHECK_AUTOMATIC: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_START_STOP_TYPE: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_UNIX_DEVICE: string;
+
+declare const G_FILE_ATTRIBUTE_MOUNTABLE_UNIX_DEVICE_FILE: string;
+
+declare const G_FILE_ATTRIBUTE_OWNER_GROUP: string;
+
+declare const G_FILE_ATTRIBUTE_OWNER_USER: string;
+
+declare const G_FILE_ATTRIBUTE_OWNER_USER_REAL: string;
+
+declare const G_FILE_ATTRIBUTE_PREVIEW_ICON: string;
+
+declare const G_FILE_ATTRIBUTE_RECENT_MODIFIED: string;
+
+declare const G_FILE_ATTRIBUTE_SELINUX_CONTEXT: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_ALLOCATED_SIZE: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_COPY_NAME: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_DESCRIPTION: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_ICON: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_IS_BACKUP: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_IS_SYMLINK: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_IS_VIRTUAL: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_IS_VOLATILE: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_NAME: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_SIZE: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_SORT_ORDER: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_SYMBOLIC_ICON: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_SYMLINK_TARGET: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_TARGET_URI: string;
+
+declare const G_FILE_ATTRIBUTE_STANDARD_TYPE: string;
+
+declare const G_FILE_ATTRIBUTE_THUMBNAILING_FAILED: string;
+
+declare const G_FILE_ATTRIBUTE_THUMBNAIL_IS_VALID: string;
+
+declare const G_FILE_ATTRIBUTE_THUMBNAIL_PATH: string;
+
+declare const G_FILE_ATTRIBUTE_TIME_ACCESS: string;
+
+declare const G_FILE_ATTRIBUTE_TIME_ACCESS_USEC: string;
+
+declare const G_FILE_ATTRIBUTE_TIME_CHANGED: string;
+
+declare const G_FILE_ATTRIBUTE_TIME_CHANGED_USEC: string;
+
+declare const G_FILE_ATTRIBUTE_TIME_CREATED: string;
+
+declare const G_FILE_ATTRIBUTE_TIME_CREATED_USEC: string;
+
+declare const G_FILE_ATTRIBUTE_TIME_MODIFIED: string;
+
+declare const G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC: string;
+
+declare const G_FILE_ATTRIBUTE_TRASH_DELETION_DATE: string;
+
+declare const G_FILE_ATTRIBUTE_TRASH_ITEM_COUNT: string;
+
+declare const G_FILE_ATTRIBUTE_TRASH_ORIG_PATH: string;
+
+declare const G_FILE_ATTRIBUTE_UNIX_BLOCKS: string;
+
+declare const G_FILE_ATTRIBUTE_UNIX_BLOCK_SIZE: string;
+
+declare const G_FILE_ATTRIBUTE_UNIX_DEVICE: string;
+
+declare const G_FILE_ATTRIBUTE_UNIX_GID: string;
+
+declare const G_FILE_ATTRIBUTE_UNIX_INODE: string;
+
+declare const G_FILE_ATTRIBUTE_UNIX_IS_MOUNTPOINT: string;
+
+declare const G_FILE_ATTRIBUTE_UNIX_MODE: string;
+
+declare const G_FILE_ATTRIBUTE_UNIX_NLINK: string;
+
+declare const G_FILE_ATTRIBUTE_UNIX_RDEV: string;
+
+declare const G_FILE_ATTRIBUTE_UNIX_UID: string;
+
+declare const G_GINT16_FORMAT: string;
+
+declare const G_GINT16_MODIFIER: string;
+
+declare const G_GINT32_FORMAT: string;
+
+declare const G_GINT32_MODIFIER: string;
+
+declare const G_GINT64_FORMAT: string;
+
+declare const G_GINT64_MODIFIER: string;
+
+declare const G_GINTPTR_FORMAT: string;
+
+declare const G_GINTPTR_MODIFIER: string;
+
+declare const G_GNUC_FUNCTION: string;
+
+declare const G_GNUC_PRETTY_FUNCTION: string;
+
+declare const G_GOFFSET_FORMAT: string;
+
+declare const G_GOFFSET_MODIFIER: string;
+
+declare const G_GSIZE_FORMAT: string;
+
+declare const G_GSIZE_MODIFIER: string;
+
+declare const G_GSSIZE_FORMAT: string;
+
+declare const G_GSSIZE_MODIFIER: string;
+
+declare const G_GUINT16_FORMAT: string;
+
+declare const G_GUINT32_FORMAT: string;
+
+declare const G_GUINT64_FORMAT: string;
+
+declare const G_GUINTPTR_FORMAT: string;
+
+declare const G_HAVE_GINT64: number;
+
+declare const G_HAVE_GNUC_VARARGS: number;
+
+declare const G_HAVE_GNUC_VISIBILITY: number;
+
+declare const G_HAVE_GROWING_STACK: number;
+
+declare const G_HAVE_ISO_VARARGS: number;
+
+declare const G_HOOK_FLAG_USER_SHIFT: number;
+
+declare const G_IEEE754_DOUBLE_BIAS: number;
+
+declare const G_IEEE754_FLOAT_BIAS: number;
+
+declare const G_KEY_FILE_DESKTOP_GROUP: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_ACTIONS: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_CATEGORIES: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_COMMENT: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_DBUS_ACTIVATABLE: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_EXEC: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_GENERIC_NAME: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_HIDDEN: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_ICON: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_MIME_TYPE: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_NAME: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_NOT_SHOW_IN: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_NO_DISPLAY: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_ONLY_SHOW_IN: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_PATH: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_STARTUP_NOTIFY: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_STARTUP_WM_CLASS: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_TERMINAL: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_TRY_EXEC: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_TYPE: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_URL: string;
+
+declare const G_KEY_FILE_DESKTOP_KEY_VERSION: string;
+
+declare const G_KEY_FILE_DESKTOP_TYPE_APPLICATION: string;
+
+declare const G_KEY_FILE_DESKTOP_TYPE_DIRECTORY: string;
+
+declare const G_KEY_FILE_DESKTOP_TYPE_LINK: string;
+
+declare const G_LITTLE_ENDIAN: number;
+
+declare const G_LN10: number;
+
+declare const G_LN2: number;
+
+declare const G_LOG_2_BASE_10: number;
+
+declare const G_LOG_FATAL_MASK: number;
+
+declare const G_LOG_LEVEL_USER_SHIFT: number;
+
+declare const G_MAXDOUBLE: number;
+
+declare const G_MAXFLOAT: number;
+
+declare const G_MAXINT: number;
+
+declare const G_MAXINT16: number;
+
+declare const G_MAXINT32: number;
+
+declare const G_MAXINT64: bigint;
+
+declare const G_MAXINT8: number;
+
+declare const G_MAXLONG: bigint;
+
+declare const G_MAXOFFSET: bigint;
+
+declare const G_MAXSHORT: number;
+
+declare const G_MAXSIZE: bigint;
+
+declare const G_MAXSSIZE: bigint;
+
+declare const G_MAXUINT: number;
+
+declare const G_MAXUINT16: number;
+
+declare const G_MAXUINT32: number;
+
+declare const G_MAXUINT64: bigint;
+
+declare const G_MAXUINT8: number;
+
+declare const G_MAXULONG: bigint;
+
+declare const G_MAXUSHORT: number;
+
+declare const G_MEMORY_MONITOR_EXTENSION_POINT_NAME: string;
+
+declare const G_MEM_ALIGN: number;
+
+declare const G_MENU_ATTRIBUTE_ACTION: string;
+
+declare const G_MENU_ATTRIBUTE_ACTION_NAMESPACE: string;
+
+declare const G_MENU_ATTRIBUTE_ICON: string;
+
+declare const G_MENU_ATTRIBUTE_LABEL: string;
+
+declare const G_MENU_ATTRIBUTE_TARGET: string;
+
+declare const G_MENU_LINK_SECTION: string;
+
+declare const G_MENU_LINK_SUBMENU: string;
+
+declare const G_MINDOUBLE: number;
+
+declare const G_MINFLOAT: number;
+
+declare const G_MININT: number;
+
+declare const G_MININT16: number;
+
+declare const G_MININT32: number;
+
+declare const G_MININT64: bigint;
+
+declare const G_MININT8: number;
+
+declare const G_MINLONG: bigint;
+
+declare const G_MINOFFSET: bigint;
+
+declare const G_MINSHORT: number;
+
+declare const G_MINSSIZE: bigint;
+
+declare const G_MODULE_SUFFIX: string;
+
+declare const G_NATIVE_VOLUME_MONITOR_EXTENSION_POINT_NAME: string;
+
+declare const G_NETWORK_MONITOR_EXTENSION_POINT_NAME: string;
+
+declare const G_OPTION_REMAINING: string;
+
+declare const G_OS_INFO_KEY_BUG_REPORT_URL: string;
+
+declare const G_OS_INFO_KEY_DOCUMENTATION_URL: string;
+
+declare const G_OS_INFO_KEY_HOME_URL: string;
+
+declare const G_OS_INFO_KEY_ID: string;
+
+declare const G_OS_INFO_KEY_NAME: string;
+
+declare const G_OS_INFO_KEY_PRETTY_NAME: string;
+
+declare const G_OS_INFO_KEY_PRIVACY_POLICY_URL: string;
+
+declare const G_OS_INFO_KEY_SUPPORT_URL: string;
+
+declare const G_OS_INFO_KEY_VERSION: string;
+
+declare const G_OS_INFO_KEY_VERSION_CODENAME: string;
+
+declare const G_OS_INFO_KEY_VERSION_ID: string;
+
+declare const G_PARAM_MASK: number;
+
+declare const G_PARAM_STATIC_STRINGS: number;
+
+declare const G_PARAM_USER_SHIFT: number;
+
+declare const G_PDP_ENDIAN: number;
+
+declare const G_PI: number;
+
+declare const G_PID_FORMAT: string;
+
+declare const G_PI_2: number;
+
+declare const G_PI_4: number;
+
+declare const G_POLLFD_FORMAT: string;
+
+declare const G_POWER_PROFILE_MONITOR_EXTENSION_POINT_NAME: string;
+
+declare const G_PRIORITY_DEFAULT: number;
+
+declare const G_PRIORITY_DEFAULT_IDLE: number;
+
+declare const G_PRIORITY_HIGH: number;
+
+declare const G_PRIORITY_HIGH_IDLE: number;
+
+declare const G_PRIORITY_LOW: number;
+
+declare const G_PROXY_EXTENSION_POINT_NAME: string;
+
+declare const G_PROXY_RESOLVER_EXTENSION_POINT_NAME: string;
+
+declare const G_SEARCHPATH_SEPARATOR: number;
+
+declare const G_SEARCHPATH_SEPARATOR_S: string;
+
+declare const G_SIGNAL_FLAGS_MASK: number;
+
+declare const G_SIGNAL_MATCH_MASK: number;
+
+declare const G_SIGNAL_TYPE_STATIC_SCOPE: number;
+
+declare const G_SOURCE_CONTINUE: number;
+
+declare const G_SOURCE_REMOVE: number;
+
+declare const G_SQRT2: number;
+
+declare const G_STRLOC: string;
+
+declare const G_STR_DELIMITERS: string;
+
+declare const G_TEST_OPTION_ISOLATE_DIRS: string;
+
+declare const G_TIME_SPAN_DAY: number;
+
+declare const G_TIME_SPAN_HOUR: number;
+
+declare const G_TIME_SPAN_MILLISECOND: number;
+
+declare const G_TIME_SPAN_MINUTE: number;
+
+declare const G_TIME_SPAN_SECOND: number;
+
+declare const G_TLS_BACKEND_EXTENSION_POINT_NAME: string;
+
+declare const G_TLS_DATABASE_PURPOSE_AUTHENTICATE_CLIENT: string;
+
+declare const G_TLS_DATABASE_PURPOSE_AUTHENTICATE_SERVER: string;
+
+declare const G_TYPE_BOOLEAN: number;
+
+declare const G_TYPE_BOXED: number;
+
+declare const G_TYPE_CHAR: number;
+
+declare const G_TYPE_DOUBLE: number;
+
+declare const G_TYPE_ENUM: number;
+
+declare const G_TYPE_FLAGS: number;
+
+declare const G_TYPE_FLAG_RESERVED_ID_BIT: number;
+
+declare const G_TYPE_FLOAT: number;
+
+declare const G_TYPE_FUNDAMENTAL_MAX: number;
+
+declare const G_TYPE_FUNDAMENTAL_SHIFT: number;
+
+declare const G_TYPE_INT: number;
+
+declare const G_TYPE_INT64: number;
+
+declare const G_TYPE_INTERFACE: number;
+
+declare const G_TYPE_INVALID: number;
+
+declare const G_TYPE_LONG: number;
+
+declare const G_TYPE_NONE: number;
+
+declare const G_TYPE_OBJECT: number;
+
+declare const G_TYPE_PARAM: number;
+
+declare const G_TYPE_POINTER: number;
+
+declare const G_TYPE_RESERVED_BSE_FIRST: number;
+
+declare const G_TYPE_RESERVED_BSE_LAST: number;
+
+declare const G_TYPE_RESERVED_GLIB_FIRST: number;
+
+declare const G_TYPE_RESERVED_GLIB_LAST: number;
+
+declare const G_TYPE_RESERVED_USER_FIRST: number;
+
+declare const G_TYPE_STRING: number;
+
+declare const G_TYPE_UCHAR: number;
+
+declare const G_TYPE_UINT: number;
+
+declare const G_TYPE_UINT64: number;
+
+declare const G_TYPE_ULONG: number;
+
+declare const G_TYPE_VARIANT: number;
+
+declare const G_UNICHAR_MAX_DECOMPOSITION_LENGTH: number;
+
+declare const G_UNICODE_COMBINING_MARK: number;
+
+declare const G_URI_RESERVED_CHARS_ALLOWED_IN_PATH: string;
+
+declare const G_URI_RESERVED_CHARS_ALLOWED_IN_PATH_ELEMENT: string;
+
+declare const G_URI_RESERVED_CHARS_ALLOWED_IN_USERINFO: string;
+
+declare const G_URI_RESERVED_CHARS_GENERIC_DELIMITERS: string;
+
+declare const G_URI_RESERVED_CHARS_SUBCOMPONENT_DELIMITERS: string;
+
+declare const G_USEC_PER_SEC: number;
+
+declare const G_VALUE_INTERNED_STRING: number;
+
+declare const G_VALUE_NOCOPY_CONTENTS: number;
+
+declare const G_VA_COPY_AS_ARRAY: number;
+
+declare const G_VFS_EXTENSION_POINT_NAME: string;
+
+declare const G_VOLUME_IDENTIFIER_KIND_CLASS: string;
+
+declare const G_VOLUME_IDENTIFIER_KIND_HAL_UDI: string;
+
+declare const G_VOLUME_IDENTIFIER_KIND_LABEL: string;
+
+declare const G_VOLUME_IDENTIFIER_KIND_NFS_MOUNT: string;
+
+declare const G_VOLUME_IDENTIFIER_KIND_UNIX_DEVICE: string;
+
+declare const G_VOLUME_IDENTIFIER_KIND_UUID: string;
+
+declare const G_VOLUME_MONITOR_EXTENSION_POINT_NAME: string;
+
+declare const TRUE: number;
 
 interface _GActionEntry {
 	name: string | null;
@@ -9260,6 +9906,14 @@ declare function g_log_writer_journald(log_level: GLogLevelFlags, fields: intero
 declare function g_log_writer_standard_streams(log_level: GLogLevelFlags, fields: interop.Pointer | interop.Reference<_GLogField> | ArrayBufferLike | ArrayBufferView | null, n_fields: number, user_data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): GLogWriterOutput;
 
 declare function g_log_writer_supports_color(output_fd: number): number;
+
+declare const g_macro__has_attribute: number;
+
+declare const g_macro__has_builtin: number;
+
+declare const g_macro__has_extension: number;
+
+declare const g_macro__has_feature: number;
 
 declare function g_main_context_acquire(context: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
