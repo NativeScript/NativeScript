@@ -147,6 +147,11 @@ interface IConfigAndroid extends IConfigPlatform {
 
 interface IConfigLinux extends IConfigPlatform {
 	/**
+	 * V8 flags set before the runtime starts, e.g. '--expose_gc'.
+	 * Development runtimes also take $NS_V8_FLAGS.
+	 */
+	v8Flags?: string;
+	/**
 	 * Initial size of new windows, in logical pixels. Default: 1024x768.
 	 */
 	window?: {
