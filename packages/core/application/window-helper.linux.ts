@@ -47,6 +47,7 @@ export function ensureGtk(): void {
 		g_set_application_name(name);
 	}
 	gtk_init();
+	applyAppearance();
 	if (id) {
 		// icons/<app-id>.png|svg staged by the CLI
 		const theme = gtk_icon_theme_get_for_display(gdk_display_get_default());
@@ -117,7 +118,32 @@ function stringSetting(name: string): string | null {
 	return text;
 }
 
+/** The appearance `linux.appearance` pins, or null to follow the desktop. */
+function pinnedAppearance(): 'dark' | 'light' | null {
+	const mode = getAppConfig().linux?.appearance;
+	return mode === 'light' || mode === 'dark' ? mode : null;
+}
+
+// Settings an app sets win over the desktop's (XSETTINGS), so the pin holds when those change.
+function applyAppearance(): void {
+	const mode = pinnedAppearance();
+	const settings = gtk_settings_get_default();
+	if (!mode || !settings) {
+		return;
+	}
+	g_object_set(settings, 'gtk-application-prefer-dark-theme', mode === 'dark' ? 1 : 0, null);
+	// themes such as Pop-dark or Adwaita-dark are dark by name: light uses the base theme
+	const theme = stringSetting('gtk-theme-name') ?? '';
+	if (mode === 'light' && /[-_]dark$/i.test(theme)) {
+		g_object_set(settings, 'gtk-theme-name', theme.replace(/[-_]dark$/i, ''), null);
+	}
+}
+
 export function getWindowSystemAppearance(_window: any): 'dark' | 'light' {
+	const pinned = pinnedAppearance();
+	if (pinned) {
+		return pinned;
+	}
 	const settings = gtk_settings_get_default();
 	if (settings) {
 		const dark = new interop.Reference(interop.types.int32, 0);

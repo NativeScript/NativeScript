@@ -159,6 +159,11 @@ interface IConfigLinux extends IConfigPlatform {
 		/** Default: the app name */
 		title?: string;
 	};
+	/**
+	 * Light or dark GTK theme for the app, like a fixed light/dark app theme on Android.
+	 * Default: 'system' (follows the desktop)
+	 */
+	appearance?: 'system' | 'light' | 'dark';
 }
 
 interface IConfigWindows extends IConfigPlatform {
