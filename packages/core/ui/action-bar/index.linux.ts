@@ -76,6 +76,7 @@ export class ActionBar extends ActionBarBase {
 
 	public _addViewToNativeVisualTree(child: View): boolean {
 		if (child === this.titleView && child.nativeViewProtected && this.nativeViewProtected) {
+			(child as any)._linuxHosted = true;
 			gtk_center_box_set_center_widget(this.nativeViewProtected, child.nativeViewProtected);
 			return true;
 		}

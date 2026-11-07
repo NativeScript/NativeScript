@@ -15,6 +15,10 @@ export interface LinuxLayoutView {
 	_linuxTransform(width: number, height: number): any;
 	/** Runs the NativeScript layout pass for a root view. */
 	_linuxLayoutRoot(width: number, height: number): void;
+	/** NativeScript size along `orientation` (for a GTK parent that sizes its child). */
+	_linuxMeasureHosted(orientation: number, forSize: number): number;
+	/** Set by parents that host the view in a GTK widget without laying it out. */
+	_linuxHosted?: boolean;
 	parent?: unknown;
 }
 
@@ -34,21 +38,28 @@ export function viewForWidget(widget: any): LinuxLayoutView | undefined {
 
 /**
  * Roots run the layout pass themselves: views without a NativeScript parent, and
- * views a parent hosts in a GTK widget without laying them out (e.g. ActionBar.titleView).
+ * hosted views (placed in a GTK widget by a parent that doesn't lay them out:
+ * ActionBar.titleView, ListView rows).
  */
 function isRoot(view: LinuxLayoutView): boolean {
-	return !view.parent || !view._linuxFrame;
+	return !view.parent || !!view._linuxHosted;
 }
 
-/** Laid out by NativeScript but placed in a GTK container (e.g. a ScrollView's viewport). */
-function frameSizeFor(widget: any, orientation: number): number {
+/** Size a GTK parent should give the container. */
+function sizeFor(widget: any, orientation: number, forSize: number): number {
 	const view = viewForWidget(widget);
-	const frame = view?._linuxFrame;
 	const parent = gtk_widget_get_parent(widget);
-	if (!frame || !parent || viewForWidget(parent)) {
+	if (!view || !parent || viewForWidget(parent)) {
+		// our containers allocate their children explicitly
 		return 0;
 	}
-	return orientation === GtkOrientation.HORIZONTAL ? frame[2] : frame[3];
+	if (view._linuxHosted) {
+		return view._linuxMeasureHosted(orientation, forSize);
+	}
+	// laid out by NativeScript but placed in a GTK container (a ScrollView's viewport);
+	// window content takes the window's size
+	const frame = view.parent ? view._linuxFrame : null;
+	return frame ? (orientation === GtkOrientation.HORIZONTAL ? frame[2] : frame[3]) : 0;
 }
 
 const minimum = new interop.Reference(interop.types.int32, 0);
@@ -76,8 +87,8 @@ function layoutCallbacks() {
 		requestMode: () => GtkSizeRequestMode.CONSTANT_SIZE,
 		// containers take whatever size they are given (the window can shrink freely),
 		// except inside GTK containers that size them (scrolling viewports)
-		measure: (widget: any, orientation: number, _forSize: number, min: any, nat: any) => {
-			const size = frameSizeFor(widget, orientation);
+		measure: (widget: any, orientation: number, forSize: number, min: any, nat: any) => {
+			const size = sizeFor(widget, orientation, forSize);
 			if (min) new interop.Reference(interop.types.int32, min).value = size;
 			if (nat) new interop.Reference(interop.types.int32, nat).value = size;
 		},

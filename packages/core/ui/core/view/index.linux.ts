@@ -169,6 +169,21 @@ export class View extends ViewCommon {
 		}
 	}
 
+	/** @internal NativeScript size of a hosted view, for the GTK widget hosting it. */
+	_linuxMeasureHosted(orientation: number, forSize: number): number {
+		const unspecified = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
+		inLayoutPass++;
+		try {
+			if (orientation === GtkOrientation.HORIZONTAL) {
+				return View.measureChild(null, this, unspecified, unspecified).measuredWidth;
+			}
+			const width = forSize >= 0 ? layout.makeMeasureSpec(forSize, layout.EXACTLY) : unspecified;
+			return View.measureChild(null, this, width, unspecified).measuredHeight;
+		} finally {
+			inLayoutPass--;
+		}
+	}
+
 	/** @internal Transform applied when the parent allocates this view. */
 	_linuxTransform(width: number, height: number): any {
 		const rotate = this.rotate || 0;
