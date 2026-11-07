@@ -3,12 +3,15 @@ import { FrameBase, NavigationType } from './frame-common';
 import { profile } from '../../profiling';
 import type { Page } from '../page';
 import { View } from '../core/view';
+import { eachDescendant, type ViewBase } from '../core/view-base';
 import { layout } from '../../utils';
+import { addressOf } from '../../utils/gtk.linux';
 
 export * from './frame-common';
 
 export class Frame extends FrameBase {
 	private _attachedPage: Page | null = null;
+	private _pageFocus = new WeakMap<Page, WeakRef<ViewBase>>();
 
 	get linux(): any {
 		return this.nativeViewProtected;
@@ -53,14 +56,50 @@ export class Frame extends FrameBase {
 		}
 		const previous = this._attachedPage?.nativeViewProtected;
 		if (previous && previous !== native && gtk_widget_get_parent(previous)) {
+			this._saveFocus(this._attachedPage);
 			gtk_widget_unparent(previous);
 		}
 		if (!gtk_widget_get_parent(native)) {
 			gtk_widget_set_parent(native, host);
+			// Without it GTK focuses the window's first focusable widget, and a ScrollView holding it
+			// scrolls there
+			const focus = this._pageFocus.get(page)?.deref()?.nativeViewProtected;
+			if (focus && gtk_widget_is_ancestor(focus, native)) {
+				gtk_widget_grab_focus(focus);
+			}
 		}
 		this._attachedPage = page;
 		this._updateActionBar(page);
 		this.requestLayout();
+	}
+
+	/** Remembers the view holding keyboard focus in a page that's leaving. */
+	private _saveFocus(page: Page): void {
+		const native = page.nativeViewProtected;
+		const root = gtk_widget_get_root(native);
+		const focus = root && gtk_root_get_focus(root);
+		this._pageFocus.delete(page);
+		if (!focus || !gtk_widget_is_ancestor(focus, native)) {
+			return;
+		}
+		// widget -> distance from the focus widget; the closest NativeScript view wins
+		const depth = new Map<number, number>();
+		for (let widget = focus, i = 0; widget && addressOf(widget) !== addressOf(native); widget = gtk_widget_get_parent(widget), i++) {
+			depth.set(addressOf(widget), i);
+		}
+		let best: ViewBase | null = null;
+		let bestDepth = Infinity;
+		eachDescendant(page, (view) => {
+			const d = depth.get(addressOf(view.nativeViewProtected));
+			if (d !== undefined && d < bestDepth) {
+				best = view;
+				bestDepth = d;
+			}
+			return bestDepth > 0;
+		});
+		if (best) {
+			this._pageFocus.set(page, new WeakRef(best));
+		}
 	}
 
 	public _updateActionBar(page?: Page, disableNavBarAnimation?: boolean): void {
