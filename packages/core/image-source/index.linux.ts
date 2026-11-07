@@ -236,16 +236,16 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	public toBase64String(format: 'png' | 'jpeg' | 'jpg', quality?: number): string {
-		const file = fsPath.join(knownFolders.temp().path, `ns-image-${Date.now()}.png`);
-		if (!this.saveToFile(file, format, quality)) {
+		if (!this._linux) {
 			return null;
 		}
-		const bytes = new Uint8Array(
-			knownFolders
-				.temp()
-				.getFile(file.substring(file.lastIndexOf('/') + 1))
-				.readSync(),
-		);
+		// encoded in memory, no temp file
+		const size = new interop.Reference(interop.types.uint64, 0);
+		const data = g_bytes_unref_to_data(gdk_texture_save_to_png_bytes(this._linux), size);
+		if (!data) {
+			return null;
+		}
+		const bytes = new Uint8Array(interop.bufferFromData(data as any, Number(size.value), g_free));
 		let binary = '';
 		for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
 		return btoa(binary);
