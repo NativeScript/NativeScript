@@ -38,15 +38,24 @@ const handlers = new Map<number, Handler>();
 let nextHandlerId = 1;
 const trampolines = new Map<string, interop.Pointer>();
 
+/** C type of a signal argument. */
+export type SignalArg = 'pointer' | 'int' | 'uint' | 'double';
+
+const ARG_TYPES: Record<SignalArg, () => interop.Type<any>> = {
+	pointer: () => pointerType,
+	int: () => interop.types.int32,
+	uint: () => interop.types.uint32,
+	double: () => interop.types.double,
+};
+
 /**
- * One C trampoline per signal shape; user_data carries the handler id.
+ * One C trampoline per signal signature; user_data carries the handler id.
  * `args` are the signal's arguments after the instance.
  */
-function trampoline(args: number, returns: 'void' | 'bool'): any {
-	const key = `${args}:${returns}`;
+function trampoline(args: SignalArg[], returns: 'void' | 'bool'): any {
+	const key = `${args.join(',')}:${returns}`;
 	let cb = trampolines.get(key);
 	if (!cb) {
-		const pointer = pointerType;
 		const dispatch = (...params: any[]) => {
 			const handler = handlers.get(addressOf(params[params.length - 1]));
 			const result = handler ? handler(...params.slice(0, -1)) : undefined;
@@ -54,7 +63,7 @@ function trampoline(args: number, returns: 'void' | 'bool'): any {
 		};
 		cb = interop.callback(dispatch, {
 			returns: returns === 'bool' ? interop.types.int32 : interop.types.void,
-			args: Array.from({ length: args + 2 }, () => pointer),
+			args: [pointerType, ...args.map((a) => ARG_TYPES[a]()), pointerType],
 		});
 		trampolines.set(key, cb);
 	}
@@ -64,6 +73,8 @@ function trampoline(args: number, returns: 'void' | 'bool'): any {
 export interface SignalOptions {
 	/** Pointer-sized arguments after the instance (e.g. 1 for `notify::*`'s GParamSpec). */
 	args?: number;
+	/** Typed arguments after the instance, e.g. ['double', 'double'] for `drag-update`. */
+	types?: SignalArg[];
 	/** The handler returns a gboolean (e.g. `close-request`). */
 	returnsBool?: boolean;
 }
@@ -74,7 +85,8 @@ export interface SignalOptions {
 export function connect(instance: any, signal: string, handler: Handler, options: SignalOptions = {}): () => void {
 	const id = nextHandlerId++;
 	handlers.set(id, handler);
-	const handlerId = g_signal_connect_data(instance, signal, trampoline(options.args ?? 0, options.returnsBool ? 'bool' : 'void') as any, new interop.Pointer(id), null, 0 as any);
+	const types = options.types ?? Array.from({ length: options.args ?? 0 }, (): SignalArg => 'pointer');
+	const handlerId = g_signal_connect_data(instance, signal, trampoline(types, options.returnsBool ? 'bool' : 'void') as any, new interop.Pointer(id), null, 0 as any);
 	return () => {
 		if (handlers.delete(id)) {
 			g_signal_handler_disconnect(instance, handlerId);
