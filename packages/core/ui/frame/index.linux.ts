@@ -109,8 +109,5 @@ export class Frame extends FrameBase {
 	}
 }
 
-// attach on global, so it can be overwritten in NativeScript Angular
-global.__onLiveSyncCore = Frame.reloadPage;
-
 export function setActivityCallbacks(_callbacks: any): void {}
 export function setWindowContent(_view: any): void {}

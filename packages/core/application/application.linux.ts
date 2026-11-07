@@ -1,6 +1,6 @@
 import { ApplicationCommon } from './application-common';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
-import { isAppInBackground, setAppMainEntry, setToggleApplicationEventListenersCallback, setApplicationPropertiesCallback, setA11yUpdatePropertiesCallback } from './helpers-common';
+import { getAppMainEntry, isAppInBackground, setAppMainEntry, setToggleApplicationEventListenersCallback, setApplicationPropertiesCallback, setA11yUpdatePropertiesCallback } from './helpers-common';
 import type { View } from '../ui/core/view';
 import { setRootView } from './helpers-common';
 import { CoreTypes } from '../core-types';
@@ -387,6 +387,17 @@ export class LinuxApplication extends ApplicationCommon {
 }
 
 export const Application: LinuxApplication = new LinuxApplication();
+
+// as on iOS: the root view handles the change (replaces the edited page, or resets)
+// attach on global, so it can be overwritten in NativeScript Angular
+global.__onLiveSyncCore = function (context?: ModuleContext) {
+	const entry = getAppMainEntry();
+	const rootChanged = !!(context?.path && entry?.moduleName && context.path.includes(entry.moduleName) && context.type !== 'style');
+	const rootView = Application.getRootView();
+	if (rootChanged || (rootView && !rootView._onLivesync(context))) {
+		Application.resetRootView(entry);
+	}
+};
 
 function updateAccessibilityProperties(view: any): void {
 	if (!view || !view.nativeViewProtected) {
