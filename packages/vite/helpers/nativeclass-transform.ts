@@ -15,10 +15,10 @@ import { isOtherPlatformTagged, type Platform } from './platform-types.js';
  * Enabled via `--env.nativeESClasses` or the NS_NATIVE_ES_CLASSES environment variable
  * (set NS_NATIVE_ES_CLASSES=0/false to force-disable). Android continues to require the
  * ES5 downlevel (the Static Binding Generator relies on it), and the Windows runtime has
- * no native ES-class registration, so this never applies to Android or Windows targets.
+ * no native ES-class registration, so this never applies to Android, Windows or Linux targets.
  */
 export function isNativeESClassesEnabled(platform?: Platform): boolean {
-	if (platform === 'android' || platform === 'windows') return false;
+	if (platform === 'android' || platform === 'windows' || platform === 'linux') return false;
 	const envValue = process.env.NS_NATIVE_ES_CLASSES;
 	if (envValue !== undefined) {
 		return envValue !== '0' && envValue.toLowerCase() !== 'false';

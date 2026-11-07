@@ -9,7 +9,7 @@ import { PLATFORMS, PLATFORM_SUFFIX_ALT, isApplePlatform, isOtherPlatformTagged,
 
 describe('platform-types', () => {
 	it('lists every platform, and the suffix alternation covers each one', () => {
-		expect([...PLATFORMS].sort()).toEqual(['android', 'ios', 'visionos', 'windows']);
+		expect([...PLATFORMS].sort()).toEqual(['android', 'ios', 'linux', 'visionos', 'windows']);
 		expect(PLATFORM_SUFFIX_ALT.split('|').sort()).toEqual([...PLATFORMS].sort());
 	});
 
@@ -29,6 +29,7 @@ describe('platform-types', () => {
 		expect(platformSuffixes('ios')).toEqual(['ios', 'visionos']);
 		expect(platformSuffixes('visionos')).toEqual(['visionos', 'ios']);
 		expect(platformSuffixes('windows')).toEqual(['windows']);
+		expect(platformSuffixes('linux')).toEqual(['linux']);
 	});
 
 	it('platformSuffixOf reads only a trailing suffix', () => {
@@ -53,6 +54,11 @@ describe('platform-types', () => {
 		expect(isOtherPlatformTagged('app/foo.android.ts', 'windows')).toBe(true);
 		expect(isOtherPlatformTagged('app/foo.windows.ts', 'windows')).toBe(false);
 
+		expect(isOtherPlatformTagged('app/foo.linux.ts', 'android')).toBe(true);
+		expect(isOtherPlatformTagged('app/foo.linux.ts', 'windows')).toBe(true);
+		expect(isOtherPlatformTagged('app/foo.ios.ts', 'linux')).toBe(true);
+		expect(isOtherPlatformTagged('app/foo.linux.ts', 'linux')).toBe(false);
+
 		// untagged files, and a platform name that is not a `.<tag>.` segment
 		expect(isOtherPlatformTagged('app/foo.ts', 'windows')).toBe(false);
 		expect(isOtherPlatformTagged('app/windows/ios-helper.ts', 'android')).toBe(false);
@@ -64,6 +70,7 @@ describe('platform-types', () => {
 		expect(platformExtensions('ios', ['.ts', '.js'])).toEqual(['.ios.ts', '.visionos.ts', '.ts', '.ios.js', '.visionos.js', '.js']);
 		expect(platformExtensions('visionos', ['.ts'])).toEqual(['.visionos.ts', '.ios.ts', '.ts']);
 		expect(platformExtensions('windows', ['.ts', '.js'])).toEqual(['.windows.ts', '.ts', '.windows.js', '.js']);
+		expect(platformExtensions('linux', ['.ts', '.js'])).toEqual(['.linux.ts', '.ts', '.linux.js', '.js']);
 	});
 
 	it('platformCssExt', () => {
@@ -71,6 +78,7 @@ describe('platform-types', () => {
 		expect(platformCssExt('ios')).toBe('.ios.css');
 		expect(platformCssExt('visionos')).toBe('.ios.css');
 		expect(platformCssExt('windows')).toBe('.windows.css');
+		expect(platformCssExt('linux')).toBe('.linux.css');
 		expect(platformCssExt(undefined)).toBe('.ios.css');
 	});
 });
@@ -101,6 +109,14 @@ describe('cli-flags platform resolution (windows)', () => {
 		vi.resetModules();
 		const { resolvePlatform } = await import('./cli-flags.js');
 		expect(resolvePlatform()).toBe('windows');
+	});
+
+	it('resolves linux from the CLI env flags', async () => {
+		delete process.env.NATIVESCRIPT_BUNDLER_ENV;
+		process.argv = ['node', 'vite', '--', '--env.linux'];
+		vi.resetModules();
+		const { resolvePlatform } = await import('./cli-flags.js');
+		expect(resolvePlatform()).toBe('linux');
 	});
 });
 
@@ -140,6 +156,12 @@ describe('platform helper consumers', () => {
 				expect(existsSync(a.replacement)).toBe(true);
 			}
 			expect(windows.some((a) => a.find.test('nativescript-theme-core/css/core.light.css'))).toBe(true);
+		});
+
+		it('aliases to an empty stylesheet on linux when theme-core ships no .linux.css', () => {
+			const linux = getThemeCoreGenericAliases(themeRoot, 'linux');
+			expect(linux).toHaveLength(2);
+			for (const a of linux) expect(path.basename(a.replacement)).toBe('empty-theme.css');
 		});
 
 		it('prefers a real .windows.css variant when one exists', () => {

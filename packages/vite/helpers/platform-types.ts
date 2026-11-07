@@ -1,7 +1,7 @@
 /** The platforms NativeScript builds for. Single source of truth for the build pipeline. */
-export type Platform = 'android' | 'ios' | 'visionos' | 'windows';
+export type Platform = 'android' | 'ios' | 'visionos' | 'windows' | 'linux';
 
-export const PLATFORMS: readonly Platform[] = ['android', 'ios', 'visionos', 'windows'];
+export const PLATFORMS: readonly Platform[] = ['android', 'ios', 'visionos', 'windows', 'linux'];
 
 /**
  * Regex alternation of every platform file suffix (`foo.<platform>.ts`). Use
@@ -9,7 +9,7 @@ export const PLATFORMS: readonly Platform[] = ['android', 'ios', 'visionos', 'wi
  * `foo.<platform>` and `foo` canonicalise differently, which splits one module
  * into two module records on device.
  */
-export const PLATFORM_SUFFIX_ALT = 'ios|android|visionos|windows';
+export const PLATFORM_SUFFIX_ALT = 'ios|android|visionos|windows|linux';
 
 const PLATFORM_TAG_RE = new RegExp(`\\.(${PLATFORM_SUFFIX_ALT})(?=\\.)`, 'g');
 const PLATFORM_TRAILING_SUFFIX_RE = new RegExp(`\\.(${PLATFORM_SUFFIX_ALT})$`);
@@ -26,7 +26,7 @@ export function isApplePlatform(platform: string | undefined | null): boolean {
 /**
  * File suffixes loadable on `platform`, most specific first. Apple platforms
  * accept each other's files (iOS keeps `.visionos.` variants, visionOS falls
- * back to `.ios.`); Android and Windows only accept their own.
+ * back to `.ios.`); Android, Windows and Linux only accept their own.
  */
 export function platformSuffixes(platform: Platform): Platform[] {
 	switch (platform) {
@@ -38,6 +38,8 @@ export function platformSuffixes(platform: Platform): Platform[] {
 			return ['visionos', 'ios'];
 		case 'windows':
 			return ['windows'];
+		case 'linux':
+			return ['linux'];
 		default:
 			return [];
 	}
@@ -76,5 +78,6 @@ export function platformExtensions(platform: Platform, bases: readonly string[])
 export function platformCssExt(platform: string | undefined | null): string {
 	if (platform === 'android') return '.android.css';
 	if (platform === 'windows') return '.windows.css';
+	if (platform === 'linux') return '.linux.css';
 	return '.ios.css';
 }
