@@ -1,4 +1,5 @@
 import { outPointer } from '../utils/gtk.linux';
+import type { NativeScriptConfig } from '../config/config.interface';
 import { CoreTypes } from '../core-types';
 
 let primaryWindow: any = null;
@@ -13,11 +14,44 @@ export function getPrimaryWindow(): any {
 
 let initialized = false;
 
-/** gtk_init once, before the first widget. */
+/** The app's `nativescript.config` (copied into the bundle's package.json by the CLI). */
+export function getAppConfig(): { id?: string; name?: string; linux?: NativeScriptConfig['linux'] } {
+	try {
+		return require('~/package.json');
+	} catch {
+		return {};
+	}
+}
+
+/** Folder holding the executable, icons and App_Resources (parent of the app folder). */
+function bundleRoot(): string {
+	const entry: string = (globalThis as any).process?.argv?.[1] ?? '';
+	const app = g_file_test(entry, GFileTest.IS_DIR) ? entry : entry.substring(0, entry.lastIndexOf('/'));
+	return app.substring(0, app.lastIndexOf('/'));
+}
+
+/**
+ * gtk_init once, before the first widget. The program name is the app id, so
+ * the desktop shell matches windows to <app-id>.desktop (and its icon).
+ */
 export function ensureGtk(): void {
-	if (!initialized) {
-		initialized = true;
-		gtk_init();
+	if (initialized) {
+		return;
+	}
+	initialized = true;
+	const { id, name } = getAppConfig();
+	if (id) {
+		g_set_prgname(id);
+	}
+	if (name) {
+		g_set_application_name(name);
+	}
+	gtk_init();
+	if (id) {
+		// icons/<app-id>.png|svg staged by the CLI
+		const theme = gtk_icon_theme_get_for_display(gdk_display_get_default());
+		gtk_icon_theme_add_search_path(theme, `${bundleRoot()}/icons`);
+		gtk_window_set_default_icon_name(id);
 	}
 }
 

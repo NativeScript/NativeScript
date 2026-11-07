@@ -4,7 +4,7 @@ import { isAppInBackground, setAppMainEntry, setToggleApplicationEventListenersC
 import type { View } from '../ui/core/view';
 import { setRootView } from './helpers-common';
 import { CoreTypes } from '../core-types';
-import { ensureGtk, getPrimaryWindow, getWindowLayoutDirection, getWindowOrientation, getWindowSystemAppearance, setPrimaryWindow } from './window-helper.linux';
+import { ensureGtk, getAppConfig, getPrimaryWindow, getWindowLayoutDirection, getWindowOrientation, getWindowSystemAppearance, setPrimaryWindow } from './window-helper.linux';
 import { connect } from '../utils/gtk.linux';
 import { resolveModuleName, ModuleNameResolver } from '../module-name-resolver';
 import { _setResolver } from '../module-name-resolver/helpers';
@@ -115,9 +115,16 @@ export class LinuxApplication extends ApplicationCommon {
 	}
 
 	private _newGtkWindow(): any {
+		const options = getAppConfig().linux?.window ?? {};
 		const window: any = gtk_window_new();
-		gtk_window_set_default_size(window, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-		gtk_window_set_title(window, g_get_application_name() || 'NativeScript');
+		gtk_window_set_default_size(window, options.width ?? DEFAULT_WIDTH, options.height ?? DEFAULT_HEIGHT);
+		if (options.minWidth || options.minHeight) {
+			gtk_widget_set_size_request(window, options.minWidth ?? -1, options.minHeight ?? -1);
+		}
+		if (options.resizable === false) {
+			gtk_window_set_resizable(window, 0);
+		}
+		gtk_window_set_title(window, options.title || g_get_application_name() || 'NativeScript');
 		if (!this._loopHeld) {
 			this._loopHeld = true;
 			nativescript.ref();

@@ -145,7 +145,21 @@ interface IConfigAndroid extends IConfigPlatform {
 	enableMultithreadedJavascript?: boolean;
 }
 
-interface IConfigLinux extends IConfigPlatform {}
+interface IConfigLinux extends IConfigPlatform {
+	/**
+	 * Initial size of new windows, in logical pixels. Default: 1024x768.
+	 */
+	window?: {
+		width?: number;
+		height?: number;
+		minWidth?: number;
+		minHeight?: number;
+		/** Default: true */
+		resizable?: boolean;
+		/** Default: the app name */
+		title?: string;
+	};
+}
 
 interface IConfigWindows extends IConfigPlatform {
 	/**

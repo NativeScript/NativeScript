@@ -33,7 +33,7 @@ function textureFromBytes(bytes: Uint8Array): any {
 /** Resources live in App_Resources/Linux (staged next to the executable). */
 function resourcePath(name: string): string | null {
 	const appRoot = fsPath.join(knownFolders.currentApp().path, '..', 'App_Resources', 'Linux');
-	for (const candidate of [name, `${name}.png`, `${name}.svg`, `${name}.jpg`, `drawable/${name}.png`]) {
+	for (const candidate of [`images/${name}`, `images/${name}.png`, `images/${name}.svg`, `images/${name}.jpg`, name, `${name}.png`]) {
 		const full = fsPath.join(appRoot, candidate);
 		if (g_file_test(full, 1)) {
 			return full;
