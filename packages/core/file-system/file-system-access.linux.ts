@@ -1,7 +1,24 @@
 import { outPointer } from '../utils/gtk.linux';
 // File access on GLib/GIO. Whole-file reads hand out zero-copy ArrayBuffers (freed with g_free).
+// Release builds may serve the app folder from the runtime's read-only app bundle.
 
 type Entity = { path: string; name: string; extension: string };
+
+const appBundle: any = (globalThis as any).__nsBundle;
+
+/** Inside the mounted app bundle (reads come from it, writes fail). */
+function bundled(path: string): boolean {
+	return !!path && !!appBundle?.mounted && appBundle.contains(path);
+}
+
+function readOnly(path: string): Error {
+	return new Error(`EROFS: '${path}' is in the read-only app bundle`);
+}
+
+/** The app.nsbundle file, for timestamps. */
+function bundleFile(): string {
+	return appBundle.unpackedRoot.replace(/\.unpacked$/, '');
+}
 
 function nameOf(path: string): string {
 	const trimmed = path.length > 1 ? path.replace(/\/+$/, '') : path;
@@ -65,6 +82,9 @@ export class FileSystemAccess {
 	}
 
 	public getLastModified(path: string): Date {
+		if (bundled(path)) {
+			path = appBundle.stat(path)?.unpacked ? appBundle.realpath(path) : bundleFile();
+		}
 		const info = this._queryInfo(path);
 		const seconds = Number(g_file_info_get_attribute_uint64(info, 'time::modified'));
 		g_object_unref(info);
@@ -72,6 +92,13 @@ export class FileSystemAccess {
 	}
 
 	public getFileSize(path: string): number {
+		if (bundled(path)) {
+			const stat = appBundle.stat(path);
+			if (!stat) {
+				throw new Error(`'${path}' does not exist`);
+			}
+			return stat.size;
+		}
 		const info = this._queryInfo(path);
 		const size = Number(g_file_info_get_size(info));
 		g_object_unref(info);
@@ -86,6 +113,9 @@ export class FileSystemAccess {
 	public getFile(path: string, onError?: (error: any) => any): Entity {
 		try {
 			if (!this.fileExists(path)) {
+				if (bundled(path)) {
+					throw readOnly(path);
+				}
 				g_mkdir_with_parents(parentOf(path), 0o755);
 				this._write(path, new Uint8Array(0));
 			}
@@ -98,6 +128,13 @@ export class FileSystemAccess {
 	}
 
 	public getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
+		if (bundled(path)) {
+			if (!this.folderExists(path)) {
+				fail(onError, readOnly(path));
+				return undefined;
+			}
+			return { path, name: nameOf(path) };
+		}
 		if (g_mkdir_with_parents(path, 0o755) !== 0) {
 			fail(onError, new Error(`Cannot create folder '${path}'`));
 			return undefined;
@@ -114,6 +151,23 @@ export class FileSystemAccess {
 	}
 
 	public eachEntity(path: string, onEntity: (file: Entity) => any, onError?: (error: any) => any) {
+		if (bundled(path)) {
+			let names: string[];
+			try {
+				names = appBundle.list(path);
+			} catch (e) {
+				fail(onError, e);
+				return;
+			}
+			for (const entry of names) {
+				const isDir = entry.endsWith('/');
+				const name = isDir ? entry.slice(0, -1) : entry;
+				if (onEntity({ path: this.joinPath(path, name), name, extension: isDir ? '' : extensionOf(name) }) === false) {
+					break;
+				}
+			}
+			return;
+		}
 		let dir: any;
 		try {
 			dir = check(
@@ -145,14 +199,23 @@ export class FileSystemAccess {
 	}
 
 	public fileExists(path: string): boolean {
+		if (bundled(path)) {
+			return !!appBundle.stat(path)?.isFile;
+		}
 		return !!path && !!g_file_test(path, GFileTest.IS_REGULAR);
 	}
 
 	public folderExists(path: string): boolean {
+		if (bundled(path)) {
+			return !!appBundle.stat(path)?.isDirectory;
+		}
 		return !!path && !!g_file_test(path, GFileTest.IS_DIR);
 	}
 
 	private _delete(path: string) {
+		if (bundled(path)) {
+			throw readOnly(path);
+		}
 		const file = g_file_new_for_path(path);
 		try {
 			check(
@@ -196,6 +259,10 @@ export class FileSystemAccess {
 	}
 
 	public rename(path: string, newPath: string, onError?: (error: any) => any) {
+		if (bundled(path) || bundled(newPath)) {
+			fail(onError, readOnly(bundled(path) ? path : newPath));
+			return;
+		}
 		const from = g_file_new_for_path(path);
 		const to = g_file_new_for_path(newPath);
 		try {
@@ -217,6 +284,10 @@ export class FileSystemAccess {
 
 	public readBufferSync(path: string, onError?: (error: any) => any): ArrayBuffer {
 		try {
+			if (bundled(path)) {
+				// zero-copy view of the bundle unless it is encrypted
+				return appBundle.read(path);
+			}
 			const contents = outPointer();
 			const length = new interop.Reference(interop.types.uint64, 0);
 			check(
@@ -257,6 +328,9 @@ export class FileSystemAccess {
 	}
 
 	private _write(path: string, bytes: Uint8Array) {
+		if (bundled(path)) {
+			throw readOnly(path);
+		}
 		check(
 			(error) => g_file_set_contents(path, bytes as any, bytes.byteLength, error),
 			(ok) => !ok,
@@ -264,6 +338,9 @@ export class FileSystemAccess {
 	}
 
 	private _append(path: string, bytes: Uint8Array) {
+		if (bundled(path)) {
+			throw readOnly(path);
+		}
 		const file = g_file_new_for_path(path);
 		try {
 			const stream: any = check(
@@ -344,6 +421,15 @@ export class FileSystemAccess {
 	}
 
 	public copySync(src: string, dest: string, onError?: (error: any) => any): boolean {
+		if (bundled(src) || bundled(dest)) {
+			try {
+				this._write(dest, new Uint8Array(this.readBufferSync(src)));
+				return true;
+			} catch (e) {
+				fail(onError, e);
+				return false;
+			}
+		}
 		const from = g_file_new_for_path(src);
 		const to = g_file_new_for_path(dest);
 		try {

@@ -15,9 +15,9 @@ function bytesOf(data: any): Uint8Array {
 	return null;
 }
 
-/** GdkTexture from encoded image bytes (PNG, JPEG, ... through GdkPixbuf loaders). */
-function textureFromBytes(bytes: Uint8Array): any {
-	const gbytes = g_bytes_new(bytes as any, bytes.byteLength);
+/** GdkTexture from encoded image bytes (PNG, JPEG, ... through GdkPixbuf loaders). `borrow` skips the copy (decoding is synchronous). */
+function textureFromBytes(bytes: Uint8Array, borrow = false): any {
+	const gbytes = borrow ? g_bytes_new_static(bytes as any, bytes.byteLength) : g_bytes_new(bytes as any, bytes.byteLength);
 	const stream = g_memory_input_stream_new_from_bytes(gbytes);
 	const pixbuf = gdk_pixbuf_new_from_stream(stream, null, null);
 	g_object_unref(stream);
@@ -118,6 +118,16 @@ export class ImageSource implements ImageSourceDefinition {
 	static fromFileSync(path: string): ImageSource {
 		if (path.startsWith('~/')) {
 			path = fsPath.join(knownFolders.currentApp().path, path.replace('~/', ''));
+		}
+		const appBundle = (globalThis as any).__nsBundle;
+		if (appBundle?.mounted && appBundle.contains(path)) {
+			const real = appBundle.realpath(path);
+			if (!real) {
+				// decoded synchronously, straight from the bundle's memory
+				const texture = appBundle.exists(path) ? textureFromBytes(new Uint8Array(appBundle.read(path)), true) : null;
+				return texture ? new ImageSource(texture) : null;
+			}
+			path = real;
 		}
 		const texture = gdk_texture_new_from_filename(path, null);
 		return texture ? new ImageSource(texture) : null;
