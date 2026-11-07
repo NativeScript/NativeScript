@@ -375,7 +375,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 		}
 		g['__NS_DEV_PLACEHOLDER_APPLICATION__'] = Application;
 		const isAndroid = !!(g.__ANDROID__ || typeof g.android !== 'undefined');
-		const diagPlatform = isAndroid ? 'android' : g.__WINDOWS__ || typeof g.NSWinRT !== 'undefined' ? 'windows' : 'ios';
+		const diagPlatform = isAndroid ? 'android' : g.__WINDOWS__ || typeof g.NSWinRT !== 'undefined' ? 'windows' : g.__LINUX__ ? 'linux' : 'ios';
 		// Patch `Application.resetRootView` on BOTH platforms so the placeholder
 		// finalize callback (`__NS_DEV_RESTORE_PLACEHOLDER__`) fires every time the
 		// framework swaps the root view. The early Android wrapper in

@@ -31,6 +31,8 @@ declare namespace com {
 function isEmbedded(): boolean {
 	if (__APPLE__) {
 		return !!NativeScriptEmbedder.sharedInstance().delegate;
+	} else if (__WINDOWS__ || __LINUX__) {
+		return false;
 	} else {
 		// @ts-ignore
 		// Check if the Bootstrap class exists and has the isEmbeddedNativeScript property

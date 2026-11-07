@@ -701,8 +701,8 @@ function platformDefault(opts: ResolveDeviceHostOptions): DeviceHostResolution {
 		// NS_HMR_PREFER_LAN_HOST=1.
 		return { host: '10.0.2.2', source: 'platform-default' };
 	}
-	if (opts.platform === 'windows') {
-		// Windows apps run on the dev machine itself, so loopback always
+	if (opts.platform === 'windows' || opts.platform === 'linux') {
+		// Windows and Linux apps run on the dev machine itself, so loopback always
 		// reaches Vite: no LAN lookup, no adb. IPv4 literal because
 		// `localhost` may resolve to `::1` while Vite is bound to IPv4.
 		return { host: '127.0.0.1', source: 'platform-default' };

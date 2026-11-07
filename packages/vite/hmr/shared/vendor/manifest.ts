@@ -59,7 +59,7 @@ export const SERVER_MANIFEST_PATH = '/@nativescript/vendor-manifest.json';
 export const DEFAULT_VENDOR_FILENAME = 'ns-vendor.mjs';
 export const DEFAULT_MANIFEST_FILENAME = 'ns-vendor-manifest.json';
 
-const INDEX_ALIAS_SUFFIXES = ['/index', '/index.js', '/index.android.js', '/index.ios.js', '/index.visionos.js', '/index.windows.js'];
+const INDEX_ALIAS_SUFFIXES = ['/index', '/index.js', '/index.android.js', '/index.ios.js', '/index.visionos.js', '/index.windows.js', '/index.linux.js'];
 
 export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plugin {
 	let cachedResult: VendorBundleResult | null = null;
@@ -364,177 +364,177 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 
 	const runBuild = (entryCode: string) =>
 		esbuild.build({
-		stdin: {
-			contents: entryCode,
-			resolveDir: projectRoot,
-			sourcefile: 'ns-vendor-entry.ts',
-			loader: 'ts',
-		},
-		platform: 'neutral',
-		format: 'esm',
-		bundle: true,
-		target: 'es2019',
-		treeShaking: false,
-		sourcemap: false,
-		write: false,
-		logLevel: 'silent',
-		// Move license comments to the end of the file to avoid mid-module annotations
-		// that Rollup warns it "cannot interpret due to the position of the comment".
-		// This preserves license text while preventing noisy warnings.
-		legalComments: 'eof',
-		// NativeScript is always a client environment — never server-side. The conditions
-		// must include 'browser' so packages with conditional exports (e.g.,
-		// @tanstack/router-core/isServer) resolve to client-side variants.
-		//
-		// 'development'/'production' (mode) is intentionally excluded: esbuild resolves
-		// conditions in the order they appear in the package.json exports object, and
-		// many packages list 'development' before 'browser'. Including it would cause
-		// environment-ambiguous stubs (e.g., isServer = undefined) to win over the
-		// correct client-side value (isServer = false). The 'import' condition already
-		// provides the correct ESM entry points, and process.env.NODE_ENV (set via
-		// define below) handles dev/prod branching at runtime.
-		//
-		// This aligns with the non-HMR Vite build: ['module', 'react-native', 'import', 'browser', 'default'].
-		conditions: ['module', 'react-native', 'import', 'browser', 'default'],
-		mainFields: ['module', 'browser', 'main'],
-		resolveExtensions: resolveExtensionsForPlatform(platform),
-		loader: {
-			'.css': 'text',
-			'.json': 'json',
-		},
-		// Mirror Vite's main-bundle DefinePlugin in the vendor esbuild build.
-		//
-		// esbuild's `define` requires every value to be a JS expression
-		// expressed as a string (the same constraint Vite normalises away).
-		// `getGlobalDefines()` returns a few raw `boolean` values for
-		// historical reasons (e.g. `__COMMONJS__: false`,
-		// `__UI_USE_XML_PARSER__: true`), so coerce any non-string entries
-		// through `JSON.stringify` before handing the table to esbuild.
-		define: (() => {
-			const raw = getGlobalDefines({
-				platform,
-				targetMode: mode,
-				verbose: !!options.verbose,
-				flavor: flavor ?? '',
-				isCI: !!process.env.CI,
-			}) as Record<string, unknown>;
-			const out: Record<string, string> = {};
-			for (const [key, value] of Object.entries(raw)) {
-				out[key] = typeof value === 'string' ? value : JSON.stringify(value);
-			}
-			// Belt-and-suspenders: keep the original NODE_ENV define explicit so
-			// future changes to `getGlobalDefines()` can't silently drop it.
-			out['process.env.NODE_ENV'] = JSON.stringify(mode);
-			// webpack-HMR idiom carried by ESM-published packages — a FREE
-			// `module.hot` reference is a ReferenceError in the ESM bundle the
-			// moment it evaluates (see the matching define in deps-bundle.ts).
-			out['module.hot'] = 'undefined';
-			return out;
-		})(),
-		plugins,
-		// Externalize ALL Node built-in modules. The vendor bundle runs on the
-		// NativeScript device runtime, not Node, so any Node API reference must
-		// be external. Using both bare and 'node:' prefixed forms.
-		external: [
-			'assert',
-			'async_hooks',
-			'buffer',
-			'child_process',
-			'cluster',
-			'console',
-			'constants',
-			'crypto',
-			'dgram',
-			'diagnostics_channel',
-			'dns',
-			'domain',
-			'events',
-			'fs',
-			'fs/promises',
-			'http',
-			'http2',
-			'https',
-			'inspector',
-			'module',
-			'net',
-			'os',
-			'path',
-			'path/posix',
-			'path/win32',
-			'perf_hooks',
-			'process',
-			'punycode',
-			'querystring',
-			'readline',
-			'repl',
-			'stream',
-			'stream/web',
-			'stream/promises',
-			'string_decoder',
-			'sys',
-			'timers',
-			'timers/promises',
-			'tls',
-			'trace_events',
-			'tty',
-			'url',
-			'util',
-			'v8',
-			'vm',
-			'wasi',
-			'worker_threads',
-			'zlib',
-			// node: prefixed variants
-			'node:assert',
-			'node:async_hooks',
-			'node:buffer',
-			'node:child_process',
-			'node:cluster',
-			'node:console',
-			'node:constants',
-			'node:crypto',
-			'node:dgram',
-			'node:diagnostics_channel',
-			'node:dns',
-			'node:domain',
-			'node:events',
-			'node:fs',
-			'node:fs/promises',
-			'node:http',
-			'node:http2',
-			'node:https',
-			'node:inspector',
-			'node:module',
-			'node:net',
-			'node:os',
-			'node:path',
-			'node:path/posix',
-			'node:path/win32',
-			'node:perf_hooks',
-			'node:process',
-			'node:punycode',
-			'node:querystring',
-			'node:readline',
-			'node:repl',
-			'node:stream',
-			'node:stream/web',
-			'node:stream/promises',
-			'node:string_decoder',
-			'node:sys',
-			'node:timers',
-			'node:timers/promises',
-			'node:tls',
-			'node:trace_events',
-			'node:tty',
-			'node:url',
-			'node:util',
-			'node:v8',
-			'node:vm',
-			'node:wasi',
-			'node:worker_threads',
-			'node:zlib',
-		],
-	});
+			stdin: {
+				contents: entryCode,
+				resolveDir: projectRoot,
+				sourcefile: 'ns-vendor-entry.ts',
+				loader: 'ts',
+			},
+			platform: 'neutral',
+			format: 'esm',
+			bundle: true,
+			target: 'es2019',
+			treeShaking: false,
+			sourcemap: false,
+			write: false,
+			logLevel: 'silent',
+			// Move license comments to the end of the file to avoid mid-module annotations
+			// that Rollup warns it "cannot interpret due to the position of the comment".
+			// This preserves license text while preventing noisy warnings.
+			legalComments: 'eof',
+			// NativeScript is always a client environment — never server-side. The conditions
+			// must include 'browser' so packages with conditional exports (e.g.,
+			// @tanstack/router-core/isServer) resolve to client-side variants.
+			//
+			// 'development'/'production' (mode) is intentionally excluded: esbuild resolves
+			// conditions in the order they appear in the package.json exports object, and
+			// many packages list 'development' before 'browser'. Including it would cause
+			// environment-ambiguous stubs (e.g., isServer = undefined) to win over the
+			// correct client-side value (isServer = false). The 'import' condition already
+			// provides the correct ESM entry points, and process.env.NODE_ENV (set via
+			// define below) handles dev/prod branching at runtime.
+			//
+			// This aligns with the non-HMR Vite build: ['module', 'react-native', 'import', 'browser', 'default'].
+			conditions: ['module', 'react-native', 'import', 'browser', 'default'],
+			mainFields: ['module', 'browser', 'main'],
+			resolveExtensions: resolveExtensionsForPlatform(platform),
+			loader: {
+				'.css': 'text',
+				'.json': 'json',
+			},
+			// Mirror Vite's main-bundle DefinePlugin in the vendor esbuild build.
+			//
+			// esbuild's `define` requires every value to be a JS expression
+			// expressed as a string (the same constraint Vite normalises away).
+			// `getGlobalDefines()` returns a few raw `boolean` values for
+			// historical reasons (e.g. `__COMMONJS__: false`,
+			// `__UI_USE_XML_PARSER__: true`), so coerce any non-string entries
+			// through `JSON.stringify` before handing the table to esbuild.
+			define: (() => {
+				const raw = getGlobalDefines({
+					platform,
+					targetMode: mode,
+					verbose: !!options.verbose,
+					flavor: flavor ?? '',
+					isCI: !!process.env.CI,
+				}) as Record<string, unknown>;
+				const out: Record<string, string> = {};
+				for (const [key, value] of Object.entries(raw)) {
+					out[key] = typeof value === 'string' ? value : JSON.stringify(value);
+				}
+				// Belt-and-suspenders: keep the original NODE_ENV define explicit so
+				// future changes to `getGlobalDefines()` can't silently drop it.
+				out['process.env.NODE_ENV'] = JSON.stringify(mode);
+				// webpack-HMR idiom carried by ESM-published packages — a FREE
+				// `module.hot` reference is a ReferenceError in the ESM bundle the
+				// moment it evaluates (see the matching define in deps-bundle.ts).
+				out['module.hot'] = 'undefined';
+				return out;
+			})(),
+			plugins,
+			// Externalize ALL Node built-in modules. The vendor bundle runs on the
+			// NativeScript device runtime, not Node, so any Node API reference must
+			// be external. Using both bare and 'node:' prefixed forms.
+			external: [
+				'assert',
+				'async_hooks',
+				'buffer',
+				'child_process',
+				'cluster',
+				'console',
+				'constants',
+				'crypto',
+				'dgram',
+				'diagnostics_channel',
+				'dns',
+				'domain',
+				'events',
+				'fs',
+				'fs/promises',
+				'http',
+				'http2',
+				'https',
+				'inspector',
+				'module',
+				'net',
+				'os',
+				'path',
+				'path/posix',
+				'path/win32',
+				'perf_hooks',
+				'process',
+				'punycode',
+				'querystring',
+				'readline',
+				'repl',
+				'stream',
+				'stream/web',
+				'stream/promises',
+				'string_decoder',
+				'sys',
+				'timers',
+				'timers/promises',
+				'tls',
+				'trace_events',
+				'tty',
+				'url',
+				'util',
+				'v8',
+				'vm',
+				'wasi',
+				'worker_threads',
+				'zlib',
+				// node: prefixed variants
+				'node:assert',
+				'node:async_hooks',
+				'node:buffer',
+				'node:child_process',
+				'node:cluster',
+				'node:console',
+				'node:constants',
+				'node:crypto',
+				'node:dgram',
+				'node:diagnostics_channel',
+				'node:dns',
+				'node:domain',
+				'node:events',
+				'node:fs',
+				'node:fs/promises',
+				'node:http',
+				'node:http2',
+				'node:https',
+				'node:inspector',
+				'node:module',
+				'node:net',
+				'node:os',
+				'node:path',
+				'node:path/posix',
+				'node:path/win32',
+				'node:perf_hooks',
+				'node:process',
+				'node:punycode',
+				'node:querystring',
+				'node:readline',
+				'node:repl',
+				'node:stream',
+				'node:stream/web',
+				'node:stream/promises',
+				'node:string_decoder',
+				'node:sys',
+				'node:timers',
+				'node:timers/promises',
+				'node:tls',
+				'node:trace_events',
+				'node:tty',
+				'node:url',
+				'node:util',
+				'node:v8',
+				'node:vm',
+				'node:wasi',
+				'node:worker_threads',
+				'node:zlib',
+			],
+		});
 
 	// A dependency that cannot resolve for this platform (a plugin shipping only
 	// .ios/.android sources: common on Windows) would otherwise fail the whole
@@ -680,6 +680,8 @@ function resolveExtensionsForPlatform(platform: string): string[] {
 		['.android.tsx', '.android.jsx', '.android.ts', '.android.js'].forEach((ext) => extensions.add(ext));
 	} else if (platform === 'windows') {
 		['.windows.tsx', '.windows.jsx', '.windows.ts', '.windows.js'].forEach((ext) => extensions.add(ext));
+	} else if (platform === 'linux') {
+		['.linux.tsx', '.linux.jsx', '.linux.ts', '.linux.js'].forEach((ext) => extensions.add(ext));
 	} else {
 		['.ios.tsx', '.ios.jsx', '.ios.ts', '.ios.js', '.visionos.tsx', '.visionos.jsx', '.visionos.ts', '.visionos.js'].forEach((ext) => extensions.add(ext));
 	}
