@@ -80,6 +80,9 @@ export function htmlToMarkup(html: string): string {
 	return out.trim();
 }
 
+// HTML content may be untrusted: no file://, custom schemes or .desktop launchers
+const LINK_SCHEMES = /^(https?|mailto):/i;
+
 /** GtkLabel with Pango markup; links open with the desktop's handler. */
 export class HtmlView extends HtmlViewBase {
 	private _disconnect: () => void;
@@ -101,7 +104,10 @@ export class HtmlView extends HtmlViewBase {
 			this.nativeViewProtected,
 			'activate-link',
 			(_label: any, uri: any) => {
-				openUrl(interop.stringFromCString(uri));
+				const href = interop.stringFromCString(uri).trim();
+				if (LINK_SCHEMES.test(href)) {
+					openUrl(href);
+				}
 				return true;
 			},
 			{ args: 1, returnsBool: true },
