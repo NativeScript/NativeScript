@@ -30,12 +30,21 @@ const TAGS: Record<string, [string, string]> = {
 
 /** Basic HTML to Pango markup (inline formatting, links, paragraphs, lists). */
 export function htmlToMarkup(html: string): string {
+	const escape = (text: string) =>
+		text
+			.replace(/&(?!(amp|lt|gt|quot|apos|#\d+);)/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;');
+	const closeTag = (tag: string) => (tag === 'a' ? '</a>' : TAGS[tag][1]);
+	// tags still open, so the markup stays balanced whatever the HTML (GTK drops invalid markup)
+	const open: string[] = [];
 	let out = '';
 	const re = /<\s*(\/?)\s*([a-zA-Z0-9]+)([^>]*)>|([^<]+)/g;
 	let m: RegExpExecArray;
 	while ((m = re.exec(html || ''))) {
 		if (m[4] !== undefined) {
-			out += m[4].replace(/\s+/g, ' ').replace(/&(?!(amp|lt|gt|quot|apos|#\d+);)/g, '&amp;');
+			out += escape(m[4].replace(/\s+/g, ' '));
 			continue;
 		}
 		const closing = !!m[1];
@@ -46,12 +55,27 @@ export function htmlToMarkup(html: string): string {
 			out += closing ? '\n\n' : '';
 		} else if (tag === 'li') {
 			out += closing ? '\n' : '• ';
-		} else if (tag === 'a') {
-			const href = /href\s*=\s*["']([^"']*)["']/i.exec(m[3])?.[1];
-			out += closing ? '</a>' : `<a href="${(href ?? '').replace(/"/g, '&quot;')}">`;
-		} else if (TAGS[tag]) {
-			out += closing ? TAGS[tag][1] : TAGS[tag][0];
+		} else if (tag === 'a' || TAGS[tag]) {
+			if (closing) {
+				const i = open.lastIndexOf(tag);
+				while (i >= 0 && open.length > i) {
+					out += closeTag(open.pop());
+				}
+			} else if (tag === 'a') {
+				// links don't nest
+				if (!open.includes('a')) {
+					const href = /href\s*=\s*["']([^"']*)["']/i.exec(m[3])?.[1];
+					out += `<a href="${escape(href ?? '')}">`;
+					open.push(tag);
+				}
+			} else {
+				out += TAGS[tag][0];
+				open.push(tag);
+			}
 		}
+	}
+	while (open.length) {
+		out += closeTag(open.pop());
 	}
 	return out.trim();
 }
