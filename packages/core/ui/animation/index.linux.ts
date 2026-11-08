@@ -3,11 +3,12 @@ export * from './animation-shared';
 export * from './animation-types';
 
 import { AnimationBase, Properties } from './animation-common';
-import type { PropertyAnimation } from './animation-shared';
+import type { AnimationDefinitionInternal, PropertyAnimation } from './animation-shared';
 import { CubicBezierAnimationCurve } from '../../core-types/animation-types';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { requestAnimationFrame, cancelAnimationFrame } from '../../animation-frame';
+import { opacityProperty, backgroundColorProperty, rotateProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty } from '../styling/style-properties';
 
 type Easing = (t: number) => number;
 
@@ -53,49 +54,63 @@ export function _resolveAnimationCurve(curve: any): Easing {
 
 const mix = (from: number, to: number, t: number) => from + (to - from) * t;
 
-/** Reads the current value and returns an applier for progress 0..1. */
-function animator(animation: PropertyAnimation): ((t: number) => void) | null {
+/**
+ * Reads the current value and returns an applier for progress 0..1.
+ *
+ * A CSS keyframe animation (valueSource `keyframe`) writes the style's keyframe values, as iOS
+ * and Android do: KeyframeAnimation sets them when it starts and they win over local values, so
+ * local writes wouldn't show until it ends.
+ */
+function animator(animation: PropertyAnimation, keyframe: boolean): ((t: number) => void) | null {
 	const target: any = animation.target;
 	const to: any = animation.value;
+	const set = (property: { name: string; keyframe: string }, value: any) => {
+		if (keyframe) {
+			target.style[property.keyframe] = value;
+		} else {
+			target[property.name] = value;
+		}
+	};
 	switch (animation.property) {
 		case Properties.opacity: {
 			const from = target.opacity ?? 1;
-			return (t) => (target.opacity = mix(from, to, t));
+			return (t) => set(opacityProperty, mix(from, to, t));
 		}
 		case Properties.backgroundColor: {
 			const from: Color = target.backgroundColor instanceof Color ? target.backgroundColor : new Color(0, 0, 0, 0);
 			const end: Color = to instanceof Color ? to : new Color(to);
-			return (t) => (target.backgroundColor = new Color(Math.round(mix(from.a, end.a, t)), Math.round(mix(from.r, end.r, t)), Math.round(mix(from.g, end.g, t)), Math.round(mix(from.b, end.b, t))));
+			return (t) => set(backgroundColorProperty, new Color(Math.round(mix(from.a, end.a, t)), Math.round(mix(from.r, end.r, t)), Math.round(mix(from.g, end.g, t)), Math.round(mix(from.b, end.b, t))));
 		}
 		case Properties.translate: {
 			const from = [target.translateX || 0, target.translateY || 0];
 			return (t) => {
-				target.translateX = mix(from[0], to.x, t);
-				target.translateY = mix(from[1], to.y, t);
+				set(translateXProperty, mix(from[0], to.x, t));
+				set(translateYProperty, mix(from[1], to.y, t));
 			};
 		}
 		case Properties.scale: {
 			const from = [target.scaleX ?? 1, target.scaleY ?? 1];
 			return (t) => {
-				target.scaleX = mix(from[0], to.x, t);
-				target.scaleY = mix(from[1], to.y, t);
+				set(scaleXProperty, mix(from[0], to.x, t));
+				set(scaleYProperty, mix(from[1], to.y, t));
 			};
 		}
 		case Properties.rotate: {
 			const from = target.rotate || 0;
 			const end = typeof to === 'number' ? to : to.z;
-			return (t) => (target.rotate = mix(from, end, t));
+			return (t) => set(rotateProperty, mix(from, end, t));
 		}
 		case Properties.width:
 		case Properties.height: {
 			const key = animation.property;
+			const property = key === Properties.width ? widthProperty : heightProperty;
 			const measured = key === Properties.width ? target.getActualSize?.().width : target.getActualSize?.().height;
 			const from = typeof target[key] === 'number' ? target[key] : measured;
 			// percentages / auto can't be tweened: jump at the end
 			if (typeof to !== 'number' || typeof from !== 'number') {
-				return (t) => t >= 1 && (target[key] = to);
+				return (t) => t >= 1 && set(property, to);
 			}
-			return (t) => (target[key] = mix(from, to, t));
+			return (t) => set(property, mix(from, to, t));
 		}
 		default:
 			return null;
@@ -106,6 +121,14 @@ function animator(animation: PropertyAnimation): ((t: number) => void) | null {
 export class Animation extends AnimationBase {
 	private _frame = 0;
 	private _cancelled = false;
+	private _valueSource: 'animation' | 'keyframe' = 'animation';
+
+	constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
+		super(animationDefinitions, playSequentially);
+		if (animationDefinitions.length > 0 && animationDefinitions[0].valueSource !== undefined) {
+			this._valueSource = animationDefinitions[0].valueSource;
+		}
+	}
 
 	public play(): any {
 		if (this.isPlaying) {
@@ -159,7 +182,7 @@ export class Animation extends AnimationBase {
 						continue;
 					}
 					// capture start values when the property starts moving
-					r.apply ??= animator(animation);
+					r.apply ??= animator(animation, this._valueSource === 'keyframe');
 					if (!r.apply) continue;
 					const cycle = elapsed / duration;
 					const finished = cycle >= iterations;
