@@ -71,7 +71,7 @@ import { collectVendorModules } from '../shared/vendor/manifest-collect.js';
 import { generatePlatformPolyfills } from '../shared/runtime/platform-polyfills.js';
 import { getAngularLinkerFactory, runAngularLinker } from '../frameworks/angular/build/shared-linker.js';
 import { getBlockedDeviceNodeModulesReason, isFlavorClientPackageSpecifier, resolveCandidateFilePath } from './websocket-module-specifiers.js';
-import { extractDirectExportedNames, JS_IDENTIFIER_RE, parseExportSpecList } from './websocket-core-bridge.js';
+import { extractDirectExportedNames, JS_IDENTIFIER_RE, maskJsComments, parseExportSpecList } from './websocket-core-bridge.js';
 import { hasExistingDefaultExport } from './ns-core-cjs-shape.js';
 import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
 import { loadPersistedBootRecording } from './boot-recording.js';
@@ -850,7 +850,15 @@ export interface DepsModuleExportInfo {
 	opaqueCjs?: boolean;
 }
 
-const ESM_SYNTAX_RE = /^[ \t]*(?:import[\s{"'*]|export[\s{*])/m;
+// ESM markers can sit anywhere on a line — minified chunks emit
+// `...;export{mt as g};` after other statements, and a line-anchored check
+// misclassifies them as opaque CJS (the served shim then drops every named
+// export). The pattern runs against a copy with comments and string/template/
+// regex literal interiors blanked (positions preserved), so look-alike text
+// inside literals can never match. The lookbehind keeps `$export`-style
+// identifiers and `obj.import`/`obj.export` member access from matching.
+const ESM_PREFIX = '(?<![.$\\u200c\\u200d\\p{ID_Continue}])';
+const ESM_SYNTAX_RE = new RegExp(ESM_PREFIX + String.raw`(?:import[\s{"'*]|export[\s{*])`, 'u');
 
 function resolveLocalReExportTarget(spec: string, importerPath: string, platform: string): string | null {
 	const base = path.resolve(path.dirname(importerPath), spec);
@@ -934,22 +942,34 @@ export function collectDepsModuleExportInfo(absPath: string, platform: string, s
 	} catch {
 		return { names: null, hasDefault: false };
 	}
-	if (!/\.mjs$/i.test(absPath) && !ESM_SYNTAX_RE.test(code)) return collectCjsExportInfo(code);
-	const names = new Set<string>(extractDirectExportedNames(code));
+	const maskedCode = maskJsComments(code, true);
+	if (!/\.mjs$/i.test(absPath) && !ESM_SYNTAX_RE.test(maskedCode)) return collectCjsExportInfo(code);
+	const names = new Set<string>(extractDirectExportedNames(maskedCode));
 	let match: RegExpExecArray | null;
-	const starAsRe = /\bexport\s+\*\s+as\s+([$_\p{ID_Start}][$\p{ID_Continue}]*)\s+from\s+["'][^"']+["']/gu;
-	while ((match = starAsRe.exec(code)) !== null) {
+	// Minifiers drop the spaces `export * as ns from "x"` keeps — allow none.
+	const starAsRe = new RegExp(ESM_PREFIX + String.raw`export\s*\*\s*as\s+([$_\p{ID_Start}][$\p{ID_Continue}]*)\s+from\s*["'][^"']*["']`, 'gu');
+	while ((match = starAsRe.exec(maskedCode)) !== null) {
 		names.add(match[1]);
 	}
-	const braceRe = /\bexport\s*\{([^}]+)\}/g;
-	while ((match = braceRe.exec(code)) !== null) {
+	const braceRe = new RegExp(ESM_PREFIX + String.raw`export\s*\{([^}]+)\}`, 'gu');
+	while ((match = braceRe.exec(maskedCode)) !== null) {
 		for (const { exportedName } of parseExportSpecList(match[1])) {
 			names.add(exportedName);
 		}
 	}
-	const starRe = /^[ \t]*export\s+\*\s+from\s+["']([^"']+)["']/gm;
-	while ((match = starRe.exec(code)) !== null) {
-		const spec = match[1];
+	// `export * from` carries the same mid-line minification hazard — find it
+	// on the masked copy, then read the specifier literal from the original
+	// code at the same offset (masked interiors are blanked).
+	const starRe = new RegExp(ESM_PREFIX + String.raw`export\s*\*\s*from\s*(["'])`, 'gu');
+	while ((match = starRe.exec(maskedCode)) !== null) {
+		const quoteIndex = match.index + match[0].length - 1;
+		const quote = match[1];
+		let specEnd = quoteIndex + 1;
+		while (specEnd < code.length && code[specEnd] !== quote) {
+			specEnd += code[specEnd] === '\\' ? 2 : 1;
+		}
+		if (specEnd >= code.length) return { names: null, hasDefault: false };
+		const spec = code.slice(quoteIndex + 1, specEnd);
 		const target = spec.startsWith('.') ? resolveLocalReExportTarget(spec, absPath, platform) : resolveBareReExportTarget(spec, absPath, platform);
 		if (!target) return { names: null, hasDefault: false };
 		const child = collectDepsModuleExportInfo(target, platform, seen);

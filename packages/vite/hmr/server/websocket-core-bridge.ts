@@ -47,10 +47,12 @@ const REGEX_PRECEDING_KEYWORD_RE = /(?:^|[^$\w])(?:return|typeof|instanceof|in|o
 /**
  * Blank line and block comments (preserving newlines) so the regex export
  * scanners never see a commented-out `export` declaration. String, template
- * and regex literals are skipped so their contents are left intact.
+ * and regex literals are skipped so their contents are left intact — pass
+ * `literals` to blank their interiors too (keeping quotes/positions) so the
+ * scanners can also trust keyword matches as real syntax.
  */
-export function maskJsComments(code: string): string {
-	if (!code || (code.indexOf('//') === -1 && code.indexOf('/*') === -1)) {
+export function maskJsComments(code: string, literals = false): string {
+	if (!code || (!literals && code.indexOf('//') === -1 && code.indexOf('/*') === -1)) {
 		return code;
 	}
 	const chars = code.split('');
@@ -69,6 +71,77 @@ export function maskJsComments(code: string): string {
 		if ('(,=:[!&|?{};+-*%<>~^'.includes(code[j])) return true;
 		return REGEX_PRECEDING_KEYWORD_RE.test(code.slice(Math.max(0, j - 10), j + 1));
 	};
+	// Skip a regex literal starting at `at`; returns the index just past it.
+	const skipRegex = (at: number): number => {
+		let j = at + 1;
+		let inClass = false;
+		while (j < n && code[j] !== '\n') {
+			const r = code[j];
+			if (r === '\\') {
+				j += 2;
+				continue;
+			}
+			if (r === '[') inClass = true;
+			else if (r === ']') inClass = false;
+			else if (r === '/' && !inClass) break;
+			j++;
+		}
+		return j + 1;
+	};
+	// Skip a string/template literal starting at `at`; returns the index just
+	// past it. Template `${}` expressions may hold nested literals, comments
+	// and regexes — a naive next-backtick scan closes early and desyncs every
+	// later literal (`...it's...` inside a template opened a fake string).
+	const skipQuoted = (at: number): number => {
+		const quote = code[at];
+		let j = at + 1;
+		if (quote !== '`') {
+			while (j < n && code[j] !== quote) {
+				j += code[j] === '\\' ? 2 : 1;
+			}
+			return j + 1;
+		}
+		while (j < n) {
+			const t = code[j];
+			if (t === '\\') {
+				j += 2;
+				continue;
+			}
+			if (t === '`') return j + 1;
+			if (t === '$' && code[j + 1] === '{') {
+				j += 2;
+				let depth = 1;
+				while (j < n && depth) {
+					const e = code[j];
+					const e2 = code[j + 1];
+					if (e === "'" || e === '"' || e === '`') {
+						j = skipQuoted(j);
+						continue;
+					}
+					if (e === '/' && e2 === '/') {
+						const eol = code.indexOf('\n', j);
+						j = eol === -1 ? n : eol;
+						continue;
+					}
+					if (e === '/' && e2 === '*') {
+						const close = code.indexOf('*/', j + 2);
+						j = close === -1 ? n : close + 2;
+						continue;
+					}
+					if (e === '/' && slashStartsRegex(j)) {
+						j = skipRegex(j);
+						continue;
+					}
+					if (e === '{') depth++;
+					else if (e === '}') depth--;
+					j++;
+				}
+				continue;
+			}
+			j++;
+		}
+		return j;
+	};
 	let i = 0;
 	while (i < n) {
 		const c = code[i];
@@ -84,26 +157,13 @@ export function maskJsComments(code: string): string {
 			blank(i, stop);
 			i = stop;
 		} else if (c === "'" || c === '"' || c === '`') {
-			i++;
-			while (i < n && code[i] !== c) {
-				i += code[i] === '\\' ? 2 : 1;
-			}
-			i++;
+			const start = i;
+			i = skipQuoted(i);
+			if (literals) blank(start + 1, i - 1);
 		} else if (c === '/' && slashStartsRegex(i)) {
-			i++;
-			let inClass = false;
-			while (i < n && code[i] !== '\n') {
-				const r = code[i];
-				if (r === '\\') {
-					i += 2;
-					continue;
-				}
-				if (r === '[') inClass = true;
-				else if (r === ']') inClass = false;
-				else if (r === '/' && !inClass) break;
-				i++;
-			}
-			i++;
+			const start = i;
+			i = skipRegex(i);
+			if (literals) blank(start, i);
 		} else {
 			i++;
 		}
