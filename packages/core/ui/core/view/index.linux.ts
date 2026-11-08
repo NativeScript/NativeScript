@@ -6,7 +6,7 @@ import { layout } from '../../../utils';
 import { Background } from '../../styling/background';
 import { visibilityProperty, opacityProperty, rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty } from '../../styling/style-properties';
 import { CoreTypes } from '../../../core-types';
-import { own, release } from '../../../utils/gtk.linux';
+import { connect, own, release } from '../../../utils/gtk.linux';
 import { createContainer, insertChild, registerNativeView, unregisterNativeView } from './gtk-layout.linux';
 import { px, releaseWidgetCss, setWidgetCss } from '../../styling/gtk-style.linux';
 
@@ -20,6 +20,9 @@ const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
 // set while a root runs the layout pass: GTK is already allocating
 let inLayoutPass = 0;
+
+/** Pointer events backed by a GtkEventControllerMotion while something listens to them. */
+const POINTER_EVENTS = ['mouseEnter', 'mouseLeave', 'mouseMove'];
 
 function backgroundCss(background: Background): string {
 	if (!background) {
@@ -71,10 +74,12 @@ export class View extends ViewCommon {
 			registerNativeView(value, this);
 		}
 		super.setNativeView(value);
+		this._syncPointerMotion();
 	}
 
 	disposeNativeView() {
 		const nativeView = this.nativeViewProtected;
+		this._releasePointerMotion();
 		super.disposeNativeView();
 		if (nativeView) {
 			unregisterNativeView(nativeView);
@@ -83,6 +88,80 @@ export class View extends ViewCommon {
 		}
 		this._linuxFrame = null;
 		this._isLaidOut = false;
+	}
+
+	public addEventListener(eventNames: string, callback: (data: any) => void, thisArg?: any, once?: boolean): void {
+		super.addEventListener(eventNames, callback, thisArg, once);
+		if (typeof eventNames === 'string' && POINTER_EVENTS.some((name) => eventNames.indexOf(name) !== -1)) {
+			this._syncPointerMotion();
+		}
+	}
+
+	public removeEventListener(eventNames: string, callback?: (data: any) => void, thisArg?: any): void {
+		super.removeEventListener(eventNames, callback, thisArg);
+		if (typeof eventNames === 'string' && POINTER_EVENTS.some((name) => eventNames.indexOf(name) !== -1)) {
+			this._syncPointerMotion();
+		}
+	}
+
+	private _pointerMotion: { widget: any; controller: any; disconnect: (() => void)[] } | null = null;
+	private _hovered = false;
+
+	/**
+	 * Raises `mouseEnter`, `mouseLeave` and `mouseMove` (with getX/getY in the view's coordinates)
+	 * and keeps the `hover` visual state, as Windows does, while any of them has a listener.
+	 */
+	private _syncPointerMotion(): void {
+		const widget = this.nativeViewProtected;
+		const wanted = !!widget && POINTER_EVENTS.some((name) => this.hasListeners(name));
+		if (this._pointerMotion && (!wanted || this._pointerMotion.widget !== widget)) {
+			this._releasePointerMotion();
+		}
+		if (!wanted || this._pointerMotion) {
+			return;
+		}
+		const controller = gtk_event_controller_motion_new();
+		const at = (eventName: string, x: number, y: number) => this.notify({ eventName, object: this, getX: () => x, getY: () => y } as any);
+		const disconnect = [
+			connect(
+				controller,
+				'enter',
+				(_c: any, x: number, y: number) => {
+					if (!this._hovered) {
+						this._hovered = true;
+						this._addVisualState('hover');
+					}
+					at('mouseEnter', x, y);
+				},
+				{ types: ['double', 'double'] },
+			),
+			connect(controller, 'motion', (_c: any, x: number, y: number) => at('mouseMove', x, y), { types: ['double', 'double'] }),
+			connect(controller, 'leave', () => {
+				if (this._hovered) {
+					this._hovered = false;
+					this._removeVisualState('hover');
+				}
+				this.notify({ eventName: 'mouseLeave', object: this });
+			}),
+		];
+		gtk_widget_add_controller(widget, controller);
+		this._pointerMotion = { widget, controller, disconnect };
+	}
+
+	private _releasePointerMotion(): void {
+		const motion = this._pointerMotion;
+		if (!motion) {
+			return;
+		}
+		this._pointerMotion = null;
+		for (const disconnect of motion.disconnect) {
+			disconnect();
+		}
+		gtk_widget_remove_controller(motion.widget, motion.controller);
+		if (this._hovered) {
+			this._hovered = false;
+			this._removeVisualState('hover');
+		}
 	}
 
 	public requestLayout(): void {
