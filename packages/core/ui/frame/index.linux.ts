@@ -65,12 +65,35 @@ export class Frame extends FrameBase {
 			// scrolls there
 			const focus = this._pageFocus.get(page)?.deref()?.nativeViewProtected;
 			if (focus && gtk_widget_is_ancestor(focus, native)) {
-				gtk_widget_grab_focus(focus);
+				this._restoreFocus(focus, native);
 			}
 		}
 		this._attachedPage = page;
 		this._updateActionBar(page);
 		this.requestLayout();
+	}
+
+	/** Refocuses without letting a GtkViewport scroll to it. */
+	private _restoreFocus(focus: any, page: any): void {
+		const viewports: any[] = [];
+		const viewportType = gtk_viewport_get_type();
+		const pageAddress = addressOf(page);
+		for (let widget: any = gtk_widget_get_parent(focus); widget; widget = gtk_widget_get_parent(widget)) {
+			if (g_type_check_instance_is_a(widget, viewportType) && gtk_viewport_get_scroll_to_focus(widget)) {
+				gtk_viewport_set_scroll_to_focus(widget, 0);
+				viewports.push(widget);
+			}
+			if (addressOf(widget) === pageAddress) {
+				break;
+			}
+		}
+		try {
+			gtk_widget_grab_focus(focus);
+		} finally {
+			for (const viewport of viewports) {
+				gtk_viewport_set_scroll_to_focus(viewport, 1);
+			}
+		}
 	}
 
 	/** Remembers the view holding keyboard focus in a page that's leaving. */
