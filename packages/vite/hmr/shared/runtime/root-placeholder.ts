@@ -639,7 +639,31 @@ export function installRootPlaceholder(verbose?: boolean) {
 							// directly. Bailing here keeps `resetRootView(undefined)` from
 							// throwing "Main entry is missing".
 							if (!entry) {
-								diag('patched run() called with no entry; framework manages root view');
+								// The placeholder consumed the launch event; replay it for
+								// frameworks that bootstrap from it (Angular).
+								if (g['__NS_DEV_LAUNCH_REPLAYED__']) {
+									diag('patched run() called with no entry; launch already replayed');
+									return;
+								}
+								g['__NS_DEV_LAUNCH_REPLAYED__'] = true;
+								diag('patched run() called with no entry; replaying launch for framework listeners');
+								try {
+									const launchArgs: any = {
+										eventName: Application.launchEvent,
+										object: Application,
+										ios: Application.ios,
+										android: Application.android,
+										windows: Application.windows,
+										linux: Application.linux,
+									};
+									Application.notify(launchArgs);
+									const replayedRoot = launchArgs.root;
+									if (replayedRoot && typeof Application.resetRootView === 'function') {
+										Application.resetRootView({ create: () => replayedRoot });
+									}
+								} catch (e) {
+									console.warn('[ns-placeholder] launch replay failed:', e?.message || e);
+								}
 								return;
 							}
 
