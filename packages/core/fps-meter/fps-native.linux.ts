@@ -1,17 +1,19 @@
 import { getPrimaryWindow } from '../application/window-helper.linux';
-
-const pointer: interop.Type<any> = (interop.types as any).pointer;
+import { addressOf, connect } from '../utils/gtk.linux';
 
 /**
  * Frames from the window's GDK frame clock, at the display's refresh rate (like CADisplayLink or
  * Choreographer). Before a window exists it falls back to a ~60 Hz timer.
+ *
+ * Requests one frame at a time instead of begin/end_updating: GTK 4.6 restarts its frame-time
+ * smoothing whenever updating starts, and starting and stopping it for short animations stalls
+ * GTK's own CSS animations (a GtkSpinner stops turning).
  */
 export class FPSCallback {
 	public running = false;
-	private _window: any = null;
-	private _tickId = 0;
+	private _clock = 0;
+	private _disconnect: (() => void) | null = null;
 	private _timer: ReturnType<typeof setInterval> | null = null;
-	private _tick: interop.Pointer | null = null;
 
 	constructor(private onFrame: (currentTimeMillis: number) => void) {}
 
@@ -21,22 +23,24 @@ export class FPSCallback {
 		}
 		this.running = true;
 		const window = getPrimaryWindow();
-		if (!window) {
+		const clock = window && gtk_widget_get_frame_clock(window);
+		if (!clock) {
 			this._timer = setInterval(() => this.onFrame(Number(g_get_monotonic_time()) / 1000), 1000 / 60);
 			return;
 		}
-		this._tick ??= interop.callback(
-			(_widget: any, clock: any) => {
-				if (this.running) {
-					// frame time is monotonic microseconds, the base getTimeInFrameBase uses
-					this.onFrame(Number(gdk_frame_clock_get_frame_time(clock)) / 1000);
+		if (this._clock !== addressOf(clock)) {
+			this._disconnect?.();
+			this._clock = addressOf(clock);
+			this._disconnect = connect(clock, 'update', () => {
+				if (!this.running) {
+					return;
 				}
-				return 1; // G_SOURCE_CONTINUE
-			},
-			{ returns: interop.types.int32, args: [pointer, pointer, pointer] },
-		);
-		this._window = window;
-		this._tickId = gtk_widget_add_tick_callback(window, this._tick as any, null, null);
+				gdk_frame_clock_request_phase(clock, GdkFrameClockPhase.UPDATE);
+				// frame time is monotonic microseconds, the base getTimeInFrameBase uses
+				this.onFrame(Number(gdk_frame_clock_get_frame_time(clock)) / 1000);
+			});
+		}
+		gdk_frame_clock_request_phase(clock, GdkFrameClockPhase.UPDATE);
 	}
 
 	public stop() {
@@ -47,11 +51,6 @@ export class FPSCallback {
 		if (this._timer) {
 			clearInterval(this._timer);
 			this._timer = null;
-		}
-		if (this._tickId) {
-			gtk_widget_remove_tick_callback(this._window, this._tickId);
-			this._tickId = 0;
-			this._window = null;
 		}
 	}
 }
