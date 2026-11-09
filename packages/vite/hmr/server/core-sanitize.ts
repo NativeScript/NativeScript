@@ -1,4 +1,5 @@
 import { buildCoreUrlPath } from '../../helpers/ns-core-url.js';
+import { isBuiltinModuleId } from '../../helpers/builtin-modules.js';
 
 /**
  * Rewrites stray string-literal side-effect lines that reference @nativescript/core
@@ -256,6 +257,11 @@ function rewriteSpec(spec: string, origin: string, ver: number, relBase?: Relati
 	void ver;
 	// Strip Vite cache-busting query params for bridge URLs
 	const cleanSpec = spec.split('?')[0];
+
+	const builtinSpec = cleanSpec.startsWith('/@id/') ? cleanSpec.slice('/@id/'.length) : cleanSpec;
+	if (isBuiltinModuleId(builtinSpec)) {
+		return builtinSpec;
+	}
 
 	// @nativescript/core anywhere in the path → core bridge.
 	// Delegated to the ONE canonical URL generator to guarantee that

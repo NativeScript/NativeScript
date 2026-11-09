@@ -283,6 +283,8 @@ exports[`svelte configuration for android 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('NativeScriptBuiltinModulesPlugin') */
+    new NativeScriptBuiltinModulesPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {
@@ -667,6 +669,8 @@ exports[`svelte configuration for ios 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('NativeScriptBuiltinModulesPlugin') */
+    new NativeScriptBuiltinModulesPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {

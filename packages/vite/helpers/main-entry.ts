@@ -498,6 +498,10 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			imports += '  var _nsReq = function (id) {\n';
 			imports += '    try {\n';
 			imports += "      var n = String(id || '');\n";
+			// Kept-external builtins must reach the runtime before the stub table.
+			imports += "      if (__nsOrigRequire && (n.indexOf('ns:') === 0 || n.indexOf('node:') === 0)) {\n";
+			imports += '        try { return __nsOrigRequire(n); } catch (e) {}\n';
+			imports += '      }\n';
 			imports += "      var stripped = n.indexOf('node:') === 0 ? n.slice(5) : n;\n";
 			imports += '      if (__nsNodeBuiltins[stripped]) return {};\n';
 			imports += "      if (n === '@nativescript/core' || n.indexOf('@nativescript/core/') === 0) {\n";

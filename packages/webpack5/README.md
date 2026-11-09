@@ -81,6 +81,39 @@ Useful globally available variables in your app:
 | `webpack.mergeWebpack(obj)` | Merge objects into the final config |
 | `webpack.resolveConfig()` | Resolve the final webpack configuration |
 
+### Runtime builtin modules (`ns:` / `node:`)
+
+The NativeScript runtimes provide builtin modules under the `ns:` scheme (`ns:util`, `ns:module`, `ns:worker_threads`, …) and resolve them themselves. `NativeScriptBuiltinModulesPlugin` leaves every `ns:` import as-is in the bundle, including modules added in future runtime versions.
+
+Customize it with webpack-chain. For example, to also use the runtime's `node:` shims (only list the ones your runtime version ships; other `node:` imports fail the build):
+
+```js
+const { NormalModuleReplacementPlugin } = require('webpack');
+
+webpack.chainWebpack((config) => {
+	config.plugin('NativeScriptBuiltinModulesPlugin').tap(() => [
+		{ include: [/^ns:/, 'node:worker_threads'] },
+	]);
+
+	// libraries often import the bare name
+	config
+		.plugin('ForwardWorkerThreads')
+		.use(NormalModuleReplacementPlugin, [/^worker_threads$/, 'node:worker_threads']);
+});
+```
+
+To polyfill a builtin instead (e.g. for a runtime that doesn't ship it), redirect it with a replacement plugin. The builtin check runs after replacement plugins, so the polyfill gets bundled:
+
+```js
+webpack.chainWebpack((config) => {
+	config
+		.plugin('PolyfillNsUrl')
+		.use(NormalModuleReplacementPlugin, [/^ns:url$/, require.resolve('./polyfills/ns-url.js')]);
+});
+```
+
+`resolve.alias` doesn't apply here: webpack treats `ns:util` as a URL scheme and skips resolution.
+
 ## 🎛️ CLI Flags
 
 | Flag | Description |
