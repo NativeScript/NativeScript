@@ -62,6 +62,7 @@ import { resolvePlatform } from '../../helpers/cli-flags.js';
 import { getGlobalDefines, getUserDefineEntries } from '../../helpers/global-defines.js';
 import { getProjectFlavor } from '../../helpers/flavor.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
+import { isSolidRuntimePackage, resolveSolidDevEntry } from '../../helpers/solid-runtime.js';
 import { createNativeClassEsbuildPlugin } from '../../helpers/nativeclass-esbuild-plugin.js';
 import type { Platform } from '../../helpers/platform-types.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
@@ -72,11 +73,12 @@ import { collectVendorModules } from '../shared/vendor/manifest-collect.js';
 import { generatePlatformPolyfills } from '../shared/runtime/platform-polyfills.js';
 import { getAngularLinkerFactory, runAngularLinker } from '../frameworks/angular/build/shared-linker.js';
 import { getBlockedDeviceNodeModulesReason, isFlavorClientPackageSpecifier, resolveCandidateFilePath } from './websocket-module-specifiers.js';
-import { extractDirectExportedNames, JS_IDENTIFIER_RE, parseExportSpecList } from './websocket-core-bridge.js';
+import { extractDirectExportedNames, JS_IDENTIFIER_RE, maskJsComments, parseExportSpecList } from './websocket-core-bridge.js';
 import { hasExistingDefaultExport } from './ns-core-cjs-shape.js';
 import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
 import { loadPersistedBootRecording } from './boot-recording.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
+import { builtinModulesEsbuildPlugin } from '../../helpers/builtin-modules.js';
 
 export const DEPS_BUNDLE_PATH = '/ns/deps-bundle.mjs';
 
@@ -247,6 +249,23 @@ function resolveSpecToFile(spec: string, projectRoot: string, workspaceRoot: str
 	return isPackageRootSpec(spec) ? null : resolvePackageRootEntry(spec, roots, platform);
 }
 
+/**
+ * `resolveSpecToFile`, except that under the Solid flavor a Solid runtime
+ * package root resolves to its dev build — the file the routing plugin pins
+ * every bare import to. Without the `development` condition its exports map
+ * yields the prod build, which cannot pair with solid-js's dev build.
+ */
+function resolveDepsSpecToFile(spec: string, projectRoot: string, workspaceRoot: string | null, platform: string, flavor: string | undefined): string | null {
+	if (flavor === 'solid') {
+		const bare = spec.replace(/^\/node_modules\//, '');
+		if (isSolidRuntimePackage(bare)) {
+			const devEntry = resolveSolidDevEntry(bare, projectRoot);
+			if (devEntry) return devEntry.absPath;
+		}
+	}
+	return resolveSpecToFile(spec, projectRoot, workspaceRoot, platform);
+}
+
 // Never bundled: `@nativescript/core` belongs to the /ns/core bridge realm,
 // and `@nativescript/vite` IS the dev tooling — its device-served client
 // modules (hot registry, session bootstrap, framework strategies) must load
@@ -262,7 +281,7 @@ const NEVER_BUNDLED_KEY_RE = /^node_modules\/@nativescript\/(?:core|vite)\//;
  * realms, non-script assets, symlinked workspace-source packages, and files
  * that cannot be resolved on disk (they stay per-module).
  */
-export function resolveDepsEntriesFromRecording(recordedPaths: readonly string[], projectRoot: string, workspaceRoot: string | null, platform: string): DepsBundleEntry[] {
+export function resolveDepsEntriesFromRecording(recordedPaths: readonly string[], projectRoot: string, workspaceRoot: string | null, platform: string, flavor?: string): DepsBundleEntry[] {
 	const entries: DepsBundleEntry[] = [];
 	const seenKeys = new Set<string>();
 	for (const recorded of recordedPaths) {
@@ -271,7 +290,7 @@ export function resolveDepsEntriesFromRecording(recordedPaths: readonly string[]
 		if (NON_BUNDLEABLE_EXT_RE.test(spec)) continue;
 		if (NEVER_BUNDLED_SPEC_RE.test(spec)) continue;
 		if (getBlockedDeviceNodeModulesReason(spec)) continue;
-		const absPath = resolveSpecToFile(spec, projectRoot, workspaceRoot, platform);
+		const absPath = resolveDepsSpecToFile(spec, projectRoot, workspaceRoot, platform, flavor);
 		if (!absPath || NON_BUNDLEABLE_EXT_RE.test(absPath)) continue;
 		// Symlinked node_modules entries pointing at workspace source are app
 		// code in disguise — leave them to the Vite pipeline (same policy as
@@ -317,11 +336,7 @@ export function resolveDepsEntriesFromVendorCollection(projectRoot: string, work
 		const spec = `/node_modules/${bare}`;
 		if (NEVER_BUNDLED_SPEC_RE.test(spec)) continue;
 		if (getBlockedDeviceNodeModulesReason(spec)) continue;
-		// Solid pins its runtime to dist/dev.js everywhere (see the routing
-		// plugin); the seed must land on the same file or the registry entry
-		// would mint a second solid realm.
-		const resolveTarget = flavor === 'solid' && bare === 'solid-js' ? '/node_modules/solid-js/dist/dev.js' : spec;
-		const absPath = resolveSpecToFile(resolveTarget, projectRoot, workspaceRoot, platform);
+		const absPath = resolveDepsSpecToFile(spec, projectRoot, workspaceRoot, platform, flavor);
 		if (!absPath || NON_BUNDLEABLE_EXT_RE.test(absPath)) continue;
 		try {
 			const real = realpathSync(absPath);
@@ -422,9 +437,10 @@ const NODE_BUILTIN_SET = new Set(NODE_EXTERNALS);
  *    finishes evaluating, so the shim's registry read cannot race it).
  *  - `@nativescript/vite` client modules stay per-module (see
  *    NEVER_BUNDLED_SPEC_RE) → external canonical /ns/m URL.
- *  - Solid flavor: bare `solid-js` pins to `solid-js/dist/dev.js` INSIDE the
- *    bundle — the same file `rewriteImports` routes every importer to — so
- *    the bundle can never carry a second solid realm.
+ *  - Solid flavor: bare Solid runtime roots (`solid-js`, `@solidjs/signals`,
+ *    …) pin to their dev builds INSIDE the bundle — the same files
+ *    `rewriteImports` routes every importer to — so the bundle can never
+ *    carry a second solid realm or pair solid-js dev with signals prod.
  *  - Everything else internalizes. Bare specs esbuild cannot resolve get
  *    platform-aware resolution (`index.ios.js`-style entries esbuild's
  *    resolver misses); only specs with no on-disk resolution at all stay
@@ -467,9 +483,9 @@ function createDepsImportRoutingPlugin(projectRoot: string, workspaceRoot: strin
 				if (/^@nativescript\/vite(?:\/|$)/.test(spec) || isFlavorClientPackageSpecifier(spec)) {
 					return { path: `/ns/m/node_modules/${spec.replace(SCRIPT_EXT_RE, '')}`, external: true };
 				}
-				if (flavor === 'solid' && spec === 'solid-js') {
-					const pinned = await probeResolve('solid-js/dist/dev.js');
-					if (!pinned.errors.length && pinned.path) return pinned;
+				if (flavor === 'solid' && isSolidRuntimePackage(spec)) {
+					const pinned = resolveSolidDevEntry(spec, args.resolveDir || projectRoot);
+					if (pinned) return { path: pinned.absPath };
 				}
 				const probe = await probeResolve(spec);
 				if (probe.errors.length > 0 || !probe.path) {
@@ -666,7 +682,7 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	const { projectRoot, platform, mode, flavor, verbose } = options;
 	const t0 = Date.now();
 	const workspaceRoot = getMonorepoWorkspaceRoot(projectRoot);
-	const recordedEntries = resolveDepsEntriesFromRecording(options.recordedPaths, projectRoot, workspaceRoot, String(platform));
+	const recordedEntries = resolveDepsEntriesFromRecording(options.recordedPaths, projectRoot, workspaceRoot, String(platform), flavor);
 	const vendorSeed = resolveDepsEntriesFromVendorCollection(projectRoot, workspaceRoot, String(platform), flavor);
 	// Union: recorded deep files + vendor-collected package roots. Recorded
 	// entries win on key collisions so their served-spec mapping is preserved;
@@ -736,6 +752,7 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	// (buffer, events, ...) that would otherwise leak as bare builtin externals
 	// the device cannot resolve.
 	const buildPlugins = (onDynamicImport?: (absPath: string) => void): esbuild.Plugin[] => [
+		builtinModulesEsbuildPlugin(),
 		createWebpackLoaderStubEsbuildPlugin(),
 		createNodeBuiltinPolyfillEsbuildPlugin(projectRoot, NODE_BUILTINS),
 		createNativeClassEsbuildPlugin(platform as Platform),
@@ -882,7 +899,15 @@ export interface DepsModuleExportInfo {
 	opaqueCjs?: boolean;
 }
 
-const ESM_SYNTAX_RE = /^[ \t]*(?:import[\s{"'*]|export[\s{*])/m;
+// ESM markers can sit anywhere on a line — minified chunks emit
+// `...;export{mt as g};` after other statements, and a line-anchored check
+// misclassifies them as opaque CJS (the served shim then drops every named
+// export). The pattern runs against a copy with comments and string/template/
+// regex literal interiors blanked (positions preserved), so look-alike text
+// inside literals can never match. The lookbehind keeps `$export`-style
+// identifiers and `obj.import`/`obj.export` member access from matching.
+const ESM_PREFIX = '(?<![.$\\u200c\\u200d\\p{ID_Continue}])';
+const ESM_SYNTAX_RE = new RegExp(ESM_PREFIX + String.raw`(?:import[\s{"'*]|export[\s{*])`, 'u');
 
 function resolveLocalReExportTarget(spec: string, importerPath: string, platform: string): string | null {
 	const base = path.resolve(path.dirname(importerPath), spec);
@@ -966,22 +991,34 @@ export function collectDepsModuleExportInfo(absPath: string, platform: string, s
 	} catch {
 		return { names: null, hasDefault: false };
 	}
-	if (!/\.mjs$/i.test(absPath) && !ESM_SYNTAX_RE.test(code)) return collectCjsExportInfo(code);
-	const names = new Set<string>(extractDirectExportedNames(code));
+	const maskedCode = maskJsComments(code, true);
+	if (!/\.mjs$/i.test(absPath) && !ESM_SYNTAX_RE.test(maskedCode)) return collectCjsExportInfo(code);
+	const names = new Set<string>(extractDirectExportedNames(maskedCode));
 	let match: RegExpExecArray | null;
-	const starAsRe = /\bexport\s+\*\s+as\s+([$_\p{ID_Start}][$\p{ID_Continue}]*)\s+from\s+["'][^"']+["']/gu;
-	while ((match = starAsRe.exec(code)) !== null) {
+	// Minifiers drop the spaces `export * as ns from "x"` keeps — allow none.
+	const starAsRe = new RegExp(ESM_PREFIX + String.raw`export\s*\*\s*as\s+([$_\p{ID_Start}][$\p{ID_Continue}]*)\s+from\s*["'][^"']*["']`, 'gu');
+	while ((match = starAsRe.exec(maskedCode)) !== null) {
 		names.add(match[1]);
 	}
-	const braceRe = /\bexport\s*\{([^}]+)\}/g;
-	while ((match = braceRe.exec(code)) !== null) {
+	const braceRe = new RegExp(ESM_PREFIX + String.raw`export\s*\{([^}]+)\}`, 'gu');
+	while ((match = braceRe.exec(maskedCode)) !== null) {
 		for (const { exportedName } of parseExportSpecList(match[1])) {
 			names.add(exportedName);
 		}
 	}
-	const starRe = /^[ \t]*export\s+\*\s+from\s+["']([^"']+)["']/gm;
-	while ((match = starRe.exec(code)) !== null) {
-		const spec = match[1];
+	// `export * from` carries the same mid-line minification hazard — find it
+	// on the masked copy, then read the specifier literal from the original
+	// code at the same offset (masked interiors are blanked).
+	const starRe = new RegExp(ESM_PREFIX + String.raw`export\s*\*\s*from\s*(["'])`, 'gu');
+	while ((match = starRe.exec(maskedCode)) !== null) {
+		const quoteIndex = match.index + match[0].length - 1;
+		const quote = match[1];
+		let specEnd = quoteIndex + 1;
+		while (specEnd < code.length && code[specEnd] !== quote) {
+			specEnd += code[specEnd] === '\\' ? 2 : 1;
+		}
+		if (specEnd >= code.length) return { names: null, hasDefault: false };
+		const spec = code.slice(quoteIndex + 1, specEnd);
 		const target = spec.startsWith('.') ? resolveLocalReExportTarget(spec, absPath, platform) : resolveBareReExportTarget(spec, absPath, platform);
 		if (!target) return { names: null, hasDefault: false };
 		const child = collectDepsModuleExportInfo(target, platform, seen);
@@ -1123,7 +1160,7 @@ export function createDepsBundleService(options: CreateDepsBundleServiceOptions)
 		if (!state) return null;
 		const direct = state.specToKey.get(spec);
 		if (direct) return direct;
-		const absPath = resolveSpecToFile(spec, options.projectRoot, workspaceRoot, String(options.platform));
+		const absPath = resolveDepsSpecToFile(spec, options.projectRoot, workspaceRoot, String(options.platform), options.flavor);
 		if (!absPath) return null;
 		const key = depsRegistryKeyForFile(absPath);
 		return key && state.keys.has(key) ? key : null;

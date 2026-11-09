@@ -237,7 +237,8 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				break;
 
 			default: {
-				const inputType = +value;
+				// +null is 0, which is InputType.TYPE_NULL and hides the soft keyboard.
+				const inputType = value == null ? NaN : +value;
 				if (!isNaN(inputType)) {
 					newInputType = inputType;
 				} else {

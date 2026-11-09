@@ -4,7 +4,6 @@
 import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from './dialogs-common';
 import { getLabelColor, getButtonColors, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions } from './dialogs-common';
 import { android as androidUtils } from '../../utils/native-helper';
-import { getNativeApp } from '../../application/helpers-common';
 
 export * from './dialogs-common';
 
@@ -203,7 +202,7 @@ export function prompt(...args): Promise<PromptResult> {
 		try {
 			const alert = createAlertDialog(options);
 
-			const input = new android.widget.EditText(androidUtils.getCurrentActivity());
+			const input = new android.widget.EditText(alert.getContext());
 
 			if (options) {
 				if (options.inputType === inputType.password) {
@@ -260,19 +259,20 @@ export function login(...args: any[]): Promise<LoginResult> {
 		try {
 			const alert = createAlertDialog(options);
 
-			const userNameInput = new android.widget.EditText(getNativeApp<android.app.Application>().getApplicationContext());
+			const context = alert.getContext();
+			const userNameInput = new android.widget.EditText(context);
 
 			userNameInput.setHint(options.userNameHint ? options.userNameHint : '');
 			userNameInput.setText(options.userName ? options.userName : '');
 
-			const passwordInput = new android.widget.EditText(getNativeApp<android.app.Application>().getApplicationContext());
+			const passwordInput = new android.widget.EditText(context);
 			passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
 			passwordInput.setTypeface(android.graphics.Typeface.DEFAULT);
 
 			passwordInput.setHint(options.passwordHint ? options.passwordHint : '');
 			passwordInput.setText(options.password ? options.password : '');
 
-			const layout = new android.widget.LinearLayout(getNativeApp<android.app.Application>().getApplicationContext());
+			const layout = new android.widget.LinearLayout(context);
 			layout.setOrientation(1);
 			layout.addView(userNameInput);
 			layout.addView(passwordInput);
