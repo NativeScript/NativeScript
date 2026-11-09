@@ -192,33 +192,27 @@ export default {
 
 ### Runtime builtin modules (`ns:` / `node:`)
 
-The NativeScript runtimes provide builtin modules under the `ns:` scheme (`ns:util`, `ns:module`, `ns:worker_threads`, …). The runtime resolves them itself, so every `ns:` import is left as-is in the output instead of being bundled. This applies to `vite build`, workers and HMR dev sessions, and covers modules added in future runtime versions too.
+The NativeScript runtimes provide builtin modules under the `ns:` scheme (`ns:util`, `ns:module`, `ns:worker_threads`, …) and resolve them themselves. Every `ns:` import is left as-is in the output, including modules added in future runtime versions. This covers `vite build`, workers and HMR dev sessions.
 
-| Function (from `@nativescript/vite`) | Description |
-|--------|-------------|
-| `addBuiltinModule(matcher, target?)` | Leave imports matching `matcher` (exact string or RegExp) for the runtime, optionally emitting `target` instead. |
-| `polyfillBuiltinModule(specifier, path)` | Bundle `path` in place of a builtin module, e.g. on a runtime that doesn't ship it yet. Takes precedence over the `ns:` default. |
-
-The runtimes also ship `node:` compatibility shims for some modules (for example `node:worker_threads`). Other `node:` imports are replaced with an empty stub by default, so opt in to the shims your runtime version provides. Map bare specifiers to them as well, since libraries often import `worker_threads` without the prefix:
+To also use the runtime's `node:` shims, add another `nativescriptBuiltinModules` instance (only list the ones your runtime version ships; other `node:` imports become an empty stub). Use `resolve.alias` to forward bare names, which libraries often import, or to polyfill a builtin the runtime doesn't ship:
 
 ```ts
-import { fileURLToPath } from 'node:url';
 import { defineConfig, mergeConfig, UserConfig } from 'vite';
-import { addBuiltinModule, polyfillBuiltinModule } from '@nativescript/vite';
+import { nativescriptBuiltinModules } from '@nativescript/vite';
 import { typescriptConfig } from '@nativescript/vite/typescript';
 
-// Use the runtime's shim for both `node:worker_threads` and `worker_threads`
-addBuiltinModule(/^(?:node:)?worker_threads$/, 'node:worker_threads');
-
-// Bundle a polyfill for a builtin the target runtime doesn't have
-polyfillBuiltinModule('ns:url', fileURLToPath(new URL('./polyfills/ns-url.ts', import.meta.url)));
-
 export default defineConfig(({ mode }): UserConfig => {
-	return mergeConfig(typescriptConfig({ mode }), {});
+	return mergeConfig(typescriptConfig({ mode }), {
+		plugins: [nativescriptBuiltinModules({ include: ['node:worker_threads'] })],
+		resolve: {
+			alias: {
+				worker_threads: 'node:worker_threads',
+				'ns:url': '/abs/path/to/polyfills/ns-url.js',
+			},
+		},
+	});
 });
 ```
-
-A `node:` module with no shim fails at runtime with `No such built-in module: node:<name>`, so add only the modules your runtime version ships rather than all of `node:`. Use `polyfillBuiltinModule` rather than `resolve.alias` for builtins: the HMR dev server bundles dependencies with esbuild, which doesn't see Vite aliases.
 
 ## Explore More
 

@@ -11,8 +11,8 @@ export { appComponentsPlugin, type AppComponentsOptions } from './helpers/app-co
 // without having to re-implement the parser.
 export { getCliFlags } from './helpers/cli-flags.js';
 
-// Keep `ns:` / `node:` builtin modules for the NativeScript runtime, or polyfill them.
-export { addBuiltinModule, polyfillBuiltinModule } from './helpers/builtin-modules.js';
+// Keep `ns:` / `node:` builtin modules for the NativeScript runtime.
+export { nativescriptBuiltinModules, type NativeScriptBuiltinModulesOptions } from './helpers/builtin-modules.js';
 
 // Simple CLI entry to support `npx @nativescript/vite init`
 // This keeps the library export surface intact while allowing a

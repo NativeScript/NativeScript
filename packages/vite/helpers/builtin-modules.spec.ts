@@ -2,51 +2,34 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import * as esbuild from 'esbuild';
-import { build, type Plugin } from 'vite';
+import { build, type Plugin, type UserConfig } from 'vite';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 
-import { addBuiltinModule, builtinModulesEsbuildPlugin, builtinModulesPlugin, getBuiltinModulePolyfill, getBuiltinModuleTarget, isBuiltinModuleId, polyfillBuiltinModule, resetBuiltinModules, unwrapBuiltinModuleIds } from './builtin-modules.js';
+import { builtinModulesEsbuildPlugin, isBuiltinModuleId, nativescriptBuiltinModules, resetBuiltinModules, unwrapBuiltinModuleIds } from './builtin-modules.js';
 
 describe('builtin modules', () => {
 	afterEach(() => resetBuiltinModules());
 
-	describe('rules', () => {
-		it('keeps every ns: specifier for the runtime by default', () => {
-			expect(getBuiltinModuleTarget('ns:util')).toBe('ns:util');
-			expect(getBuiltinModuleTarget('ns:some_future_module')).toBe('ns:some_future_module');
-			expect(getBuiltinModuleTarget('node:worker_threads')).toBeUndefined();
-			expect(getBuiltinModuleTarget('worker_threads')).toBeUndefined();
-		});
-
-		it('adds exact and RegExp specifiers with optional targets', () => {
-			addBuiltinModule('node:worker_threads');
-			addBuiltinModule(/^(?:node:)?(url|util)$/g, 'node:$1');
-
-			expect(getBuiltinModuleTarget('node:worker_threads')).toBe('node:worker_threads');
-			expect(getBuiltinModuleTarget('url')).toBe('node:url');
-			// a global RegExp must not carry lastIndex between calls
-			expect(getBuiltinModuleTarget('url')).toBe('node:url');
-			expect(getBuiltinModuleTarget('node:fs')).toBeUndefined();
-		});
-
-		it('lets a polyfill override the ns: default', () => {
-			polyfillBuiltinModule('ns:url', '/abs/url-polyfill.js');
-
-			expect(getBuiltinModuleTarget('ns:url')).toBeUndefined();
-			expect(isBuiltinModuleId('ns:url')).toBe(false);
+	describe('matching', () => {
+		it('matches every ns: specifier by default', () => {
 			expect(isBuiltinModuleId('ns:util')).toBe(true);
+			expect(isBuiltinModuleId('ns:some_future_module')).toBe(true);
+			expect(isBuiltinModuleId('node:worker_threads')).toBe(false);
+			expect(isBuiltinModuleId('worker_threads')).toBe(false);
 		});
 
-		it('applies a polyfill registered for a forwarded target', () => {
-			addBuiltinModule('worker_threads', 'node:worker_threads');
-			polyfillBuiltinModule('node:worker_threads', '/abs/worker-polyfill.js');
+		it('adds the specifiers another plugin instance includes', () => {
+			nativescriptBuiltinModules({ include: ['node:worker_threads', /^node:(url|util)$/g] });
 
-			expect(getBuiltinModuleTarget('worker_threads')).toBeUndefined();
-			expect(getBuiltinModulePolyfill('worker_threads')).toBe('/abs/worker-polyfill.js');
+			expect(isBuiltinModuleId('node:worker_threads')).toBe(true);
+			expect(isBuiltinModuleId('node:url')).toBe(true);
+			// a global RegExp must not carry lastIndex between calls
+			expect(isBuiltinModuleId('node:url')).toBe(true);
+			expect(isBuiltinModuleId('node:fs')).toBe(false);
 		});
 
 		it('restores /@id/-wrapped builtin specifiers only', () => {
-			addBuiltinModule('node:worker_threads');
+			nativescriptBuiltinModules({ include: ['node:worker_threads'] });
 			const code = [`import { inspect } from "/@id/ns:util";`, `export * from '/@id/node:worker_threads';`, `import("/@id/ns:runtime");`, `import z from "/@id/ns:util?t=123";`, `import x from "/@id/__x00__virtual";`, `import y from "/@id/node:fs";`].join('\n');
 
 			expect(unwrapBuiltinModuleIds(code)).toBe([`import { inspect } from "ns:util";`, `export * from 'node:worker_threads';`, `import("ns:runtime");`, `import z from "ns:util";`, `import x from "/@id/__x00__virtual";`, `import y from "/@id/node:fs";`].join('\n'));
@@ -62,12 +45,13 @@ describe('builtin modules', () => {
 			fs.writeFileSync(path.join(root, file), code);
 		};
 
-		const bundle = async (entry: string, plugins: Plugin[] = [builtinModulesPlugin()]): Promise<string> => {
+		const bundle = async (entry: string, plugins: Plugin[] = [nativescriptBuiltinModules()], resolve?: UserConfig['resolve']): Promise<string> => {
 			const result: any = await build({
 				root,
 				configFile: false,
 				logLevel: 'silent',
 				plugins,
+				resolve,
 				build: {
 					write: false,
 					minify: false,
@@ -78,10 +62,9 @@ describe('builtin modules', () => {
 		};
 
 		it('emits runtime builtin imports verbatim', async () => {
-			addBuiltinModule('worker_threads', 'node:worker_threads');
 			write('esm.js', [`import { inspect } from 'ns:util';`, `import { Worker } from 'worker_threads';`, `console.log(inspect, Worker, import('ns:runtime'));`].join('\n'));
 
-			const output = await bundle('esm.js');
+			const output = await bundle('esm.js', [nativescriptBuiltinModules(), nativescriptBuiltinModules({ include: ['node:worker_threads'] })], { alias: { worker_threads: 'node:worker_threads' } });
 
 			expect(output).toMatch(/from "ns:util"/);
 			expect(output).toMatch(/from "node:worker_threads"/);
@@ -96,12 +79,11 @@ describe('builtin modules', () => {
 			expect(await bundle('cjs.js')).toMatch(/require\("ns:util"\)/);
 		});
 
-		it('bundles a polyfill in place of a builtin', async () => {
+		it('lets resolve.alias polyfill a builtin', async () => {
 			write('url-polyfill.js', `export const URL = 'url-polyfill';`);
-			polyfillBuiltinModule('ns:url', path.join(root, 'url-polyfill.js'));
 			write('polyfill.js', `import { URL } from 'ns:url';\nconsole.log(URL);`);
 
-			const output = await bundle('polyfill.js');
+			const output = await bundle('polyfill.js', undefined, { alias: { 'ns:url': path.join(root, 'url-polyfill.js') } });
 
 			expect(output).not.toContain('"ns:url"');
 			expect(output).toContain('url-polyfill');
@@ -116,7 +98,7 @@ describe('builtin modules', () => {
 
 	describe('esbuild bundles', () => {
 		it('externalizes builtins ahead of other resolvers', async () => {
-			addBuiltinModule('node:worker_threads');
+			nativescriptBuiltinModules({ include: ['node:worker_threads'] });
 			const result = await esbuild.build({
 				stdin: { contents: `import { inspect } from 'ns:util';\nimport { Worker } from 'node:worker_threads';\nconsole.log(inspect, Worker);`, loader: 'js' },
 				bundle: true,

@@ -46,7 +46,7 @@ import { getHmrWatchIgnoreGlobs } from '../helpers/hmr-scope.js';
 import { NS_OPTIMIZE_DEPS_EXCLUDE } from '../helpers/optimize-deps.js';
 import { sbgClassNamesPlugin } from '../helpers/sbg-class-names.js';
 import { chunkFileNames } from '../helpers/chunk-file-names.js';
-import { builtinModulesPlugin } from '../helpers/builtin-modules.js';
+import { nativescriptBuiltinModules } from '../helpers/builtin-modules.js';
 const require = createRequire(import.meta.url);
 // Optional PostCSS import plugin (only used if available)
 // Try to load postcss-import to control CSS @import resolution simply
@@ -309,7 +309,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 							'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
 						},
 					},
-					plugins: [builtinModulesPlugin()],
+					plugins: [nativescriptBuiltinModules()],
 				},
 			}
 		: {
@@ -326,7 +326,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 							'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
 						},
 					},
-					plugins: [builtinModulesPlugin(), optimizeDepsPlatformResolver({ platform, verbose })],
+					plugins: [nativescriptBuiltinModules(), optimizeDepsPlatformResolver({ platform, verbose })],
 				},
 			};
 
@@ -345,7 +345,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		optimizeDeps: optimizeDepsConfig,
 		plugins: [
 			// Must stay first: Vite stubs `node:` builtins for the browser otherwise.
-			builtinModulesPlugin(),
+			nativescriptBuiltinModules(),
 			// Merge any dependency-provided `nativescript.vite.mjs` configs. Runs
 			// in an awaited `config` hook so ESM configs load correctly.
 			externalConfigsPlugin(),

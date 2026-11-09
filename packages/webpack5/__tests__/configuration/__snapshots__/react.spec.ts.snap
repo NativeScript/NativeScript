@@ -5,8 +5,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json',
-    function () { /* omitted long function */ }
+    '~/package.json'
   ],
   externalsPresets: {
     node: false
@@ -279,8 +278,8 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     ]
   },
   plugins: [
-    /* config.plugin('BuiltinModulePolyfillPlugin') */
-    new BuiltinModulePolyfillPlugin(),
+    /* config.plugin('NativeScriptBuiltinModulesPlugin') */
+    new NativeScriptBuiltinModulesPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {
@@ -398,8 +397,7 @@ exports[`react configuration > android > base config 1`] = `
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json',
-    function () { /* omitted long function */ }
+    '~/package.json'
   ],
   externalsPresets: {
     node: false
@@ -654,8 +652,8 @@ exports[`react configuration > android > base config 1`] = `
     ]
   },
   plugins: [
-    /* config.plugin('BuiltinModulePolyfillPlugin') */
-    new BuiltinModulePolyfillPlugin(),
+    /* config.plugin('NativeScriptBuiltinModulesPlugin') */
+    new NativeScriptBuiltinModulesPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {
@@ -764,8 +762,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json',
-    function () { /* omitted long function */ }
+    '~/package.json'
   ],
   externalsPresets: {
     node: false
@@ -1038,8 +1035,8 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     ]
   },
   plugins: [
-    /* config.plugin('BuiltinModulePolyfillPlugin') */
-    new BuiltinModulePolyfillPlugin(),
+    /* config.plugin('NativeScriptBuiltinModulesPlugin') */
+    new NativeScriptBuiltinModulesPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {
@@ -1158,8 +1155,7 @@ exports[`react configuration > ios > base config 1`] = `
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json',
-    function () { /* omitted long function */ }
+    '~/package.json'
   ],
   externalsPresets: {
     node: false
@@ -1414,8 +1410,8 @@ exports[`react configuration > ios > base config 1`] = `
     ]
   },
   plugins: [
-    /* config.plugin('BuiltinModulePolyfillPlugin') */
-    new BuiltinModulePolyfillPlugin(),
+    /* config.plugin('NativeScriptBuiltinModulesPlugin') */
+    new NativeScriptBuiltinModulesPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {

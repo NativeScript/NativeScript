@@ -7,7 +7,7 @@ import { nativescriptPackageResolver } from './nativescript-package-resolver.js'
 import { findMonorepoWorkspaceRoot, getProjectRootPath } from './project.js';
 import { normalizeModuleId } from './normalize-id.js';
 import { sbgClassNamesPlugin } from './sbg-class-names.js';
-import { builtinModulesPlugin } from './builtin-modules.js';
+import { nativescriptBuiltinModules } from './builtin-modules.js';
 
 export interface WorkerPluginsOptions {
 	platform: string;
@@ -104,7 +104,7 @@ export function getWorkerPlugins(platformOrOpts: string | WorkerPluginsOptions) 
 	});
 
 	const plugins: any[] = [
-		builtinModulesPlugin(),
+		nativescriptBuiltinModules(),
 		// Handle ~/package.json virtual module for workers
 		{
 			name: 'worker-virtual-package-json',

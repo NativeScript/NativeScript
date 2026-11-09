@@ -8,7 +8,6 @@ import {
 import { addVirtualEntry, addVirtualModule } from './virtualModules';
 import { applyFileReplacements } from './fileReplacements';
 import { addCopyRule, removeCopyRule } from './copyRules';
-import { addBuiltinModule, polyfillBuiltinModule } from './builtinModules';
 import { error, info, warn, warnOnce } from './log';
 import { determineProjectFlavor } from './flavor';
 import { readTsConfig } from './typescript';
@@ -38,8 +37,6 @@ export default {
 	merge,
 	addCopyRule,
 	removeCopyRule,
-	addBuiltinModule,
-	polyfillBuiltinModule,
 	applyFileReplacements,
 	config: {
 		getValue,

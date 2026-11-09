@@ -5,8 +5,7 @@ exports[`base configuration for android 1`] = `
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json',
-    function () { /* omitted long function */ }
+    '~/package.json'
   ],
   externalsPresets: {
     node: false
@@ -257,8 +256,8 @@ exports[`base configuration for android 1`] = `
     ]
   },
   plugins: [
-    /* config.plugin('BuiltinModulePolyfillPlugin') */
-    new BuiltinModulePolyfillPlugin(),
+    /* config.plugin('NativeScriptBuiltinModulesPlugin') */
+    new NativeScriptBuiltinModulesPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {
@@ -371,8 +370,7 @@ exports[`base configuration for ios 1`] = `
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json',
-    function () { /* omitted long function */ }
+    '~/package.json'
   ],
   externalsPresets: {
     node: false
@@ -623,8 +621,8 @@ exports[`base configuration for ios 1`] = `
     ]
   },
   plugins: [
-    /* config.plugin('BuiltinModulePolyfillPlugin') */
-    new BuiltinModulePolyfillPlugin(),
+    /* config.plugin('NativeScriptBuiltinModulesPlugin') */
+    new NativeScriptBuiltinModulesPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {
