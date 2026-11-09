@@ -714,6 +714,37 @@ describe('createDepsBundleService', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
+	it('pins Solid runtime packages to their dev builds for bare imports, recorded roots, and root URLs', async () => {
+		const root = mkdtempSync(path.join(realpathSync(tmpdir()), 'ns-deps-solid-'));
+		const write = (rel: string, contents: string) => {
+			const abs = path.join(root, rel);
+			mkdirSync(path.dirname(abs), { recursive: true });
+			writeFileSync(abs, contents);
+		};
+		write('package.json', JSON.stringify({ name: 'fixture-app', version: '1.0.0', dependencies: { 'solid-js': '2.0.0' } }));
+		write('node_modules/solid-js/package.json', JSON.stringify({ name: 'solid-js', version: '2.0.0', exports: { '.': { browser: { development: { default: './dist/solid.dev.js' }, default: './dist/solid.js' }, development: { default: './dist/solid.dev.js' }, default: './dist/solid.js' } } }));
+		write('node_modules/solid-js/dist/solid.dev.js', `import { DEV } from '@solidjs/signals';\nexport const guideUrl = DEV.guideUrl;\n`);
+		write('node_modules/solid-js/dist/solid.js', `import { DEV } from '@solidjs/signals';\nexport const guideUrl = DEV;\n`);
+		write('node_modules/@solidjs/signals/package.json', JSON.stringify({ name: '@solidjs/signals', version: '2.0.0', exports: { '.': { development: './dist/dev.js', default: './dist/prod/index.js' } } }));
+		write('node_modules/@solidjs/signals/dist/dev.js', `export const DEV = { guideUrl: () => '' };\n`);
+		write('node_modules/@solidjs/signals/dist/prod/index.js', `export const DEV = undefined;\n`);
+		const service = createDepsBundleService({
+			projectRoot: root,
+			platform: 'ios',
+			mode: 'development',
+			flavor: 'solid',
+			getRecordedPaths: () => ['/ns/m/node_modules/solid-js', '/ns/m/node_modules/@solidjs/signals'],
+		});
+		const state = await service.ensureBuilt();
+		expect(state!.keys).toContain('node_modules/solid-js/dist/solid.dev.js');
+		expect(state!.keys).toContain('node_modules/@solidjs/signals/dist/dev.js');
+		expect(state!.keys).not.toContain('node_modules/solid-js/dist/solid.js');
+		expect(state!.keys).not.toContain('node_modules/@solidjs/signals/dist/prod/index.js');
+		expect(service.getShimForSpec('/node_modules/@solidjs/signals')).toContain('"node_modules/@solidjs/signals/dist/dev.js"');
+		expect(service.getShimForSpec('/node_modules/solid-js')).toContain('"node_modules/solid-js/dist/solid.dev.js"');
+		rmSync(root, { recursive: true, force: true });
+	});
+
 	it('stops handing out new shims after disableServingForSession but keeps the payload servable', async () => {
 		const service = makeService();
 		await service.ensureBuilt();
