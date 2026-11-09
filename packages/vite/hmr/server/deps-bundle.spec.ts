@@ -269,7 +269,14 @@ function createFixtureProject(): string {
 	write('node_modules/pkg-a/index.js', `import { helper } from './helper.js';\nexport const A = 'a' + helper;\nexport * from './extra.js';\nexport const load = () => import('./lazy.js');\n`);
 	write('node_modules/pkg-a/helper.js', `export const helper = 'h';\n`);
 	write('node_modules/pkg-a/extra.js', `export const EXTRA = 1;\n`);
-	write('node_modules/pkg-a/lazy.js', `export const LAZY = 1;\n`);
+	write('node_modules/pkg-a/lazy.js', `import { LAZY_DEP } from './lazy-dep.js';\nexport const LAZY = LAZY_DEP;\nexport const loadMore = () => import('./lazier.js');\n`);
+	write('node_modules/pkg-a/lazy-dep.js', `export const LAZY_DEP = 1;\n`);
+	write('node_modules/pkg-a/lazier.js', `export const LAZIER = 2;\n`);
+	// A dynamic import whose closure cannot resolve, next to one that can.
+	write('node_modules/pkg-k/package.json', JSON.stringify({ name: 'pkg-k', version: '1.0.0', module: 'index.js' }));
+	write('node_modules/pkg-k/index.js', `export const K = 'k';\nexport const broken = () => import('./broken.js');\nexport const fine = () => import('./fine.js');\n`);
+	write('node_modules/pkg-k/broken.js', `export * from './not-shipped.js';\n`);
+	write('node_modules/pkg-k/fine.js', `export const FINE = 1;\n`);
 	// CJS package: bundleable, but not shim-servable (no static ESM exports).
 	write('node_modules/pkg-b/package.json', JSON.stringify({ name: 'pkg-b', version: '1.0.0', main: 'index.js' }));
 	write('node_modules/pkg-b/index.js', `module.exports = { b: 1 };\n`);
@@ -370,9 +377,13 @@ describe('generateDepsBundle', () => {
 		expect(state!.keys).toContain('node_modules/pkg-a/extra.js');
 		expect(state!.keys).toContain('node_modules/pkg-b/index.js');
 		expect(state!.keys).toContain('node_modules/pkg-c/dist/entry.mjs');
-		// Dynamic import target stays external at its canonical /ns/m URL.
-		expect(state!.keys).not.toContain('node_modules/pkg-a/lazy.js');
+		// Dynamic import targets stay external at their canonical /ns/m URL, but
+		// they and their closures (including chained import()s) are registered.
 		expect(state!.code).toContain('"/ns/m/node_modules/pkg-a/lazy"');
+		expect(state!.code).toContain('"/ns/m/node_modules/pkg-a/lazier"');
+		expect(state!.keys).toContain('node_modules/pkg-a/lazy.js');
+		expect(state!.keys).toContain('node_modules/pkg-a/lazy-dep.js');
+		expect(state!.keys).toContain('node_modules/pkg-a/lazier.js');
 		expect(state!.code).toContain('__NS_DEPS_MODULES__');
 		expect(state!.specToKey.get('/node_modules/pkg-c')).toBe('node_modules/pkg-c/dist/entry.mjs');
 	});
@@ -417,6 +428,15 @@ describe('generateDepsBundle', () => {
 		} finally {
 			(globalThis as any).__NS_DEPS_MODULES__ = previous;
 		}
+	});
+
+	it('leaves a dynamic import whose closure fails to build per-module', async () => {
+		const state = await generateDepsBundle({ projectRoot, platform: 'ios', mode: 'development', flavor: 'typescript', recordedPaths: ['/ns/m/node_modules/pkg-k/index.js'] });
+		expect(state).not.toBeNull();
+		expect(state!.keys).toContain('node_modules/pkg-k/index.js');
+		expect(state!.keys).toContain('node_modules/pkg-k/fine.js');
+		expect(state!.keys).not.toContain('node_modules/pkg-k/broken.js');
+		expect(state!.code).toContain('"/ns/m/node_modules/pkg-k/broken"');
 	});
 
 	it('returns null when the recording has no bundleable node_modules entries', async () => {
