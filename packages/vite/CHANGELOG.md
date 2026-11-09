@@ -1,3 +1,13 @@
+## 8.0.23 (2026-11-09)
+
+### 🩹 Fixes
+
+- **vite:** serve HMR app modules with source maps ([#11629](https://github.com/NativeScript/NativeScript/pull/11629))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.22 (2026-11-09)
 
 ### 🚀 Features
