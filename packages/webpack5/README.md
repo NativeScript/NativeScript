@@ -81,6 +81,36 @@ Useful globally available variables in your app:
 | `webpack.mergeWebpack(obj)` | Merge objects into the final config |
 | `webpack.resolveConfig()` | Resolve the final webpack configuration |
 
+### Runtime builtin modules (`ns:` / `node:`)
+
+The NativeScript runtimes provide builtin modules under the `ns:` scheme (`ns:util`, `ns:module`, `ns:worker_threads`, …). The runtime resolves them itself, so every `ns:` import is left as-is in the bundle instead of being bundled. This covers modules added in future runtime versions too.
+
+| Method | Description |
+|--------|-------------|
+| `webpack.Utils.addBuiltinModule(matcher, target?)` | Leave imports matching `matcher` (exact string or RegExp) for the runtime, optionally emitting `target` instead. |
+| `webpack.Utils.polyfillBuiltinModule(specifier, path)` | Bundle `path` in place of a builtin module, e.g. on a runtime that doesn't ship it yet. Takes precedence over the `ns:` default. |
+
+The runtimes also ship `node:` compatibility shims for some modules (for example `node:worker_threads`). Other `node:` imports fail the build by default, so opt in to the shims your runtime version provides. Map bare specifiers to them as well, since libraries often import `worker_threads` without the prefix:
+
+```js
+// webpack.config.js
+const webpack = require('@nativescript/webpack');
+
+module.exports = (env) => {
+	webpack.init(env);
+
+	// Use the runtime's shim for both `node:worker_threads` and `worker_threads`
+	webpack.Utils.addBuiltinModule(/^(?:node:)?worker_threads$/, 'node:worker_threads');
+
+	// Bundle a polyfill for a builtin the target runtime doesn't have
+	webpack.Utils.polyfillBuiltinModule('ns:url', require.resolve('./polyfills/ns-url.js'));
+
+	return webpack.resolveConfig();
+};
+```
+
+A `node:` module with no shim fails at runtime with `No such built-in module: node:<name>`, so add only the modules your runtime version ships rather than all of `node:`.
+
 ## 🎛️ CLI Flags
 
 | Flag | Description |

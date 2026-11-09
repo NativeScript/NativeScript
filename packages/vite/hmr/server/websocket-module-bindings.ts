@@ -9,6 +9,7 @@ import { extractRootPackageName } from '../shared/package-classifier.js';
 import { isEsmFrameworkPackageSpecifier, isLikelyNativeScriptPluginSpecifier, isLikelyNativeScriptRuntimePluginSpecifier, normalizeNodeModulesSpecifier, resolveInternalRuntimePluginBareSpecifier, resolveNodeModulesPackageBoundary, resolveVendorFromCandidate, shouldPreserveBareRuntimePluginSubpathImport } from './websocket-module-specifiers.js';
 import { MODULE_IMPORT_ANALYSIS_PLUGINS } from './websocket-served-module-helpers.js';
 import { getVendorManifest } from '../shared/vendor/registry.js';
+import { isBuiltinModuleId } from '../../helpers/builtin-modules.js';
 
 /**
  * True when a vendor manifest is active and the specifier's root package is
@@ -278,7 +279,7 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		if (!original) {
 			continue;
 		}
-		if (record.isTypeOnly) {
+		if (record.isTypeOnly || isBuiltinModuleId(record.source.replace(PAT.QUERY_PATTERN, ''))) {
 			preservedImports.push(original);
 			continue;
 		}

@@ -76,6 +76,7 @@ import { hasExistingDefaultExport } from './ns-core-cjs-shape.js';
 import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
 import { loadPersistedBootRecording } from './boot-recording.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
+import { builtinModulesEsbuildPlugin } from '../../helpers/builtin-modules.js';
 
 export const DEPS_BUNDLE_PATH = '/ns/deps-bundle.mjs';
 
@@ -734,6 +735,7 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	// (buffer, events, ...) that would otherwise leak as bare builtin externals
 	// the device cannot resolve.
 	const buildPlugins = (): esbuild.Plugin[] => [
+		builtinModulesEsbuildPlugin(),
 		createWebpackLoaderStubEsbuildPlugin(),
 		createNodeBuiltinPolyfillEsbuildPlugin(projectRoot, NODE_BUILTINS),
 		createNativeClassEsbuildPlugin(platform as Platform),

@@ -12,7 +12,8 @@ exports[`angular configuration for android 1`] = `
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json'
+    '~/package.json',
+    function () { /* omitted long function */ }
   ],
   externalsPresets: {
     node: false
@@ -355,6 +356,8 @@ exports[`angular configuration for android 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('BuiltinModulePolyfillPlugin') */
+    new BuiltinModulePolyfillPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {
@@ -472,7 +475,8 @@ exports[`angular configuration for ios 1`] = `
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json'
+    '~/package.json',
+    function () { /* omitted long function */ }
   ],
   externalsPresets: {
     node: false
@@ -815,6 +819,8 @@ exports[`angular configuration for ios 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('BuiltinModulePolyfillPlugin') */
+    new BuiltinModulePolyfillPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {

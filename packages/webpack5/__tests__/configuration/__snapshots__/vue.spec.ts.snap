@@ -5,7 +5,8 @@ exports[`vue configuration for android 1`] = `
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json'
+    '~/package.json',
+    function () { /* omitted long function */ }
   ],
   externalsPresets: {
     node: false
@@ -285,6 +286,8 @@ exports[`vue configuration for android 1`] = `
   plugins: [
     /* config.plugin('VueLoaderPlugin') */
     new VueLoaderPlugin(),
+    /* config.plugin('BuiltinModulePolyfillPlugin') */
+    new BuiltinModulePolyfillPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {
@@ -397,7 +400,8 @@ exports[`vue configuration for ios 1`] = `
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json'
+    '~/package.json',
+    function () { /* omitted long function */ }
   ],
   externalsPresets: {
     node: false
@@ -677,6 +681,8 @@ exports[`vue configuration for ios 1`] = `
   plugins: [
     /* config.plugin('VueLoaderPlugin') */
     new VueLoaderPlugin(),
+    /* config.plugin('BuiltinModulePolyfillPlugin') */
+    new BuiltinModulePolyfillPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {
