@@ -1,3 +1,13 @@
+## 5.0.40 (2026-11-09)
+
+### 🚀 Features
+
+- **webpack,vite:** keep ns: builtin module imports for the runtime  [skip ci] ([#11626](https://github.com/NativeScript/NativeScript/pull/11626))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
 ## 5.0.39 (2026-10-16)
 
 ### 🩹 Fixes
