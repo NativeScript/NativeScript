@@ -61,6 +61,7 @@ import { resolvePlatform } from '../../helpers/cli-flags.js';
 import { getGlobalDefines, getUserDefineEntries } from '../../helpers/global-defines.js';
 import { getProjectFlavor } from '../../helpers/flavor.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
+import { isSolidRuntimePackage, resolveSolidDevEntry } from '../../helpers/solid-runtime.js';
 import { createNativeClassEsbuildPlugin } from '../../helpers/nativeclass-esbuild-plugin.js';
 import type { Platform } from '../../helpers/platform-types.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
@@ -246,6 +247,23 @@ function resolveSpecToFile(spec: string, projectRoot: string, workspaceRoot: str
 	return isPackageRootSpec(spec) ? null : resolvePackageRootEntry(spec, roots, platform);
 }
 
+/**
+ * `resolveSpecToFile`, except that under the Solid flavor a Solid runtime
+ * package root resolves to its dev build — the file the routing plugin pins
+ * every bare import to. Without the `development` condition its exports map
+ * yields the prod build, which cannot pair with solid-js's dev build.
+ */
+function resolveDepsSpecToFile(spec: string, projectRoot: string, workspaceRoot: string | null, platform: string, flavor: string | undefined): string | null {
+	if (flavor === 'solid') {
+		const bare = spec.replace(/^\/node_modules\//, '');
+		if (isSolidRuntimePackage(bare)) {
+			const devEntry = resolveSolidDevEntry(bare, projectRoot);
+			if (devEntry) return devEntry.absPath;
+		}
+	}
+	return resolveSpecToFile(spec, projectRoot, workspaceRoot, platform);
+}
+
 // Never bundled: `@nativescript/core` belongs to the /ns/core bridge realm,
 // and `@nativescript/vite` IS the dev tooling — its device-served client
 // modules (hot registry, session bootstrap, framework strategies) must load
@@ -261,7 +279,7 @@ const NEVER_BUNDLED_KEY_RE = /^node_modules\/@nativescript\/(?:core|vite)\//;
  * realms, non-script assets, symlinked workspace-source packages, and files
  * that cannot be resolved on disk (they stay per-module).
  */
-export function resolveDepsEntriesFromRecording(recordedPaths: readonly string[], projectRoot: string, workspaceRoot: string | null, platform: string): DepsBundleEntry[] {
+export function resolveDepsEntriesFromRecording(recordedPaths: readonly string[], projectRoot: string, workspaceRoot: string | null, platform: string, flavor?: string): DepsBundleEntry[] {
 	const entries: DepsBundleEntry[] = [];
 	const seenKeys = new Set<string>();
 	for (const recorded of recordedPaths) {
@@ -270,7 +288,7 @@ export function resolveDepsEntriesFromRecording(recordedPaths: readonly string[]
 		if (NON_BUNDLEABLE_EXT_RE.test(spec)) continue;
 		if (NEVER_BUNDLED_SPEC_RE.test(spec)) continue;
 		if (getBlockedDeviceNodeModulesReason(spec)) continue;
-		const absPath = resolveSpecToFile(spec, projectRoot, workspaceRoot, platform);
+		const absPath = resolveDepsSpecToFile(spec, projectRoot, workspaceRoot, platform, flavor);
 		if (!absPath || NON_BUNDLEABLE_EXT_RE.test(absPath)) continue;
 		// Symlinked node_modules entries pointing at workspace source are app
 		// code in disguise — leave them to the Vite pipeline (same policy as
@@ -316,11 +334,7 @@ export function resolveDepsEntriesFromVendorCollection(projectRoot: string, work
 		const spec = `/node_modules/${bare}`;
 		if (NEVER_BUNDLED_SPEC_RE.test(spec)) continue;
 		if (getBlockedDeviceNodeModulesReason(spec)) continue;
-		// Solid pins its runtime to dist/dev.js everywhere (see the routing
-		// plugin); the seed must land on the same file or the registry entry
-		// would mint a second solid realm.
-		const resolveTarget = flavor === 'solid' && bare === 'solid-js' ? '/node_modules/solid-js/dist/dev.js' : spec;
-		const absPath = resolveSpecToFile(resolveTarget, projectRoot, workspaceRoot, platform);
+		const absPath = resolveDepsSpecToFile(spec, projectRoot, workspaceRoot, platform, flavor);
 		if (!absPath || NON_BUNDLEABLE_EXT_RE.test(absPath)) continue;
 		try {
 			const real = realpathSync(absPath);
@@ -421,9 +435,10 @@ const NODE_BUILTIN_SET = new Set(NODE_EXTERNALS);
  *    finishes evaluating, so the shim's registry read cannot race it).
  *  - `@nativescript/vite` client modules stay per-module (see
  *    NEVER_BUNDLED_SPEC_RE) → external canonical /ns/m URL.
- *  - Solid flavor: bare `solid-js` pins to `solid-js/dist/dev.js` INSIDE the
- *    bundle — the same file `rewriteImports` routes every importer to — so
- *    the bundle can never carry a second solid realm.
+ *  - Solid flavor: bare Solid runtime roots (`solid-js`, `@solidjs/signals`,
+ *    …) pin to their dev builds INSIDE the bundle — the same files
+ *    `rewriteImports` routes every importer to — so the bundle can never
+ *    carry a second solid realm or pair solid-js dev with signals prod.
  *  - Everything else internalizes. Bare specs esbuild cannot resolve get
  *    platform-aware resolution (`index.ios.js`-style entries esbuild's
  *    resolver misses); only specs with no on-disk resolution at all stay
@@ -465,9 +480,9 @@ function createDepsImportRoutingPlugin(projectRoot: string, workspaceRoot: strin
 				if (/^@nativescript\/vite(?:\/|$)/.test(spec) || isFlavorClientPackageSpecifier(spec)) {
 					return { path: `/ns/m/node_modules/${spec.replace(SCRIPT_EXT_RE, '')}`, external: true };
 				}
-				if (flavor === 'solid' && spec === 'solid-js') {
-					const pinned = await probeResolve('solid-js/dist/dev.js');
-					if (!pinned.errors.length && pinned.path) return pinned;
+				if (flavor === 'solid' && isSolidRuntimePackage(spec)) {
+					const pinned = resolveSolidDevEntry(spec, args.resolveDir || projectRoot);
+					if (pinned) return { path: pinned.absPath };
 				}
 				const probe = await probeResolve(spec);
 				if (probe.errors.length > 0 || !probe.path) {
@@ -664,7 +679,7 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	const { projectRoot, platform, mode, flavor, verbose } = options;
 	const t0 = Date.now();
 	const workspaceRoot = getMonorepoWorkspaceRoot(projectRoot);
-	const recordedEntries = resolveDepsEntriesFromRecording(options.recordedPaths, projectRoot, workspaceRoot, String(platform));
+	const recordedEntries = resolveDepsEntriesFromRecording(options.recordedPaths, projectRoot, workspaceRoot, String(platform), flavor);
 	const vendorSeed = resolveDepsEntriesFromVendorCollection(projectRoot, workspaceRoot, String(platform), flavor);
 	// Union: recorded deep files + vendor-collected package roots. Recorded
 	// entries win on key collisions so their served-spec mapping is preserved;
@@ -1091,7 +1106,7 @@ export function createDepsBundleService(options: CreateDepsBundleServiceOptions)
 		if (!state) return null;
 		const direct = state.specToKey.get(spec);
 		if (direct) return direct;
-		const absPath = resolveSpecToFile(spec, options.projectRoot, workspaceRoot, String(options.platform));
+		const absPath = resolveDepsSpecToFile(spec, options.projectRoot, workspaceRoot, String(options.platform), options.flavor);
 		if (!absPath) return null;
 		const key = depsRegistryKeyForFile(absPath);
 		return key && state.keys.has(key) ? key : null;
