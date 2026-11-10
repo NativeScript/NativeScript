@@ -9,8 +9,6 @@ import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, Gesture
 // Import layout from utils directly to avoid circular references
 import { layout } from '../../utils/layout-helper';
 
-import * as timer from '../../timer';
-
 export * from './gestures-common';
 export * from './gestures-types';
 export * from './touch-manager';
@@ -40,7 +38,7 @@ function initializeTapAndDoubleTapGestureListener() {
 		private _type: GestureTypes;
 
 		private _lastUpTime = 0;
-		private _tapTimeoutId: number;
+		private _tapTimeoutId: NodeJS.Timeout;
 
 		private static DoubleTapTimeout = android.view.ViewConfiguration.getDoubleTapTimeout();
 
@@ -79,13 +77,21 @@ function initializeTapAndDoubleTapGestureListener() {
 
 		private _handleSingleTap(motionEvent: android.view.MotionEvent): void {
 			if (this._target.getGestureObservers(GestureTypes.doubleTap)) {
-				this._tapTimeoutId = timer.setTimeout(() => {
+				// In the case of having both tap and double-tap observers, keep a copy of motion event
+				// This will ensure that the event data will be the same even after tap timeout emits
+				const eventCp = android.view.MotionEvent.obtain(motionEvent);
+
+				const timeoutId = setTimeout(() => {
 					if (this._type === GestureTypes.tap) {
-						const args = _getTapArgs(GestureTypes.tap, this._target, motionEvent);
+						const args = _getTapArgs(GestureTypes.tap, this._target, eventCp);
 						_executeCallback(this._observer, args);
 					}
-					timer.clearTimeout(this._tapTimeoutId);
+
+					if (this._tapTimeoutId !== timeoutId) {
+						clearTimeout(this._tapTimeoutId);
+					}
 				}, TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout);
+				this._tapTimeoutId = timeoutId;
 			} else {
 				if (this._type === GestureTypes.tap) {
 					const args = _getTapArgs(GestureTypes.tap, this._target, motionEvent);
@@ -95,8 +101,8 @@ function initializeTapAndDoubleTapGestureListener() {
 		}
 
 		private _handleDoubleTap(motionEvent: android.view.MotionEvent): void {
-			if (this._tapTimeoutId) {
-				timer.clearTimeout(this._tapTimeoutId);
+			if (this._tapTimeoutId != null) {
+				clearTimeout(this._tapTimeoutId);
 			}
 			if (this._type === GestureTypes.doubleTap) {
 				const args = _getTapArgs(GestureTypes.doubleTap, this._target, motionEvent);
