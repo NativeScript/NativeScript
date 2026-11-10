@@ -87,10 +87,12 @@ function initializeTapAndDoubleTapGestureListener() {
 						_executeCallback(this._observer, args);
 					}
 
-					if (this._tapTimeoutId !== timeoutId) {
-						clearTimeout(this._tapTimeoutId);
-					} else {
-						this._tapTimeoutId = null;
+					if (this._tapTimeoutId != null) {
+						if (this._tapTimeoutId !== timeoutId) {
+							clearTimeout(this._tapTimeoutId);
+						} else {
+							this._tapTimeoutId = null;
+						}
 					}
 				}, TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout);
 				this._tapTimeoutId = timeoutId;
