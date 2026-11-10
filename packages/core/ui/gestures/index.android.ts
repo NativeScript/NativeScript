@@ -89,6 +89,8 @@ function initializeTapAndDoubleTapGestureListener() {
 
 					if (this._tapTimeoutId !== timeoutId) {
 						clearTimeout(this._tapTimeoutId);
+					} else {
+						this._tapTimeoutId = null;
 					}
 				}, TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout);
 				this._tapTimeoutId = timeoutId;
@@ -103,6 +105,7 @@ function initializeTapAndDoubleTapGestureListener() {
 		private _handleDoubleTap(motionEvent: android.view.MotionEvent): void {
 			if (this._tapTimeoutId != null) {
 				clearTimeout(this._tapTimeoutId);
+				this._tapTimeoutId = null;
 			}
 			if (this._type === GestureTypes.doubleTap) {
 				const args = _getTapArgs(GestureTypes.doubleTap, this._target, motionEvent);
