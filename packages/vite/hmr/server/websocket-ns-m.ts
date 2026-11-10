@@ -1,8 +1,5 @@
 import type { TransformResult, ViteDevServer } from 'vite';
 
-import { parse as babelParse } from '@babel/parser';
-import traverse from '@babel/traverse';
-
 import { sanitizeStrayCoreReferences } from './core-sanitize.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
@@ -12,7 +9,7 @@ import { createNsMRequestContext, resolveFsAnchoredSpec, resolveNsMTransformedMo
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { RAW_QUERY_PATTERN } from './constants.js';
 import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
-import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hasEsmDefaultExport, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice, ensureWorkerEntryGlobalsImport, classifyServedRequest } from './websocket-served-module-helpers.js';
+import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hasEsmDefaultExport, hoistTopLevelStaticImports, wrapCommonJsModuleForDevice, ensureWorkerEntryGlobalsImport, classifyServedRequest, collectStaticImportDefaultIntents } from './websocket-served-module-helpers.js';
 import { cleanCode, collectImportDependencies, isWorkerEntryModuleId, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { getServerOrigin } from './server-origin.js';
@@ -20,8 +17,6 @@ import { createNsMResponseMemo } from './ns-m-response-memo.js';
 import { appendInlineSourceMap, buildServedModuleSourceMap, type InputSourceMap } from './served-module-sourcemap.js';
 import { getSharedDepsBundleService, registerDepsBundleRoute, type DepsBundleService } from './deps-bundle.js';
 import type { FrameworkServedModuleContext, FrameworkServerStrategy } from './framework-strategy.js';
-
-const babelTraverse: any = (traverse as any)?.default || (traverse as any);
 
 type SharedTransformRequestFn = (url: string, timeoutMs?: number) => Promise<TransformResult | null>;
 type UpsertGraphModuleFn = (rawId: string, code: string, deps: string[], options?: { bumpVersion?: boolean; emitDeltaOnInsert?: boolean; broadcastDelta?: boolean }) => void;
@@ -508,19 +503,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			try {
 				const devCheck = process.env.NODE_ENV !== 'production';
 				if (devCheck) {
-					const ast = babelParse(code, {
-						sourceType: 'module',
-						plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
-					}) as any;
-					const imports: Array<{ src: string; wantsDefault: boolean }> = [];
-					babelTraverse(ast, {
-						ImportDeclaration(p: any) {
-							const src = p.node.source.value;
-							if (typeof src !== 'string') return;
-							const wantsDefault = p.node.specifiers.some((s: any) => s.type === 'ImportDefaultSpecifier');
-							imports.push({ src, wantsDefault });
-						},
-					});
+					const imports = collectStaticImportDefaultIntents(code);
 					// Resolve and verify each static import that asks for default
 					for (const imp of imports) {
 						if (!imp.wantsDefault) continue;
