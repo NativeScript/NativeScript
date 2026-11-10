@@ -1,6 +1,13 @@
 import type { Compiler } from 'webpack';
 
-const ExternalModuleFactoryPlugin = require('webpack/lib/ExternalModuleFactoryPlugin');
+// webpack 5.112 moved it into externals/.
+const ExternalModuleFactoryPlugin = (() => {
+	try {
+		return require('webpack/lib/externals/ExternalModuleFactoryPlugin');
+	} catch {
+		return require('webpack/lib/ExternalModuleFactoryPlugin');
+	}
+})();
 
 export interface NativeScriptBuiltinModulesPluginOptions {
 	/**
