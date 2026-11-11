@@ -1,34 +1,10 @@
-import type { View } from '../core/view';
 import type { ViewBase } from '../core/view-base';
 import type { BackstackEntry } from '../frame';
 import { isNumber } from '../../utils/types';
 import { Transition } from '.';
 import { getRectFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionEventData } from './shared-transition';
-import { ImageSource } from '../../image-source';
-import { ContentView } from '../content-view';
-import { GridLayout } from '../layouts/grid-layout';
 import { Screen } from '../../platform/screen';
 import { ExpandedEntry } from '../frame/fragment.transitions.android';
-import { android as androidUtils } from '../../utils/native-helper';
-// import { Image } from '../image';
-
-@NativeClass
-class SnapshotViewGroup extends android.view.ViewGroup {
-	constructor(context: android.content.Context) {
-		super(context);
-	}
-	public onMeasure(): void {
-		this.setMeasuredDimension(0, 0);
-	}
-	public onLayout(): void {
-		//
-	}
-}
-class ContentViewSnapshot extends ContentView {
-	createNativeView() {
-		return new SnapshotViewGroup(this._context);
-	}
-}
 
 @NativeClass
 class CustomSpringInterpolator extends android.view.animation.AnticipateOvershootInterpolator {
@@ -195,35 +171,6 @@ export class PageTransition extends Transition {
 		const { presenting } = SharedTransition.getSharedElements(fromPage, toPage);
 
 		// Note: we can enhance android more over time with element targeting across different screens
-		// const pageStart = state.pageStart;
-		// const pageEndIndependentTags = Object.keys(pageEnd?.sharedTransitionTags || {});
-		// console.log('pageEndIndependentTags:', pageEndIndependentTags);
-		// for (const tag of pageEndIndependentTags) {
-		// 	// only consider start when there's a matching end
-		// 	const pageStartIndependentProps = pageStart?.sharedTransitionTags[tag];
-		// 	if (pageStartIndependentProps) {
-		// 		console.log('pageStartIndependentProps:', tag, pageStartIndependentProps);
-		// 	}
-		// 	const pageEndIndependentProps = pageEnd?.sharedTransitionTags[tag];
-		// 	let independentView = presenting.find((v) => v.sharedTransitionTag === tag);
-		// 	let isPresented = false;
-		// 	if (!independentView) {
-		// 		independentView = presented.find((v) => v.sharedTransitionTag === tag);
-		// 		if (!independentView) {
-		// 			break;
-		// 		}
-		// 		isPresented = true;
-		// 	}
-		// 	if (independentView) {
-		// 		console.log('independentView:', independentView);
-		// 		const imageSource = renderToImageSource(independentView);
-		// 		const image = new Image();
-		// 		image.src = imageSource;
-		// 		const { hostView } = loadViewInBackground(image);
-		// 		(<any>fromPage).addChild(hostView);
-		// 		independentView.opacity = 0;
-		// 	}
-		// }
 		const onPageLoaded = () => {
 			// add a timeout so that Views like ListView / CollectionView can have their children instantiated
 			setTimeout(() => {
@@ -284,30 +231,4 @@ export class PageTransition extends Transition {
 			toPage.once('loaded', onPageLoaded);
 		}
 	}
-}
-
-function renderToImageSource(hostView: View): ImageSource {
-	const bitmap = android.graphics.Bitmap.createBitmap(hostView.android.getWidth(), hostView.android.getHeight(), android.graphics.Bitmap.Config.ARGB_8888);
-	const canvas = new android.graphics.Canvas(bitmap);
-	// ensure we start with a blank transparent canvas
-	canvas.drawARGB(0, 0, 0, 0);
-	hostView.android.draw(canvas);
-	return new ImageSource(bitmap);
-}
-
-function loadViewInBackground(view: View) {
-	const hiddenHost = new ContentViewSnapshot();
-	const hostView = new GridLayout(); // use a host view to ensure margins are respected
-	hiddenHost.content = hostView;
-	hiddenHost.visibility = 'collapse';
-	hostView.addChild(view);
-	hiddenHost._setupAsRootView(androidUtils.getApplicationContext());
-	hiddenHost.callLoaded();
-
-	androidUtils.getCurrentActivity().addContentView(hiddenHost.android, new android.view.ViewGroup.LayoutParams(0, 0));
-
-	return {
-		hiddenHost,
-		hostView,
-	};
 }
