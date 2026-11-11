@@ -21,8 +21,6 @@ function initializeCheckedChangeListener(): void {
 	class CheckedChangeListenerImpl extends java.lang.Object implements android.widget.CompoundButton.OnCheckedChangeListener {
 		constructor(private owner: Switch) {
 			super();
-
-			return global.__native(this);
 		}
 
 		onCheckedChanged(buttonView: android.widget.CompoundButton, isChecked: boolean): void {

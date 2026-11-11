@@ -55,8 +55,6 @@ function initializeEditTextListeners(): void {
 	class EditTextListenersImpl extends java.lang.Object implements android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {
 		constructor(private owner: WeakRef<EditableTextBase>) {
 			super();
-
-			return global.__native(this);
 		}
 
 		public beforeTextChanged(text: string, start: number, count: number, after: number): void {

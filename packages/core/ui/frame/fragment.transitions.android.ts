@@ -225,8 +225,6 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 		class AnimationListenerImpl extends java.lang.Object implements android.animation.Animator.AnimatorListener {
 			constructor() {
 				super();
-
-				return global.__native(this);
 			}
 
 			onAnimationStart(animator: ExpandedAnimator): void {
@@ -371,8 +369,6 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 				public transition: androidx.transition.Transition,
 			) {
 				super();
-
-				return global.__native(this);
 			}
 
 			public onTransitionStart(transition: androidx.transition.Transition): void {

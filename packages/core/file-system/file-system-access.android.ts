@@ -551,47 +551,41 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public readTextSync(path: string, onError?: (error: any) => any, encoding?: any) {
 		try {
-			const javaFile = new java.io.File(path);
-			const stream = new java.io.FileInputStream(javaFile);
-
 			let actualEncoding = encoding;
 			if (!actualEncoding) {
 				actualEncoding = textModule.encoding.UTF_8;
 			}
-			const reader = new java.io.InputStreamReader(stream, actualEncoding);
-			const bufferedReader = new java.io.BufferedReader(reader);
 
-			// TODO: We will need to read the entire file to a CharBuffer instead of reading it line by line
-			// TODO: bufferedReader.read(CharBuffer) does not currently work
-			let line = undefined;
-			let result = '';
-			while (line !== null) {
-				line = bufferedReader.readLine();
-				if (line === null) {
-					break;
-				}
-
-				if (result.length > 0) {
-					// add the new line manually to the result
-					// TODO: Try with CharBuffer at a later stage, when the Bridge allows it
-					result += '\n';
-				}
-
-				result += line;
-			}
+			let result = FileSystemAccess._readAllBytes(path).toString(actualEncoding);
 
 			if (actualEncoding === textModule.encoding.UTF_8) {
 				// Remove UTF8 BOM if present. http://www.rgagnon.com/javadetails/java-handle-utf8-file-with-bom.html
 				result = FileSystemAccess._removeUtf8Bom(result);
 			}
 
-			bufferedReader.close();
-
 			return result;
 		} catch (exception) {
 			if (onError) {
 				onError(exception);
 			}
+		}
+	}
+
+	private static _readAllBytes(path: string): java.io.ByteArrayOutputStream {
+		const javaFile = new java.io.File(path);
+		const stream = new java.io.FileInputStream(javaFile);
+		try {
+			// length() is only a hint: special files such as /proc entries report 0.
+			const output = new java.io.ByteArrayOutputStream(Math.max(javaFile.length(), 32));
+			const chunk = (<any>Array).create('byte', 65536);
+			let count: number;
+			while ((count = stream.read(chunk)) !== -1) {
+				output.write(chunk, 0, count);
+			}
+
+			return output;
+		} finally {
+			stream.close();
 		}
 	}
 

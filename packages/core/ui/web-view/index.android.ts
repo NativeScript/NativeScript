@@ -16,8 +16,6 @@ function initializeWebViewClient(): void {
 	class WebViewClientImpl extends android.webkit.WebViewClient {
 		constructor(public owner: WebViewBase) {
 			super();
-
-			return global.__native(this);
 		}
 
 		public shouldOverrideUrlLoading(view: android.webkit.WebView, target: any) {

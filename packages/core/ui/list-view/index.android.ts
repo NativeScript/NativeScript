@@ -43,8 +43,6 @@ function initializeItemClickListener(): void {
 	class ItemClickListenerImpl extends java.lang.Object implements android.widget.AdapterView.OnItemClickListener {
 		constructor(public owner: ListView) {
 			super();
-
-			return global.__native(this);
 		}
 
 		onItemClick<T extends android.widget.Adapter>(parent: android.widget.AdapterView<T>, convertView: android.view.View, index: number, id: number) {
@@ -846,8 +844,6 @@ function ensureListViewAdapterClass() {
 	class ListViewAdapter extends android.widget.BaseAdapter {
 		constructor(public owner: ListView) {
 			super();
-
-			return global.__native(this);
 		}
 
 		public getCount() {

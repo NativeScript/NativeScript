@@ -9,7 +9,12 @@ import { getFilenameFromUrl, parseJSON } from './http-request-common';
 
 const contentHandler: HttpContentHandler = {
 	toArrayBuffer(this: BaseHttpContent) {
-		return Uint8Array.from((this.raw as java.io.ByteArrayOutputStream).toByteArray()).buffer;
+		const bytes = (this.raw as java.io.ByteArrayOutputStream).toByteArray();
+		const buffer: ArrayBuffer = (ArrayBuffer as any).from(java.nio.ByteBuffer.wrap(bytes));
+		// Unlink the drained source ByteBuffer: it pins the byte[] and misleads FileSystemAccess.getBuffer.
+		delete (buffer as any).nativeObject;
+
+		return buffer;
 	},
 	toString(this: BaseHttpContent, encoding?: HttpResponseEncoding) {
 		let str: string;

@@ -21,8 +21,6 @@ function initializeListenerClass(): void {
 		class SeekBarChangeListenerImpl extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
 			constructor() {
 				super();
-
-				return global.__native(this);
 			}
 
 			onProgressChanged(seekBar: OwnerSeekBar, progress: number, fromUser: boolean): void {

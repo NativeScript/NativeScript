@@ -50,8 +50,6 @@ function initializeTapAndDoubleTapGestureListener() {
 			this._observer = observer;
 			this._target = target;
 			this._type = type;
-
-			return global.__native(this);
 		}
 
 		public onSingleTapUp(motionEvent: android.view.MotionEvent): boolean {
@@ -129,8 +127,6 @@ function initializePinchGestureListener() {
 
 			this._observer = observer;
 			this._target = target;
-
-			return global.__native(this);
 		}
 
 		public onScaleBegin(detector: android.view.ScaleGestureDetector): boolean {
@@ -182,8 +178,6 @@ function initializeSwipeGestureListener() {
 
 			this._observer = observer;
 			this._target = target;
-
-			return global.__native(this);
 		}
 
 		public onDown(motionEvent: android.view.MotionEvent): boolean {

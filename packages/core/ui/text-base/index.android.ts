@@ -34,8 +34,6 @@ function initializeTextTransformation(): void {
 	class TextTransformationImpl extends java.lang.Object implements android.text.method.TransformationMethod {
 		constructor(public textBase: TextBase) {
 			super();
-
-			return global.__native(this);
 		}
 
 		public getTransformation(charSeq: any, view: android.view.View): any {
@@ -77,8 +75,6 @@ function initializeClickableSpan(): void {
 		constructor(owner: Span) {
 			super();
 			this.owner = new WeakRef(owner);
-
-			return global.__native(this);
 		}
 		onClick(view: android.view.View): void {
 			const owner = this.owner?.get();
