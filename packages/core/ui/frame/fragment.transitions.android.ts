@@ -34,8 +34,6 @@ let TransitionListener = lazy(() => {
 		) {
 			super();
 			this.entry = new WeakRef(entry);
-
-			return global.__native(this);
 		}
 
 		public onTransitionStart(transition: androidx.transition.Transition): void {
@@ -295,8 +293,6 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 		class AnimationListenerImpl extends java.lang.Object implements android.animation.Animator.AnimatorListener {
 			constructor() {
 				super();
-
-				return global.__native(this);
 			}
 
 			onAnimationStart(animator: ExpandedAnimator): void {

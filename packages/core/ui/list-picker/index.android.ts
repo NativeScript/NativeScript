@@ -26,8 +26,6 @@ function initializeNativeClasses(): void {
 	class FormatterImpl extends java.lang.Object implements android.widget.NumberPicker.Formatter {
 		constructor(private owner: ListPicker) {
 			super();
-
-			return global.__native(this);
 		}
 
 		format(index: number): string {
@@ -40,8 +38,6 @@ function initializeNativeClasses(): void {
 	class ValueChangeListenerImpl extends java.lang.Object implements android.widget.NumberPicker.OnValueChangeListener {
 		constructor(private owner: ListPicker) {
 			super();
-
-			return global.__native(this);
 		}
 
 		onValueChange(picker: android.widget.NumberPicker, oldValue: number, newValue: number): void {
