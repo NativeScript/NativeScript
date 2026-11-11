@@ -20,8 +20,6 @@ function initializeDateChangedListener(): void {
 	class DateChangedListenerImpl extends java.lang.Object implements android.widget.DatePicker.OnDateChangedListener {
 		constructor(public owner: DatePicker) {
 			super();
-
-			return global.__native(this);
 		}
 
 		onDateChanged(picker: android.widget.DatePicker, year: number, month: number, day: number) {

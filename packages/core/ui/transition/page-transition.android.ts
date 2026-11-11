@@ -16,7 +16,6 @@ import { android as androidUtils } from '../../utils/native-helper';
 class SnapshotViewGroup extends android.view.ViewGroup {
 	constructor(context: android.content.Context) {
 		super(context);
-		return global.__native(this);
 	}
 	public onMeasure(): void {
 		this.setMeasuredDimension(0, 0);

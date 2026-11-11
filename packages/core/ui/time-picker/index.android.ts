@@ -19,8 +19,6 @@ function initializeTimeChangedListener(): void {
 	class TimeChangedListenerImpl extends java.lang.Object implements android.widget.TimePicker.OnTimeChangedListener {
 		constructor(public owner: TimePicker) {
 			super();
-
-			return global.__native(this);
 		}
 
 		onTimeChanged(picker: android.widget.TimePicker, hour: number, minute: number): void {

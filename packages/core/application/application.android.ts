@@ -461,8 +461,6 @@ const BroadcastReceiver = lazy(() => {
 		constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
 			super();
 			this._onReceiveCallback = onReceiveCallback;
-
-			return global.__native(this);
 		}
 
 		public onReceive(context: android.content.Context, intent: android.content.Intent) {
@@ -1327,8 +1325,6 @@ function ensureNativeClasses() {
 	class TNSAccessibilityDelegateImpl extends AccessibilityDelegate {
 		constructor() {
 			super();
-
-			return global.__native(this);
 		}
 
 		private getTnsView(androidView: android.view.View) {

@@ -27,8 +27,6 @@ function initializeClickListener(): void {
 	class ClickListenerImpl extends java.lang.Object implements android.view.View.OnClickListener {
 		constructor(public owner: Button) {
 			super();
-
-			return global.__native(this);
 		}
 
 		public onClick(v: android.view.View): void {

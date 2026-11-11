@@ -68,8 +68,6 @@ function initializeMenuItemClickListener(): void {
 	class MenuItemClickListenerImpl extends java.lang.Object implements androidx.appcompat.widget.Toolbar.OnMenuItemClickListener {
 		constructor(public owner: ActionBar) {
 			super();
-
-			return global.__native(this);
 		}
 
 		onMenuItemClick(item: android.view.MenuItem): boolean {
