@@ -3,6 +3,7 @@ import type { Headers, HttpResponse, HttpRequestOptions } from '../../http';
 import { Screen } from '../../platform/screen';
 import * as domainDebugger from '../../debugger';
 import { isObject } from '../../utils';
+import { runtimeCopiesTypedArraysToByteArrays } from '../../utils/android-runtime-version';
 import { HttpResponseEncoding } from '../http-interfaces';
 import { addHeader, getDebugRequestMethodAndBody } from './http-request-internal-common';
 export { addHeader } from './http-request-internal-common';
@@ -163,7 +164,7 @@ function buildJavaOptions(options: HttpRequestOptions) {
 		javaOptions.content = nativeBuffer;
 	} else if (options.content instanceof ArrayBuffer) {
 		const typedArray = new Uint8Array(options.content as ArrayBuffer);
-		const nativeBuffer = java.nio.ByteBuffer.wrap(Array.from(typedArray));
+		const nativeBuffer = java.nio.ByteBuffer.wrap(runtimeCopiesTypedArraysToByteArrays() ? (typedArray as any) : Array.from(typedArray));
 		javaOptions.content = nativeBuffer;
 	}
 	if (typeof options.timeout === 'number') {
