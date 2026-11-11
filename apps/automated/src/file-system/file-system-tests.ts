@@ -785,3 +785,19 @@ export function test_FileAppendText(done) {
 		.then(() => done())
 		.catch(done);
 }
+
+export function test_FileReadTextKeepsLineBreaks(done) {
+	const content = '\nfirst\r\nsecond\rthird\n\n' + 'more than one read chunk\r\n'.repeat(5000);
+	const file = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${Date.now()}-line-breaks.txt`));
+	file.writeTextSync(content);
+	TKUnit.assertEqual(file.readTextSync(), content, 'readTextSync should return the file content unchanged');
+	file
+		.readText()
+		.then((value) => {
+			TKUnit.assertEqual(value, content, 'readText should return the file content unchanged');
+
+			return Promise.allSettled([file.remove()]);
+		})
+		.then(() => done())
+		.catch(done);
+}
