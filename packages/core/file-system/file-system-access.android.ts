@@ -556,7 +556,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 				actualEncoding = textModule.encoding.UTF_8;
 			}
 
-			let result = FileSystemAccess._readLinesLegacy(FileSystemAccess._readAllBytes(path).toString(actualEncoding));
+			let result = FileSystemAccess._readAllBytes(path).toString(actualEncoding);
 
 			if (actualEncoding === textModule.encoding.UTF_8) {
 				// Remove UTF8 BOM if present. http://www.rgagnon.com/javadetails/java-handle-utf8-file-with-bom.html
@@ -587,16 +587,6 @@ export class FileSystemAccess implements IFileSystemAccess {
 		} finally {
 			stream.close();
 		}
-	}
-
-	// Line-by-line semantics: CR/CRLF become LF, leading blank lines and the final line break are dropped.
-	private static _readLinesLegacy(text: string): string {
-		let result = text.replace(/\r\n?/g, '\n');
-		if (result.endsWith('\n')) {
-			result = result.slice(0, -1);
-		}
-
-		return result.replace(/^\n+/, '');
 	}
 
 	private static _removeUtf8Bom(s: string): string {
