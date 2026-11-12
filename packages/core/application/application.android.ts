@@ -792,7 +792,11 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 
 		const context = this.context ?? this.getNativeApplication();
 		const intent = new android.content.Intent();
-		const startActivity = [this.startActivity, this.foregroundActivity, ...this._getWindows().map((window) => (!window._surfaceGone && window.state === 'attached' ? (window as AndroidNativeWindow).activity : undefined))].find((activity) => activity && 'isNativeScriptActivity' in activity && !activity.isFinishing() && !activity.isDestroyed());
+		const windowActivities = this._getWindows()
+			.filter((window) => window.state === 'attached' && !window._surfaceGone)
+			.map((window) => (window as AndroidNativeWindow).activity);
+		// startActivity/foregroundActivity can be third-party (SDK) activities, which must never be relaunched as a window.
+		const startActivity = [this.startActivity, this.foregroundActivity, ...windowActivities].find((activity) => activity && 'isNativeScriptActivity' in activity && !activity.isFinishing() && !activity.isDestroyed());
 
 		if (startActivity) {
 			intent.setClass(context, startActivity.getClass());
