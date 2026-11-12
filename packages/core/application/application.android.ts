@@ -792,12 +792,20 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 
 		const context = this.context ?? this.getNativeApplication();
 		const intent = new android.content.Intent();
-		const startActivity = this.startActivity;
+		const windowActivities = this._getWindows()
+			.filter((window) => window.state === 'attached' && !window._surfaceGone)
+			.map((window) => (window as AndroidNativeWindow).activity);
+		// startActivity/foregroundActivity can be third-party (SDK) activities, which must never be relaunched as a window.
+		const startActivity = [this.startActivity, this.foregroundActivity, ...windowActivities].find((activity) => activity && 'isNativeScriptActivity' in activity && !activity.isFinishing() && !activity.isDestroyed());
 
 		if (startActivity) {
 			intent.setClass(context, startActivity.getClass());
 		} else {
-			intent.setClassName(context, 'org.nativescript.NativeScriptActivity');
+			const component = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName())?.getComponent();
+			if (!component) {
+				throw new Error('Unable to open a window: no NativeScript activity or launch activity was found.');
+			}
+			intent.setComponent(component);
 		}
 
 		let flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK | android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
