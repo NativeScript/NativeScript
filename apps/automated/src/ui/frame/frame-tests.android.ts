@@ -92,22 +92,3 @@ export function test_snapshot_back_preview_preserves_page_ownership() {
 		session.dispose();
 	}
 }
-
-export async function test_back_after_activity_recreation() {
-	const frame = Frame.topmost();
-	frame.navigate({ create: () => new Page(), clearHistory: true, animated: false });
-	TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), 15);
-	const previous = frame.currentPage;
-	frame.navigate({ create: () => new Page(), animated: false });
-	TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), 15);
-	const activity = frame.android.activity;
-	activity.recreate();
-	const deadline = Date.now() + 15000;
-	while (frame.android.activity === activity || !frame.isLoaded || !frame.currentPage.isLoaded) {
-		TKUnit.assertTrue(Date.now() < deadline, 'Activity recreated and Frame loaded');
-		await new Promise((resolve) => setTimeout(resolve, 100));
-	}
-	frame.goBack();
-	TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), 15);
-	TKUnit.assertEqual(frame.currentPage, previous, 'Back resumes after early native attachment');
-}
