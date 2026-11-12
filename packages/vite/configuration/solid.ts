@@ -8,6 +8,7 @@ import { mergeConfig, type UserConfig } from 'vite';
 import { baseConfig } from './base.js';
 import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
 import { findSolidPackagesShippingJsx } from '../hmr/frameworks/solid/build/solid-jsx-deps.js';
+import { resolveSolidDevEntry, SOLID_RUNTIME_PACKAGES } from '../helpers/solid-runtime.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,22 +23,35 @@ const jsxRuntimeShimPath = resolve(dirname(__dirname), 'shims', 'solid-jsx-runti
 // Build the Solid plugin stack for a given build kind. `prod` is derived from
 // Vite's `mode` inside the factory (NOT a non-standard `process.env.production`),
 // so a production build resolves Solid's prod bundles and disables dev/hot.
+const exactAlias = (spec: string, replacement: string) => ({ find: new RegExp(`^${spec.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}$`), replacement });
+
+// Matches are anchored: other subpaths (e.g. Solid 2's `solid-js/internal`)
+// must fall through to the package's exports map.
+const buildSolidAliasEntries = (prod: boolean) => {
+	const entries = [
+		// Solid 1.x subpath layout.
+		exactAlias('solid-js/web', resolve(solidPath, `web/dist/${prod ? 'web' : 'dev'}.js`)),
+		exactAlias('solid-js/universal', resolve(solidPath, `universal/dist/${prod ? 'universal' : 'dev'}.js`)),
+		exactAlias('solid-js/store', resolve(solidPath, `store/dist/${prod ? 'store' : 'dev'}.js`)),
+		exactAlias('solid-js/jsx-runtime', jsxRuntimeShimPath),
+		exactAlias('solid-js/jsx-dev-runtime', jsxRuntimeShimPath),
+		exactAlias('solid-js', prod ? resolve(solidPath, 'dist/solid.js') : (resolveSolidDevEntry('solid-js', projectRoot)?.absPath ?? resolve(solidPath, 'dist/dev.js'))),
+	];
+	if (!prod) {
+		// base.ts's resolve.conditions omit `development`, so without these the
+		// remaining runtime packages resolve to prod builds next to solid-js dev.
+		for (const pkg of SOLID_RUNTIME_PACKAGES) {
+			if (pkg === 'solid-js') continue;
+			const devEntry = resolveSolidDevEntry(pkg, projectRoot);
+			if (devEntry) entries.push(exactAlias(pkg, devEntry.absPath));
+		}
+	}
+	return entries;
+};
+
 const buildSolidPlugins = (prod: boolean) => [
 	{
-		...alias({
-			entries: {
-				// Fix the web alias - it should NOT point to web/dist but to the main dist
-				'solid-js/web': resolve(solidPath, `web/dist/${prod ? 'web' : 'dev'}.js`),
-				// Alias solid-js modules to proper locations
-				'solid-js/universal': resolve(solidPath, `universal/dist/${prod ? 'universal' : 'dev'}.js`),
-				'solid-js/store': resolve(solidPath, `store/dist/${prod ? 'store' : 'dev'}.js`),
-				// Automatic JSX transform runtime — must come before the catch-all
-				// 'solid-js' entry to avoid prefix-matching to solid-js/dist/dev.js
-				'solid-js/jsx-runtime': jsxRuntimeShimPath,
-				'solid-js/jsx-dev-runtime': jsxRuntimeShimPath,
-				'solid-js': resolve(solidPath, `dist/${prod ? 'solid' : 'dev'}.js`),
-			},
-		}),
+		...alias({ entries: buildSolidAliasEntries(prod) }),
 		enforce: 'pre',
 	},
 	// Enable SolidJS support with NativeScript configuration

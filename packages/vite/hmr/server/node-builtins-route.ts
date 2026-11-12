@@ -1,6 +1,7 @@
 import { builtinModules } from 'node:module';
 import type { ViteDevServer } from 'vite';
 import { setDeviceModuleHeaders } from './route-helpers.js';
+import { isBuiltinModuleId } from '../../helpers/builtin-modules.js';
 
 /**
  * Dev-session shims for Node.js builtins: `GET /ns/node/<name>`.
@@ -36,6 +37,8 @@ const nodeBuiltinNames = new Set<string>(builtinModules.filter((name) => !name.s
 export function getNodeBuiltinImportMapEntries(origin: string): Record<string, string> {
 	const entries: Record<string, string> = {};
 	for (const name of nodeBuiltinNames) {
+		// Builtins kept for the runtime must reach its own shim, not this route.
+		if (isBuiltinModuleId(`node:${name}`)) continue;
 		entries[`node:${name}`] = `${origin}${NODE_BUILTIN_ROUTE_PREFIX}${name}`;
 	}
 	return entries;

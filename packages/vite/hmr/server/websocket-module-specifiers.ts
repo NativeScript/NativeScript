@@ -7,6 +7,7 @@ import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/regi
 import { getLinkedDependencyRoots, getMonorepoWorkspaceRoot, getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName, getPackageRuntimeInfo } from '../shared/package-classifier.js';
 import { getFlavorClientPackages } from '../framework-flavors.js';
+import { isBuiltinModuleId } from '../../helpers/builtin-modules.js';
 
 const ESM_FRAMEWORK_PACKAGE_ROOTS = new Set(['@nativescript/angular', 'nativescript-angular']);
 
@@ -205,6 +206,7 @@ export function isLikelyNativeScriptRuntimePluginSpecifier(spec: string, project
 export function isLikelyNativeScriptPluginSpecifier(spec: string, projectRoot: string = getProjectRootPath()): boolean {
 	if (!spec) return false;
 	const s = spec.replace(PAT.QUERY_PATTERN, '');
+	if (isBuiltinModuleId(s)) return false;
 	if (/^(?:\.|\/|https?:\/\/)/i.test(s)) return false;
 	if (s.startsWith('@@/')) return false;
 	if (s.startsWith('~/')) return false;
