@@ -50,16 +50,9 @@ class ListViewCell extends UITableViewCell {
 		return cell;
 	}
 
-	public willMoveToSuperview(newSuperview: UIView): void {
-		const parent = <ListView>(this.view ? this.view.parent : null);
-
-		// When inside ListView and there is no newSuperview this cell is
-		// removed from native visual tree so we remove it from our tree too.
-		if (parent && !newSuperview) {
-			parent._removeContainer(this);
-		}
-	}
-
+	// Don't tear down the item view in willMoveToSuperview(nil): UIKit removes
+	// cells on reloadData and re-adds them on reuse, and rebuilding the view
+	// then fails. Item views are disposed with the ListView instead.
 	public get view(): View {
 		return this.owner ? this.owner.deref() : null;
 	}
