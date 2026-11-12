@@ -221,7 +221,15 @@ global.UIApplicationDidReceiveMemoryWarningNotification = 'UIApplicationDidRecei
 global.UIApplicationDidChangeStatusBarOrientationNotification = 'UIApplicationDidChangeStatusBarOrientationNotification';
 global.UIResponder = function () {};
 global.UIResponder.extend = function () {};
-global.UIViewController = function () {};
+global.UIViewController = class UIViewController {
+	_view = null;
+	get view() {
+		return (this._view ??= { setNeedsLayout() {} });
+	}
+	get viewIfLoaded() {
+		return this._view;
+	}
+};
 global.UIViewControllerTransitioningDelegate = function () {};
 global.UINavigationControllerDelegate = function () {};
 global.UINavigationController = function () {};
