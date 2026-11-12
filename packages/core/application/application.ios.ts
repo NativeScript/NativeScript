@@ -616,9 +616,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 
 		deliverUserActivity(windowScene, Application.ios._getWindowForScene(windowScene), userActivity);
 	}
-
-	// Scene-based apps no longer receive UIApplicationDidChangeStatusBarOrientationNotification
-	// (iOS 27); rotation arrives here instead. iOS 26+ calls the effective-geometry callback,
+	// Scene-based apps get rotation here rather than through the status bar orientation notification.
+	// iOS 26+ calls the effective-geometry callback, earlier versions the coordinate-space one.
 	// earlier versions the coordinate-space one.
 	windowSceneDidUpdateEffectiveGeometry(windowScene: UIWindowScene, previousEffectiveGeometry: UIWindowSceneGeometry): void {
 		Application.ios._getWindowForScene(windowScene)?._syncOrientation();
