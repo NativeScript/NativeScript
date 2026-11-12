@@ -44,7 +44,7 @@ export function normalizeCoreSub(sub?: string | null): string {
 	let s = String(sub).split('?')[0].split('#')[0].trim();
 	s = s.replace(/^\/+/, '').replace(/\/+$/, '');
 	s = s.replace(/\.(?:mjs|cjs|js)$/, '');
-	// Strip a trailing platform suffix (`.ios` / `.android` / `.visionos` / `.windows`)
+	// Strip a trailing platform suffix (`.ios` / `.android` / `.visionos` / `.windows` / `.linux`)
 	// so Vite-resolved platform-specific file paths canonicalize to the
 	// same form the runtime import map uses for the bare subpath.
 	//

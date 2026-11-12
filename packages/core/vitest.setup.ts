@@ -13,6 +13,8 @@ global.__ANDROID__ = false;
 global.__IOS__ = true;
 global.__VISIONOS__ = false;
 global.__APPLE__ = true;
+global.__WINDOWS__ = false;
+global.__LINUX__ = false;
 global.__COMMONJS__ = false;
 // Injected by the bundler in a real app; the css-tree parser is the default.
 global.__CSS_PARSER__ = 'css-tree';

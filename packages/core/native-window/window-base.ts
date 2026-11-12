@@ -99,6 +99,10 @@ export abstract class WindowBase extends Observable {
 		return undefined;
 	}
 
+	get linux(): { readonly window: interop.Pointer } | undefined {
+		return undefined;
+	}
+
 	/**
 	 * Close this window.
 	 */

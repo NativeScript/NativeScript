@@ -24,7 +24,7 @@ export type ParsedCoreBridgeRequest = {
 	 *
 	 * `normalizeCoreSub` strips `.js`/`.mjs`/`.cjs`/`.ts` extensions,
 	 * trailing `/index`, and platform suffixes (`.ios`, `.android`,
-	 * `.visionos`, `.windows`) because Vite's path resolver legitimately emits those
+	 * `.visionos`, `.windows`, `.linux`) because Vite's path resolver legitimately emits those
 	 * shapes when it follows a package's `exports` map to a
 	 * platform-specific file (`ui/text-base/index.ios.js`) for the
 	 * extensionless import (`@nativescript/core/ui/text-base`). The 301
@@ -269,7 +269,7 @@ function resolveLocalExportTarget(spec: string, importerId: string): string | nu
 	const importerPath = String(importerId || '').replace(/[?#].*$/, '');
 	if (!importerPath) return null;
 	const importerDir = path.dirname(importerPath);
-	// Include platform-specific variants (.ios.js / .android.js / .windows.js …).
+	// Include platform-specific variants (.ios.js / .android.js / .windows.js / .linux.js …).
 	// @nativescript/core ships only platform-specific files for many submodules
 	// (e.g. `./application/index.ios.js`, no plain `./application/index.js`), so
 	// a plain Node-style resolution misses them and the recursive export-name

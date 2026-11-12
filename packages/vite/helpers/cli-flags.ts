@@ -25,6 +25,7 @@ function pickPlatform(src: Record<string, unknown> | null | undefined): Platform
 	if (!src) return undefined;
 	if (src.android) return 'android';
 	if (src.windows) return 'windows';
+	if (src.linux) return 'linux';
 	if (src.visionos) return 'visionos';
 	if (src.ios) return 'ios';
 	return undefined;

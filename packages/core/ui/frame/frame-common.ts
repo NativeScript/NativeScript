@@ -838,5 +838,5 @@ export const defaultPageProperty = new Property<FrameBase, string>({
 });
 defaultPageProperty.register(FrameBase);
 
-export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: __APPLE__ });
+export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: __APPLE__ || __LINUX__ });
 actionBarVisibilityProperty.register(FrameBase);

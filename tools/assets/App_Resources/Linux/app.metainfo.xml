@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>__APP_ID__</id>
+  <name>__APP_NAME__</name>
+  <summary>A NativeScript application</summary>
+  <description>
+    <p>__APP_NAME__ is a desktop application built with NativeScript and GTK 4.</p>
+  </description>
+  <metadata_license>CC0-1.0</metadata_license>
+  <launchable type="desktop-id">__APP_ID__.desktop</launchable>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="__APP_VERSION__" date="__APP_DATE__" />
+  </releases>
+</component>

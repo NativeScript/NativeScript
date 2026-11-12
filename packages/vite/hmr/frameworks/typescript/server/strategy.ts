@@ -4,6 +4,7 @@ import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers
 import * as path from 'path';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
+import { purgeTransformCachesForHotUpdate } from '../../../server/transform-cache-invalidation.js';
 import type { TsModuleRegistryMessage } from '../../../shared/protocol.js';
 
 // TypeScript server strategy for NativeScript HMR.
@@ -30,9 +31,11 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 		const state = await runHotUpdatePrologue(ctx, deps);
 		if (!state) return;
 		const { root, metrics, emitSummary } = state;
-		const { moduleGraph, verbose, wss, isSocketClientOpen } = deps;
-		const { file } = ctx;
+		const { moduleGraph, verbose, wss, isSocketClientOpen, sharedTransformRequest } = deps;
+		const { file, server } = ctx;
 		metrics.tAfterFramework = Date.now();
+		// the client re-imports the file right away: drop its cached transform (60s TTL)
+		purgeTransformCachesForHotUpdate({ file, server, sharedTransformRequest, verbose, label: 'ts' });
 		try {
 			const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
 			if (verbose) console.log('[hmr-ws][ts] app file hot update', { file, rel });

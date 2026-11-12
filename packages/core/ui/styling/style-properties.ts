@@ -260,7 +260,7 @@ export const minWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minWidth',
 	cssName: 'min-width',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -278,7 +278,7 @@ export const minHeightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minHeight',
 	cssName: 'min-height',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -300,7 +300,7 @@ export const widthProperty = new CssAnimationProperty<Style, CoreTypes.PercentLe
 	// TODO: CSSAnimationProperty was needed for keyframe (copying other impls), but `affectsLayout` does not exist
 	//       on the animation property, so fake it here. x_x
 	valueChanged: (target, oldValue, newValue) => {
-		if (__APPLE__) {
+		if (__APPLE__ || __LINUX__) {
 			const view = target.viewRef.get();
 			if (view) {
 				view.requestLayout();
@@ -319,7 +319,7 @@ export const heightProperty = new CssAnimationProperty<Style, CoreTypes.PercentL
 	// TODO: CSSAnimationProperty was needed for keyframe (copying other impls), but `affectsLayout` does not exist
 	//       on the animation property, so fake it here. -_-
 	valueChanged: (target, oldValue, newValue) => {
-		if (__APPLE__) {
+		if (__APPLE__ || __LINUX__) {
 			const view = target.viewRef.get();
 			if (view) {
 				view.requestLayout();
@@ -374,7 +374,7 @@ export const marginLeftProperty = new CssProperty<Style, CoreTypes.PercentLength
 	name: 'marginLeft',
 	cssName: 'margin-left',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -384,7 +384,7 @@ export const marginRightProperty = new CssProperty<Style, CoreTypes.PercentLengt
 	name: 'marginRight',
 	cssName: 'margin-right',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -394,7 +394,7 @@ export const marginTopProperty = new CssProperty<Style, CoreTypes.PercentLengthT
 	name: 'marginTop',
 	cssName: 'margin-top',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -404,7 +404,7 @@ export const marginBottomProperty = new CssProperty<Style, CoreTypes.PercentLeng
 	name: 'marginBottom',
 	cssName: 'margin-bottom',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -434,7 +434,7 @@ export const paddingLeftProperty = new CssProperty<Style, CoreTypes.LengthType>(
 	name: 'paddingLeft',
 	cssName: 'padding-left',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -453,7 +453,7 @@ export const paddingRightProperty = new CssProperty<Style, CoreTypes.LengthType>
 	name: 'paddingRight',
 	cssName: 'padding-right',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -472,7 +472,7 @@ export const paddingTopProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingTop',
 	cssName: 'padding-top',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -491,7 +491,7 @@ export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType
 	name: 'paddingBottom',
 	cssName: 'padding-bottom',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -560,7 +560,7 @@ export const horizontalAlignmentProperty = new CssProperty<Style, CoreTypes.Hori
 	name: 'horizontalAlignment',
 	cssName: 'horizontal-align',
 	defaultValue: CoreTypes.HorizontalAlignment.stretch,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: CoreTypes.HorizontalAlignment.parse,
 });
 horizontalAlignmentProperty.register(Style);
@@ -569,7 +569,7 @@ export const verticalAlignmentProperty = new CssProperty<Style, CoreTypes.Vertic
 	name: 'verticalAlignment',
 	cssName: 'vertical-align',
 	defaultValue: CoreTypes.VerticalAlignmentText.stretch,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: CoreTypes.VerticalAlignmentText.parse,
 });
 verticalAlignmentProperty.register(Style);
@@ -866,7 +866,7 @@ export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthTyp
 	name: 'borderTopWidth',
 	cssName: 'border-top-width',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const value = Length.toDevicePixels(newValue, 0);
@@ -890,7 +890,7 @@ export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthT
 	name: 'borderRightWidth',
 	cssName: 'border-right-width',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const value = Length.toDevicePixels(newValue, 0);
@@ -914,7 +914,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.Length
 	name: 'borderBottomWidth',
 	cssName: 'border-bottom-width',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const value = Length.toDevicePixels(newValue, 0);
@@ -938,7 +938,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthTy
 	name: 'borderLeftWidth',
 	cssName: 'border-left-width',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const value = Length.toDevicePixels(newValue, 0);
@@ -995,7 +995,7 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, CoreTypes.Leng
 	name: 'borderTopLeftRadius',
 	cssName: 'border-top-left-radius',
 	defaultValue: 0,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueChanged: (target, oldValue, newValue) => {
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
@@ -1012,7 +1012,7 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, CoreTypes.Len
 	name: 'borderTopRightRadius',
 	cssName: 'border-top-right-radius',
 	defaultValue: 0,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueChanged: (target, oldValue, newValue) => {
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
@@ -1029,7 +1029,7 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, CoreTypes.
 	name: 'borderBottomRightRadius',
 	cssName: 'border-bottom-right-radius',
 	defaultValue: 0,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueChanged: (target, oldValue, newValue) => {
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
@@ -1046,7 +1046,7 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 	name: 'borderBottomLeftRadius',
 	cssName: 'border-bottom-left-radius',
 	defaultValue: 0,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueChanged: (target, oldValue, newValue) => {
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
@@ -1132,7 +1132,7 @@ export const directionProperty = new InheritedCssProperty<Style, CoreTypes.Layou
 	defaultValue: null,
 	name: 'direction',
 	cssName: 'direction',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 });
 directionProperty.register(Style);
 
@@ -1182,7 +1182,7 @@ fontInternalProperty.register(Style);
 export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	name: 'fontFamily',
 	cssName: 'font-family',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueChanged: (target, oldValue, newValue) => {
 		const currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontFamily !== newValue) {
@@ -1208,7 +1208,7 @@ function parseFontSize(value: string): number {
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',
 	cssName: 'font-size',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueChanged: (target, oldValue, newValue) => {
 		if (target.viewRef['handleFontSize'] === true) {
 			return;
@@ -1226,7 +1226,7 @@ fontSizeProperty.register(Style);
 export const fontStyleProperty = new InheritedCssProperty<Style, FontStyleType>({
 	name: 'fontStyle',
 	cssName: 'font-style',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	defaultValue: FontStyle.NORMAL,
 	valueConverter: FontStyle.parse,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1242,7 +1242,7 @@ fontStyleProperty.register(Style);
 export const fontWeightProperty = new InheritedCssProperty<Style, FontWeightType>({
 	name: 'fontWeight',
 	cssName: 'font-weight',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	defaultValue: FontWeight.NORMAL,
 	valueConverter: FontWeight.parse,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1287,7 +1287,7 @@ fontProperty.register(Style);
 export const fontVariationSettingsProperty = new InheritedCssProperty<Style, FontVariationSettingsType[]>({
 	name: 'fontVariationSettings',
 	cssName: 'font-variation-settings',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueChanged: (target, oldValue, newValue) => {
 		const currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontVariationSettings !== newValue) {
@@ -1305,7 +1305,7 @@ export const visibilityProperty = new CssProperty<Style, CoreTypes.VisibilityTyp
 	name: 'visibility',
 	cssName: 'visibility',
 	defaultValue: CoreTypes.Visibility.visible,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: CoreTypes.Visibility.parse,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();

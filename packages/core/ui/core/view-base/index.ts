@@ -336,6 +336,7 @@ export abstract class ViewBase extends Observable {
 	private _iosView: Object;
 	private _androidView: Object;
 	private _windowsView: Object;
+	private _linuxView: Object;
 	private _style: Style;
 	private _isLoaded: boolean;
 
@@ -1244,6 +1245,8 @@ export abstract class ViewBase extends Observable {
 			}
 		} else if (__WINDOWS__) {
 			this._windowsView = nativeView;
+		} else if (__LINUX__) {
+			this._linuxView = nativeView;
 		} else {
 			this._iosView = nativeView;
 		}
@@ -1609,7 +1612,7 @@ bindingContextProperty.register(ViewBase);
 export const hiddenProperty = new Property<ViewBase, boolean>({
 	name: 'hidden',
 	defaultValue: false,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: booleanConverter,
 	valueChanged: (target, oldValue, newValue) => {
 		if (target) {

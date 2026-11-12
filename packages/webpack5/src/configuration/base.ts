@@ -62,7 +62,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		hasDependency('@nativescript/ios') ||
 		hasDependency('@nativescript/visionos') ||
 		hasDependency('@nativescript/android') ||
-		hasDependency('@nativescript/windows')
+		hasDependency('@nativescript/windows') ||
+		hasDependency('@nativescript/linux') ||
+		hasDependency('@nativescript/linux-quickjs')
 	) {
 		const iosVersion = getDependencyVersion('@nativescript/ios');
 		const visionosVersion = getDependencyVersion('@nativescript/visionos');
@@ -105,6 +107,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			} else {
 				env.commonjs = true;
 			}
+		} else if (platform === 'linux') {
+			// both Linux engines load CommonJS bundles
+			env.commonjs = true;
 		} else if (platform === 'windows') {
 			const windowsResolved =
 				getResolvedDependencyVersionForCheck(
@@ -154,15 +159,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		},
 		alias: {
 			// Mock mdn-data modules that css-tree tries to load
-			'mdn-data/css/properties.json': require.resolve(
-				'../polyfills/mdn-data-properties',
-			),
-			'mdn-data/css/syntaxes.json': require.resolve(
-				'../polyfills/mdn-data-syntaxes',
-			),
-			'mdn-data/css/at-rules.json': require.resolve(
-				'../polyfills/mdn-data-at-rules',
-			),
+			'mdn-data/css/properties.json':
+				require.resolve('../polyfills/mdn-data-properties'),
+			'mdn-data/css/syntaxes.json':
+				require.resolve('../polyfills/mdn-data-syntaxes'),
+			'mdn-data/css/at-rules.json':
+				require.resolve('../polyfills/mdn-data-at-rules'),
 			// Ensure imports of the Node 'module' builtin resolve to our polyfill
 			module: require.resolve('../polyfills/module'),
 		},
@@ -206,7 +208,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
 	if (env.sourceMap === 'hidden-source-map') {
 		const sourceMapAbsolutePath = getProjectFilePath(
-			`./${env.buildPath ?? 'platforms'
+			`./${
+				env.buildPath ?? 'platforms'
 			}/${platform}-sourceMaps/[file].map[query]`,
 		);
 		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
@@ -456,8 +459,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const tsConfigPath = getProjectTSConfigPath();
 	const configFile = tsConfigPath
 		? {
-			configFile: tsConfigPath,
-		}
+				configFile: tsConfigPath,
+			}
 		: undefined;
 
 	// set up ts support
@@ -549,7 +552,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 										return require.resolve(platformRequest, {
 											paths: [baseDir],
 										});
-									} catch { }
+									} catch {}
 
 									if (existsSync(extPath)) {
 										console.log(`resolving "${id}" to "${platformRequest}"`);
@@ -674,11 +677,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				__VISIONOS__: platform === 'visionos',
 				__APPLE__: platform === 'ios' || platform === 'visionos',
 				__WINDOWS__: platform === 'windows',
+				__LINUX__: platform === 'linux',
 				/* for compat only */ 'global.isAndroid': platform === 'android',
 				/* for compat only */ 'global.isIOS':
 					platform === 'ios' || platform === 'visionos',
 				/* for compat only */ 'global.isVisionOS': platform === 'visionos',
 				/* for compat only */ 'global.isWindows': platform === 'windows',
+				/* for compat only */ 'global.isLinux': platform === 'linux',
 				process: 'global.process',
 			},
 		] as any,
@@ -723,7 +728,12 @@ function shouldIncludeInspectorModules(): boolean {
 	const coreVersion = getDependencyVersion('@nativescript/core');
 
 	if (coreVersion && satisfies(coreVersion, '>=8.7.0')) {
-		return platform === 'ios' || platform === 'android' || platform === 'windows';
+		return (
+			platform === 'ios' ||
+			platform === 'android' ||
+			platform === 'windows' ||
+			platform === 'linux'
+		);
 	}
 
 	return platform === 'ios' || platform === 'windows';
