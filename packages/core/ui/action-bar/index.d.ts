@@ -171,12 +171,12 @@ export class ActionItem extends ViewBase {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (data: EventData) => void): void;
+	on(eventName: string, callback: (data: EventData) => void): this;
 
 	/**
 	 * Raised when a tap event occurs.
 	 */
-	on(event: 'tap', callback: (args: EventData) => void): void;
+	on(event: 'tap', callback: (args: EventData) => void): this;
 
 	//@private
 	/**

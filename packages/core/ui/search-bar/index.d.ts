@@ -26,12 +26,12 @@ export class SearchBar extends View {
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/widget/SearchView.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */
-	android: any /* android.widget.SearchView */;
+	android: any; /* android.widget.SearchView */
 
 	/**
 	 * Gets the native iOS [UISearchBar](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UISearchBar_Class/) that represents the user interface for this component. Valid only when running on iOS.
 	 */
-	ios: any /* UISearchBar */;
+	ios: any; /* UISearchBar */
 
 	/**
 	 * Gets or sets a search bar text.
@@ -78,17 +78,17 @@ export class SearchBar extends View {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when a search bar search is submitted.
 	 */
-	on(event: 'submit', callback: (args: EventData) => void, thisArg?: any): void;
+	on(event: 'submit', callback: (args: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when a search bar search is closed.
 	 */
-	on(event: 'close', callback: (args: EventData) => void, thisArg?: any): void;
+	on(event: 'close', callback: (args: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Hides the soft input method, usually a soft keyboard.

@@ -635,7 +635,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean) {
+	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): this {
 		super.addEventListener(eventNames, callback, thisArg, once);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
@@ -648,9 +648,11 @@ export class View extends ViewCommon {
 		if (!this.insetListenerIsSet && isInsetEvent) {
 			this.setInsetListener();
 		}
+
+		return this;
 	}
 
-	removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
+	removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any): this {
 		super.removeEventListener(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
@@ -667,6 +669,8 @@ export class View extends ViewCommon {
 		if (this.insetListenerIsSet && isInsetEvent && !this.needsInsetListener()) {
 			this.clearInsetListener();
 		}
+
+		return this;
 	}
 
 	private setInsetListener() {

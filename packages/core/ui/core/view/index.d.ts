@@ -856,7 +856,7 @@ export abstract class View extends ViewCommon {
 	/**
 	 * Raised before the view is shown as a modal dialog.
 	 */
-	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
+	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised after the view is shown as a modal dialog.

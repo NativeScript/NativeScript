@@ -294,17 +294,17 @@ export class Frame extends FrameBase {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (args: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (args: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when navigation to the page has started.
 	 */
-	public on(event: 'navigatingTo', callback: (args: NavigationData) => void, thisArg?: any): void;
+	public on(event: 'navigatingTo', callback: (args: NavigationData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when navigation to the page has finished.
 	 */
-	public on(event: 'navigatedTo', callback: (args: NavigationData) => void, thisArg?: any): void;
+	public on(event: 'navigatedTo', callback: (args: NavigationData) => void, thisArg?: any): this;
 }
 
 export const defaultPageProperty: Property<Frame, string>;

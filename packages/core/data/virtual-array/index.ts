@@ -192,13 +192,13 @@ export interface VirtualArray<T> {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): this;
 	/**
 	 * Raised when still not loaded items are requested.
 	 */
-	on(event: 'itemsLoading', callback: (args: ItemsLoading) => void, thisArg?: any): void;
+	on(event: 'itemsLoading', callback: (args: ItemsLoading) => void, thisArg?: any): this;
 	/**
 	 * Raised when a change occurs.
 	 */
-	on(event: 'change', callback: (args: ChangedData<T>) => void, thisArg?: any): void;
+	on(event: 'change', callback: (args: ChangedData<T>) => void, thisArg?: any): this;
 }
