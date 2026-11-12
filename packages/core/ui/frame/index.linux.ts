@@ -69,6 +69,10 @@ export class Frame extends FrameBase {
 			}
 		}
 		this._attachedPage = page;
+		// A page returning from the back stack was unloaded when it left and is still a child.
+		if (this.isLoaded && !page.isLoaded) {
+			page.callLoaded();
+		}
 		this._updateActionBar(page);
 		this.requestLayout();
 	}
