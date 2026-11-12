@@ -256,6 +256,8 @@ exports[`typescript configuration for android 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('NativeScriptBuiltinModulesPlugin') */
+    new NativeScriptBuiltinModulesPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {
@@ -618,6 +620,8 @@ exports[`typescript configuration for ios 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('NativeScriptBuiltinModulesPlugin') */
+    new NativeScriptBuiltinModulesPlugin(),
     /* config.plugin('FixSourceMapUrlPlugin') */
     new FixSourceMapUrlPlugin(
       {

@@ -17,6 +17,7 @@ import { cleanCode, collectImportDependencies, isWorkerEntryModuleId, processCod
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { getServerOrigin } from './server-origin.js';
 import { createNsMResponseMemo } from './ns-m-response-memo.js';
+import { appendInlineSourceMap, buildServedModuleSourceMap, type InputSourceMap } from './served-module-sourcemap.js';
 import { getSharedDepsBundleService, registerDepsBundleRoute, type DepsBundleService } from './deps-bundle.js';
 import type { FrameworkServedModuleContext, FrameworkServerStrategy } from './framework-strategy.js';
 
@@ -607,6 +608,15 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				});
 			}
 
+			if (!isNodeMod && transformed.map) {
+				try {
+					const moduleFile = await resolveServedModuleFile(server, resolvedCandidate || spec);
+					if (moduleFile) {
+						code = appendInlineSourceMap(code, buildServedModuleSourceMap(transformed.code, code, transformed.map as InputSourceMap, moduleFile));
+					}
+				} catch {}
+			}
+
 			// Only fully successful serves are memoized — every early-return
 			// above (link-check throw module, 404 stubs, 500s) stays uncached.
 			if (memoKey) {
@@ -620,4 +630,10 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			res.end('export {}\n');
 		}
 	});
+}
+
+async function resolveServedModuleFile(server: ViteDevServer, candidate: string): Promise<string | null> {
+	const graph = server.moduleGraph;
+	const mod = graph.getModuleById(candidate) ?? graph.getModuleById(candidate.replace(/[?#].*$/, '')) ?? (await graph.getModuleByUrl(candidate).catch(() => undefined));
+	return mod?.file ?? null;
 }

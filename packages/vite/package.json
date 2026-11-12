@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/vite",
-	"version": "8.0.21",
+	"version": "8.0.23",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
@@ -106,6 +106,7 @@
 		"@babel/plugin-transform-unicode-property-regex": "^7.25.9",
 		"@babel/traverse": "^7.28.0",
 		"@babel/types": "^7.28.0",
+		"@jridgewell/sourcemap-codec": "^1.5.0",
 		"@rollup/plugin-alias": "^6.0.0",
 		"@rollup/plugin-commonjs": "^29.0.0",
 		"@rollup/plugin-replace": "^6.0.2",

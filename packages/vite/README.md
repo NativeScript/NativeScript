@@ -190,6 +190,30 @@ export default {
 
 3) Enjoy Vite.
 
+### Runtime builtin modules (`ns:` / `node:`)
+
+The NativeScript runtimes provide builtin modules under the `ns:` scheme (`ns:util`, `ns:module`, `ns:worker_threads`, …) and resolve them themselves. Every `ns:` import is left as-is in the output, including modules added in future runtime versions. This covers `vite build`, workers and HMR dev sessions.
+
+To also use the runtime's `node:` shims, add another `nativescriptBuiltinModules` instance (only list the ones your runtime version ships; other `node:` imports become an empty stub). Use `resolve.alias` to forward bare names, which libraries often import, or to polyfill a builtin the runtime doesn't ship:
+
+```ts
+import { defineConfig, mergeConfig, UserConfig } from 'vite';
+import { nativescriptBuiltinModules } from '@nativescript/vite';
+import { typescriptConfig } from '@nativescript/vite/typescript';
+
+export default defineConfig(({ mode }): UserConfig => {
+	return mergeConfig(typescriptConfig({ mode }), {
+		plugins: [nativescriptBuiltinModules({ include: ['node:worker_threads'] })],
+		resolve: {
+			alias: {
+				worker_threads: 'node:worker_threads',
+				'ns:url': '/abs/path/to/polyfills/ns-url.js',
+			},
+		},
+	});
+});
+```
+
 ## Explore More
 
 Check out the [NativeScript Vite documentation](https://docs.nativescript.org/configuration/vite) for more configuration options and features.

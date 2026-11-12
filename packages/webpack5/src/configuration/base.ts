@@ -19,6 +19,7 @@ import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
+import { NativeScriptBuiltinModulesPlugin } from '../plugins/NativeScriptBuiltinModulesPlugin';
 import { CompatDefinePlugin } from '../plugins/CompatDefinePlugin';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
@@ -122,6 +123,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// resolved at runtime
 	config.externals(['package.json', '~/package.json']);
 
+	// `ns:` builtins are resolved by the runtime itself
+	config
+		.plugin('NativeScriptBuiltinModulesPlugin')
+		.use(NativeScriptBuiltinModulesPlugin);
+
 	// disable marking built-in node modules as external
 	// since they are not available at runtime and
 	// should be bundled (requires polyfills)
@@ -139,15 +145,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		},
 		alias: {
 			// Mock mdn-data modules that css-tree tries to load
-			'mdn-data/css/properties.json': require.resolve(
-				'../polyfills/mdn-data-properties',
-			),
-			'mdn-data/css/syntaxes.json': require.resolve(
-				'../polyfills/mdn-data-syntaxes',
-			),
-			'mdn-data/css/at-rules.json': require.resolve(
-				'../polyfills/mdn-data-at-rules',
-			),
+			'mdn-data/css/properties.json':
+				require.resolve('../polyfills/mdn-data-properties'),
+			'mdn-data/css/syntaxes.json':
+				require.resolve('../polyfills/mdn-data-syntaxes'),
+			'mdn-data/css/at-rules.json':
+				require.resolve('../polyfills/mdn-data-at-rules'),
 			// Ensure imports of the Node 'module' builtin resolve to our polyfill
 			module: require.resolve('../polyfills/module'),
 		},

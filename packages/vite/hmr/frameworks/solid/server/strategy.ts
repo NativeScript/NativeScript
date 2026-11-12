@@ -2,6 +2,8 @@ import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkSe
 import { ensureRoutesDefaultExport } from '../../../server/websocket-served-module-helpers.js';
 import * as path from 'path';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
+import { getProjectRootPath } from '../../../../helpers/project.js';
+import { getSolidDevEntryNsmPath } from '../../../../helpers/solid-runtime.js';
 import { purgeTransformCachesForHotUpdate } from '../../../server/transform-cache-invalidation.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 
@@ -293,7 +295,7 @@ export const solidServerStrategy: FrameworkServerStrategy = {
 
 		return patchedCode;
 	},
-	// ── pin solid-js to the canonical HTTP dev.js URL ─────────────────────
+	// ── pin solid-js to the canonical HTTP dev-build URL ──────────────────
 	// The vendor bundle
 	// externalizes `solid-js` for this flavor, so all three import sites
 	// (vendor's externalized `import 'solid-js'`, user code's alias-rewritten
@@ -303,7 +305,7 @@ export const solidServerStrategy: FrameworkServerStrategy = {
 	// HTTP from discoverInstalledPackages().
 	importMapEntries(origin: string) {
 		return {
-			'solid-js': `${origin}/ns/m/node_modules/solid-js/dist/dev.js`,
+			'solid-js': `${origin}${getSolidDevEntryNsmPath('solid-js', getProjectRootPath())}`,
 		};
 	},
 	async processFile(ctx: FrameworkProcessFileContext) {

@@ -20,6 +20,7 @@ import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverri
 import { deduplicateLinkerImports, ensureDestructureRtImports, ensureVariableDynamicImportHelper, hoistTopLevelStaticImports, repairImportEqualsAssignments, stripCoreGlobalsImports, stripViteDynamicImportVirtual } from './websocket-served-module-helpers.js';
 import { buildNodeModuleProvenancePrelude, normalizeImportPath, removeNamedImports, rewriteVitePrebundleImportsForDevice, shouldRemapImport } from './device-transform-helpers.js';
 import { nsConfigToJson } from '../../helpers/utils.js';
+import { unwrapBuiltinModuleIds } from '../../helpers/builtin-modules.js';
 
 // Build a serialized process.env object from CLI --env.* flags.
 // This is injected into every HTTP-served module so app code referencing
@@ -236,7 +237,7 @@ export interface CleanCodeOptions {
 }
 
 function cleanCode(code: string, strategy: FrameworkServerStrategy, options?: CleanCodeOptions): string {
-	let result = code;
+	let result = unwrapBuiltinModuleIds(code);
 
 	// Remove Vite client and hot module noise ('$1' keeps the preceding
 	// newline/semicolon boundary — see VITE_CLIENT_IMPORT in constants.ts).
@@ -305,6 +306,9 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		// imports by the `?ns_worker=1` marker the /ns/m route propagates.
 		vendorImportsAsHttp: options?.workerRealm || isWorkerEntryModuleId(sourceId),
 	};
+
+	// Before the `/@id/` passes below, which delete or HTTP-route these ids.
+	result = unwrapBuiltinModuleIds(result);
 
 	// Ensure Angular partial declarations are linked before any sanitizers run so runtime never hits the JIT path.
 	result = linkAngularPartialsIfNeeded(result);

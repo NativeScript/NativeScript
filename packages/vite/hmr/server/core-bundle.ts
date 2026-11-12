@@ -52,6 +52,7 @@ import { nsConfigToJson } from '../../helpers/utils.js';
 import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
 import { aliasCssTree } from '../../helpers/css-tree.js';
 import { getWorkspaceCoreSourceRoot } from './websocket-served-module-helpers.js';
+import { builtinModulesEsbuildPlugin } from '../../helpers/builtin-modules.js';
 
 /**
  * Per-module /ns/core serving mode (vs the default single-eval bundle).
@@ -541,7 +542,7 @@ export async function generateCoreBundle(options: GenerateCoreBundleOptions): Pr
 			'.json': 'json',
 		},
 		define: defines,
-		plugins: [coreAliasPlugin, cssTreeEnvPlugin, nsConfigPlugin, createNativeClassEsbuildPlugin(platform as Platform), createUnicodeRegexEsbuildPlugin(projectRoot)],
+		plugins: [builtinModulesEsbuildPlugin(), coreAliasPlugin, cssTreeEnvPlugin, nsConfigPlugin, createNativeClassEsbuildPlugin(platform as Platform), createUnicodeRegexEsbuildPlugin(projectRoot)],
 		external: NODE_EXTERNALS,
 	});
 

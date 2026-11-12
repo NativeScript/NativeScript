@@ -1,3 +1,32 @@
+## 8.0.23 (2026-11-09)
+
+### 🩹 Fixes
+
+- **vite:** serve HMR app modules with source maps ([#11629](https://github.com/NativeScript/NativeScript/pull/11629))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 8.0.22 (2026-11-09)
+
+### 🚀 Features
+
+- **webpack,vite:** keep ns: builtin module imports for the runtime  [skip ci] ([#11626](https://github.com/NativeScript/NativeScript/pull/11626))
+
+### 🩹 Fixes
+
+- **vite:** bundle the closures of dynamic imports in the HMR deps bundle  [skip ci] ([#11584](https://github.com/NativeScript/NativeScript/pull/11584))
+- **vite:** resolve Solid runtime dev builds from package exports  [skip ci] ([#11628](https://github.com/NativeScript/NativeScript/pull/11628))
+- **vite:** classify minified ESM deps chunks as ESM  [skip ci] ([#11622](https://github.com/NativeScript/NativeScript/pull/11622), [#11621](https://github.com/NativeScript/NativeScript/issues/11621))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+- Eduardo Speroni @edusperoni
+- Nathan Walker
+- Osei Fortune @triniwiz
+
 ## 8.0.21 (2026-10-22)
 
 ### 🩹 Fixes
