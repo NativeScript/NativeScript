@@ -11,7 +11,7 @@ export function test_requestLayout_doesNotLoadFrameControllerView() {
 	TKUnit.assert(!controller.viewIfLoaded, 'A new Frame should keep its controller view unloaded.');
 	frame.requestLayout();
 	TKUnit.assert(!controller.viewIfLoaded, 'Layout invalidation must preserve lazy controller loading.');
-	TKUnit.assert(frame.isLayoutRequested, 'The deferred layout must remain requested.');
+	TKUnit.assert((<any>frame).isLayoutRequested, 'The deferred layout must remain requested.');
 }
 
 export function test_inheritedDirection_doesNotLoadFrameControllerView() {
@@ -21,7 +21,7 @@ export function test_inheritedDirection_doesNotLoadFrameControllerView() {
 	root.addChild(frame);
 	TKUnit.assertEqual(frame.style.direction, 'ltr', 'The Frame must inherit direction.');
 	TKUnit.assert(!frame.ios.controller.viewIfLoaded, 'Inherited direction must preserve lazy controller loading.');
-	TKUnit.assert(frame.isLayoutRequested, 'Inherited direction must still request layout.');
+	TKUnit.assert((<any>frame).isLayoutRequested, 'Inherited direction must still request layout.');
 	root.removeChild(frame);
 }
 
