@@ -1,4 +1,4 @@
-import { Frame, GridLayout, Label, TabView, View } from '@nativescript/core';
+import { Frame, GridLayout, Label, Page, TabView, View } from '@nativescript/core';
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
 
@@ -33,4 +33,40 @@ export function test_frame_hosted_in_layout_fills_its_cell() {
 
 export function test_tab_view_hosted_in_layout_fills_its_cell() {
 	assertHostedBelowHeader(new TabView());
+}
+
+export function test_default_navigation_delegate_does_not_advertise_custom_animation(done: (error?: Error) => void) {
+	const frame = Frame.topmost();
+	const original = frame.currentPage;
+	const selector = 'navigationController:animationControllerForOperation:fromViewController:toViewController:';
+	function assertDelegate(page: Page, custom: boolean) {
+		TKUnit.assertEqual(frame.currentPage, page, 'current page');
+		TKUnit.assertTrue(frame.navigationQueueIsEmpty(), 'navigation settled');
+		const delegate = frame.ios.controller.delegate as NSObject;
+		TKUnit.assertEqual(delegate.respondsToSelector(selector), custom, 'custom animation selector');
+		TKUnit.assertTrue(delegate.respondsToSelector('navigationController:didShowViewController:animated:'), 'didShow selector');
+	}
+	function whenNavigated(page: Page, action: () => void): Promise<void> {
+		return new Promise((resolve) => {
+			// Page restores its delegate after dispatching navigatedTo.
+			page.once(Page.navigatedToEvent, () => setTimeout(resolve, 0));
+			action();
+		});
+	}
+	(async () => {
+		const standard = new Page();
+		await whenNavigated(standard, () => frame.navigate({ create: () => standard, transition: null, animated: true }));
+		assertDelegate(standard, false);
+		const custom = new Page();
+		await whenNavigated(custom, () => frame.navigate({ create: () => custom, transition: { name: 'fade', duration: 20 }, animated: true }));
+		assertDelegate(custom, true);
+		const next = new Page();
+		await whenNavigated(next, () => frame.navigate({ create: () => next, transition: null, animated: true }));
+		assertDelegate(next, false);
+		await whenNavigated(custom, () => frame.goBack());
+		assertDelegate(custom, true);
+		await whenNavigated(standard, () => frame.goBack());
+		assertDelegate(standard, false);
+		await whenNavigated(original, () => frame.goBack());
+	})().then(() => done(), done);
 }
