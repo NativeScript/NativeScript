@@ -617,6 +617,17 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		deliverUserActivity(windowScene, Application.ios._getWindowForScene(windowScene), userActivity);
 	}
 
+	// Scene-based apps no longer receive UIApplicationDidChangeStatusBarOrientationNotification
+	// (iOS 27); rotation arrives here instead. iOS 26+ calls the effective-geometry callback,
+	// earlier versions the coordinate-space one.
+	windowSceneDidUpdateEffectiveGeometry(windowScene: UIWindowScene, previousEffectiveGeometry: UIWindowSceneGeometry): void {
+		Application.ios._getWindowForScene(windowScene)?._syncOrientation();
+	}
+
+	windowSceneDidUpdateCoordinateSpaceInterfaceOrientationTraitCollection(windowScene: UIWindowScene, previousCoordinateSpace: UICoordinateSpace, previousInterfaceOrientation: UIInterfaceOrientation, previousTraitCollection: UITraitCollection): void {
+		Application.ios._getWindowForScene(windowScene)?._syncOrientation();
+	}
+
 	windowScenePerformActionForShortcutItemCompletionHandler(windowScene: UIWindowScene, shortcutItem: UIApplicationShortcutItem, completionHandler: (p1: boolean) => void): void {
 		deliverShortcutAction(windowScene, Application.ios._getWindowForScene(windowScene), shortcutItem, completionHandler);
 	}
@@ -1382,12 +1393,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		// The notification is app-wide, but scenes rotate independently, so every attached
 		// window is refreshed from its own scene.
 		for (const nativeWindow of this._windows) {
-			if (nativeWindow.state !== 'attached') {
-				continue;
-			}
-
-			const orientation = nativeWindow.ios?.scene?.interfaceOrientation ?? UIApplication.sharedApplication.statusBarOrientation;
-			nativeWindow._setOrientation(this.getOrientationValue(orientation));
+			(nativeWindow as IOSNativeWindow)._syncOrientation();
 		}
 	}
 

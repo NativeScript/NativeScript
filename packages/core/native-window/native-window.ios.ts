@@ -123,9 +123,18 @@ export class IOSNativeWindow extends NativeWindow {
 			return this._getOrientationValue(NativeScriptEmbedder.sharedInstance().windowScene?.interfaceOrientation);
 		}
 		if (this._scene) {
-			return this._getOrientationValue(this._scene.interfaceOrientation);
+			return this._getOrientationValue(this._scene.effectiveGeometry?.interfaceOrientation ?? this._scene.interfaceOrientation);
 		}
 		return this._getOrientationValue(UIApplication.sharedApplication.statusBarOrientation);
+	}
+
+	/**
+	 * @internal – re-reads the native orientation and raises `orientationChanged` if it moved.
+	 */
+	_syncOrientation(): void {
+		if (this.state === 'attached') {
+			this._setOrientation(this._getOrientation());
+		}
 	}
 
 	protected _getSystemAppearance(): 'light' | 'dark' | null {
