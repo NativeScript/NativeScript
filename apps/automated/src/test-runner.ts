@@ -321,6 +321,7 @@ const testsWithLongDelay = {
 	test_ChainingAnimations: 30 * 1000,
 	test_AnimatingProperties: 30 * 1000,
 	test_AnimateBackgroundColor_FromString: 10 * 1000,
+	test_back_after_activity_recreation: 20 * 1000,
 };
 
 let startTime;

@@ -63,7 +63,7 @@ export function test_percent_margin_set_to_page_support() {
 	TKUnit.assertTrue(PercentLength.equals(currentPage.marginBottom, 0));
 }
 
-export async function test_back_after_activity_recreation() {
+export function test_back_after_activity_recreation(done: (error?: Error) => void) {
 	const frame = Frame.topmost();
 	frame.navigate({ create: () => new Page(), clearHistory: true, animated: false });
 	TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), 15);
@@ -72,12 +72,24 @@ export async function test_back_after_activity_recreation() {
 	TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), 15);
 	const activity = frame.android.activity;
 	activity.recreate();
-	const deadline = Date.now() + 15000;
-	while (frame.android.activity === activity || !frame.isLoaded || !frame.currentPage.isLoaded) {
-		TKUnit.assertTrue(Date.now() < deadline, 'Activity recreated and Frame loaded');
-		await new Promise((resolve) => setTimeout(resolve, 100));
-	}
-	frame.goBack();
-	TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), 15);
-	TKUnit.assertEqual(frame.currentPage, previous, 'Back resumes after early native attachment');
+
+	const deadline = Date.now() + 10000;
+	let wentBack = false;
+	const poll = () => {
+		try {
+			if (!wentBack && frame.android.activity !== activity && frame.isLoaded && frame.currentPage.isLoaded) {
+				wentBack = true;
+				frame.goBack();
+			} else if (wentBack && frame.navigationQueueIsEmpty()) {
+				TKUnit.assertEqual(frame.currentPage, previous, 'Back resumes after early native attachment');
+				done();
+				return;
+			}
+			TKUnit.assertTrue(Date.now() < deadline, wentBack ? 'Back navigation stalled after Activity recreation' : 'Activity recreated and Frame loaded');
+			setTimeout(poll, 50);
+		} catch (e) {
+			done(e);
+		}
+	};
+	setTimeout(poll, 50);
 }
