@@ -9,6 +9,7 @@ import type { Platform } from '../../../helpers/platform-types.js';
 import { createNativeClassEsbuildPlugin } from '../../../helpers/nativeclass-esbuild-plugin.js';
 import { getGlobalDefines } from '../../../helpers/global-defines.js';
 import { createVendorEsbuildPlugin, createSolidJsxEsbuildPlugin, angularLinkerEsbuildPlugin, createUnicodeRegexEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin, createNodeBuiltinPolyfillEsbuildPlugin, createOptionalDependencyStubEsbuildPlugin, createNativeAddonStubEsbuildPlugin } from './vendor-esbuild-plugins.js';
+import { builtinModulesEsbuildPlugin } from '../../../helpers/builtin-modules.js';
 
 interface VendorManifestModuleEntry {
 	id: string;
@@ -315,6 +316,7 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	};
 
 	const plugins: esbuild.Plugin[] = [
+		builtinModulesEsbuildPlugin(),
 		// Mark @nativescript/core external BEFORE other plugins so esbuild never
 		// tries to read/transform core's source files. See comment above.
 		nsCoreExternalPlugin,

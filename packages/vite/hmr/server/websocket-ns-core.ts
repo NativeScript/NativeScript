@@ -10,6 +10,7 @@ import { parseCoreBridgeRequest, resolveRuntimeCoreModulePath, collectStaticExpo
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { getServerOrigin } from './server-origin.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
+import { unwrapBuiltinModuleIds } from '../../helpers/builtin-modules.js';
 import { CORE_BUNDLE_PATH, buildCoreMainShimCode, buildCoreSubShimCode, getSharedCoreBundleService, isCorePerModuleServingEnabled, isExpectedCoreBundleExclusion, type CoreBundleService } from './core-bundle.js';
 
 type SharedTransformRequestFn = (url: string, timeoutMs?: number) => Promise<TransformResult | null>;
@@ -262,7 +263,7 @@ export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCo
 			const __rawSubForRel = String(normalizedSub || sub || '').replace(/^\/+|\/+$/g, '');
 			const __isDirIndex = isDirectoryIndexFilename(modulePath || '');
 			const __relBase: RelativeBase = { sub: __rawSubForRel, isDirectoryIndex: __isDirIndex };
-			let rewritten = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(options.getGraphVersion() || 0), __relBase);
+			let rewritten = rewriteSpecifiersForDevice(unwrapBuiltinModuleIds(transformed.code), getServerOrigin(server), Number(options.getGraphVersion() || 0), __relBase);
 
 			// Invariant D (CJS/ESM interop shape) — EXPORT-SIDE fix.
 			//

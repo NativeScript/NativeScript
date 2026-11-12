@@ -10,6 +10,13 @@ vi.mock('../../../server/websocket-hot-update.js', () => ({
 	runHotUpdatePrologue: vi.fn(),
 }));
 
+// A root with no solid-js installed, so importMapEntries takes the legacy-layout
+// fallback regardless of what the workspace has installed.
+vi.mock('../../../../helpers/project.js', async (importOriginal) => ({
+	...(await importOriginal<typeof import('../../../../helpers/project.js')>()),
+	getProjectRootPath: vi.fn(() => '/nonexistent-ns-solid-project'),
+}));
+
 const SOLID_REFRESH_ID = '/node_modules/@solid-refresh/dist/solid-refresh.mjs';
 
 // A representative slice of the vendored `@solid-refresh` runtime carrying each
@@ -69,7 +76,7 @@ describe('solidServerStrategy.transformNodeModule (@solid-refresh patch)', () =>
 });
 
 describe('solidServerStrategy.importMapEntries', () => {
-	it('pins solid-js to the canonical HTTP dev.js URL so vendor + HTTP imports dedupe', () => {
+	it('pins solid-js to the canonical HTTP dev-build URL so vendor + HTTP imports dedupe', () => {
 		expect(solidServerStrategy.importMapEntries!('http://localhost:5173')).toEqual({
 			'solid-js': 'http://localhost:5173/ns/m/node_modules/solid-js/dist/dev.js',
 		});

@@ -11,6 +11,7 @@ import { buildCoreUrl, buildCoreUrlPath } from '../../helpers/ns-core-url.js';
 import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } from '../frameworks/angular/server/websocket-angular-entry.js';
 import { isNativeScriptCoreModule, isNativeScriptPluginModule, normalizeNativeScriptCoreSpecifier, normalizeNodeModulesSpecifier, resolveNodeModulesPackageBoundary, resolveVendorRouting, rewriteFsAbsoluteToNsM, shouldPreserveBareRuntimePluginSubpathImport } from './websocket-module-specifiers.js';
 import { ensureDynamicHmrImportHelper } from './websocket-served-module-helpers.js';
+import { getSolidDevEntryNsmPath, isSolidRuntimePackage } from '../../helpers/solid-runtime.js';
 import { collectMixedRuntimePluginHttpRootPackages, findDependencyFileName, getProjectRelativeImportPath, isApplicationImport, normalizeImportPath, stripToProjectRelative, toAppModuleBaseId, toNodeModulesHttpModuleId } from './device-transform-helpers.js';
 
 const APP_ROOT_DIR = getProjectAppPath();
@@ -498,7 +499,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 				// `solid-js` is a hard singleton for the Solid flavor: it is kept
 				// OUT of the vendor bundle (manifest-collect.ts) and pinned by the
 				// framework strategy's import map to the canonical DEV build URL
-				// `/ns/m/node_modules/solid-js/dist/dev.js` (see
+				// `/ns/m/node_modules/solid-js/<dev entry>` (see
 				// frameworks/solid/server/strategy.ts → importMapEntries). App code
 				// (resolve.alias in configuration/solid.ts) and vendor code
 				// (externalized `import 'solid-js'` → import map) both converge on
@@ -511,7 +512,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 				// falls through to the generic `/ns/m/node_modules/solid-js`
 				// package-ROOT URL, which is wrong twice over:
 				//   1. It is a DIFFERENT URL string than the canonical
-				//      `…/solid-js/dist/dev.js` every other importer uses. V8 keys
+				//      `…/solid-js/<dev entry>` every other importer uses. V8 keys
 				//      ESM module records by URL, so the reactive core evaluates a
 				//      SECOND time → "You appear to have multiple instances of
 				//      Solid" + a dead second reactive graph.
@@ -525,7 +526,12 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 				// root internally, which also lands here. Reached only after the
 				// bare-vendor-routing block above, so a non-Solid project that
 				// genuinely vendors solid-js is already handled and never gets here.
-				const httpSpec = spec === 'solid-js' ? `/ns/m/node_modules/solid-js/dist/dev.js` : `/ns/m/node_modules/${spec}`;
+				//
+				// The other Solid runtime roots (@solidjs/signals, …) pin to their
+				// dev builds for the same reason: the package-root URL resolves to
+				// the prod build, which cannot pair with solid-js's dev build.
+				const solidDevPath = isSolidRuntimePackage(spec) ? getSolidDevEntryNsmPath(spec, projectRoot) : null;
+				const httpSpec = solidDevPath ?? `/ns/m/node_modules/${spec}`;
 				if (httpOriginSafe) {
 					return `${prefix}${httpOriginSafe}${httpSpec}${suffix}`;
 				}

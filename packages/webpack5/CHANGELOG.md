@@ -1,3 +1,23 @@
+## 5.0.41 (2026-11-10)
+
+### 🩹 Fixes
+
+- **webpack:** find ExternalModuleFactoryPlugin where webpack 5.112 moved it ([#11633](https://github.com/NativeScript/NativeScript/pull/11633))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
+## 5.0.40 (2026-11-09)
+
+### 🚀 Features
+
+- **webpack,vite:** keep ns: builtin module imports for the runtime  [skip ci] ([#11626](https://github.com/NativeScript/NativeScript/pull/11626))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
 ## 5.0.39 (2026-10-16)
 
 ### 🩹 Fixes
