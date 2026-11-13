@@ -1,5 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import { PercentLength, unsetValue, Frame } from '@nativescript/core';
+import { PercentLength, unsetValue, Frame, Page } from '@nativescript/core';
 export * from './frame-tests-common';
 
 export function test_percent_width_and_height_set_to_page_support() {
@@ -61,4 +61,35 @@ export function test_percent_margin_set_to_page_support() {
 	TKUnit.assertTrue(PercentLength.equals(currentPage.marginTop, 0));
 	TKUnit.assertTrue(PercentLength.equals(currentPage.marginRight, 0));
 	TKUnit.assertTrue(PercentLength.equals(currentPage.marginBottom, 0));
+}
+
+export function test_back_after_activity_recreation(done: (error?: Error) => void) {
+	const frame = Frame.topmost();
+	frame.navigate({ create: () => new Page(), clearHistory: true, animated: false });
+	TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), 15);
+	const previous = frame.currentPage;
+	frame.navigate({ create: () => new Page(), animated: false });
+	TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), 15);
+	const activity = frame.android.activity;
+	activity.recreate();
+
+	const deadline = Date.now() + 10000;
+	let wentBack = false;
+	const poll = () => {
+		try {
+			if (!wentBack && frame.android.activity !== activity && frame.isLoaded && frame.currentPage.isLoaded) {
+				wentBack = true;
+				frame.goBack();
+			} else if (wentBack && frame.navigationQueueIsEmpty()) {
+				TKUnit.assertEqual(frame.currentPage, previous, 'Back resumes after early native attachment');
+				done();
+				return;
+			}
+			TKUnit.assertTrue(Date.now() < deadline, wentBack ? 'Back navigation stalled after Activity recreation' : 'Activity recreated and Frame loaded');
+			setTimeout(poll, 50);
+		} catch (e) {
+			done(e);
+		}
+	};
+	setTimeout(poll, 50);
 }
