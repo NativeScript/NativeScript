@@ -26,6 +26,11 @@ export type VisionHoverOptions = {
 	shapeCornerRadius?: number;
 };
 
+// What TouchManager.addAnimations has already wired, so repeated calls for a view add nothing twice.
+const viewsWithTouchListeners = new WeakSet<View>();
+const viewsWithControlTarget = new WeakSet<View>();
+const viewsWithDisposeHook = new WeakSet<View>();
+
 /**
  * Manage interactivity in your apps easily with TouchManager.
  * Store reusable down/up animation settings for touches as well as optionally enable automatic tap (down/up) animations for your app.
@@ -84,92 +89,107 @@ export class TouchManager {
 		const handleDown = (view?.touchAnimation && (<TouchAnimationOptions>view?.touchAnimation).down) || (TouchManager.animations && TouchManager.animations.down);
 		const handleUp = (view?.touchAnimation && (<TouchAnimationOptions>view?.touchAnimation).up) || (TouchManager.animations && TouchManager.animations.up);
 
+		// View.onLoaded calls this on every load, not only the first one. The listeners live on the
+		// view and the control target lives on its native view, so each is added once per owner:
+		// adding them again would stack recognizers and handlers on the same view.
+		const addListeners = !!(handleDown || handleUp) && !viewsWithTouchListeners.has(view);
+		if (addListeners) {
+			viewsWithTouchListeners.add(view);
+		}
+
 		if (__APPLE__) {
 			if (view?.ios?.addTargetActionForControlEvents) {
-				// can use UIControlEvents
-				if (!TouchManager.touchHandlers) {
-					TouchManager.touchHandlers = [];
-				}
-				TouchManager.touchHandlers.push({
-					view,
-					handler: TouchControlHandler.initWithOwner(new WeakRef(view)),
-				});
+				if (!viewsWithControlTarget.has(view)) {
+					viewsWithControlTarget.add(view);
+					// can use UIControlEvents
+					if (!TouchManager.touchHandlers) {
+						TouchManager.touchHandlers = [];
+					}
+					const handler = TouchControlHandler.initWithOwner(new WeakRef(view));
+					TouchManager.touchHandlers.push({ view, handler });
 
-				if (handleDown) {
-					(<UIControl>view.ios).addTargetActionForControlEvents(TouchManager.touchHandlers[TouchManager.touchHandlers.length - 1].handler, GestureEvents.touchDown, UIControlEvents.TouchDown | UIControlEvents.TouchDragEnter);
+					if (handleDown) {
+						(<UIControl>view.ios).addTargetActionForControlEvents(handler, GestureEvents.touchDown, UIControlEvents.TouchDown | UIControlEvents.TouchDragEnter);
+					}
+					if (handleUp) {
+						(<UIControl>view.ios).addTargetActionForControlEvents(handler, GestureEvents.touchUp, UIControlEvents.TouchDragExit | UIControlEvents.TouchCancel | UIControlEvents.TouchUpInside | UIControlEvents.TouchUpOutside);
+					}
+				}
+
+				if (addListeners && handleDown) {
 					view.on(GestureEvents.touchDown, (args) => {
 						TouchManager.startAnimationForType(view, TouchAnimationTypes.down);
 					});
 				}
-				if (handleUp) {
-					(<UIControl>view.ios).addTargetActionForControlEvents(TouchManager.touchHandlers[TouchManager.touchHandlers.length - 1].handler, GestureEvents.touchUp, UIControlEvents.TouchDragExit | UIControlEvents.TouchCancel | UIControlEvents.TouchUpInside | UIControlEvents.TouchUpOutside);
+				if (addListeners && handleUp) {
 					view.on(GestureEvents.touchUp, (args) => {
 						TouchManager.startAnimationForType(view, TouchAnimationTypes.up);
 					});
 				}
-			} else {
-				if (handleDown || handleUp) {
-					view.on(GestureEvents.gestureAttached, (args: GestureEventData) => {
-						if (args.type === GestureTypes.longPress) {
-							(<UILongPressGestureRecognizer>args.ios).minimumPressDuration = (<View>args.object)?.touchDelay || 0;
-						}
-					});
-					view.on(GestureTypes[GestureTypes.longPress], (args: GestureEventDataWithState) => {
-						switch (args.state) {
-							case GestureStateTypes.began:
-								if (handleDown) {
-									TouchManager.startAnimationForType(<View>args.view, TouchAnimationTypes.down);
-								}
-								break;
-							case GestureStateTypes.cancelled:
-							case GestureStateTypes.ended:
-								if (handleUp) {
-									TouchManager.startAnimationForType(<View>args.view, TouchAnimationTypes.up);
-								}
-								break;
-						}
-					});
-				}
-			}
-		} else {
-			if (handleDown || handleUp) {
-				view.on(GestureTypes[GestureTypes.touch], (args: TouchGestureEventData) => {
-					switch (args.action) {
-						case 'down':
+			} else if (addListeners) {
+				view.on(GestureEvents.gestureAttached, (args: GestureEventData) => {
+					if (args.type === GestureTypes.longPress) {
+						(<UILongPressGestureRecognizer>args.ios).minimumPressDuration = (<View>args.object)?.touchDelay || 0;
+					}
+				});
+				view.on(GestureTypes[GestureTypes.longPress], (args: GestureEventDataWithState) => {
+					switch (args.state) {
+						case GestureStateTypes.began:
 							if (handleDown) {
-								view.notify({
-									eventName: GestureEvents.touchDown,
-									object: view,
-									data: args.android,
-								});
+								TouchManager.startAnimationForType(<View>args.view, TouchAnimationTypes.down);
 							}
 							break;
-						case 'up':
-						case 'cancel':
+						case GestureStateTypes.cancelled:
+						case GestureStateTypes.ended:
 							if (handleUp) {
-								view.notify({
-									eventName: GestureEvents.touchUp,
-									object: view,
-									data: args.android,
-								});
+								TouchManager.startAnimationForType(<View>args.view, TouchAnimationTypes.up);
 							}
 							break;
 					}
 				});
-				if (handleDown) {
-					view.on(GestureEvents.touchDown, (args) => {
-						TouchManager.startAnimationForType(view, TouchAnimationTypes.down);
-					});
+			}
+		} else if (addListeners) {
+			view.on(GestureTypes[GestureTypes.touch], (args: TouchGestureEventData) => {
+				switch (args.action) {
+					case 'down':
+						if (handleDown) {
+							view.notify({
+								eventName: GestureEvents.touchDown,
+								object: view,
+								data: args.android,
+							});
+						}
+						break;
+					case 'up':
+					case 'cancel':
+						if (handleUp) {
+							view.notify({
+								eventName: GestureEvents.touchUp,
+								object: view,
+								data: args.android,
+							});
+						}
+						break;
 				}
-				if (handleUp) {
-					view.on(GestureEvents.touchUp, (args) => {
-						TouchManager.startAnimationForType(view, TouchAnimationTypes.up);
-					});
-				}
+			});
+			if (handleDown) {
+				view.on(GestureEvents.touchDown, (args) => {
+					TouchManager.startAnimationForType(view, TouchAnimationTypes.down);
+				});
+			}
+			if (handleUp) {
+				view.on(GestureEvents.touchUp, (args) => {
+					TouchManager.startAnimationForType(view, TouchAnimationTypes.up);
+				});
 			}
 		}
 
+		if (viewsWithDisposeHook.has(view)) {
+			return;
+		}
+		viewsWithDisposeHook.add(view);
 		view.on('disposeNativeView', (args) => {
+			viewsWithControlTarget.delete(<View>args.object);
 			const index = TouchManager.touchHandlers?.findIndex((handler) => handler.view === args.object);
 			if (index > -1) {
 				TouchManager.touchHandlers.splice(index, 1);
