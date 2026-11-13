@@ -1,3 +1,46 @@
+## 9.1.4 (2026-11-13)
+
+### 🚀 Features
+
+- **core:** CSS Color 4 and 5 color functions ([#11532](https://github.com/NativeScript/NativeScript/pull/11532))
+- **core:** rem lengths ([#11533](https://github.com/NativeScript/NativeScript/pull/11533))
+
+### 🩹 Fixes
+
+- **android:** resume Frame navigation after early Activity attachment ([#11640](https://github.com/NativeScript/NativeScript/pull/11640))
+- **android/application:** open windows after the original activity finishes ([#11552](https://github.com/NativeScript/NativeScript/pull/11552))
+- **ios:** preserve lazy controller loading during layout invalidation ([#11587](https://github.com/NativeScript/NativeScript/pull/11587))
+- **core:** a `not` media query negates the whole query ([#11594](https://github.com/NativeScript/NativeScript/pull/11594))
+- **ios:** raise orientationChanged from scene geometry updates ([#11638](https://github.com/NativeScript/NativeScript/pull/11638))
+- **ios:** preserve native content Back for default Frame navigation ([#11590](https://github.com/NativeScript/NativeScript/pull/11590))
+- **transition:** prevent circular refs on TransitionListener ([#11136](https://github.com/NativeScript/NativeScript/pull/11136))
+- **core:** keyframes without a 0% or 100% keyframe animate from and to the view's own values ([#11528](https://github.com/NativeScript/NativeScript/pull/11528))
+- **core:** expand CSS shorthands registered after the stylesheet was parsed ([#11553](https://github.com/NativeScript/NativeScript/pull/11553))
+- **core:** unresolved var() unsets the whole value and invalid color-mix() no longer renders white ([#11593](https://github.com/NativeScript/NativeScript/pull/11593))
+- **core:** resolve var() in css animations and keyframes per view ([#11534](https://github.com/NativeScript/NativeScript/pull/11534))
+- **core:** css var() fallbacks, order-independent custom properties, and no crash on unresolvable ones ([#11527](https://github.com/NativeScript/NativeScript/pull/11527))
+- **android:** create prompt and login inputs from the dialog context ([#11582](https://github.com/NativeScript/NativeScript/pull/11582), [#11068](https://github.com/NativeScript/NativeScript/issues/11068))
+- **core:** TextDecoder decodes only the bytes of a typed array view ([#11578](https://github.com/NativeScript/NativeScript/pull/11578), [#9941](https://github.com/NativeScript/NativeScript/issues/9941))
+- **core:** split className on any whitespace ([#11577](https://github.com/NativeScript/NativeScript/pull/11577), [#9402](https://github.com/NativeScript/NativeScript/issues/9402))
+- **http:** report the real method and body to the network inspector ([#11574](https://github.com/NativeScript/NativeScript/pull/11574), [#6897](https://github.com/NativeScript/NativeScript/issues/6897))
+- **android:** isRealDevice returns false on emulators ([#11575](https://github.com/NativeScript/NativeScript/pull/11575), [#9064](https://github.com/NativeScript/NativeScript/issues/9064))
+- **android:** null keyboardType shows the default text keyboard ([#11576](https://github.com/NativeScript/NativeScript/pull/11576), [#9194](https://github.com/NativeScript/NativeScript/issues/9194))
+- **ios:** skip Switch color updates without a native view ([#11579](https://github.com/NativeScript/NativeScript/pull/11579), [#10101](https://github.com/NativeScript/NativeScript/issues/10101))
+- **core:** appearance APIs before app start, replaceable Android handlers, explicit systemAppearanceChanged() ([#11537](https://github.com/NativeScript/NativeScript/pull/11537))
+- **core:** make background: none clear the background color ([#11536](https://github.com/NativeScript/NativeScript/pull/11536))
+- **core:** restore the css value when a local style value is reset ([#11520](https://github.com/NativeScript/NativeScript/pull/11520))
+- **core:** iOS scrollableHeight and scrollableWidth include the end content inset ([#11548](https://github.com/NativeScript/NativeScript/pull/11548))
+- **ios:** measure padded LiquidGlass content inside its padding ([#11562](https://github.com/NativeScript/NativeScript/pull/11562))
+- **ios:** deliver launch urls, activities and quick actions to scene apps ([#11518](https://github.com/NativeScript/NativeScript/pull/11518))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+- Eduardo Speroni @edusperoni
+- Nathan Walker
+- Osei Fortune @triniwiz
+- Rafael Augusto @rafaelaugustos
+
 ## 9.1.3 (2026-10-06)
 
 ### 🚀 Features
