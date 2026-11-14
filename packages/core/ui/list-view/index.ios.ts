@@ -936,7 +936,7 @@ export class ListView extends ListViewBase {
 		const view: ItemView = cell.view;
 		// ListView does not detach its children's native views, and nativeViewProtected is gone after _removeView.
 		const root = view.parent instanceof ListView ? view : view.parent;
-		(<UIView>root.nativeViewProtected)?.removeFromSuperview();
+		(root.nativeViewProtected as UIView)?.removeFromSuperview();
 
 		// This is to clear the StackLayout that is used to wrap ProxyViewContainer instances.
 		if (!(view.parent instanceof ListView)) {
