@@ -4,7 +4,7 @@
 	"compilerOptions": {
 		"diagnostics": false,
 		"paths": {
-			"~/*": ["src/*"]
+			"~/*": ["./src/*"]
 		}
 	}
 }

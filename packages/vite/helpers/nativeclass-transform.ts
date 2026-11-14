@@ -136,6 +136,7 @@ export function transformNativeClassSource(code: string, fileName: string) {
 					const original = working.slice(fullStart, node.end);
 					const stripped = original.replace(/\/\*__NativeClass__\*\/\s*/g, '').replace(/^\s*@NativeClass(?:\([\s\S]*?\))?\s*$/gm, '');
 					const hadExport = /^\s*export\s+class\b/.test(stripped);
+					// TS 6+ emits a "use strict" prologue for snippets without imports/exports; it must not be spliced into the host file.
 					const down = ts
 						.transpileModule(stripped, {
 							compilerOptions: {
@@ -147,7 +148,8 @@ export function transformNativeClassSource(code: string, fileName: string) {
 								useDefineForClassFields: false,
 							},
 						})
-						.outputText.replace(/enumerable:\s*false/g, 'enumerable: true');
+						.outputText.replace(/^\s*(['"])use strict\1;?\s*/, '')
+						.replace(/enumerable:\s*false/g, 'enumerable: true');
 					let cleaned = down.replace(/export \{\};?\s*$/m, '');
 					if (hadExport) {
 						const name = (node as TS.ClassDeclaration).name?.text;

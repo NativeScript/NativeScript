@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"rootDir": ".",
-		"baseUrl": ".",
+		"strict": false,
 		"target": "es2018",
 		"module": "commonjs",
 		"declaration": true,
@@ -13,11 +13,12 @@
 		"skipDefaultLibCheck": true,
 		"diagnostics": true,
 		"paths": {
-			"@nativescript/webpack": ["src"]
+			"@nativescript/webpack": ["./src"]
 		},
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
-		"stripInternal": true
+		"stripInternal": true,
+		"types": ["node", "jest"]
 	},
 	"include": ["src", "scripts", "__tests__"],
 	"exclude": ["node_modules"]
