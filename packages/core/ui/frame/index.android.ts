@@ -885,7 +885,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 	@profile
 	public onSaveInstanceState(activity: androidx.appcompat.app.AppCompatActivity, outState: android.os.Bundle, superFunc: Function): void {
 		superFunc.call(activity, outState);
-		const rootView = this._rootView;
+		const rootView = this.getRootViewShownBy(activity);
 		if (rootView instanceof Frame) {
 			outState.putInt(INTENT_EXTRA, rootView.android.frameId);
 			rootView._saveFragmentsState();
@@ -930,6 +930,10 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 
 		const rootView = this._rootView;
+		if (rootView && rootView._context !== activity && !isEmbedded()) {
+			this.setActivityContent(activity, null, false);
+		}
+
 		if (rootView && !rootView.isLoaded && !isEmbedded()) {
 			rootView.callLoaded();
 		}
@@ -943,7 +947,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			Trace.write('NativeScriptActivity.onStop();', Trace.categories.NativeLifecycle);
 		}
 
-		const rootView = this._rootView;
+		const rootView = this.getRootViewShownBy(activity);
 		if (rootView && rootView.isLoaded && !isEmbedded()) {
 			rootView.callUnloaded();
 		}
@@ -974,7 +978,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 				Trace.write('NativeScriptActivity.onDestroy();', Trace.categories.NativeLifecycle);
 			}
 
-			const rootView = this._rootView;
+			const rootView = this.getRootViewShownBy(activity);
 			if (rootView) {
 				rootView._tearDownUI(true);
 			}
@@ -1092,6 +1096,10 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		Application.android.notify(resultArgs);
 	}
 
+	private getRootViewShownBy(activity: any): View | undefined {
+		return this._rootView?._context === activity ? this._rootView : undefined;
+	}
+
 	public resetActivityContent(activity: androidx.appcompat.app.AppCompatActivity, view?: View): void {
 		if (this._rootView) {
 			const manager = this._rootView._getFragmentManager();
@@ -1163,6 +1171,10 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 
 		activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
+
+		if (rootView.isLoaded && rootView._context !== activity && !isEmbedded()) {
+			rootView.callUnloaded();
+		}
 
 		// setup view as styleScopeHost
 		rootView._setupAsRootView(activity);
