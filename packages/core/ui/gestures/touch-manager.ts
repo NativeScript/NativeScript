@@ -27,6 +27,34 @@ export type VisionHoverOptions = {
 };
 
 /**
+ * What TouchManager.addAnimations has wired for a view. Kept on the view, so it lives exactly as long as the view does.
+ */
+const touchState = Symbol('touchState');
+type TouchState = {
+	/** The down animation is hooked to the view's touchDown event. */
+	down?: boolean;
+	/** The up animation is hooked to the view's touchUp event. */
+	up?: boolean;
+	/** The gesture that raises touchDown/touchUp is attached: touch on Android, long press on iOS views that are not a UIControl. */
+	gesture?: boolean;
+	/** Target of the UIControl events. Held here because a UIControl does not retain its targets. */
+	handler?: any /* TouchControlHandler */;
+	/** The handler is registered with the current native view for down. */
+	nativeDown?: boolean;
+	/** The handler is registered with the current native view for up. */
+	nativeUp?: boolean;
+	disposeHook?: boolean;
+};
+
+function getTouchState(view: View): TouchState {
+	const holder = view as unknown as { [touchState]?: TouchState };
+	if (!holder[touchState]) {
+		holder[touchState] = {};
+	}
+	return holder[touchState];
+}
+
+/**
  * Manage interactivity in your apps easily with TouchManager.
  * Store reusable down/up animation settings for touches as well as optionally enable automatic tap (down/up) animations for your app.
  */
@@ -66,8 +94,7 @@ export class TouchManager {
 	// }
 	static animations: TouchAnimationOptions;
 	/**
-	 * Native Touch handlers (iOS only) registered with the view through the TouchManager.
-	 * The TouchManager uses this internally but makes public for other versatility if needed.
+	 * @deprecated No longer populated. The native touch handler (iOS only) is kept with its view and released with it.
 	 */
 	static touchHandlers: Array<{ view: View; handler: any /* UIGestureRecognizer */ }>;
 	/**
@@ -84,59 +111,74 @@ export class TouchManager {
 		const handleDown = (view?.touchAnimation && (<TouchAnimationOptions>view?.touchAnimation).down) || (TouchManager.animations && TouchManager.animations.down);
 		const handleUp = (view?.touchAnimation && (<TouchAnimationOptions>view?.touchAnimation).up) || (TouchManager.animations && TouchManager.animations.up);
 
+		// View.onLoaded calls this on every load, not only the first one, and a view can gain a
+		// direction between two loads. Down and up are tracked separately so each is wired once:
+		// the listeners per view, the control target per native view.
+		const state = getTouchState(view);
+		const wireDown = !!handleDown && !state.down;
+		const wireUp = !!handleUp && !state.up;
+		if (wireDown) {
+			state.down = true;
+		}
+		if (wireUp) {
+			state.up = true;
+		}
+
 		if (__APPLE__) {
 			if (view?.ios?.addTargetActionForControlEvents) {
 				// can use UIControlEvents
-				if (!TouchManager.touchHandlers) {
-					TouchManager.touchHandlers = [];
+				if (!state.handler) {
+					state.handler = TouchControlHandler.initWithOwner(new WeakRef(view));
 				}
-				TouchManager.touchHandlers.push({
-					view,
-					handler: TouchControlHandler.initWithOwner(new WeakRef(view)),
-				});
+				if (handleDown && !state.nativeDown) {
+					state.nativeDown = true;
+					(<UIControl>view.ios).addTargetActionForControlEvents(state.handler, GestureEvents.touchDown, UIControlEvents.TouchDown | UIControlEvents.TouchDragEnter);
+				}
+				if (handleUp && !state.nativeUp) {
+					state.nativeUp = true;
+					(<UIControl>view.ios).addTargetActionForControlEvents(state.handler, GestureEvents.touchUp, UIControlEvents.TouchDragExit | UIControlEvents.TouchCancel | UIControlEvents.TouchUpInside | UIControlEvents.TouchUpOutside);
+				}
 
-				if (handleDown) {
-					(<UIControl>view.ios).addTargetActionForControlEvents(TouchManager.touchHandlers[TouchManager.touchHandlers.length - 1].handler, GestureEvents.touchDown, UIControlEvents.TouchDown | UIControlEvents.TouchDragEnter);
+				if (wireDown) {
 					view.on(GestureEvents.touchDown, (args) => {
 						TouchManager.startAnimationForType(view, TouchAnimationTypes.down);
 					});
 				}
-				if (handleUp) {
-					(<UIControl>view.ios).addTargetActionForControlEvents(TouchManager.touchHandlers[TouchManager.touchHandlers.length - 1].handler, GestureEvents.touchUp, UIControlEvents.TouchDragExit | UIControlEvents.TouchCancel | UIControlEvents.TouchUpInside | UIControlEvents.TouchUpOutside);
+				if (wireUp) {
 					view.on(GestureEvents.touchUp, (args) => {
 						TouchManager.startAnimationForType(view, TouchAnimationTypes.up);
 					});
 				}
-			} else {
-				if (handleDown || handleUp) {
-					view.on(GestureEvents.gestureAttached, (args: GestureEventData) => {
-						if (args.type === GestureTypes.longPress) {
-							(<UILongPressGestureRecognizer>args.ios).minimumPressDuration = (<View>args.object)?.touchDelay || 0;
-						}
-					});
-					view.on(GestureTypes[GestureTypes.longPress], (args: GestureEventDataWithState) => {
-						switch (args.state) {
-							case GestureStateTypes.began:
-								if (handleDown) {
-									TouchManager.startAnimationForType(<View>args.view, TouchAnimationTypes.down);
-								}
-								break;
-							case GestureStateTypes.cancelled:
-							case GestureStateTypes.ended:
-								if (handleUp) {
-									TouchManager.startAnimationForType(<View>args.view, TouchAnimationTypes.up);
-								}
-								break;
-						}
-					});
-				}
+			} else if ((state.down || state.up) && !state.gesture) {
+				state.gesture = true;
+				view.on(GestureEvents.gestureAttached, (args: GestureEventData) => {
+					if (args.type === GestureTypes.longPress) {
+						(<UILongPressGestureRecognizer>args.ios).minimumPressDuration = (<View>args.object)?.touchDelay || 0;
+					}
+				});
+				view.on(GestureTypes[GestureTypes.longPress], (args: GestureEventDataWithState) => {
+					switch (args.state) {
+						case GestureStateTypes.began:
+							if (state.down) {
+								TouchManager.startAnimationForType(<View>args.view, TouchAnimationTypes.down);
+							}
+							break;
+						case GestureStateTypes.cancelled:
+						case GestureStateTypes.ended:
+							if (state.up) {
+								TouchManager.startAnimationForType(<View>args.view, TouchAnimationTypes.up);
+							}
+							break;
+					}
+				});
 			}
 		} else {
-			if (handleDown || handleUp) {
+			if ((state.down || state.up) && !state.gesture) {
+				state.gesture = true;
 				view.on(GestureTypes[GestureTypes.touch], (args: TouchGestureEventData) => {
 					switch (args.action) {
 						case 'down':
-							if (handleDown) {
+							if (state.down) {
 								view.notify({
 									eventName: GestureEvents.touchDown,
 									object: view,
@@ -146,7 +188,7 @@ export class TouchManager {
 							break;
 						case 'up':
 						case 'cancel':
-							if (handleUp) {
+							if (state.up) {
 								view.notify({
 									eventName: GestureEvents.touchUp,
 									object: view,
@@ -156,24 +198,28 @@ export class TouchManager {
 							break;
 					}
 				});
-				if (handleDown) {
-					view.on(GestureEvents.touchDown, (args) => {
-						TouchManager.startAnimationForType(view, TouchAnimationTypes.down);
-					});
-				}
-				if (handleUp) {
-					view.on(GestureEvents.touchUp, (args) => {
-						TouchManager.startAnimationForType(view, TouchAnimationTypes.up);
-					});
-				}
+			}
+			if (wireDown) {
+				view.on(GestureEvents.touchDown, (args) => {
+					TouchManager.startAnimationForType(view, TouchAnimationTypes.down);
+				});
+			}
+			if (wireUp) {
+				view.on(GestureEvents.touchUp, (args) => {
+					TouchManager.startAnimationForType(view, TouchAnimationTypes.up);
+				});
 			}
 		}
 
+		if (state.disposeHook) {
+			return;
+		}
+		state.disposeHook = true;
 		view.on('disposeNativeView', (args) => {
-			const index = TouchManager.touchHandlers?.findIndex((handler) => handler.view === args.object);
-			if (index > -1) {
-				TouchManager.touchHandlers.splice(index, 1);
-			}
+			// The handler and its registrations belong to the native view that is going away.
+			state.handler = undefined;
+			state.nativeDown = false;
+			state.nativeUp = false;
 			TouchManager.touchAnimationDefinitions = TouchManager.touchAnimationDefinitions?.filter((d) => d.view !== args.object);
 		});
 	}
