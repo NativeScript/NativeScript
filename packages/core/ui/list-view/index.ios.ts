@@ -66,7 +66,7 @@ class ListViewCell extends UITableViewCell {
 		// UIKit can put a cell back into the table without asking for it in tableView:cellForRowAtIndexPath:.
 		const listView = this.listView?.deref();
 		if (this.superview && listView && !listView._hasCellContent(this)) {
-			const indexPath = (<UITableView>listView.nativeViewProtected)?.indexPathForCell(this);
+			const indexPath = (listView.nativeViewProtected as UITableView)?.indexPathForCell(this);
 			if (indexPath) {
 				listView._prepareCellForDisplay(this, indexPath);
 			}
