@@ -14,6 +14,9 @@ import { Length } from '../ui/styling/length-shared';
 const RE_MEDIA_QUERY = /^(?:(only|not)?\s*([_a-z][_a-z0-9-]*)|(\([^\)]+\)))(?:\s*and\s*(.*))?$/i,
 	RE_MQ_EXPRESSION = /^\(\s*([_a-z-][_a-z0-9-]*)\s*(?:\:\s*([^\)]+))?\s*\)$/,
 	RE_MQ_FEATURE = /^(?:(min|max)-)?(.+)/,
+	RE_MQ_RANGE_OPERATOR = /\s*(<=|>=|<|>|=)\s*/,
+	RE_MQ_NAME = /^[_a-z-][_a-z0-9-]*$/i,
+	RE_FONT_RELATIVE_LENGTH = /^(-?\d*\.?\d+)\s*r?em$/i,
 	RE_LENGTH_UNIT = /(em|rem|px|cm|mm|in|pt|pc)?\s*$/,
 	RE_RESOLUTION_UNIT = /(dpi|dpcm|dppx)?\s*$/;
 
@@ -92,7 +95,7 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 						case 'height':
 						case 'device-width':
 						case 'device-height': {
-							numVal = Length.toDevicePixels(Length.parse(feature.value), 0);
+							numVal = lengthToDevicePixels(feature.value);
 							break;
 						}
 						default:
@@ -105,6 +108,10 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 							return value >= numVal;
 						case 'max':
 							return value <= numVal;
+						case 'gt':
+							return value > numVal;
+						case 'lt':
+							return value < numVal;
 						default:
 							return value === numVal;
 					}
@@ -157,9 +164,16 @@ export function parseQuery(mediaQuery: string): MediaQueryExpression[] {
 		for (const feature of features) {
 			const captures = feature.match(RE_MQ_EXPRESSION);
 
-			// Media query must be valid
 			if (!captures) {
-				throw new SyntaxError(`Invalid CSS media query feature: '${feature}' on '${query}'`);
+				const range = parseRangeFeature(feature);
+
+				// Media query must be valid
+				if (!range) {
+					throw new SyntaxError(`Invalid CSS media query feature: '${feature}' on '${query}'`);
+				}
+
+				expression.features.push(...range);
+				continue;
 			}
 
 			const featureData = captures[1].toLowerCase().match(RE_MQ_FEATURE);
@@ -173,4 +187,46 @@ export function parseQuery(mediaQuery: string): MediaQueryExpression[] {
 
 		return expression;
 	});
+}
+
+const RANGE_MODIFIERS = { '>=': 'min', '>': 'gt', '<=': 'max', '<': 'lt', '=': undefined };
+const FLIPPED_RANGE_OPERATORS = { '>=': '<=', '>': '<', '<=': '>=', '<': '>', '=': '=' };
+
+function parseRangeFeature(feature: string): MediaQueryFeature[] | null {
+	const parts = feature.slice(1, -1).trim().split(RE_MQ_RANGE_OPERATOR);
+	const features: MediaQueryFeature[] = [];
+	const add = (property: string, operator: string, value: string) => {
+		features.push({ modifier: RANGE_MODIFIERS[operator], property: property.toLowerCase(), value });
+	};
+
+	if (parts.length === 3) {
+		const [left, operator, right] = parts;
+		if (RE_MQ_NAME.test(left) && right) {
+			add(left, operator, right);
+		} else if (RE_MQ_NAME.test(right) && left) {
+			add(right, FLIPPED_RANGE_OPERATORS[operator], left);
+		} else {
+			return null;
+		}
+	} else if (parts.length === 5) {
+		const [first, firstOperator, name, lastOperator, last] = parts;
+		if (!RE_MQ_NAME.test(name) || !first || !last || firstOperator === '=' || firstOperator[0] !== lastOperator[0]) {
+			return null;
+		}
+		add(name, FLIPPED_RANGE_OPERATORS[firstOperator], first);
+		add(name, lastOperator, last);
+	} else {
+		return null;
+	}
+
+	return features;
+}
+
+function lengthToDevicePixels(value: string): number {
+	const fontRelative = RE_FONT_RELATIVE_LENGTH.exec(value.trim());
+	if (fontRelative) {
+		return Length.toDevicePixels(parseFloat(fontRelative[1]) * 16, 0);
+	}
+
+	return Length.toDevicePixels(Length.parse(value), 0);
 }
