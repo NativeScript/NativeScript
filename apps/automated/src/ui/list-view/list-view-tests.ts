@@ -177,6 +177,37 @@ export class ListViewTest extends UITest<ListView> {
 		}
 	}
 
+	// UIKit can take a cell out of the table and display it again without asking for it in
+	// tableView:cellForRowAtIndexPath: (constantly while an accessibility client disables cell reuse).
+	public test_cell_displayed_again_after_teardown_gets_new_content_ios() {
+		if (__APPLE__) {
+			const listView = this.testView;
+			listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+			listView.items = FEW_ITEMS;
+			this.waitUntilListViewReady();
+
+			const tableView = <UITableView>listView.ios;
+			const indexPath = NSIndexPath.indexPathForRowInSection(1, 0);
+			const cell = <any>tableView.cellForRowAtIndexPath(indexPath);
+			const tableContent = cell.superview;
+			const tornDownView = cell.view;
+			TKUnit.assertNotNull(tornDownView, 'cell has an item view');
+
+			cell.removeFromSuperview();
+			TKUnit.assertEqual(cell.contentView.subviews.count, 0, 'the torn-down item view is detached from the cell');
+			TKUnit.assertNull(cell.view, 'the cell no longer refers to the torn-down item view');
+
+			tableView.delegate.tableViewWillDisplayCellForRowAtIndexPath(tableView, cell, indexPath);
+			TKUnit.assertNull(cell.view, 'a cell outside the table is not prepared');
+
+			tableContent.addSubview(cell);
+			TKUnit.assertEqual(cell.contentView.subviews.count, 1, 'the cell has exactly one item view again');
+			TKUnit.assertNotEqual(cell.view, tornDownView, 'the torn-down item view is not re-attached');
+			TKUnit.assertEqual(cell.view.parent, listView, 'the new item view is a child of the ListView');
+			TKUnit.assertEqual((<Label>cell.view).text, 'item 1', 'the new item view shows the row');
+		}
+	}
+
 	public test_set_items_to_array_creates_native_views() {
 		var listView = this.testView;
 		listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
