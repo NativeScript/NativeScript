@@ -270,6 +270,19 @@ describe('window content resolution', () => {
 			expect(launched).toHaveBeenCalledTimes(1);
 		});
 
+		it('fires again for the next window after the app exits', () => {
+			const launched = vi.fn();
+			app.on('launch', launched);
+			const reopened = new TestWindow('window-2', true);
+
+			app._resolveWindowContent(window, request);
+			app.notify({ eventName: app.exitEvent, object: app });
+			app._resolveWindowContent(reopened, { window: reopened, isPrimary: true });
+
+			expect(launched).toHaveBeenCalledTimes(2);
+			expect(reopened.rootView).toBe(mainEntryView);
+		});
+
 		it('never fires once a resolver has answered the first window', () => {
 			const launched = vi.fn();
 			app.on('launch', launched);
