@@ -109,7 +109,7 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 	}
 
 	// @ts-ignore
-	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
+	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): this {
 		this._throwInvocationError?.();
 
 		const hasChangeListeners = this.hasListeners(MediaQueryListImpl.changeEvent);
@@ -124,10 +124,12 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 				toggleApplicationEventListeners(true, onDeviceChange);
 			}
 		}
+
+		return this;
 	}
 
 	// @ts-ignore
-	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): this {
 		this._throwInvocationError?.();
 
 		// Call super method first since it throws in the case of bad parameters
@@ -147,6 +149,8 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 				}
 			}
 		}
+
+		return this;
 	}
 
 	addListener(callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any): void {

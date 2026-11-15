@@ -39,12 +39,12 @@ export class WebView extends View {
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/webkit/WebView.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */
-	android: any /* android.webkit.WebView */;
+	android: any; /* android.webkit.WebView */
 
 	/**
 	 * Gets the native [WKWebView](https://developer.apple.com/documentation/webkit/wkwebview/) that represents the user interface for this component. Valid only when running on iOS.
 	 */
-	ios: any /* WKWebView */;
+	ios: any; /* WKWebView */
 
 	/**
 	 * Gets or sets the url, local file path or HTML string.
@@ -108,17 +108,17 @@ export class WebView extends View {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when a loadFinished event occurs.
 	 */
-	on(event: 'loadFinished', callback: (args: LoadEventData) => void, thisArg?: any): void;
+	on(event: 'loadFinished', callback: (args: LoadEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when a loadStarted event occurs.
 	 */
-	on(event: 'loadStarted', callback: (args: LoadEventData) => void, thisArg?: any): void;
+	on(event: 'loadStarted', callback: (args: LoadEventData) => void, thisArg?: any): this;
 }
 
 /**

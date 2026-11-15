@@ -30,7 +30,7 @@ export abstract class ScrollViewBase extends ContentView {
 		// iOS 26+ only; see the iOS implementation.
 	}
 
-	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
+	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): this {
 		const hasExistingScrollListeners: boolean = this.hasListeners(ScrollViewBase.scrollEvent);
 
 		super.addEventListener(eventName, callback, thisArg, once);
@@ -43,9 +43,11 @@ export abstract class ScrollViewBase extends ContentView {
 				this.attachNative();
 			}
 		}
+
+		return this;
 	}
 
-	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): this {
 		const hasExistingScrollListeners: boolean = this.hasListeners(ScrollViewBase.scrollEvent);
 
 		super.removeEventListener(eventName, callback, thisArg);
@@ -58,6 +60,8 @@ export abstract class ScrollViewBase extends ContentView {
 				this.detachNative();
 			}
 		}
+
+		return this;
 	}
 
 	initNativeView() {

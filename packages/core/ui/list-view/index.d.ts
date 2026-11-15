@@ -242,7 +242,7 @@ export class ListView extends View {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when a View for the data at the specified index should be created.
@@ -250,22 +250,22 @@ export class ListView extends View {
 	 * Note, that the view property of the event data can be pre-initialized with
 	 * an old instance of a view, so that it can be reused.
 	 */
-	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any): void;
+	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when an item inside the ListView is tapped.
 	 */
-	on(event: 'itemTap', callback: (args: ItemEventData) => void, thisArg?: any): void;
+	on(event: 'itemTap', callback: (args: ItemEventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the ListView is scrolled so that its last item is visible.
 	 */
-	on(event: 'loadMoreItems', callback: (args: EventData) => void, thisArg?: any): void;
+	on(event: 'loadMoreItems', callback: (args: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the search text in the search bar changes.
 	 */
-	on(event: 'searchChange', callback: (args: SearchEventData) => void, thisArg?: any): void;
+	on(event: 'searchChange', callback: (args: SearchEventData) => void, thisArg?: any): this;
 }
 
 /**
@@ -328,8 +328,8 @@ export interface TemplatedItemsView {
 	itemTemplate: string | Template;
 	itemTemplates?: string | Array<KeyedTemplate>;
 	refresh(): void;
-	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any): void;
-	off(event: 'itemLoading', callback: (args: EventData) => void, thisArg?: any): void;
+	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any): this;
+	off(event: 'itemLoading', callback: (args: EventData) => void, thisArg?: any): this;
 }
 
 /**

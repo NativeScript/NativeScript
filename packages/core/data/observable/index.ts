@@ -186,8 +186,10 @@ export class Observable {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	public on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public on(eventName: string, callback: (data: EventData) => void, thisArg?: any): this {
 		this.addEventListener(eventName, callback, thisArg);
+
+		return this;
 	}
 
 	/**
@@ -201,8 +203,10 @@ export class Observable {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	public once(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public once(eventName: string, callback: (data: EventData) => void, thisArg?: any): this {
 		this.addEventListener(eventName, callback, thisArg, true);
+
+		return this;
 	}
 
 	/**
@@ -214,8 +218,10 @@ export class Observable {
 	 * @param thisArg An optional parameter which, when set, will be used to
 	 * refine search of the correct event listener to be removed.
 	 */
-	public off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): this {
 		this.removeEventListener(eventName, callback, thisArg);
+
+		return this;
 	}
 
 	/**
@@ -225,7 +231,7 @@ export class Observable {
 	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
 	 * @param once An optional parameter which when set will cause the event listener to fire once.
 	 */
-	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
+	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): this {
 		once = once || undefined;
 		thisArg = thisArg || undefined;
 
@@ -240,7 +246,7 @@ export class Observable {
 		const list = this._getEventList(eventName, true);
 		if (Observable._indexOfListener(list, callback, thisArg) !== -1) {
 			// Already added.
-			return;
+			return this;
 		}
 
 		list.push({
@@ -248,6 +254,8 @@ export class Observable {
 			thisArg,
 			once,
 		});
+
+		return this;
 	}
 
 	/**
@@ -256,7 +264,7 @@ export class Observable {
 	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 */
-	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): this {
 		thisArg = thisArg || undefined;
 
 		if (typeof eventName !== 'string') {
@@ -269,7 +277,7 @@ export class Observable {
 
 		const entries = this._observers[eventName];
 		if (!entries) {
-			return;
+			return this;
 		}
 
 		Observable.innerRemoveEventListener(entries, callback, thisArg);
@@ -278,6 +286,8 @@ export class Observable {
 			// Clear all entries of this type
 			delete this._observers[eventName];
 		}
+
+		return this;
 	}
 
 	/**

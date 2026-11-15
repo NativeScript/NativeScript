@@ -26,12 +26,12 @@ export class Placeholder extends View {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (args: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (args: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when a creatingView event occurs.
 	 */
-	on(event: 'creatingView', callback: (args: CreateViewEventData) => void, thisArg?: any): void;
+	on(event: 'creatingView', callback: (args: CreateViewEventData) => void, thisArg?: any): this;
 }
 
 /**

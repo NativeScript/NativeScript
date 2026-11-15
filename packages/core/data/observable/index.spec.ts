@@ -145,6 +145,44 @@ describe('Observable', () => {
 		});
 	});
 
+	describe('returning this for chaining', () => {
+		it('on returns the observable', () => {
+			const observable = new Observable();
+			expect(observable.on('test', () => {})).toBe(observable);
+		});
+
+		it('once returns the observable', () => {
+			const observable = new Observable();
+			expect(observable.once('test', () => {})).toBe(observable);
+		});
+
+		it('off returns the observable', () => {
+			const observable = new Observable();
+			const handler = () => {};
+			observable.on('test', handler);
+			expect(observable.off('test', handler)).toBe(observable);
+		});
+
+		it('addEventListener and removeEventListener return the observable', () => {
+			const observable = new Observable();
+			const handler = () => {};
+			expect(observable.addEventListener('test', handler)).toBe(observable);
+			expect(observable.removeEventListener('test', handler)).toBe(observable);
+		});
+
+		it('chains on, once and off and still notifies the remaining listeners', () => {
+			const observable = new Observable();
+			const calls: string[] = [];
+			const first = () => calls.push('first');
+			const second = () => calls.push('second');
+			const third = () => calls.push('third');
+			observable.on('test', first).on('test', second).once('test', third).off('test', first);
+			observable.notify({ eventName: 'test', object: observable });
+			observable.notify({ eventName: 'test', object: observable });
+			expect(calls).toEqual(['second', 'third', 'second']);
+		});
+	});
+
 	describe('hasListeners', () => {
 		it('reflects listener registration and removal', () => {
 			const observable = new Observable();

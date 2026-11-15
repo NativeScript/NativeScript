@@ -89,17 +89,17 @@ export class Cache extends Observable {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	on(eventName: string, callback: (args: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (args: EventData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised when the image has been downloaded.
 	 */
-	on(event: 'downloaded', callback: (args: DownloadedData) => void, thisArg?: any): void;
+	on(event: 'downloaded', callback: (args: DownloadedData) => void, thisArg?: any): this;
 
 	/**
 	 * Raised if the image download errors.
 	 */
-	on(event: 'downloadError', callback: (args: DownloadError) => void, thisArg?: any): void;
+	on(event: 'downloadError', callback: (args: DownloadError) => void, thisArg?: any): this;
 
 	//@private
 	/**
