@@ -92,6 +92,11 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 		this._context = context;
 	}
 
+	public _setCallback(callback: (args: GestureEventData) => void, context?: any) {
+		this._callback = callback;
+		this._context = context;
+	}
+
 	public abstract androidOnTouchEvent(motionEvent: android.view.MotionEvent);
 	public abstract observe(type: GestureTypes);
 

@@ -1,5 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style, Frame, Page, Button, Label, Color, StackLayout, AbsoluteLayout, Observable, Utils, BindingOptions, isAndroid, LayoutBase } from '@nativescript/core';
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style, Frame, Page, Button, Label, Color, StackLayout, AbsoluteLayout, Observable, Utils, BindingOptions, isAndroid, LayoutBase, GestureTypes } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 
 export function test_eachDescendant() {
@@ -1074,4 +1074,27 @@ export function test_shorthand_property_doesnt_cache() {
 	view.customShortHand = 'left,right';
 	TKUnit.assertEqual(view.customCssA, 'left', "Expected customCssA to be 'left' the second time.");
 	TKUnit.assertEqual(view.customCssB, 'right', "Expected customCssA to be 'right' the second time.");
+}
+
+export function test_swapping_gesture_listener_reuses_observer() {
+	helper.buildUIAndRunTest(new StackLayout(), function (views: Array<View>) {
+		const layout = views[0];
+		const calls: string[] = [];
+		const first = () => calls.push('first');
+		const second = () => calls.push('second');
+
+		layout.on('pan', first);
+		const observer = layout.getGestureObservers(GestureTypes.pan)[0];
+
+		layout.off('pan', first);
+		layout.on('pan', second);
+
+		const observers = layout.getGestureObservers(GestureTypes.pan);
+		TKUnit.assertEqual(observers.length, 1, 'One observer after swapping the listener.');
+		TKUnit.assertEqual(observers[0], observer, 'The observer tracking the gesture should be kept.');
+		TKUnit.assertEqual(observers[0].callback, second, 'The kept observer should call the new listener.');
+
+		layout.off('pan', second);
+		TKUnit.assertNull(layout.getGestureObservers(GestureTypes.pan), 'No observers after removing the listener.');
+	});
 }

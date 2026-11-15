@@ -180,6 +180,9 @@ export abstract class ViewCommon extends ViewBase {
 
 	public readonly _gestureObservers = {} as Record<GestureTypes, Array<GesturesObserver>>;
 
+	private _releasedGestureObservers: Partial<Record<GestureTypes, Array<GesturesObserver>>>;
+	private _releaseGestureObserversTimer: any;
+
 	_androidContentDescriptionUpdated?: boolean;
 
 	get css(): string {
@@ -376,6 +379,14 @@ export abstract class ViewCommon extends ViewBase {
 
 		if (!this._gestureObservers[type]) {
 			this._gestureObservers[type] = [];
+		}
+
+		const released = this._releasedGestureObservers?.[type];
+		if (released?.length) {
+			const observer = released.shift();
+			observer._setCallback(callback, thisArg);
+			this._gestureObservers[type].push(observer);
+			return;
 		}
 
 		this._gestureObservers[type].push(gestureObserve(this, type, callback, thisArg));
@@ -646,13 +657,33 @@ export abstract class ViewCommon extends ViewBase {
 				continue;
 			}
 
-			observer.disconnect();
 			observers.splice(i, 1);
 			i--;
+			this._releaseGestureObserver(type, observer);
 		}
 
 		if (!observers.length) {
 			delete this._gestureObservers[type];
+		}
+	}
+
+	private _releaseGestureObserver(type: GestureTypes, observer: GesturesObserver): void {
+		observer._setCallback(null, null);
+
+		const released = this._releasedGestureObservers || (this._releasedGestureObservers = {});
+		(released[type] || (released[type] = [])).push(observer);
+
+		if (!this._releaseGestureObserversTimer) {
+			this._releaseGestureObserversTimer = setTimeout(() => {
+				this._releaseGestureObserversTimer = null;
+				const pending = this._releasedGestureObservers;
+				this._releasedGestureObservers = null;
+				for (const key in pending) {
+					for (const observer of pending[key]) {
+						observer.disconnect();
+					}
+				}
+			});
 		}
 	}
 
