@@ -462,6 +462,8 @@ export abstract class ViewBase extends Observable {
 	 * as well as adding/rmoving the view to/from the visual tree.
 	 */
 	public _suspendNativeUpdatesCount: number;
+	/** Set by views that apply their own padding, borders and backgrounds; core then skips the box state it derives for them. */
+	public _appliesOwnBoxStyle?: boolean;
 	public _isStyleScopeHost: boolean;
 	public _automaticallyAdjustsScrollViewInsets: boolean;
 
