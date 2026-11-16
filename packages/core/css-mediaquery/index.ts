@@ -37,7 +37,7 @@ export interface MediaQueryEnvironmentParams {
 
 export interface MediaQueryExpression {
 	inverse: boolean;
-	type: MediaQueryType;
+	type: MediaQueryType | string;
 	features: MediaQueryFeature[];
 }
 
@@ -137,7 +137,7 @@ export function parseQuery(mediaQuery: string): MediaQueryExpression[] {
 
 		const expression: MediaQueryExpression = {
 			inverse: !!modifier && modifier.toLowerCase() === 'not',
-			type: MediaQueryType[type ? type.toLowerCase() : 'all'] ?? 'all',
+			type: type ? type.toLowerCase() : MediaQueryType.all,
 			features: [],
 		};
 
