@@ -398,8 +398,8 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 		detail: 'Re-importing Angular bootstrap entry',
 	});
 
-	for (const entry of getAngularBootstrapEntryCandidates(msg)) {
-		const url = `${origin}/ns/m${entry}`;
+	const entryUrls = isHttpUrl(msg?.entryUrl) ? [msg.entryUrl] : getAngularBootstrapEntryCandidates(msg).map((entry) => `${origin}/ns/m${entry}`);
+	for (const url of entryUrls) {
 		try {
 			g.__NS_ANGULAR_HMR_REGISTER_ONLY__ = true;
 			await importAngularBootstrapEntry(url);
@@ -624,13 +624,15 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			}
 			if (urls.length) {
 				setUpdateOverlayStage('reimporting', { detail: `Re-importing ${urls.length} module${urls.length === 1 ? '' : 's'}` });
-				invalidateModules(urls, options.verbose);
+				const evicted = invalidateModules(urls, options.verbose);
 				const nonce = (typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0) + 1;
 				g.__NS_HMR_IMPORT_NONCE__ = nonce;
 				let reimported = 0;
 				for (const u of urls) {
 					try {
-						await importAngularBootstrapEntry(`${u}${u.includes('?') ? '&' : '?'}hmr=${nonce}`);
+						// An evicted URL re-imports as-is; a tagged URL would be a second
+						// module identity. The nonce only covers runtimes without eviction.
+						await importAngularBootstrapEntry(evicted ? u : `${u}${u.includes('?') ? '&' : '?'}hmr=${nonce}`);
 						reimported++;
 					} catch (e) {
 						if (options.verbose) {

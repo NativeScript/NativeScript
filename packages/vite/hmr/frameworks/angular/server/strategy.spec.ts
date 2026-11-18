@@ -220,6 +220,28 @@ describe('angularServerStrategy.handleHotUpdate', () => {
 		expect(result).toEqual([]);
 	});
 
+	it('sends thin-mode device URLs (/ns/v) for eviction and the entry to re-import', async () => {
+		const metrics = { invalidated: 0, recipients: 0, narrowed: undefined as boolean | undefined, tAfterFramework: 0 };
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue({ root: '/proj', updateRel: '/src/app/home.component.ts', metrics, emitSummary: vi.fn() } as any);
+		vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
+		vi.stubEnv('NS_VITE_THIN', '1');
+		try {
+			const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+			const mainImporter = { id: '/proj/src/main.ts', file: '/proj/src/main.ts', importers: new Set() };
+			const changedModule = { id: '/proj/src/app/home.component.ts', file: '/proj/src/app/home.component.ts', importers: new Set([mainImporter]), importedModules: new Set() };
+			const ctx = { file: '/proj/src/app/home.component.ts', server: makeServer(), modules: [changedModule], read: async () => '@Component({}) export class HomeComponent {}' } as any;
+
+			await angularServerStrategy.handleHotUpdate!(ctx, makeDeps(openClient));
+
+			const payload = JSON.parse(String(openClient.send.mock.calls[0][0]));
+			expect(payload.entryUrl).toBe('http://test:5173/ns/v/src/main.ts');
+			expect(payload.evictPaths).toEqual(expect.arrayContaining(['http://test:5173/ns/v/src/app/home.component.ts', 'http://test:5173/ns/v/src/main.ts']));
+			expect(payload.evictPaths.some((url: string) => url.includes('/ns/m/'))).toBe(false);
+		} finally {
+			vi.unstubAllEnvs();
+		}
+	});
+
 	it('keeps app.css?direct out of the Angular runtime eviction closure', async () => {
 		const emitSummary = vi.fn();
 		const metrics = { invalidated: 0, recipients: 0, narrowed: undefined as boolean | undefined, tAfterFramework: 0 };

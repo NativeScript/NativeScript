@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { coreRequireKeys, rewriteThinSpecifiers } from './thin-route.js';
-import { thinDeviceUrl, transformIdForViteUrl, viteUrlForFile } from './thin-mode.js';
+import { thinDeviceUrl, thinEvictionUrls, transformIdForViteUrl, viteUrlForFile } from './thin-mode.js';
 
 const ORIGIN = 'http://192.168.1.2:5173';
 
@@ -12,6 +12,11 @@ describe('thin device URLs', () => {
 
 	it('prefixes the Vite URL with origin and /ns/v', () => {
 		expect(thinDeviceUrl(`${ORIGIN}/`, '/src/main.ts')).toBe(`${ORIGIN}/ns/v/src/main.ts`);
+	});
+
+	it('builds eviction URLs from file paths, the way the device loaded them', () => {
+		const urls = thinEvictionUrls(ORIGIN, '/app', ['/app/src/app/app.component.ts?v=1', '/repo/libs/ui/button.ts', '/app/src/app/app.component.ts', '/app/node_modules/rxjs/index.js', '\0virtual:x', null]);
+		expect(urls).toEqual([`${ORIGIN}/ns/v/src/app/app.component.ts`, `${ORIGIN}/ns/v/@fs/repo/libs/ui/button.ts`]);
 	});
 
 	it('maps virtual-module URLs to the id transformRequest expects', () => {

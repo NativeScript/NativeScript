@@ -222,6 +222,9 @@ function createRegistry(): NsHotRegistry {
 		if (!url.startsWith(origin)) return false;
 		const path = url.slice(origin.length).replace(/[?#].*$/, '');
 		if (path.startsWith('/ns/m/')) return !path.startsWith('/ns/m/node_modules/');
+		// Thin mode (`/ns/v<vite-url>`): vendor files keep `/node_modules/` in their
+		// Vite URL wherever they live, and `/@vite/*` is the dev client itself.
+		if (path.startsWith('/ns/v/')) return !path.includes('/node_modules/') && !path.startsWith('/ns/v/@vite/');
 		return path.startsWith('/ns/sfc') || path.startsWith('/ns/asm');
 	};
 

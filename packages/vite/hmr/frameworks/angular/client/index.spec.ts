@@ -208,6 +208,44 @@ describe('handleAngularHotUpdateMessage', () => {
 		}
 	});
 
+	it('re-imports the server-sent entryUrl as-is instead of deriving an /ns/m URL', async () => {
+		const reboot = vi.fn();
+		const importer = vi.fn(async () => ({}));
+		const g = getGlobalScope();
+		const previousReboot = g.__reboot_ng_modules__;
+		const previousImporter = g.__NS_HMR_IMPORT__;
+		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
+		const previousInvalidator = nsRuntime.invalidateModules;
+
+		g.__reboot_ng_modules__ = reboot;
+		g.__NS_HMR_IMPORT__ = importer;
+		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = vi.fn();
+		nsRuntime.invalidateModules = vi.fn();
+
+		try {
+			await handleAngularHotUpdateMessage(
+				{
+					type: 'ns:angular-update',
+					version: 13,
+					origin: 'http://localhost:5173',
+					evictPaths: ['http://localhost:5173/ns/v/src/main.ts'],
+					importerEntry: '/src/main.ts',
+					entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
+				},
+				{ getCore: () => undefined, verbose: false },
+			);
+
+			expect(importer).toHaveBeenCalledTimes(1);
+			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/v/src/main.ts');
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			g.__reboot_ng_modules__ = previousReboot;
+			g.__NS_HMR_IMPORT__ = previousImporter;
+			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
+			nsRuntime.invalidateModules = previousInvalidator;
+		}
+	});
+
 	it('survives ns:module invalidateModules throwing without breaking the import flow', async () => {
 		const reboot = vi.fn();
 		const importer = vi.fn(async () => ({}));

@@ -64,8 +64,14 @@ export interface AngularUpdateMessage {
 	path: string;
 	version: number;
 	timestamp: number;
+	/** Device module URLs to evict before re-importing the entry. */
 	evictPaths: string[];
 	importerEntry: string;
+	/**
+	 * Device URL of the bootstrap entry to re-import. When present it is used
+	 * as-is; the device never derives module URLs itself.
+	 */
+	entryUrl?: string;
 	/**
 	 * App stylesheet refresh produced by the same content-file edit. Angular
 	 * applies it inside the serialized reboot cycle so CSS replacement cannot

@@ -16,6 +16,39 @@ import { collectTransitiveImportersForInvalidation, type TransitiveImporterModul
 import { getServerOrigin } from '../../../server/server-origin.js';
 import { isSameAngularModuleRel } from './angular-root-component.js';
 import type { AngularUpdateMessage } from '../../../shared/protocol.js';
+import { isThinDeviceMode, thinDeviceUrl, thinEvictionUrls } from '../../../server/thin/thin-mode.js';
+
+type GraphModuleRef = { id?: string | null; file?: string | null };
+
+/**
+ * What the device evicts and re-imports for an Angular reboot. The server owns
+ * these URLs because only it knows the URL space the device loaded modules
+ * under (`/ns/v<vite-url>` in thin mode, `/ns/m<rel>` otherwise).
+ */
+function angularReloadTargets(options: { file: string; hotUpdateRoots: Iterable<GraphModuleRef>; transitiveImporters: Iterable<GraphModuleRef>; root: string; origin: string; bootstrapEntryRel: string | null; workspaceRoot: string | null }): Pick<AngularUpdateMessage, 'evictPaths' | 'entryUrl'> {
+	const { file, root, origin, bootstrapEntryRel } = options;
+	if (isThinDeviceMode()) {
+		const files: Array<string | null | undefined> = [file];
+		for (const mod of options.hotUpdateRoots) files.push(mod?.file ?? mod?.id);
+		for (const mod of options.transitiveImporters) files.push(mod?.file ?? mod?.id);
+		if (bootstrapEntryRel) files.push(path.join(root, bootstrapEntryRel));
+		return {
+			evictPaths: thinEvictionUrls(origin, root, files),
+			...(bootstrapEntryRel ? { entryUrl: thinDeviceUrl(origin, bootstrapEntryRel) } : {}),
+		};
+	}
+	return {
+		evictPaths: collectAngularEvictionUrls({
+			file,
+			hotUpdateRoots: options.hotUpdateRoots,
+			transitiveImporters: options.transitiveImporters,
+			projectRoot: root,
+			origin,
+			bootstrapEntry: bootstrapEntryRel,
+			workspaceRoot: options.workspaceRoot,
+		}),
+	};
+}
 
 // Angular server strategy for NativeScript HMR.
 //
@@ -183,17 +216,9 @@ async function broadcastAngularReboot(file: string, server: ViteDevServer, deps:
 		rememberAngularReloadSuppression(root, file);
 		const origin = getServerOrigin(server);
 		const bootstrapEntryRel = getBootstrapEntryRelPath();
-		let evictPaths: string[] = [];
+		let targets: Pick<AngularUpdateMessage, 'evictPaths' | 'entryUrl'> = { evictPaths: [] };
 		try {
-			evictPaths = collectAngularEvictionUrls({
-				file,
-				hotUpdateRoots,
-				transitiveImporters,
-				projectRoot: root,
-				origin,
-				bootstrapEntry: bootstrapEntryRel,
-				workspaceRoot: monorepoWorkspaceRoot,
-			});
+			targets = angularReloadTargets({ file, hotUpdateRoots, transitiveImporters, root, origin, bootstrapEntryRel, workspaceRoot: monorepoWorkspaceRoot });
 		} catch (error) {
 			if (verbose) console.warn('[hmr-ws][angular] invalidate-reboot eviction set computation failed', error);
 		}
@@ -203,7 +228,7 @@ async function broadcastAngularReboot(file: string, server: ViteDevServer, deps:
 			path: rel,
 			version: moduleGraph.version,
 			timestamp: Date.now(),
-			evictPaths,
+			...targets,
 			importerEntry: bootstrapEntryRel,
 		};
 		wss.clients.forEach((client) => {
@@ -644,23 +669,16 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 			//   - Excludes node_modules (vendor packages are stable).
 			//   - Excludes virtual / runtime-graph-excluded ids.
 			//   - Origin-prefixed: `http://host:port/ns/m/<rel>`.
-			let evictPaths: string[] = [];
+			let targets: Pick<AngularUpdateMessage, 'evictPaths' | 'entryUrl'> = { evictPaths: [] };
 			try {
-				evictPaths = collectAngularEvictionUrls({
-					file,
-					hotUpdateRoots: angularHotUpdateRoots,
-					transitiveImporters,
-					projectRoot: root,
-					origin,
-					bootstrapEntry: bootstrapEntryRel,
-					workspaceRoot: monorepoWorkspaceRoot,
-				});
+				targets = angularReloadTargets({ file, hotUpdateRoots: angularHotUpdateRoots, transitiveImporters, root, origin, bootstrapEntryRel, workspaceRoot: monorepoWorkspaceRoot });
 			} catch (error) {
 				if (verbose) {
 					console.warn('[ns-hmr][server] eviction set computation failed', error);
 				}
 			}
 
+			const { evictPaths } = targets;
 			if (verbose) {
 				try {
 					const tsRel = rel.replace(/\.(html|htm)$/i, '.ts');
@@ -681,7 +699,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 				path: rel,
 				version: moduleGraph.version,
 				timestamp: Date.now(),
-				evictPaths,
+				...targets,
 				importerEntry: bootstrapEntryRel,
 				...(deferredCssUpdates?.length ? { cssUpdates: deferredCssUpdates } : {}),
 			};
