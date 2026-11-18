@@ -1,15 +1,13 @@
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
-import { ensureRoutesDefaultExport } from '../../../server/websocket-served-module-helpers.js';
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import * as path from 'path';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 import type { TsModuleRegistryMessage } from '../../../shared/protocol.js';
 
-// TypeScript server strategy for NativeScript HMR.
-// This is a lightweight strategy that treats app TS/JS files
-// as HTTP-loaded modules, relying on the shared HMR pipeline
-// (rewriteImports, device-side require bridge, etc.).
+// TypeScript server strategy for NativeScript HMR: app TS/JS files are
+// HTTP-loaded modules; a hot update emits a graph delta and the client
+// performs a root reset.
 
 const TS_APP_PREFIX = `${getProjectAppVirtualPath()}/`;
 const TS_FILE_PATTERN = /\.(ts|tsx|js|jsx|mjs)$/i;
@@ -50,12 +48,7 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 		}
 		emitSummary();
 	},
-	// preClean/rewriteFrameworkImports/postClean/canonicalizeFrameworkImports default to
-	// identity: plain TS apps rely on the generic pipeline (vendor bridge, /ns/entry-rt).
-	normalizeServedExports: ensureRoutesDefaultExport,
 	async processFile(ctx: FrameworkProcessFileContext) {
-		// Ensure that any TS app module requested by the HTTP realm is transformed once,
-		// so that downstream helpers (rewriteImports, vendor bridge) see a stable shape.
 		const { filePath, server, verbose } = ctx;
 		if (isRuntimeGraphExcludedPath(filePath)) return;
 		try {

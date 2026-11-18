@@ -10,7 +10,7 @@
 export { registerFrameworkFlavor, getFrameworkFlavor, getClientStrategyDevicePath, isBuiltInFlavor } from './hmr/framework-flavors.js';
 export type { FrameworkFlavorDefinition } from './hmr/framework-flavors.js';
 
-export type { FrameworkServerStrategy, FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServedModuleContext, FrameworkModuleRequestContext, FrameworkRouteContext } from './hmr/server/framework-strategy.js';
+export type { FrameworkServerStrategy, FrameworkProcessFileContext, FrameworkRegistryContext } from './hmr/server/framework-strategy.js';
 export type { FrameworkClientStrategy, FrameworkClientBatchContext, FrameworkClientMessageContext, FrameworkClientMountContext, ClientGraphModule } from './hmr/client/framework-client-strategy.js';
 
 /** The generic device-module pipeline; the usual base for a new server strategy. */

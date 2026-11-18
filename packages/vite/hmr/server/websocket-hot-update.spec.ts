@@ -39,7 +39,6 @@ function makeDeps(overrides: Partial<NsHotUpdateContext> = {}) {
 		strategy: { flavor: 'typescript' } as any,
 		verbose: false,
 		sfcFileMap: new Map(),
-		depFileMap: new Map(),
 		sharedTransformRequest: vi.fn(async () => ({ code: '' })) as any,
 		getHmrSourceRootsCached: () => ['/app/src'],
 		getBootstrapEntryRelPath: () => '/app/src/main.ts',

@@ -1,35 +1,20 @@
 /**
- * Import Map Generator for NativeScript HMR
+ * Import-map key enumeration for NativeScript HMR.
  *
- * Generates an import map that the iOS/Android runtime consumes via
- * ns:module configureLoader(). This is the single source of truth for module
- * resolution on the device.
- *
- * Resolution strategy:
- *   Every bare npm specifier → HTTP URL (`/ns/m/node_modules/<pkg>`).
- *     Package roots in the vendor collection get EXACT entries whose served
- *     body is a deps-bundle shim (see deps-bundle.ts), so "many specifiers,
- *     one instance" holds via the single bundle realm — no custom URL scheme.
- *   @nativescript/core → HTTP bridge URL (/ns/core)
- *   Trailing-slash prefix entries cover subpath imports
- *     (e.g. @nativescript/tanstack-router/solid) for every package.
- *
- * The runtime matches map keys literally: it reverse-engineers none of Vite's
- * rewrites (`/node_modules/.vite/deps/solid-js.js?v=…`, `/@id/…`, `/@fs/…`).
- * Every specifier form that reaches the device must therefore either be a key
- * in this map or be rewritten by the server before it is served — the /ns/m
- * pipeline (`processCodeForDevice`) turns prebundled-dep paths back into bare
- * ids and resolves package-internal paths to full `/ns/m/node_modules/…` URLs.
+ * The device import map handed to ns:module `configureLoader()` maps each of
+ * these bare specifiers to the `/ns/v` URL of the file Vite's client resolver
+ * picks for it (see `buildThinImportMap` in `thin/thin-route.ts`). This module
+ * only decides WHICH specifiers get an entry: vendor roots and their aliases,
+ * `@nativescript/core`, `node:` builtins, framework entries, and every
+ * installed package root. Subpath imports have no entry.
  */
 
-import type { VendorManifest } from '../shared/vendor/manifest.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { getVendorManifest, listVendorModules } from '../shared/vendor/registry.js';
-import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
+import { readdirSync, existsSync, statSync } from 'fs';
 import { resolve, join } from 'path';
 import { getProjectRootPath } from '../../helpers/project.js';
-import { buildCoreUrl } from '../../helpers/ns-core-url.js';
-import { getNodeBuiltinImportMapEntries } from './node-builtins-route.js';
+import { getNodeBuiltinSpecifiers } from './node-builtins-route.js';
 
 type DeviceImportMapExposure = 'full' | 'prefix-only' | 'omit';
 
@@ -37,6 +22,7 @@ const OMIT_DEVICE_IMPORT_MAP_PACKAGES = new Set(['typescript', 'ts-node', 'esbui
 
 const OMIT_DEVICE_IMPORT_MAP_PREFIXES = ['@types/', '@babel/', 'babel-', '@rollup/', '@vitejs/', 'vite-plugin-', '@angular-devkit/', '@angular/build', '@analogjs/'];
 
+// Packages imported only through subpaths: the root gets no entry.
 const PREFIX_ONLY_DEVICE_IMPORT_MAP_PACKAGES = new Set(['@nativescript/vite']);
 
 function getDeviceImportMapExposure(name: string): DeviceImportMapExposure {
@@ -57,125 +43,58 @@ function getDeviceImportMapExposure(name: string): DeviceImportMapExposure {
 	return 'full';
 }
 
-export interface ImportMap {
-	imports: Record<string, string>;
-}
-
 export interface ImportMapOptions {
-	/** Origin of the Vite dev server (e.g. "http://192.168.1.5:5173") */
+	/** Origin of the Vite dev server (e.g. "http://192.168.1.5:5173"). */
 	origin: string;
 	/** Framework flavor (vue, angular, solid, typescript) — framework identity. */
 	flavor: string;
 	/**
-	 * Active framework strategy. Its `importMapEntries(origin)` +
-	 * `volatilePatterns()` hooks supply the framework-specific pieces of the
-	 * import map and volatile-pattern list.
-	 * Optional: when omitted, the map/patterns carry only the shared
-	 * vendor/core/HTTP entries.
+	 * Active framework strategy. Its `importMapSpecifiers()` and
+	 * `volatilePatterns()` supply the framework-specific pieces.
 	 */
 	strategy?: FrameworkServerStrategy;
-	/** Additional entries to add to the import map */
-	extraEntries?: Record<string, string>;
 }
 
 /**
- * Generate an import map from the current vendor manifest.
- *
- * Vendor package roots map to `${origin}/ns/m/node_modules/<pkg>` — served
- * as deps-bundle shims (thin re-exports out of `__NS_DEPS_MODULES__`, the
- * single-evaluation bundle realm), so every specifier of a package resolves
- * to one instance. Manifest aliases collapse onto their canonical package's
- * URL, preserving the "many specifiers, one instance" semantics.
- *
- * IMPORTANT: Vendor entries are EXACT only (no trailing-slash prefixes).
- * Subpath imports like solid-js/store or @nativescript/tanstack-router/solid
- * are separate entry points with different exports — they must NOT resolve
- * to the package root. They fall through to the HTTP trailing-slash prefix
- * entries from discoverInstalledPackages().
- *
- * @nativescript/core is mapped to the HTTP bridge endpoint.
- * Everything else falls through to the runtime's normal resolution.
+ * The bare specifiers the device import map carries, in map order: vendor
+ * roots, vendor aliases whose canonical package is mapped, `@nativescript/core`,
+ * `node:` builtins, framework entries, then every installed package root.
+ * Core subpaths never get an entry, even when the vendor manifest lists them.
  */
-export function generateImportMap(options: ImportMapOptions): ImportMap {
-	const { origin, strategy, extraEntries } = options;
+export function collectImportMapSpecifiers(options: ImportMapOptions): string[] {
+	const { strategy } = options;
 	const manifest = getVendorManifest();
-	const imports: Record<string, string> = {};
+	const specifiers = new Set<string>();
+	const isCore = (spec: string) => spec === '@nativescript/core' || spec.startsWith('@nativescript/core/');
 
 	if (manifest) {
-		// EXACT entries only for vendor roots — subpaths resolve via the
-		// trailing-slash HTTP prefixes added below.
-		//
-		// IMPORTANT: `@nativescript/core` and any `@nativescript/core/<sub>` are
-		// deliberately routed through the HTTP bridge (`${origin}/ns/core/...`),
-		// never through `/ns/m/node_modules/`. The core bridge is the canonical
-		// source for every `Application`, `View`, `Frame`, etc. instance —
-		// a second copy of core produces the classic
-		// `vendorApplicationSame: false` realm split (different
-		// `globalThis.Application` than the one the iOS/Android hooks patched)
-		// and HMR placeholder finalize stalls. The dev server normalizes
-		// platform suffixes (see `normalizeCoreSub` in `ns-core-url.ts`) so
-		// `@nativescript/core/ui/frame/activity.android` → bridge URL
-		// `/ns/core/ui/frame/activity.android` → served from the
-		// platform-specific `.android.ts` source.
-		const vendorModules = listVendorModules();
-		for (const specifier of vendorModules) {
-			if (specifier === '@nativescript/core' || specifier.startsWith('@nativescript/core/')) {
-				continue;
-			}
-			imports[specifier] = `${origin}/ns/m/node_modules/${specifier}`;
+		for (const specifier of listVendorModules()) {
+			if (isCore(specifier)) continue;
+			specifiers.add(specifier);
 		}
-
-		// Map aliases from the manifest (e.g., "solid-js/web" → solid-js's URL)
 		if (manifest.aliases) {
 			for (const [alias, canonical] of Object.entries(manifest.aliases)) {
-				// Same single-realm reason as above.
-				if (alias === '@nativescript/core' || alias.startsWith('@nativescript/core/')) {
-					continue;
-				}
-				if (!imports[alias] && imports[canonical]) {
-					imports[alias] = imports[canonical];
-				}
+				if (isCore(alias)) continue;
+				if (specifiers.has(canonical)) specifiers.add(alias);
 			}
 		}
 	}
 
-	// @nativescript/core → bridge endpoint (canonical URL generator).
-	// The trailing-slash entry intentionally uses the same generator so
-	// subpath imports resolve via `${origin}/ns/core/<sub>`.
-	imports['@nativescript/core'] = buildCoreUrl(origin);
-	imports['@nativescript/core/'] = `${buildCoreUrl(origin)}/`;
+	specifiers.add('@nativescript/core');
 
-	// `node:` builtins → dev-served shims (`/ns/node/<name>`, see
-	// node-builtins-route.ts). During a dev session these map entries
-	// shadow the runtime's baked-in polyfill branch, keeping the shim
-	// vocabulary server-owned; outside dev sessions the native fallback
-	// still applies.
-	Object.assign(imports, getNodeBuiltinImportMapEntries(origin));
-
-	// Add framework-specific entries (owned by the active strategy). Merge
-	// CONDITIONALLY (existing entries win) so Vue's vendor entries (set above)
-	// take precedence over the hook's fallback targets, while Solid's
-	// `solid-js` (externalized from vendor, so unset here) is added.
-	// Insertion order is significant for the generated map.
-	const frameworkEntries = strategy?.importMapEntries?.(origin);
-	if (frameworkEntries) {
-		for (const [specifier, target] of Object.entries(frameworkEntries)) {
-			if (!imports[specifier]) {
-				imports[specifier] = target;
-			}
-		}
+	for (const specifier of getNodeBuiltinSpecifiers()) {
+		specifiers.add(specifier);
 	}
 
-	// Scan installed packages and add HTTP URL entries for ALL packages
-	// (including vendor ones for their subpath imports).
-	discoverInstalledPackages(imports, origin);
-
-	// Merge extra entries (user-provided or from framework strategies)
-	if (extraEntries) {
-		Object.assign(imports, extraEntries);
+	for (const specifier of strategy?.importMapSpecifiers?.() ?? []) {
+		specifiers.add(specifier);
 	}
 
-	return { imports };
+	for (const name of discoverInstalledPackages()) {
+		specifiers.add(name);
+	}
+
+	return Array.from(specifiers);
 }
 
 /**
@@ -231,68 +150,34 @@ export function getCanonicalization(strategy?: FrameworkServerStrategy): {
 }
 
 /**
- * Serialize the import map + volatile patterns + canonicalization vocabulary
- * into the config object that ns:module configureLoader() expects.
+ * The specifiers, volatile patterns and canonicalization vocabulary behind the
+ * config object ns:module `configureLoader()` expects.
  */
 export function buildRuntimeConfig(options: ImportMapOptions): {
-	importMap: string;
+	specifiers: string[];
 	volatilePatterns: string[];
 	canonicalization: ReturnType<typeof getCanonicalization>;
 } {
-	const importMap = generateImportMap(options);
-	const volatilePatterns = getVolatilePatterns(options.strategy);
-	const canonicalization = getCanonicalization(options.strategy);
-
 	return {
-		importMap: JSON.stringify(importMap),
-		volatilePatterns,
-		canonicalization,
+		specifiers: collectImportMapSpecifiers(options),
+		volatilePatterns: getVolatilePatterns(options.strategy),
+		canonicalization: getCanonicalization(options.strategy),
 	};
 }
 
-/**
- * Scan the project's node_modules to discover ALL installed packages and
- * add import map entries. Vendor packages get only trailing-slash prefix
- * entries (their exact entries were set above). Non-vendor packages get
- * both exact and trailing-slash entries.
- *
- * The trailing-slash prefix entries are critical: they enable subpath imports
- * like solid-js/store or @nativescript/tanstack-router/solid to resolve via
- * HTTP, even when the root package has a deps-shim exact entry.
- */
-function discoverInstalledPackages(imports: Record<string, string>, origin: string): void {
+/** Installed package roots that get a device import-map entry. */
+function discoverInstalledPackages(): string[] {
 	let projectRoot: string;
 	try {
 		projectRoot = getProjectRootPath();
 	} catch {
-		return;
+		return [];
 	}
 	const nodeModulesDir = resolve(projectRoot, 'node_modules');
-	if (!existsSync(nodeModulesDir)) return;
-
-	const addPackage = (name: string) => {
-		const exposure = getDeviceImportMapExposure(name);
-		if (exposure === 'omit') return;
-		// Add exact entry only if not already mapped (vendor packages already have exact entries)
-		if (exposure === 'full' && !imports[name]) {
-			imports[name] = `${origin}/ns/m/node_modules/${name}`;
-		}
-		// ALWAYS add trailing-slash prefix for HTTP subpath resolution,
-		// even for vendor packages. The vendor bundle only covers the root
-		// entry point — subpaths like solid-js/store or @nativescript/tanstack-router/solid
-		// are separate entry points that must resolve via HTTP.
-		if (!imports[name + '/']) {
-			imports[name + '/'] = `${origin}/ns/m/node_modules/${name}/`;
-		}
-	};
-
-	// Replay the (cheap, in-memory) addPackage step for every installed package
-	// name. The names themselves come from a per-session cache so the directory
-	// sweep below runs once per dev server, not on every `/ns/import-map.json`
-	// request (a hot, per-boot route).
-	for (const name of getInstalledPackageNames(nodeModulesDir)) {
-		addPackage(name);
-	}
+	if (!existsSync(nodeModulesDir)) return [];
+	// The names come from a per-session cache so the directory sweep runs once
+	// per dev server, not on every `/ns/import-map.json` request.
+	return getInstalledPackageNames(nodeModulesDir).filter((name) => getDeviceImportMapExposure(name) === 'full');
 }
 
 // Cache the discovered package-name list per node_modules dir, invalidated when

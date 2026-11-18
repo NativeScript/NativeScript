@@ -2,11 +2,9 @@
  * JS-owned `import.meta.hot` implementation (Vite-style injected hot contexts).
  *
  * `import.meta.hot` is HMR *policy* and lives entirely in this package — the
- * native runtimes expose no hot API. The dev server injects
- *
- *   import.meta.hot = globalThis.__NS_HOT_REGISTRY__?.createHotContext('<canonical-id>')
- *
- * at the top of every served app module (see `processCodeForDevice`), and this
+ * native runtimes expose no hot API. Vite's import analysis gives every app
+ * module `import.meta.hot = createHotContext('<vite-url>')` from `/@vite/client`,
+ * whose device implementation (`thin-vite-client.ts`) delegates here, and this
  * module owns every registry the hot API needs. The registry is installed on
  * `globalThis.__NS_HOT_REGISTRY__` by `installNsHotRegistry()`, which the
  * `/__ns_dev__/client` bootstrap runs before the entry graph evaluates.
@@ -131,8 +129,6 @@ function canonicalHotKey(id: string): string {
 	key = key.replace(/^https?:\/\/[^/]+/i, '');
 	// Query/hash never contribute to identity.
 	key = key.replace(/[?#].*$/, '');
-	// Device-module route prefix.
-	if (key.startsWith('/ns/m/')) key = key.slice('/ns/m'.length);
 	// Inbound tolerance: collapse tagged spellings if one ever arrives
 	// (the server never emits them).
 	key = key.replace(/^\/__ns_boot__\/b1\//, '/').replace(/^\/__ns_hmr__\/[^/]+\//, '/');
@@ -213,19 +209,17 @@ function createRegistry(): NsHotRegistry {
 	};
 
 	// A graph reload replaces what the app owns and nothing else. `@nativescript/core`
-	// (`/ns/core*`), the vendor bundle and per-file vendor modules (`/ns/m/node_modules/*`)
-	// evaluate once per process: core re-evaluated in place would mint a second
-	// `View` hierarchy the still-live native views fail `instanceof` against, and
-	// vendor re-evaluation would split every singleton a plugin keeps. The
-	// running dev client keeps its identity for the same reason.
+	// and other vendor modules evaluate once per process: core re-evaluated in
+	// place would mint a second `View` hierarchy the still-live native views fail
+	// `instanceof` against, and vendor re-evaluation would split every singleton
+	// a plugin keeps. The running dev client keeps its identity for the same
+	// reason. App modules load as `/ns/v<vite-url>`; vendor files keep
+	// `/node_modules/` in their Vite URL wherever they live, and `/@vite/*` is
+	// the dev client itself.
 	const isAppOwnedModuleUrl = (url: string, origin: string): boolean => {
 		if (!url.startsWith(origin)) return false;
 		const path = url.slice(origin.length).replace(/[?#].*$/, '');
-		if (path.startsWith('/ns/m/')) return !path.startsWith('/ns/m/node_modules/');
-		// Thin mode (`/ns/v<vite-url>`): vendor files keep `/node_modules/` in their
-		// Vite URL wherever they live, and `/@vite/*` is the dev client itself.
-		if (path.startsWith('/ns/v/')) return !path.includes('/node_modules/') && !path.startsWith('/ns/v/@vite/');
-		return path.startsWith('/ns/sfc') || path.startsWith('/ns/asm');
+		return path.startsWith('/ns/v/') && !path.includes('/node_modules/') && !path.startsWith('/ns/v/@vite/');
 	};
 
 	const jsFullReload = (message?: string): void => {

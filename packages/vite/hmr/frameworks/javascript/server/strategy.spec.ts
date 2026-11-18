@@ -9,7 +9,6 @@ describe('javascriptServerStrategy', () => {
 		expect(javascriptServerStrategy.handleHotUpdate).toBe(typescriptServerStrategy.handleHotUpdate);
 		expect(javascriptServerStrategy.processFile).toBe(typescriptServerStrategy.processFile);
 		expect(javascriptServerStrategy.buildRegistry).toBe(typescriptServerStrategy.buildRegistry);
-		expect(javascriptServerStrategy.normalizeServedExports).toBe(typescriptServerStrategy.normalizeServedExports);
 	});
 
 	it('treats plain .js app modules as HMR graph members', () => {

@@ -191,13 +191,6 @@ export function setGraphVersion(version: number) {
 export const graph = new Map<string, HmrGraphModule>();
 // local metrics snapshot
 export const hmrMetrics: Record<string, any> = {};
-interface PendingFetch {
-	resolve: (v: any) => void;
-	reject: (e: any) => void;
-	spec: string;
-	started: number;
-}
-export const pendingModuleFetches = new Map<number, PendingFetch>();
 export const moduleFetchCache = new Map<string, string>(); // spec -> resolved HTTP URL
 
 /**

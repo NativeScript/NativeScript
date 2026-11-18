@@ -14,7 +14,6 @@ const [file, ...values] = process.argv.slice(2);
 process.argv.splice(2);
 process.argv.push('--', '--env.ios', '--env.hmr');
 process.env.NS_HMR_PORT = process.env.NS_HMR_PORT || '5197';
-process.env.NS_VITE_THIN = process.env.NS_VITE_THIN ?? '1';
 
 const req = createRequire(path.join(process.cwd(), 'package.json'));
 const { createServer } = await import(req.resolve('vite'));

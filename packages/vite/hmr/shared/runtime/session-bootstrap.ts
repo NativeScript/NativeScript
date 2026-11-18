@@ -20,15 +20,13 @@ function describeError(error: unknown) {
 // (`HMRSupport.mm`) gives the JS-thread CFRunLoop a 1 ms slice between
 // fetches so this 250 ms `setInterval` can fire and repaint the bar.
 //
-// Reads the snippet-written `__NS_HMR_BOOT_MODULE_COUNT__` /
-// `__NS_HMR_BOOT_LAST_MODULE__` globals plus elapsed wall-clock since
+// Reads the `__NS_HMR_BOOT_MODULE_COUNT__` / `__NS_HMR_BOOT_LAST_MODULE__`
+// globals (when anything bumps them) plus elapsed wall-clock since
 // `__NS_HMR_BOOT_IMPORT_STARTED_AT__`, runs them through
 // `computeBootImportProgress` + `applyMonotonicBootProgress` (so the
 // bar never goes backwards when count temporarily wins over time), and
 // re-asserts `'importing-main'` so only the progress + detail change.
-// The wall-clock fallback covers long node_modules stretches where the
-// snippet doesn't fire (the /ns/m route only injects it into app modules,
-// never node_modules/library modules).
+// The wall-clock term keeps the bar moving while no module reports.
 //
 // Stopped in the caller's `finally` so it never races past
 // `'waiting-for-app'` or stomps an `'error'` frame.
@@ -115,8 +113,7 @@ async function configureLoaderImportMap(runtimeConfigUrl: string, runtimeApi: Ns
 		return;
 	}
 
-	// Both the entry-runtime and session-bootstrap can call this; gate
-	// on `__NS_IMPORT_MAP_CONFIGURED__` so the first writer wins and
+	// Gate on `__NS_IMPORT_MAP_CONFIGURED__` so the first writer wins and
 	// subsequent calls short-circuit (saves one extra fetch per boot).
 	const g = getGlobalScope();
 	if (g.__NS_IMPORT_MAP_CONFIGURED__ === true) {
@@ -219,8 +216,6 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 	}
 
 	// Boot timeline for the JS-orchestrated dev-session boot.
-	// `entry-runtime.ts` carries its own log for the http-bootloader
-	// fallback path.
 	const trace: BootTrace = { t0: Date.now() };
 
 	try {
@@ -306,17 +301,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			try {
 				const installLaunchBridge = (getGlobalScope() as any).__NS_DEV_INSTALL_LAUNCH_BRIDGE__;
 				if (typeof installLaunchBridge === 'function') {
-					// Pass the /ns/core realm's Application explicitly — that is
-					// the instance app code gets (its @nativescript/core imports
-					// rewrite to the /ns/core bridge). The client's own lookup
-					// prefers the vendor-registry realm, which can be a DIFFERENT
-					// Application whose wrapped `.ios` the app never touches.
-					let coreApplication: unknown;
-					try {
-						const coreNs: any = await importModule(new URL('/ns/core', session.origin).toString());
-						coreApplication = (coreNs?.default ?? coreNs)?.Application ?? coreNs?.Application;
-					} catch {}
-					installLaunchBridge(coreApplication);
+					installLaunchBridge();
 				}
 			} catch {}
 			await importModule(session.entryUrl);

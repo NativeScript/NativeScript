@@ -10,7 +10,6 @@ import { createRequire } from 'node:module';
 const url = process.argv[2] || '/node_modules/@angular/common/fesm2022/common.mjs';
 process.argv.push('--', '--env.ios', '--env.hmr');
 process.env.NS_HMR_PORT = process.env.NS_HMR_PORT || '5198';
-process.env.NS_VITE_THIN = '1';
 
 const vitePath = createRequire(path.join(process.cwd(), 'package.json')).resolve('vite');
 const { createServer } = await import(vitePath);

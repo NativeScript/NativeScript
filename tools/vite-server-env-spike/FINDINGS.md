@@ -310,6 +310,27 @@ Renderers subscribe through registry-level `__NS_HOT_REGISTRY__.on/off`. That is
 - **`vite:beforeUpdate` timing.** Listeners are fire-and-forget, so the overlay reports "Updated" before the refetch lands. Vite's client awaits listener promises. The registry could do the same if the overlay timing matters.
 - **`.ts` edits break thin mode (reboot path).** Editing `app.component.ts` and others in a thin session reboots Angular, and the reboot fails with `No known component for element ProxyViewContainer`. Its stack loads `/ns/m/node_modules/@nativescript/angular/…`: the reboot re-imports through the legacy `/ns/m` route instead of `/ns/v`, so it creates a second `@nativescript/angular` instance with an empty element registry. `ViewEncapsulation.None` components also don't load external styles yet; only `EmulatedRenderer` does.
 
+## Round 10: thin-only, phase 1 (delete what thin never reaches)
+
+DESIGN.md sets the target. Thin is now the only dev mode: `NS_VITE_THIN` is gone.
+
+**Deleted: 88 files, about 17.8k lines** (41 source files, 47 specs):
+- the `/ns/m` pipeline: routes, rewriting, device transforms and AST helpers;
+- `/ns/core` (bridge and core bundle), `/ns/rt`, `/ns/entry`/`startEntry`, `/ns/node`, `/ns/txn`, and the vendor unifier;
+- the shared transform cache;
+- the Vue `/ns/sfc` and `/ns/asm` routes;
+- the Angular register-only entry rewrite, the `/@ng/component` boot gate, and the component-update ledger.
+
+The strategy interface lost every member only `/ns/m` called. Kept for phase 3: the deps bundle and vendor manifest, plus `constants`, `package-classifier` and `ns-core-cjs-shape`, which those still import.
+
+**Checks:**
+- vitest: 1,449 passing.
+- The build succeeds. `tsc` has no errors in `packages/vite`; the 261 under `../core` are pre-existing.
+- A server-side crawl of toolbox matches the pre-change import map and runtime config, with 0 failures.
+- **iOS simulator (Angular 22, same pid):** boot ✅, template edit in place ✅, CSS edit ×2 ✅.
+
+**Known degraded until phases 2–4:** Vue/Solid/TS/React updates (the client still re-imports `/ns/m`/`/ns/sfc` URLs, which now 404), worker HMR URLs (`/ns/m`), and Angular `.ts` edits (the reboot needs hooks released `@nativescript/angular` doesn't have).
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

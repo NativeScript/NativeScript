@@ -2,11 +2,10 @@ import type { ViteDevServer } from 'vite';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { buildRuntimeConfig } from './import-map.js';
 import { getServerOrigin } from './server-origin.js';
-import { isThinDeviceMode } from './thin/thin-mode.js';
 import { buildThinImportMap } from './thin/thin-route.js';
 
 export interface RegisterImportMapRouteOptions {
-	/** The active framework strategy — only its `flavor` is consulted. */
+	/** The active framework strategy. */
 	getStrategy: () => FrameworkServerStrategy | undefined;
 }
 
@@ -14,9 +13,8 @@ export interface RegisterImportMapRouteOptions {
  * Registers the device import-map endpoint: `GET /ns/import-map.json`.
  *
  * Returns the import map + runtime config consumed by ns:module `configureLoader()`
- * on the device during cold boot. Extracted verbatim from
- * `createHmrWebSocketPlugin`; the only injected dependency is the active
- * framework strategy (for its `flavor`).
+ * on the device during cold boot. The only injected dependency is the active
+ * framework strategy.
  */
 export function registerImportMapRoute(server: ViteDevServer, options: RegisterImportMapRouteOptions): void {
 	const { getStrategy } = options;
@@ -47,10 +45,7 @@ export function registerImportMapRoute(server: ViteDevServer, options: RegisterI
 				strategy,
 			});
 
-			let importMap = JSON.parse(runtimeConfig.importMap);
-			if (isThinDeviceMode()) {
-				importMap = { ...importMap, imports: await buildThinImportMap(server, importMap.imports || {}, origin) };
-			}
+			const importMap = { imports: await buildThinImportMap(server, runtimeConfig.specifiers, origin) };
 
 			res.setHeader('Content-Type', 'application/json');
 			res.end(

@@ -7,7 +7,7 @@ import { typescriptServerStrategy } from '../../typescript/server/strategy.js';
  * whose strategy already matches `.js` modules. This entry only re-labels it,
  * but it must exist in `STRATEGY_REGISTRY`: the `/ns/*` device routes are
  * installed only for flavors with a server strategy, and without them the
- * app's boot import of `/ns/core/xhr` is a 404.
+ * app cannot boot.
  */
 export const javascriptServerStrategy: FrameworkServerStrategy = {
 	...typescriptServerStrategy,

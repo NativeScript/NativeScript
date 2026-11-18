@@ -1,4 +1,3 @@
-import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 import { getNsHotRegistry } from '../../../client/hot-context.js';
 import { getOverlayApi, resolveOverlayEnabled, setUpdateStage, type HmrUpdateOverlayInfo, type HmrUpdateOverlayStage } from '../../../client/overlay-driver.js';
 import { handleCssUpdates } from '../../../client/css-handler.js';
@@ -99,7 +98,7 @@ let inFlightHmrCycle: Promise<void> | null = null;
 // Explicit module eviction.
 //
 // `invalidateModules` is an ns:module builtin member that takes an
-// array of canonical /ns/m/<rel> URLs, removes each one from V8's
+// array of device module URLs, removes each one from V8's
 // module registry (`g_moduleRegistry`) and the prefetch cache, and
 // marks the keys "bust next fetch" so the runtime's next HTTP fetch
 // for them defeats OS-level caches with a one-shot query nonce.
@@ -285,32 +284,6 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	}
 }
 
-function getAngularBootstrapEntryCandidates(msg: any): string[] {
-	// Define substitution does not reach this raw-served file; prefer the
-	// globalThis seed from the entry's defines-seed module ('app/'-rooted
-	// projects would otherwise get the wrong '/src' default).
-	const root = (typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__) || (typeof getGlobalScope().__NS_APP_ROOT_VIRTUAL__ === 'string' && getGlobalScope().__NS_APP_ROOT_VIRTUAL__) || '/src';
-	// Server announces the canonical bootstrap entry as
-	// `importerEntry`, computed from `package.json#main`. Fall back to
-	// the legacy `entryCandidates` array (for older servers) and finally
-	// to a hard-coded list. All candidates must be project-relative
-	// posix paths (e.g. `/src/main.ts`) so they slot directly behind
-	// `${origin}/ns/m`.
-	const explicit = typeof msg?.importerEntry === 'string' && msg.importerEntry.startsWith('/') ? [msg.importerEntry as string] : [];
-	const legacy = Array.isArray(msg?.entryCandidates) && msg.entryCandidates.length ? (msg.entryCandidates as unknown[]) : [];
-	const fallback = [`${root}/main.ts`, `${root}/app.ts`];
-	const merged = [...explicit, ...legacy, ...fallback];
-	const seen = new Set<string>();
-	const result: string[] = [];
-	for (const candidate of merged) {
-		if (typeof candidate !== 'string' || !candidate.startsWith('/')) continue;
-		if (seen.has(candidate)) continue;
-		seen.add(candidate);
-		result.push(candidate);
-	}
-	return result;
-}
-
 async function importAngularBootstrapEntry(url: string): Promise<unknown> {
 	const g = globalThis;
 	if (typeof g.__NS_HMR_IMPORT__ === 'function') {
@@ -330,16 +303,10 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 		return;
 	}
 
-	const origin = originSource.replace(/\/$/, '');
-
-	// Explicit eviction set takes precedence over URL versioning. The
-	// server walks the inverse-dep closure of the changed file
-	// (collectAngularEvictionUrls) and emits canonical /ns/m/<rel> URLs
-	// in `evictPaths`. We hand the list to the runtime before
-	// re-importing the entry; the runtime drops those entries from
-	// `g_moduleRegistry` so V8's subsequent `import(entry)` walks the
-	// dep graph and re-fetches ONLY those modules. Everything else stays
-	// hot in the cache.
+	// The server sends the changed file's inverse-dep closure as device URLs
+	// in `evictPaths`. The runtime drops those from `g_moduleRegistry` before
+	// the entry re-import, so V8's `import(entry)` re-fetches ONLY those
+	// modules; everything else stays hot in the cache.
 	const evictPaths = Array.isArray(msg?.evictPaths) ? (msg.evictPaths as unknown[]).filter(isHttpUrl) : [];
 
 	// Diagnostic: log eviction set client-side so we can verify what
@@ -379,40 +346,24 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	// async module-graph walk fetches the evicted modules concurrently on
 	// background threads when the re-import below triggers it.
 
-	// URL strategy: always the STABLE canonical URL. The eviction removed
-	// the changed modules from V8's registry (and armed the runtime's
-	// bust-next-fetch nonce), so re-importing the entry under its
-	// canonical URL triggers fresh fetches for exactly the evicted
-	// modules; the rest of the graph is a cache hit. Never version or
-	// tag the URL — the runtime treats the literal URL as module
-	// identity, so a tagged re-import would mint a second module
-	// identity instead of refreshing the first.
-	let lastError: unknown;
-
-	// 'reimporting' is the entry point for the long tail of an HMR
-	// cycle: V8 walks the freshly-evicted graph and the iOS runtime
-	// re-fetches each node from the dev server. We announce the stage
-	// once, before the loop, so the user sees a progress jump even when
-	// the import resolves on the first candidate (the common case).
+	// Re-import the server-sent `entryUrl` as-is. The eviction removed the
+	// changed modules from V8's registry (and armed the runtime's
+	// bust-next-fetch nonce), so only the evicted modules are re-fetched.
+	// Never version or tag the URL — the runtime treats the literal URL as
+	// module identity, so a tagged re-import would mint a second identity.
 	setUpdateOverlayStage('reimporting', {
 		detail: 'Re-importing Angular bootstrap entry',
 	});
 
-	const entryUrls = isHttpUrl(msg?.entryUrl) ? [msg.entryUrl] : getAngularBootstrapEntryCandidates(msg).map((entry) => `${origin}/ns/m${entry}`);
-	for (const url of entryUrls) {
-		try {
-			g.__NS_ANGULAR_HMR_REGISTER_ONLY__ = true;
-			await importAngularBootstrapEntry(url);
-			return;
-		} catch (error) {
-			lastError = error;
-		} finally {
-			g.__NS_ANGULAR_HMR_REGISTER_ONLY__ = false;
-		}
+	if (!isHttpUrl(msg?.entryUrl)) {
+		return;
 	}
-
-	if (options.verbose && envVerbose && lastError) {
-		console.warn('[hmr-angular] failed to refresh Angular bootstrap entry', (lastError as any)?.message || lastError);
+	try {
+		await importAngularBootstrapEntry(msg.entryUrl);
+	} catch (error) {
+		if (options.verbose && envVerbose) {
+			console.warn('[hmr-angular] failed to refresh Angular bootstrap entry', (error as any)?.message || error);
+		}
 	}
 }
 
@@ -614,14 +565,7 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 		// evaluation) hot-reload at all — without it they were silently dropped
 		// here.
 		try {
-			const origin = (typeof g.__NS_HTTP_ORIGIN__ === 'string' ? g.__NS_HTTP_ORIGIN__ : '').replace(/\/$/, '');
-			let urls: string[] = Array.isArray(msg?.evictPaths) ? (msg.evictPaths as unknown[]).filter(isHttpUrl) : [];
-			// Derive the canonical /ns/m/<rel> URL from msg.path when the server
-			// sent no evictPaths (V8 keys app modules by their extensionless URL).
-			if (!urls.length && typeof msg?.path === 'string' && origin) {
-				const rel = (msg.path as string).replace(/^\//, '').replace(/\.(?:[mc]?[jt]sx?)$/i, '');
-				urls = [`${origin}/ns/m/${rel}`];
-			}
+			const urls: string[] = Array.isArray(msg?.evictPaths) ? (msg.evictPaths as unknown[]).filter(isHttpUrl) : [];
 			if (urls.length) {
 				setUpdateOverlayStage('reimporting', { detail: `Re-importing ${urls.length} module${urls.length === 1 ? '' : 's'}` });
 				const evicted = invalidateModules(urls, options.verbose);

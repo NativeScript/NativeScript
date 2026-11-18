@@ -1,15 +1,11 @@
 import path from 'node:path';
 
 /**
- * Experimental device module path (`NS_VITE_THIN=1`): the device loads Vite's
- * own client-environment output under `/ns/v`, with one URL rule for every
- * module — `<origin>/ns/v<vite-url>` — so each file has exactly one device URL.
+ * Device module path: the device loads Vite's own client-environment output
+ * under `/ns/v`, with one URL rule for every module — `<origin>/ns/v<vite-url>`
+ * — so each file has exactly one device URL.
  */
 export const THIN_PREFIX = '/ns/v';
-
-export function isThinDeviceMode(env: NodeJS.ProcessEnv = process.env): boolean {
-	return env.NS_VITE_THIN === '1' || env.NS_VITE_THIN === 'true';
-}
 
 const toPosix = (value: string) => value.replace(/\\/g, '/');
 

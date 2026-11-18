@@ -2,8 +2,8 @@
  * `@nativescript/vite/hmr/client/framework.js` — the device-side surface a
  * framework's client strategy is written against.
  *
- * A registered flavor's client module is served to the device through
- * `/ns/m` and evaluates in the same realm as the shared HMR client. It must
+ * A registered flavor's client module evaluates in the same realm as the
+ * shared HMR client. It must
  * reach the client's singletons — the module graph mirror, the hot registry,
  * the overlay — through this one module, so that both resolve to the same
  * canonical URLs and therefore the same instances. Importing the client's

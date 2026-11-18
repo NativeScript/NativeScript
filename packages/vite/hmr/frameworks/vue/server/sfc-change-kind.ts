@@ -26,13 +26,13 @@ export type SfcChangeKind = 'render-only' | 'full';
 /** Per-path script signatures from the last time each SFC was seen. */
 export type SfcSignatureStore = Map<string, string>;
 
-type ParseSfc = typeof import('./compiler.js').parseSfc;
+type ParseSfc = typeof import('@vue/compiler-sfc').parse;
 
 let parseSfcPromise: Promise<ParseSfc | null> | null = null;
 
 function loadParseSfc(): Promise<ParseSfc | null> {
 	if (!parseSfcPromise) {
-		parseSfcPromise = import('./compiler.js').then((mod) => mod.parseSfc).catch(() => null);
+		parseSfcPromise = import('@vue/compiler-sfc').then((mod) => mod.parse).catch(() => null);
 	}
 	return parseSfcPromise;
 }

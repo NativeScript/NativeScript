@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { FrameworkRouteContext, FrameworkServedModuleContext, FrameworkServerStrategy } from './framework-strategy.js';
+import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
 import { vueServerStrategy } from '../frameworks/vue/server/strategy.js';
 import { angularServerStrategy } from '../frameworks/angular/server/strategy.js';
@@ -20,11 +20,6 @@ describe('FrameworkServerStrategy contract', () => {
 	});
 
 	it('routes each strategy hook to its owning flavor; the rest keep the shared default', () => {
-		for (const strategy of REGISTRY) {
-			// processSfcCode is not wired to any strategy yet.
-			expect(strategy.processSfcCode).toBeUndefined();
-		}
-
 		// handleHotUpdate: every flavor owns its hot-update handler (shared prologue
 		// + its own tail); the WebSocket plugin calls the active strategy's hook
 		// directly — there is no shared inline dispatcher tail left.
@@ -36,7 +31,8 @@ describe('FrameworkServerStrategy contract', () => {
 
 		// deferDeltaBroadcast: the flavors whose client re-fetches the changed
 		// module (Solid, Angular) defer the prologue's common-block delta
-		// broadcast until after their own cache purge; TS/Vue broadcast inline.
+		// broadcast until after their own module-graph invalidation; TS/Vue
+		// broadcast inline.
 		expect(solidServerStrategy.deferDeltaBroadcast).toBe(true);
 		expect(angularServerStrategy.deferDeltaBroadcast).toBe(true);
 		expect(typescriptServerStrategy.deferDeltaBroadcast ?? false).toBe(false);
@@ -52,31 +48,13 @@ describe('FrameworkServerStrategy contract', () => {
 		expect(solidServerStrategy.skipDefaultGraphUpdate).toBeUndefined();
 		expect(vueServerStrategy.skipDefaultGraphUpdate).toBeUndefined();
 
-		// Only Angular overrides the `/ns/m` served-module rewrite (register-only
-		// entry pass); only Solid patches served node_modules (`@solid-refresh`).
-		// Every other flavor keeps the shared rewriteImports default / identity
-		// transformNodeModule.
-		expect(typeof angularServerStrategy.rewriteServedModule).toBe('function');
-		expect(typeof solidServerStrategy.transformNodeModule).toBe('function');
-		expect(typescriptServerStrategy.rewriteServedModule).toBeUndefined();
-		expect(vueServerStrategy.rewriteServedModule).toBeUndefined();
-		expect(solidServerStrategy.rewriteServedModule).toBeUndefined();
-		expect(typescriptServerStrategy.transformNodeModule).toBeUndefined();
-		expect(vueServerStrategy.transformNodeModule).toBeUndefined();
-		expect(angularServerStrategy.transformNodeModule).toBeUndefined();
-
-		// Vue owns the SFC dev routes; Vue+Solid contribute import-map entries;
-		// Angular contributes the /@ng/component URL vocabulary (volatile +
-		// preserve-query). Everyone else keeps the shared (empty) default.
-		expect(typeof vueServerStrategy.registerRoutes).toBe('function');
-		expect(angularServerStrategy.registerRoutes).toBeUndefined();
-		expect(solidServerStrategy.registerRoutes).toBeUndefined();
-		expect(typescriptServerStrategy.registerRoutes).toBeUndefined();
-
-		expect(typeof vueServerStrategy.importMapEntries).toBe('function');
-		expect(typeof solidServerStrategy.importMapEntries).toBe('function');
-		expect(angularServerStrategy.importMapEntries).toBeUndefined();
-		expect(typescriptServerStrategy.importMapEntries).toBeUndefined();
+		// Vue+Solid contribute import-map specifiers; Angular contributes the
+		// /@ng/component URL vocabulary (volatile + preserve-query). Everyone else
+		// keeps the shared (empty) default.
+		expect(vueServerStrategy.importMapSpecifiers!()).toEqual(['nativescript-vue', 'vue']);
+		expect(solidServerStrategy.importMapSpecifiers!()).toEqual(['solid-js']);
+		expect(angularServerStrategy.importMapSpecifiers).toBeUndefined();
+		expect(typescriptServerStrategy.importMapSpecifiers).toBeUndefined();
 
 		expect(vueServerStrategy.volatilePatterns).toBeUndefined();
 		expect(angularServerStrategy.volatilePatterns!()).toEqual(['/@ng/component']);
@@ -100,17 +78,7 @@ describe('FrameworkServerStrategy contract', () => {
 				// dispatcher supplies the live HmrContext + injected deps.
 				calls.push(`hot:${deps.strategy.flavor}:${ctx.file}`);
 			},
-			rewriteServedModule(code, ctx: FrameworkServedModuleContext) {
-				return `${code}/* ${ctx.moduleId} @ ${ctx.serverOrigin} */`;
-			},
-			transformNodeModule(code, moduleId) {
-				return moduleId.includes('@solid-refresh') ? `${code}\n/* patched */` : code;
-			},
-			processSfcCode: (code) => code.replace('export default', '__ns_sfc__'),
-			registerRoutes(ctx: FrameworkRouteContext) {
-				calls.push(`routes:${ctx.verbose}:${ctx.wss === null}`);
-			},
-			importMapEntries: (origin) => ({ 'fixture-runtime': `${origin}/ns/m/fixture` }),
+			importMapSpecifiers: () => ['fixture-runtime'],
 			volatilePatterns: () => ['/@ns/fix/'],
 			preserveQueryPaths: () => ['/@ns/fix/keep'],
 			async processFile() {},
@@ -119,24 +87,8 @@ describe('FrameworkServerStrategy contract', () => {
 
 		expect(fixture.deferDeltaBroadcast).toBe(true);
 		expect(typeof fixture.handleHotUpdate).toBe('function');
-		expect(
-			fixture.rewriteServedModule!('CODE', {
-				moduleId: '/src/a.fix',
-				sfcFileMap: new Map(),
-				depFileMap: new Map(),
-				projectRoot: '/proj',
-				serverOrigin: 'http://localhost:5173',
-				verbose: false,
-			}),
-		).toBe('CODE/* /src/a.fix @ http://localhost:5173 */');
-		expect(fixture.transformNodeModule!('M', '/node_modules/@solid-refresh/dist/index.js')).toBe('M\n/* patched */');
-		expect(fixture.transformNodeModule!('M', '/node_modules/lodash/index.js')).toBe('M');
-		expect(fixture.processSfcCode!('export default {}')).toBe('__ns_sfc__ {}');
-		expect(fixture.importMapEntries!('http://localhost:5173')).toEqual({ 'fixture-runtime': 'http://localhost:5173/ns/m/fixture' });
+		expect(fixture.importMapSpecifiers!()).toEqual(['fixture-runtime']);
 		expect(fixture.volatilePatterns!()).toEqual(['/@ns/fix/']);
 		expect(fixture.preserveQueryPaths!()).toEqual(['/@ns/fix/keep']);
-
-		fixture.registerRoutes!({ server: {} as any, wss: null, sfcFileMap: new Map(), depFileMap: new Map(), verbose: true, appVirtualWithSlash: '/app/', getGraphVersion: () => 0, getStrategy: () => fixture });
-		expect(calls).toContain('routes:true:true');
 	});
 });

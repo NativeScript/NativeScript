@@ -82,18 +82,3 @@ export function builtinModulesEsbuildPlugin(): EsbuildPlugin {
 		},
 	};
 }
-
-const WRAPPED_ID_RE = /(["'`])\/@id\/([^"'`?#\s]+)(?:[?#][^"'`\s]*)?\1/g;
-
-/**
- * Restores `/@id/<builtin>` specifiers, which Vite's dev import analysis emits
- * for external ids, to the verbatim specifier the runtime resolves.
- *
- * @internal
- */
-export function unwrapBuiltinModuleIds(code: string): string {
-	if (!code || code.indexOf('/@id/') === -1) {
-		return code;
-	}
-	return code.replace(WRAPPED_ID_RE, (full, quote: string, id: string) => (isBuiltinModuleId(id) ? `${quote}${id}${quote}` : full));
-}

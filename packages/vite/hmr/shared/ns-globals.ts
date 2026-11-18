@@ -37,10 +37,8 @@ declare global {
 	var __NS_HMR_BOOT_COMPLETE__: boolean | undefined;
 	var __NS_HMR_HTTP_APP_CSS_APPLIED__: boolean | undefined;
 	var __NS_IMPORT_MAP_CONFIGURED__: boolean | undefined;
-	var __NS_ENTRY_OK__: boolean | undefined;
 	var __NS_DEV_RESET_IN_PROGRESS__: boolean | undefined;
 	var __NS_ANGULAR_HMR_CLIENT_INSTALLED__: boolean | undefined;
-	var __NS_ANGULAR_HMR_REGISTER_ONLY__: boolean | undefined;
 	var __NS_HMR_CLIENT_ACTIVE__: boolean | undefined;
 	var __NS_HMR_CLIENT_SOCKET_READY__: boolean | undefined;
 	var __NS_HMR_INITIAL_MOUNT_IN_PROGRESS__: boolean | undefined;
@@ -50,9 +48,6 @@ declare global {
 	var __NS_HMR_ASM_DIAG__: boolean | undefined;
 
 	// ── Boot-import progress (entry-runtime + boot-progress) ──
-	var __NS_HMR_BOOT_MAIN_URL__: string | undefined;
-	var __NS_HMR_BOOT_MAIN_ATTEMPT__: number | undefined;
-	var __NS_HMR_BOOT_MAIN_ATTEMPTS__: number | undefined;
 	var __NS_HMR_BOOT_MODULE_COUNT__: number | undefined;
 	var __NS_HMR_BOOT_LAST_MODULE__: string | undefined;
 	var __NS_HMR_BOOT_LAST_PROGRESS__: number | undefined;
@@ -61,7 +56,6 @@ declare global {
 
 	// ── Origins / realms / counters / hosts ──
 	var __NS_HTTP_ORIGIN__: string | undefined;
-	var __NS_ENTRY_LAST_TARGET__: string | undefined;
 	var __NS_HMR_HOST: string | undefined;
 	var __NS_HMR_REALM__: string | undefined;
 	var __NS_RT_REALM__: string | undefined;

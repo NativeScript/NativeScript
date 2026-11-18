@@ -3,8 +3,8 @@ import { resolveDeviceReachableOrigin, type DevHostPlatform } from '../../helper
 import { getCliFlags } from '../../helpers/cli-flags.js';
 
 /**
- * Dev-server origin baked into every module served to the device
- * (`/ns/core/...`, `/ns/m/...`). MUST match the origin `dev-host.ts` bakes
+ * Dev-server origin baked into every module URL served to the device
+ * (`/ns/v/...`). MUST match the origin `dev-host.ts` bakes
  * into `bundle.mjs`; if they disagree V8 keys them as different modules and
  * the app ends up with two `@nativescript/core` realms (a singleton-state
  * split). `resolveDeviceReachableOrigin` keeps every platform in lock-step:
@@ -15,7 +15,7 @@ import { getCliFlags } from '../../helpers/cli-flags.js';
  * everything; `NS_HMR_PREFER_LAN_HOST=0` forces loopback.
  */
 // Per-session memo: the device-reachable origin is stable for a dev server's
-// lifetime, but `getServerOrigin` is called multiple times per `/ns/m` request
+// lifetime, but `getServerOrigin` is called multiple times per device request
 // (each call re-runs CLI-flag parsing + NIC enumeration via
 // `resolveDeviceReachableOrigin`). Keyed by `server.config` (NOT the server
 // object): Vite 8 hands hot-update hooks a compat WRAPPER over the dev server

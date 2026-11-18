@@ -7,8 +7,6 @@ import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath, resolveProjectGlobalCssPath } from './utils.js';
 import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
-import { buildCoreUrl } from './ns-core-url.js';
-import { isThinDeviceMode } from '../hmr/server/thin/thin-mode.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
 import { setAppCssState } from './app-css-state.js';
 import { createAppCssRefresher } from './app-css-refresh.js';
@@ -232,32 +230,21 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			return null;
 		},
 		async load(id: string) {
-			// Compute the dev server origin for HMR mode. Under HMR we emit
-			// `@nativescript/core*` imports as FULL HTTP URLs so iOS's ESM loader
-			// can fetch them directly during bundle.mjs module instantiation —
-			// the import map isn't installed yet at that phase. For non-HMR
-			// builds, we keep bare specifiers so production bundlers inline core
-			// the normal way.
+			// Dev server origin baked into bundle.mjs (null when HMR is off).
 			//
-			// Pre-configure invariant. bundle.mjs is a local ES module entry, so
-			// its static import graph is fetched and keyed by the runtime BEFORE
-			// its body runs `configureLoader` (session-bootstrap). Unconfigured,
-			// the runtime keys an HTTP module by its URL verbatim (fragment
-			// stripped, nothing else). Every URL reachable from this entry's
-			// static graph must therefore be canonical on its own — absolute,
-			// query-free, resolvable without the import map — or the same module
-			// requested after configuration lands under a second registry key
-			// and evaluates twice. The /ns/core bridge URLs satisfy this
-			// (`buildCoreUrl` emits no query, and the bridge shims import only
-			// `/ns/core-bundle.mjs`); anything served through /ns/m must be
-			// reached from the dev session, after configuration.
+			// bundle.mjs is a local ES module entry, so its static import graph is
+			// fetched and keyed by the runtime BEFORE its body runs
+			// `configureLoader` (session-bootstrap). Unconfigured, the runtime keys
+			// an HTTP module by its URL verbatim (fragment stripped, nothing else).
+			// Every URL reachable from this entry's static graph must therefore be
+			// canonical on its own — absolute, query-free, resolvable without the
+			// import map — or the same module requested after configuration lands
+			// under a second registry key and evaluates twice.
 			//
-			// Routes through `resolveDeviceReachableOrigin` so the URL baked
-			// into the bundle is something the DEVICE can reach: wildcard
-			// binds (`0.0.0.0`) and Android loopback get remapped to a real
-			// LAN IP (preferred) or the platform's reachable fallback
-			// (`10.0.2.2` for the Android emulator). Without this, Android
-			// crashes at boot trying to fetch `http://0.0.0.0:5173/ns/core/xhr`.
+			// Routes through `resolveDeviceReachableOrigin` so the URL is something
+			// the DEVICE can reach: wildcard binds (`0.0.0.0`) and Android loopback
+			// get remapped to a real LAN IP (preferred) or the platform's reachable
+			// fallback (`10.0.2.2` for the Android emulator).
 			const getBootOrigin = (): string | null => {
 				if (!opts.hmrActive) return null;
 				try {
@@ -272,22 +259,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 					return null;
 				}
 			};
-			// Return a spec string for @nativescript/core or a subpath that is
-			// guaranteed to resolve at iOS module-instantiation time. Under HMR
-			// this is always a full HTTP URL into the /ns/core bridge (no
-			// import-map dependency). Under non-HMR it's the bare specifier for
-			// the bundler to handle.
-			//
-			// Under HMR, delegates to buildCoreUrl() — the ONE canonical URL
-			// generator. Every URL emitter in the build/runtime pipeline (this
-			// function, ns-core-external-urls, rewriteSpec, runtime import map)
-			// uses the same function so iOS's HTTP ESM cache sees byte-identical
-			// URLs.
+			// Bare `@nativescript/core[/sub]` specifier. Under HMR the
+			// `ns-core-external-urls` build plugin externalizes it to its device URL.
 			const coreSpec = (subpath?: string | null): string => {
-				const origin = isThinDeviceMode() ? null : getBootOrigin();
-				if (origin) {
-					return buildCoreUrl(origin, subpath);
-				}
 				const sub = subpath ? String(subpath).replace(/^\/+/, '') : '';
 				return sub ? `@nativescript/core/${sub}` : '@nativescript/core';
 			};
@@ -413,9 +387,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				// dev; its `/@vite/env` module installs them on globalThis instead.
 				// It must be an external import (evaluated before the externalized
 				// core graph), not a bundled module (whose body runs after it).
-				const thinOrigin = isThinDeviceMode() ? getBootOrigin() : null;
-				if (thinOrigin) {
-					imports += `import '${thinOrigin}/ns/v/@vite/env';\n`;
+				const bootOrigin = getBootOrigin();
+				if (bootOrigin) {
+					imports += `import '${bootOrigin}/ns/v/@vite/env';\n`;
 				}
 				imports += `import '${DEFINES_SEED_VIRTUAL_ID}';\n`;
 			}
@@ -442,18 +416,14 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			//   - If the specifier is a Node built-in (fs, path, os, …) or
 			//     a webpack-only runtime hook (require.context), return a
 			//     safe empty stub.
-			//   - Otherwise, delegate to the preserved original
-			//     `globalThis.require` (NativeScript's native CJS loader),
-			//     which routes `@nativescript/core*` through the HTTP bridge
-			//     or, for already-HTTP-loaded modules, through the
-			//     `globalThis.__NS_CORE_MODULES__` registry populated by the
-			//     `/ns/core` bridge preamble.
+			//   - Otherwise, consult the `globalThis.__NS_CORE_MODULES__`
+			//     registry (when present), then delegate to the preserved
+			//     original `globalThis.require` (NativeScript's native CJS
+			//     loader).
 			imports += "try { if (typeof globalThis !== 'undefined') {\n";
 			imports += "  var __nsOrigRequire = typeof globalThis.require === 'function' ? globalThis.require : null;\n";
 			imports += '  var __nsNodeBuiltins = { fs: 1, path: 1, os: 1, url: 1, crypto: 1, util: 1, stream: 1, events: 1, buffer: 1, http: 1, https: 1, net: 1, tls: 1, dns: 1, child_process: 1, module: 1, zlib: 1, querystring: 1, assert: 1, constants: 1, vm: 1 };\n';
-			// Mirror helpers/ns-core-url.ts normalizeCoreSub() inline so the
-			// lookup against __NS_CORE_MODULES__ uses the same keys the
-			// /ns/core handler registers under.
+			// Mirrors normalizeCoreSub() in helpers/ns-core-url.ts.
 			imports += '  var __nsNormSub = function (s) {\n';
 			imports += "    if (!s) return '';\n";
 			imports += "    var t = String(s).split('?')[0].split('#')[0].trim();\n";
@@ -481,10 +451,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			//     underlying namespace. zone.js MUTATES its target (stashes
 			//     delegate symbols, overwrites methods); a fresh copy per
 			//     require() would lose those mutations on the next lookup.
-			//   - Installed ONCE on globalThis so the /ns/core handler's
-			//     registration footer, the vendor shim's createRequire, and
-			//     any other consumer share the same cache and see
-			//     mutation-consistent shapes.
+			//   - Installed ONCE on globalThis so the vendor shim's
+			//     createRequire and any other consumer share the same cache
+			//     and see mutation-consistent shapes.
 			imports += '  var __nsShapeCache = globalThis.__NS_CJS_SHAPE_CACHE__ || (globalThis.__NS_CJS_SHAPE_CACHE__ = new WeakMap());\n';
 			imports += '  var __nsShapeCjs = globalThis.__NS_CJS_SHAPE__ || (globalThis.__NS_CJS_SHAPE__ = function __nsShape(obj) {\n';
 			imports += "    if (!obj || typeof obj !== 'object') return obj;\n";
@@ -516,12 +485,8 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			imports += "      if (n === '@nativescript/core' || n.indexOf('@nativescript/core/') === 0) {\n";
 			imports += '        var table = globalThis.__NS_CORE_MODULES__;\n';
 			imports += '        if (table) {\n';
-			// Table entries are ALREADY shaped (the /ns/core footer stores
-			// the shape, not the raw namespace). But we pass through
-			// __nsShapeCjs anyway — it's a no-op on already-shaped values
-			// (fast path: `proto !== null && !isNsModule` returns obj as-is)
-			// and guards against future changes to how the registry is
-			// populated (e.g., by direct assignment from test code).
+			// __nsShapeCjs is a no-op on already-shaped values (fast path:
+			// `proto !== null && !isNsModule` returns obj as-is).
 			imports += '          if (table[n]) return __nsShapeCjs(table[n]);\n';
 			imports += "          var rawSub = n === '@nativescript/core' ? '' : n.slice('@nativescript/core/'.length);\n";
 			imports += '          var normSub = __nsNormSub(rawSub);\n';
@@ -530,10 +495,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			imports += '          if (table[normSub]) return __nsShapeCjs(table[normSub]);\n';
 			imports += '        }\n';
 			imports += '      }\n';
-			// Fallback to native require (NativeScript CJS loader via HTTP
-			// bridge). Shape the result too — the native loader may return
-			// a raw ESM namespace for core subpaths served before the /ns/core
-			// footer runs.
+			// The native loader may return a raw (null-proto) ESM namespace.
 			imports += '      if (__nsOrigRequire) return __nsShapeCjs(__nsOrigRequire(id));\n';
 			imports += '    } catch (e) {}\n';
 			imports += '    return {};\n';
@@ -549,25 +511,11 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				imports += `console.info('[ns-entry] begin', { platform: ${JSON.stringify(opts.platform)}, dev: ${JSON.stringify(opts.isDevMode)}, hmr: ${JSON.stringify(opts.hmrActive)}, verbose: ${JSON.stringify(opts.verbose)}, mainEntry: ${JSON.stringify(mainEntry)}, mainRel: ${JSON.stringify(mainEntryRelPosix)}, time: new Date().toISOString() });\n`;
 			}
 
-			if (opts.hmrActive) {
-				// NOTE: globalThis defines (`__APPLE__`, `__IOS__`, `__DEV__`,
-				// etc.) are seeded by the `virtual:ns-defines-seed` import at
-				// the very top of this entry — see the import on line ~192.
-				// They MUST run as a leaf module ahead of any other graph
-				// node, so we can't seed them inline here (ESM imports hoist
-				// past inline body code, so any module reachable through
-				// `bundle-entry-points` would otherwise see undefined).
-				imports += "import { installModuleProvenanceRecorder } from '@nativescript/vite/hmr/shared/runtime/module-provenance.js';\n";
-				imports += 'installModuleProvenanceRecorder(__nsVerboseLog);\n';
-			}
-
 			// ---- Core runtime globals (always-needed) ----
 			// Install XHR polyfill FIRST — its virtual module body runs during import evaluation,
 			// before any subsequent import (like zone.js) can reference XMLHttpRequest.
 			imports += `import '${XHR_POLYFILL_VIRTUAL_ID}';\n`;
-			// Load globals early. Under HMR we use a full HTTP URL so iOS's
-			// ESM loader can fetch it directly at module-instantiation time —
-			// the import map isn't installed yet at that phase.
+			// Load globals early.
 			imports += `import ${JSON.stringify(coreSpec('globals/index'))};\n`;
 			if (opts.verbose) {
 				imports += `console.info('[ns-entry] core globals loaded');\n`;
@@ -757,12 +705,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				if (opts.verbose) {
 					imports += `console.info('[ns-entry] including deterministic dev session bootstrap', { platform: ${JSON.stringify(opts.platform)}, mainRel: ${JSON.stringify(mainEntryRelPosix)} });\n`;
 				}
-				// Same device-reachable origin as `getBootOrigin()` so the
-				// session-descriptor URL and every `/ns/core/*` URL baked
-				// into bundle.mjs come from one canonical source. Without
-				// this, Android's `bundle.mjs` would hit `0.0.0.0:5173` for
-				// both endpoints (server.host's wildcard bind) and fail at
-				// boot before any user code runs.
+				// Same device-reachable origin as `getBootOrigin()`.
 				const { origin: bootOrigin } = resolveDeviceReachableOrigin({
 					host: resolvedConfig.server.host,
 					platform: opts.platform,

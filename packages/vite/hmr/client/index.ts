@@ -25,8 +25,7 @@ import { CLIENT_STRATEGY_READY, getClientStrategy } from './strategy-loader.js';
 
 const VERBOSE = ENV_VERBOSE;
 
-// Apply once on module evaluation so that /ns/rt exports resolve to functions
-// before any SFCs are evaluated during HTTP-only dev boot.
+// Apply once on module evaluation, before the app graph evaluates.
 ensureCoreAliasesOnGlobalThis();
 
 // Late-registration bridge for one-shot iOS launch notifications
@@ -62,9 +61,9 @@ try {
 	(globalThis as any).__NS_DEV_INSTALL_LAUNCH_BRIDGE__ = (explicitApplication?: any) => tryInstallLaunchNotificationBridge(100, explicitApplication);
 } catch {}
 
-// Install the device CSS applier. CSS-bearing modules (a Vue SFC `<style>` via
-// `/ns/asm`, an imported `.css` via `/ns/m`) call `__NS_REGISTER_CSS__(tag, css)`,
-// or queue in `__NS_PENDING_CSS__` if they ran first; the drain below covers that.
+// Install the device CSS applier. CSS-bearing modules call
+// `__NS_REGISTER_CSS__(tag, css)`, or queue in `__NS_PENDING_CSS__` if they ran
+// first; the drain below covers that.
 // Routes through the shared `applyCssText` (tagged remove+add + root restyle),
 // the same path app.css and live `.css` edits use.
 function installCssRegister(): void {

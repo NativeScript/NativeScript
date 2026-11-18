@@ -2,12 +2,11 @@ import type { Plugin, ViteDevServer } from 'vite';
 import { readFileSync } from 'fs';
 import { WebSocketServer } from 'ws';
 import * as path from 'path';
-import { createHash } from 'crypto';
 import { getVendorManifest } from '../shared/vendor/registry.js';
 import { getPackageJson, getProjectFilePath } from '../../helpers/project.js';
 import { loadPrebuiltVendorManifest } from '../shared/vendor/manifest-loader.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
-import { vueServerStrategy, processSfcCode } from '../frameworks/vue/server/strategy.js';
+import { vueServerStrategy } from '../frameworks/vue/server/strategy.js';
 import { angularServerStrategy } from '../frameworks/angular/server/strategy.js';
 import { solidServerStrategy } from '../frameworks/solid/server/strategy.js';
 import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
@@ -15,28 +14,15 @@ import { reactServerStrategy } from '../frameworks/react/server/strategy.js';
 import { javascriptServerStrategy } from '../frameworks/javascript/server/strategy.js';
 import { getFrameworkFlavor } from '../framework-flavors.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
-import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
 import { listRuntimeGraphSourceFiles } from './runtime-graph-filter.js';
 import { getHmrSourceRoots } from '../../helpers/hmr-scope.js';
 import { getTsConfigData } from '../../helpers/ts-config-paths.js';
-import { createAngularComponentUpdateLedger, normalizeHotReloadMatchPath, shouldSuppressAngularComponentUpdatePayload, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from '../frameworks/angular/server/websocket-angular-hot-update.js';
-import { canonicalizeTransformRequestCacheKey } from './transform-cache-invalidation.js';
+import { normalizeHotReloadMatchPath, shouldSuppressAngularComponentUpdatePayload, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from '../frameworks/angular/server/websocket-angular-hot-update.js';
 import { HmrModuleGraph } from './hmr-module-graph.js';
-import { registerNsRtBridgeRoute } from './ns-rt-route.js';
-import { registerNodeBuiltinsRoute } from './node-builtins-route.js';
-import { registerVendorUnifierHandler } from './websocket-vendor-unifier.js';
-import { registerTxnHandler } from './websocket-txn.js';
-import { registerNsModuleServerRoute } from './websocket-ns-m.js';
-import { createBootRecorderFromEnv, type BootRecorder } from './boot-recording.js';
-import { getSharedDepsBundleService } from './deps-bundle.js';
-import { registerNsCoreRoute } from './websocket-ns-core.js';
-import { registerNsEntryRoutes } from './websocket-ns-entry.js';
+import { getSharedDepsBundleService, registerDepsBundleRoute } from './deps-bundle.js';
 import { registerImportMapRoute } from './websocket-import-map-route.js';
 import { isAngularRootComponentUpdate, resolveBootstrapRootComponent, type BootstrapRootComponent } from '../frameworks/angular/server/angular-root-component.js';
-import { cleanCode, collectImportDependencies, rewriteImports, shouldRemapImport } from './websocket-device-transform.js';
-import { classifyBootRoute, createColdBootRequestCounter, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
-import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
-import { createSharedTransformRequestRunner, type SharedTransformRequestRunner } from './shared-transform-request.js';
+import { formatPopulateInitialGraphSummary } from './perf-instrumentation.js';
 import type { NsHotUpdateContext } from './websocket-hot-update.js';
 import { maybeSendConnectCssSync } from './css-connect-sync.js';
 import { isSocketClientOpen } from './socket-utils.js';
@@ -60,8 +46,6 @@ function getHmrSourceRootsCached(): string[] {
 	return _hmrSourceRoots;
 }
 
-const APP_VIRTUAL_PREFIX = getProjectAppVirtualPath();
-const APP_VIRTUAL_WITH_SLASH = `${APP_VIRTUAL_PREFIX}/`;
 const DEFAULT_MAIN_ENTRY = getProjectAppRelativePath('app.ts');
 const DEFAULT_MAIN_ENTRY_VIRTUAL = getProjectAppVirtualPath('app.ts');
 
@@ -145,16 +129,8 @@ function getHmrSocketRole(client: { __nsHmrClientRole?: string } | null | undefi
 function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: FrameworkServerStrategy): Plugin {
 	const verbose = !!opts.verbose;
 	let wss: WebSocketServer | null = null;
-	let sharedTransformRequest!: SharedTransformRequestRunner;
 	const pendingAngularReloadSuppressions = new Map<string, PendingAngularReloadSuppressionEntry>();
-	// Records every `angular:component-update` broadcast actually forwarded to
-	// /ns-hmr clients so the /ns/m `/@ng/component` route can distinguish live
-	// update fetches (which echo the broadcast's exact `(id, t)`) from
-	// boot-time `_HmrLoad(Date.now())` fetches, which must get the no-update
-	// stub (see the ledger docs in websocket-angular-hot-update.ts).
-	const angularComponentUpdateLedger = createAngularComponentUpdateLedger();
 	const sfcFileMap = new Map<string, string>();
-	const depFileMap = new Map<string, string>();
 	let vendorBootstrapDone = false;
 	let pluginRoot: string | undefined;
 	// HMR module graph (spec -> deps/hash) with version tagging and delta/full
@@ -169,14 +145,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 	// Tracks the background initial-graph population so handleHotUpdate can
 	// await completion before computing delta roots for the first HMR event.
 	let graphInitialPopulationPromise: Promise<void> | null = null;
-	// Cold-boot /ns/m request counter — populated the first time a /ns/m
-	// request arrives, finalized when the request window goes idle.
-	// See Shared across requests so a single counter spans the whole cold boot.
-	let coldBootCounter: ColdBootRequestCounter | null = null;
-	// Cold-boot request recorder: captures each boot's exact prefetchable URL
-	// set so the next boot's closure/archive covers node_modules bodies the
-	// graph walk cannot see. Created in configureServer (needs the root).
-	let bootRecorder: BootRecorder | null = null;
 	// Single source for the strategy-hook dependency bag: `handleHotUpdate`
 	// (the Vite hook) and the device custom-event dispatch (`configureServer`'s
 	// ws message pump) must hand strategies the exact same context.
@@ -187,13 +155,10 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			strategy,
 			verbose,
 			sfcFileMap,
-			depFileMap,
-			sharedTransformRequest,
 			getHmrSourceRootsCached,
 			getBootstrapEntryRelPath,
 			isSocketClientOpen,
 			getHmrSocketRole,
-			shouldRemapImport,
 			rememberAngularReloadSuppression,
 			getRootComponentIdentity,
 			getGraphInitialPopulationPromise: () => graphInitialPopulationPromise,
@@ -221,18 +186,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 		const tStart = Date.now();
 		const versionAtStart = moduleGraph.version;
 		const root = server.config.root || process.cwd();
-		// Route every bulk transform through `sharedTransformRequest` when it's
-		// already been wired up — this way the background walk shares the 60s
-		// TTL cache with live /ns/m requests, so the device sees cached results
-		// for any file the walker already visited. The fallback keeps the
-		// walker working during server tests where the shared runner isn't
-		// constructed yet.
-		const bulkTransform: (rel: string) => Promise<{ code?: string } | null | undefined> = (rel) => {
-			if (sharedTransformRequest) {
-				return sharedTransformRequest(rel) as Promise<{ code?: string } | null | undefined>;
-			}
-			return server.transformRequest(rel) as Promise<{ code?: string } | null | undefined>;
-		};
 		// The configured `appPath` (nativescript.config), not a fixed `src/`:
 		// without these importer edges the client cannot trace a plain `.ts`
 		// edit back to the component that must re-render.
@@ -240,7 +193,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			const rel = '/' + path.relative(root, full).split(path.sep).join('/');
 			// Transform via Vite to gather deps (ignore failures)
 			try {
-				const transformed = await bulkTransform(rel);
+				const transformed = await server.transformRequest(rel);
 				const code = transformed?.code || '';
 				const deps: string[] = [];
 				// fallback to import relationships via moduleGraph
@@ -272,8 +225,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			);
 		}
 	}
-	// Kick off `populateInitialGraph` in the background (non-awaited) so /ns/m
-	// responses are never blocked on a full tree walk. Returns the shared
+	// Kick off `populateInitialGraph` in the background (non-awaited) so device
+	// module responses are never blocked on a full tree walk. Returns the shared
 	// promise so hot-update code paths can await completion before computing
 	// delta roots for the first HMR event.
 	function ensureInitialGraphPopulationStarted(server: ViteDevServer): Promise<void> {
@@ -364,13 +317,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 							if (verbose) console.log('[hmr-ws][bridge] dropped angular:component-update — pending Angular reboot owns the same TS file');
 							return;
 						}
-						// Ledger for the /@ng/component boot-fetch gate: only
-						// broadcasts that actually reach devices are recorded,
-						// so root-component updates (dropped above) can never
-						// match a metadata fetch.
-						if (normalized.event === 'angular:component-update') {
-							angularComponentUpdateLedger.record(normalized.data);
-						}
 						const stringified = JSON.stringify(normalized);
 						let recipients = 0;
 						wss?.clients.forEach((client: any) => {
@@ -410,123 +356,13 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					return originalSend(payload, ...rest);
 				}) as typeof server.ws.send;
 			}
-			// Transform concurrency. Historically we defaulted to 1 to avoid
-			// race conditions during HTTP HMR startup, but the shared runner
-			// already has per-URL coalescing and an async-cached result map,
-			// so higher fan-out is safe and dramatically reduces cold-boot
-			// time. We cap at 8 by default to match typical dev machines and
-			// respect Vite's internal worker pool limits. Override via the
-			// `NS_VITE_HMR_TRANSFORM_CONCURRENCY` env var when needed.
-			const configuredTransformConcurrency = Number.parseInt(process.env.NS_VITE_HMR_TRANSFORM_CONCURRENCY || '', 10);
-			const transformConcurrency = Number.isFinite(configuredTransformConcurrency) && configuredTransformConcurrency > 0 ? configuredTransformConcurrency : 8;
-			// Keep transformed code cached for longer across HMR updates so
-			// that unchanged neighbours of an edited file don't re-run
-			// through the Angular/TypeScript/Vite transform pipeline. The
-			// HMR flow explicitly invalidates affected URLs, so a longer TTL
-			// is safe. Override with `NS_VITE_HMR_TRANSFORM_CACHE_MS`.
-			const configuredTransformCacheMs = Number.parseInt(process.env.NS_VITE_HMR_TRANSFORM_CACHE_MS || '', 10);
-			const transformCacheMs = Number.isFinite(configuredTransformCacheMs) && configuredTransformCacheMs >= 0 ? configuredTransformCacheMs : 60000;
-			sharedTransformRequest = createSharedTransformRequestRunner(
-				(url) => server.transformRequest(url),
-				(url, timeoutMs) => {
-					console.warn('[ns:m] slow transformRequest for', url, '(>' + timeoutMs + 'ms)');
-				},
-				{
-					maxConcurrent: transformConcurrency,
-					resultCacheTtlMs: transformCacheMs,
-					getResultCacheKey: (url) => canonicalizeTransformRequestCacheKey(url, pluginRoot || process.cwd()),
-				},
-			);
-
-			// Startup banner — prints once per dev server process (verbose only)
-			// so anyone investigating perf can immediately see which build is
-			// live and what knobs are active.
-			if (verbose) {
-				console.info(
-					formatServerStartupBanner({
-						version: getVitePackageVersion(),
-						transformConcurrency,
-						transformCacheMs,
-						lazyInitialGraph: true,
-						graphVersion: moduleGraph.version,
-					}),
-				);
-			}
-
-			// Always-on cold-boot request trace. Runs in front of every
-			// other middleware so it catches all NS dev routes (/ns/m/*,
-			// /ns/rt/*, /ns/core/*, /__ns_boot__/*, etc.) with a single
-			// hook. Closes itself after an idle window so HMR edits don't
-			// get rolled into the cold-boot numbers. The idle window is
-			// generous by default (5s) because V8's HTTP ESM resolver
-			// pauses between dep levels while parsing — a too-tight window
-			// was closing after the first wave and under-reporting boot by
-			// 100x. Override via `NS_VITE_HMR_BOOT_TRACE_IDLE_MS` when
-			// profiling something tricky.
-			try {
-				const configuredIdleMs = Number.parseInt(process.env.NS_VITE_HMR_BOOT_TRACE_IDLE_MS || '', 10);
-				const idleWindowMs = Number.isFinite(configuredIdleMs) && configuredIdleMs > 0 ? configuredIdleMs : 5000;
-				const configuredSummaryEvery = Number.parseInt(process.env.NS_VITE_HMR_BOOT_TRACE_PROGRESS_EVERY || '', 10);
-				const summaryEvery = Number.isFinite(configuredSummaryEvery) && configuredSummaryEvery >= 0 ? configuredSummaryEvery : 25;
-				if (!coldBootCounter) {
-					coldBootCounter = createColdBootRequestCounter({
-						summaryEvery,
-						idleWindowMs,
-						// Gated on the verbose flag so cold-boot progress and
-						// the final window-closed summary stay quiet by
-						// default. Flip NS_VITE_VERBOSE=1 to surface them.
-						log: (line) => {
-							if (!verbose) return;
-							console.info(line);
-						},
-					});
-				}
-			} catch {}
-			// Boot recording — persists each boot's exact prefetchable URL set
-			// so the next boot's deps bundle covers the deep
-			// `/ns/m/node_modules/...` files a real boot actually fetches.
-			// Disable via `NS_VITE_HMR_DISABLE_BOOT_RECORDING=1` when profiling.
-			if (!bootRecorder) {
-				bootRecorder = createBootRecorderFromEnv(server.config?.root || process.cwd(), (line) => {
-					if (verbose) console.info(line);
-				});
-			}
-			server.middlewares.use((req, res, next) => {
-				try {
-					const urlObj = new URL(req.url || '', 'http://localhost');
-					// Boot recording sees every request first: the `/__ns_dev__/session`
-					// boot signal opens a recording window, prefetchable module routes
-					// get recorded on 2xx completion.
-					const finishRecord = bootRecorder?.noteRequest(`${urlObj.pathname}${urlObj.search || ''}`);
-					if (finishRecord) {
-						const recordOnce = () => finishRecord(res.statusCode || 0);
-						res.once('finish', recordOnce);
-						res.once('close', recordOnce);
-					}
-					const route = classifyBootRoute(urlObj.pathname);
-					if (route === 'other') return next();
-					if (!coldBootCounter) return next();
-					const handle = coldBootCounter.record(urlObj.pathname);
-					const finishOnce = () => {
-						try {
-							handle.finish();
-						} catch {}
-					};
-					try {
-						res.once('finish', finishOnce);
-						res.once('close', finishOnce);
-					} catch {}
-				} catch {}
-				next();
-			});
-
 			// Populate is started from the post hook returned below, not here.
 			// Disable via `NS_VITE_HMR_DISABLE_POPULATE=1` when profiling whether
 			// populate is helping or hurting a specific app.
 			const disablePopulate = process.env.NS_VITE_HMR_DISABLE_POPULATE === '1' || process.env.NS_VITE_HMR_DISABLE_POPULATE === 'true';
 			if (disablePopulate) {
 				if (verbose) console.info('[hmr-ws][populate] disabled via NS_VITE_HMR_DISABLE_POPULATE');
-				// Short-circuit: mark as resolved so /ns/m never schedules it and
+				// Short-circuit: mark as resolved so nothing schedules it and
 				// HMR still works (handleHotUpdate just has no pre-warmed graph).
 				graphInitialPopulationPromise = Promise.resolve();
 			}
@@ -583,23 +419,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				getStrategy: () => strategy,
 			});
 
-			// Dev-only HTTP ESM loader endpoint for device clients
-			// ESM module server for application/source modules: GET /ns/m/* — see websocket-ns-m.ts
-			registerNsModuleServerRoute(server, {
-				verbose,
-				appVirtualWithSlash: APP_VIRTUAL_WITH_SLASH,
-				sfcFileMap,
-				depFileMap,
-				getGraphVersion: () => moduleGraph.version,
-				getStrategy: () => strategy,
-				sharedTransformRequest,
-				ensureInitialGraphPopulationStarted,
-				upsertGraphModule: (id, code, deps, opts) => {
-					moduleGraph.upsert(id, code, deps, opts);
-				},
-				isLiveAngularComponentUpdateFetch: (componentId, timestamp) => angularComponentUpdateLedger.isLive(componentId, timestamp),
-			});
-
 			// Deps bundle (see deps-bundle.ts): the single node_modules payload,
 			// built from the vendor collection + the persisted boot recording
 			// and AWAITED here so the ready/not-ready decision is latched
@@ -609,6 +428,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			// /@nativescript/vendor.mjs module (see buildDepsVendorRuntimeModule).
 			const depsBundle = getSharedDepsBundleService(server);
 			if (depsBundle) {
+				// GET /ns/deps-bundle.mjs, imported by /@nativescript/vendor.mjs.
+				registerDepsBundleRoute(server, depsBundle);
 				const tDeps = Date.now();
 				const depsState = await depsBundle.ensureBuilt();
 				if (depsState && verbose) {
@@ -624,60 +445,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					}
 				});
 			}
-
-			// ESM runtime bridge for NativeScript-Vue: GET /ns/rt[/<ver>] — see ns-rt-route.ts
-			registerNsRtBridgeRoute(server, { getGraphVersion: () => moduleGraph.version });
-
-			// Dev-session shims for `node:` builtins: GET /ns/node/<name> — see node-builtins-route.ts
-			registerNodeBuiltinsRoute(server);
-
-			// Dev-only vendor import unifier: rewrite 'vue'/'nativescript-vue' to /ns/rt/<ver>
-			// so plugins and the app share a single Vue/NativeScript-Vue realm. See websocket-vendor-unifier.ts.
-			registerVendorUnifierHandler(server, { getGraphVersion: () => moduleGraph.version, getStrategy: () => strategy });
-
-			// @nativescript/core device bridge (+ stray /node_modules/@nativescript/core redirect) — see websocket-ns-core.ts
-			registerNsCoreRoute(server, {
-				getGraphVersion: () => moduleGraph.version,
-				sharedTransformRequest,
-			});
-
-			// Device bootstrap: GET /ns/entry-rt + GET /ns/entry — see websocket-ns-entry.ts
-			registerNsEntryRoutes(server, {
-				verbose,
-				appRootDir: APP_ROOT_DIR,
-				defaultMainEntry: DEFAULT_MAIN_ENTRY,
-				defaultMainEntryVirtual: DEFAULT_MAIN_ENTRY_VIRTUAL,
-				getGraphVersion: () => moduleGraph.version,
-			});
-
-			// Transactional HMR endpoint: GET /ns/txn/<ver> — one ESM that sequentially
-			// imports all changed modules for the given graph version. See websocket-txn.ts.
-			registerTxnHandler(server, {
-				resolveTxnIds: (version, fallbackChangedIds) => {
-					let ids = moduleGraph.getTxnBatch(version) || [];
-					if (!ids.length && fallbackChangedIds.length) {
-						try {
-							ids = moduleGraph.computeTxnOrderForChanged(fallbackChangedIds);
-						} catch {}
-					}
-					return ids;
-				},
-			});
-
-			// Framework-owned dev HTTP endpoints (Vue: /ns/sfc, /ns/sfc-meta, /ns/asm).
-			// Only the strategy that owns routes (Vue) registers them via
-			// `registerRoutes`; SFC/assembler endpoints are inherently Vue-only
-			// (see websocket-sfc.ts).
-			await strategy.registerRoutes?.({
-				server,
-				wss,
-				verbose,
-				appVirtualWithSlash: APP_VIRTUAL_WITH_SLASH,
-				sfcFileMap,
-				depFileMap,
-				getGraphVersion: () => moduleGraph.version,
-				getStrategy: () => strategy,
-			});
 
 			wss.on('connection', async (ws, req) => {
 				// Stamp the role from the connect URL so the broadcast loops
@@ -728,20 +495,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 								.buildRegistry({
 									server,
 									sfcFileMap,
-									depFileMap,
 									wss: wss!,
 									verbose,
-									helpers: {
-										cleanCode: (code: string) => cleanCode(code, strategy),
-										collectImportDependencies,
-										isCoreGlobalsReference,
-										isNativeScriptCoreModule,
-										isNativeScriptPluginModule,
-										resolveVendorFromCandidate,
-										createHash: (value: string) => createHash('md5').update(value).digest('hex'),
-										rewriteImports,
-										processSfcCode,
-									},
 								})
 								.catch(() => {});
 						}
@@ -762,20 +517,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					await strategy.buildRegistry({
 						server,
 						sfcFileMap,
-						depFileMap,
 						wss: wss!,
 						verbose,
-						helpers: {
-							cleanCode: (code: string) => cleanCode(code, strategy),
-							collectImportDependencies,
-							isCoreGlobalsReference,
-							isNativeScriptCoreModule,
-							isNativeScriptPluginModule,
-							resolveVendorFromCandidate,
-							createHash: (value: string) => createHash('md5').update(value).digest('hex'),
-							rewriteImports,
-							processSfcCode,
-						},
 					});
 				} catch (error) {
 					console.warn('[hmr-ws] Failed to send registry:', error);
@@ -786,9 +529,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			// Vite runs post hooks after every plugin's `configureServer`. Starting
 			// populate any earlier transforms modules before framework plugins hold
 			// the dev server (@vitejs/plugin-vue then emits SFCs without HMR code
-			// and with their script imports split out of the graph), and the shared
-			// transform cache serves those results to the device. It still gets the
-			// whole app build/launch window as a head start.
+			// and with their script imports split out of the graph), and Vite caches
+			// those results for the device. It still gets the whole app
+			// build/launch window as a head start.
 			return () => {
 				try {
 					ensureInitialGraphPopulationStarted(server);

@@ -3,7 +3,6 @@ import type { WebSocketServer } from 'ws';
 import * as path from 'path';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import type { HmrModuleGraph } from './hmr-module-graph.js';
-import type { SharedTransformRequestRunner } from './shared-transform-request.js';
 import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
 import { isWithinHmrScope } from '../../helpers/hmr-scope.js';
 import { collectGraphUpdateModulesForHotUpdate, type HotUpdateGraphModuleLike } from '../frameworks/angular/server/websocket-angular-hot-update.js';
@@ -19,12 +18,9 @@ import type { BootstrapRootComponent } from '../frameworks/angular/server/angula
 /**
  * Dependencies injected into each strategy's `handleHotUpdate` (and the shared
  * {@link runHotUpdatePrologue} it runs first). These hold per-server instance
- * state (`wss`, `moduleGraph`, the file maps, `sharedTransformRequest`) or are
- * plugin-closure accessors. Pure transform helpers (`cleanCode`,
- * `rewriteImports`, `processSfcCode`, `collectImportDependencies`) are NOT on the
- * context — the strategies that need them import them directly from
- * `websocket-device-transform.ts`. `getServerOrigin` is likewise imported
- * directly here from `server-origin.ts` (spy via the module in tests).
+ * state (`wss`, `moduleGraph`, the file maps) or are plugin-closure accessors.
+ * `getServerOrigin` is imported directly here from `server-origin.ts` (spy via
+ * the module in tests).
  */
 export interface NsHotUpdateContext {
 	wss: WebSocketServer | null;
@@ -32,13 +28,10 @@ export interface NsHotUpdateContext {
 	strategy: FrameworkServerStrategy;
 	verbose: boolean;
 	sfcFileMap: Map<string, string>;
-	depFileMap: Map<string, string>;
-	sharedTransformRequest: SharedTransformRequestRunner;
 	getHmrSourceRootsCached: () => string[];
 	getBootstrapEntryRelPath: () => string;
 	isSocketClientOpen: (client: { readyState?: number; OPEN?: number } | null | undefined) => boolean;
 	getHmrSocketRole: (client: { __nsHmrClientRole?: string } | null | undefined) => string;
-	shouldRemapImport: (spec: string) => boolean;
 	rememberAngularReloadSuppression: (root: string, file: string, ttlMs?: number) => void;
 	/**
 	 * Resolves the Angular bootstrap (root) component, or `null` when it
@@ -189,7 +182,7 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 			);
 		} catch {}
 	};
-	// The first /ns/m request kicks off populateInitialGraph in the
+	// The websocket plugin kicks off populateInitialGraph in the
 	// background. If an HMR update races in before that walk
 	// completes, we'd lose transitive-importer data. Await
 	// completion here so the delta computation below always sees a

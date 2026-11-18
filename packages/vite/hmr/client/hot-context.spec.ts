@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { getNsHotRegistry } from './hot-context.js';
+import { installFakeNsRuntime } from '../shared/runtime/ns-runtime-test-double.js';
 
 // The registry is a process-wide singleton (globalThis.__NS_HOT_REGISTRY__),
 // so every test uses a UNIQUE module key/event to stay isolated from its
@@ -85,7 +86,7 @@ describe('hot-context accept callbacks', () => {
 	it('returns a copy keyed canonically, and a fresh evaluation resets the list', () => {
 		const registry = getNsHotRegistry();
 		registry.createHotContext('/src/accept-two.tsx').accept(() => {});
-		const snapshot = registry.getAcceptCallbacks('http://localhost:5173/ns/m/src/accept-two?t=1');
+		const snapshot = registry.getAcceptCallbacks('http://localhost:5173/src/accept-two?t=1');
 		expect(snapshot).toHaveLength(1);
 
 		// The re-evaluated body has not called accept yet → nothing registered,
@@ -111,7 +112,7 @@ describe('hot-context dependency accepts', () => {
 		expect(registry.acceptsDep('/src/features/other', '/src/util/shared')).toBe(true);
 		expect(registry.acceptsDep('/src/features/flame', '/src/util/shared')).toBe(false);
 
-		const acceptors = registry.getDepAcceptors('http://localhost:5173/ns/m/src/features/flame.worker?t=1');
+		const acceptors = registry.getDepAcceptors('http://localhost:5173/src/features/flame.worker?t=1');
 		expect(acceptors.map((a) => a.owner)).toEqual(['/src/features/flame']);
 		acceptors[0].callback([undefined]);
 		expect(cb).toHaveBeenCalledWith([undefined]);
@@ -162,5 +163,28 @@ describe('hot-context registry-level listeners', () => {
 
 		expect(registry.dispatchHotEvent('spec:six-update', {})).toBe(1);
 		expect(ownerCb).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('hot-context built-in full reload', () => {
+	it('evicts only same-origin /ns/v app modules, keeping vendor modules and the dev client', () => {
+		const origin = 'http://localhost:5173';
+		const nsRuntime = installFakeNsRuntime(globalThis as never);
+		const invalidate = vi.fn();
+		nsRuntime.getLoadedModuleUrls = () => [`${origin}/ns/v/src/app.ts`, `${origin}/ns/v/src/main.ts?t=1`, `${origin}/ns/v/node_modules/@nativescript/core/index.js`, `${origin}/ns/v/@fs/repo/node_modules/pkg/index.js`, `${origin}/ns/v/@vite/client`, 'http://other:5173/ns/v/src/app.ts'];
+		nsRuntime.invalidateModules = invalidate;
+		const g = globalThis as any;
+		const previousEntry = g.__NS_DEV_ENTRY_URL__;
+		g.__NS_DEV_ENTRY_URL__ = `${origin}/ns/v/src/main.ts`;
+		const registry = getNsHotRegistry();
+		registry.setFullReloadHandler(null);
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		try {
+			registry.requestFullReload('spec');
+			expect(invalidate).toHaveBeenCalledWith([`${origin}/ns/v/src/app.ts`, `${origin}/ns/v/src/main.ts?t=1`]);
+		} finally {
+			g.__NS_DEV_ENTRY_URL__ = previousEntry;
+			warn.mockRestore();
+		}
 	});
 });

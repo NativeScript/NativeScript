@@ -126,7 +126,6 @@ describe('handleAngularHotUpdateMessage', () => {
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
 		const previousInvalidator = nsRuntime.invalidateModules;
-		const previousRegisterOnly = g.__NS_ANGULAR_HMR_REGISTER_ONLY__;
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
@@ -134,9 +133,9 @@ describe('handleAngularHotUpdateMessage', () => {
 		nsRuntime.invalidateModules = invalidator;
 
 		try {
-			const evictPaths = ['http://localhost:5173/ns/m/src/app/foo.component.ts', 'http://localhost:5173/ns/m/src/main.ts'];
+			const evictPaths = ['http://localhost:5173/ns/v/src/app/foo.component.ts', 'http://localhost:5173/ns/v/src/main.ts'];
 			const handled = await handleAngularHotUpdateMessage(
-				{ type: 'ns:angular-update', version: 408, origin: 'http://localhost:5173', evictPaths, importerEntry: '/src/main.ts' },
+				{ type: 'ns:angular-update', version: 408, origin: 'http://localhost:5173', evictPaths, importerEntry: '/src/main.ts', entryUrl: 'http://localhost:5173/ns/v/src/main.ts' },
 				{
 					getCore: () => undefined,
 					verbose: false,
@@ -147,7 +146,7 @@ describe('handleAngularHotUpdateMessage', () => {
 			expect(invalidator).toHaveBeenCalledTimes(1);
 			expect(invalidator).toHaveBeenCalledWith(evictPaths);
 			// Stable URL: no __ns_hmr__/v408/ segment.
-			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/m/src/main.ts');
+			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/v/src/main.ts');
 			// Eviction must run BEFORE the entry import so V8's import()
 			// walks a freshly-evicted graph instead of returning cached
 			// (pre-edit) module instances.
@@ -155,13 +154,11 @@ describe('handleAngularHotUpdateMessage', () => {
 			const importerOrder = importer.mock.invocationCallOrder[0];
 			expect(invalidatorOrder).toBeLessThan(importerOrder);
 			expect(reboot).toHaveBeenCalledWith(true);
-			expect(g.__NS_ANGULAR_HMR_REGISTER_ONLY__).toBe(false);
 		} finally {
 			g.__reboot_ng_modules__ = previousReboot;
 			g.__NS_HMR_IMPORT__ = previousImporter;
 			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
 			nsRuntime.invalidateModules = previousInvalidator;
-			g.__NS_ANGULAR_HMR_REGISTER_ONLY__ = previousRegisterOnly;
 		}
 	});
 
@@ -174,7 +171,6 @@ describe('handleAngularHotUpdateMessage', () => {
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
 		const previousInvalidator = nsRuntime.invalidateModules;
-		const previousRegisterOnly = g.__NS_ANGULAR_HMR_REGISTER_ONLY__;
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
@@ -187,47 +183,6 @@ describe('handleAngularHotUpdateMessage', () => {
 					type: 'ns:angular-update',
 					version: 12,
 					origin: 'http://localhost:5173',
-					evictPaths: ['http://localhost:5173/ns/m/src/main.ts'],
-					importerEntry: '/src/main.ts',
-				},
-				{ getCore: () => undefined, verbose: false },
-			);
-
-			expect(handled).toBe(true);
-			// Canonical URL even without eviction — there is no
-			// URL-versioning fallback anymore (a tagged URL would mint a
-			// second module identity on the runtime).
-			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/m/src/main.ts');
-			expect(reboot).toHaveBeenCalledWith(true);
-		} finally {
-			g.__reboot_ng_modules__ = previousReboot;
-			g.__NS_HMR_IMPORT__ = previousImporter;
-			g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = previousUpdater;
-			nsRuntime.invalidateModules = previousInvalidator;
-			g.__NS_ANGULAR_HMR_REGISTER_ONLY__ = previousRegisterOnly;
-		}
-	});
-
-	it('re-imports the server-sent entryUrl as-is instead of deriving an /ns/m URL', async () => {
-		const reboot = vi.fn();
-		const importer = vi.fn(async () => ({}));
-		const g = getGlobalScope();
-		const previousReboot = g.__reboot_ng_modules__;
-		const previousImporter = g.__NS_HMR_IMPORT__;
-		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
-		const previousInvalidator = nsRuntime.invalidateModules;
-
-		g.__reboot_ng_modules__ = reboot;
-		g.__NS_HMR_IMPORT__ = importer;
-		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = vi.fn();
-		nsRuntime.invalidateModules = vi.fn();
-
-		try {
-			await handleAngularHotUpdateMessage(
-				{
-					type: 'ns:angular-update',
-					version: 13,
-					origin: 'http://localhost:5173',
 					evictPaths: ['http://localhost:5173/ns/v/src/main.ts'],
 					importerEntry: '/src/main.ts',
 					entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
@@ -235,7 +190,9 @@ describe('handleAngularHotUpdateMessage', () => {
 				{ getCore: () => undefined, verbose: false },
 			);
 
-			expect(importer).toHaveBeenCalledTimes(1);
+			expect(handled).toBe(true);
+			// Untagged even without eviction: a tagged URL would mint a
+			// second module identity on the runtime.
 			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/v/src/main.ts');
 			expect(reboot).toHaveBeenCalledWith(true);
 		} finally {
@@ -270,8 +227,9 @@ describe('handleAngularHotUpdateMessage', () => {
 					type: 'ns:angular-update',
 					version: 9,
 					origin: 'http://localhost:5173',
-					evictPaths: ['http://localhost:5173/ns/m/src/main.ts'],
+					evictPaths: ['http://localhost:5173/ns/v/src/main.ts'],
 					importerEntry: '/src/main.ts',
+					entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
 				},
 				{ getCore: () => undefined, verbose: false },
 			);
@@ -279,7 +237,7 @@ describe('handleAngularHotUpdateMessage', () => {
 			expect(handled).toBe(true);
 			expect(invalidator).toHaveBeenCalled();
 			// Eviction failed → still the stable canonical URL.
-			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/m/src/main.ts');
+			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/v/src/main.ts');
 			expect(reboot).toHaveBeenCalledWith(true);
 		} finally {
 			g.__reboot_ng_modules__ = previousReboot;
@@ -326,8 +284,9 @@ describe('handleAngularHotUpdateMessage', () => {
 					type: 'ns:angular-update',
 					version: 1,
 					origin: 'http://localhost:5173',
-					evictPaths: ['http://localhost:5173/ns/m/src/foo.ts'],
+					evictPaths: ['http://localhost:5173/ns/v/src/foo.ts'],
 					importerEntry: '/src/main.ts',
+					entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
 				},
 				{ getCore: () => undefined, verbose: false },
 			);
@@ -337,15 +296,16 @@ describe('handleAngularHotUpdateMessage', () => {
 			await Promise.resolve();
 
 			expect(invalidator).toHaveBeenCalledTimes(1);
-			expect(invalidator.mock.calls[0][0]).toEqual(['http://localhost:5173/ns/m/src/foo.ts']);
+			expect(invalidator.mock.calls[0][0]).toEqual(['http://localhost:5173/ns/v/src/foo.ts']);
 
 			const cycle2 = handleAngularHotUpdateMessage(
 				{
 					type: 'ns:angular-update',
 					version: 2,
 					origin: 'http://localhost:5173',
-					evictPaths: ['http://localhost:5173/ns/m/src/bar.ts'],
+					evictPaths: ['http://localhost:5173/ns/v/src/bar.ts'],
 					importerEntry: '/src/main.ts',
+					entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
 				},
 				{ getCore: () => undefined, verbose: false },
 			);
@@ -365,7 +325,7 @@ describe('handleAngularHotUpdateMessage', () => {
 			await cycle2;
 
 			expect(invalidator).toHaveBeenCalledTimes(2);
-			expect(invalidator.mock.calls[1][0]).toEqual(['http://localhost:5173/ns/m/src/bar.ts']);
+			expect(invalidator.mock.calls[1][0]).toEqual(['http://localhost:5173/ns/v/src/bar.ts']);
 			expect(reboot).toHaveBeenCalledTimes(2);
 
 			// Cycle 1's invalidate must precede cycle 2's invalidate.
@@ -380,11 +340,9 @@ describe('handleAngularHotUpdateMessage', () => {
 		}
 	});
 
-	it('uses the importerEntry from the broadcast message when present', async () => {
+	it('skips the entry re-import when the server sends no entryUrl', async () => {
 		const reboot = vi.fn();
 		const importer = vi.fn(async () => ({}));
-		const updater = vi.fn();
-		const invalidator = vi.fn();
 		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
@@ -393,21 +351,22 @@ describe('handleAngularHotUpdateMessage', () => {
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__NS_HMR_IMPORT__ = importer;
-		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = updater;
-		nsRuntime.invalidateModules = invalidator;
+		g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ = vi.fn();
+		nsRuntime.invalidateModules = vi.fn();
 
 		try {
 			await handleAngularHotUpdateMessage(
 				{
 					type: 'ns:angular-update',
 					origin: 'http://localhost:5173',
-					evictPaths: ['http://localhost:5173/ns/m/app/main.ts'],
+					evictPaths: ['http://localhost:5173/ns/v/app/main.ts'],
 					importerEntry: '/app/main.ts',
 				},
 				{ getCore: () => undefined, verbose: false },
 			);
 
-			expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/m/app/main.ts');
+			expect(importer).not.toHaveBeenCalled();
+			expect(reboot).toHaveBeenCalledWith(true);
 		} finally {
 			g.__reboot_ng_modules__ = previousReboot;
 			g.__NS_HMR_IMPORT__ = previousImporter;
@@ -844,7 +803,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 				{
 					type: 'ns:angular-update',
 					path: '/src/app/foo.component.ts',
-					evictPaths: ['http://localhost:5173/ns/m/src/app/foo.component'],
+					evictPaths: ['http://localhost:5173/ns/v/src/app/foo.component'],
 				},
 				{ getCore: () => undefined, verbose: false },
 			);
@@ -867,7 +826,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 				const u = ev.payload.updates[0];
 				expect(u.type).toBe('js-update');
 				expect(u.path).toBe('/src/app/foo.component.ts');
-				expect(u.evictPaths).toEqual(['http://localhost:5173/ns/m/src/app/foo.component']);
+				expect(u.evictPaths).toEqual(['http://localhost:5173/ns/v/src/app/foo.component']);
 				expect(typeof u.timestamp).toBe('number');
 			}
 		} finally {
@@ -924,7 +883,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 				{
 					type: 'ns:angular-update',
 					path: '/src/app/foo.component.ts',
-					evictPaths: ['http://localhost:5173/ns/m/src/app/foo.component'],
+					evictPaths: ['http://localhost:5173/ns/v/src/app/foo.component'],
 				},
 				{ getCore: () => undefined, verbose: false },
 			);
@@ -938,7 +897,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 			expect(reloadDevApp).toHaveBeenCalledTimes(1);
 			// Must have asked the runtime about declined modules with
 			// the eviction set.
-			expect(hasDeclined).toHaveBeenCalledWith(['http://localhost:5173/ns/m/src/app/foo.component']);
+			expect(hasDeclined).toHaveBeenCalledWith(['http://localhost:5173/ns/v/src/app/foo.component']);
 
 			// Event sequence: beforeUpdate (always), then
 			// beforeFullReload (because of the decline).
@@ -1145,8 +1104,9 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 					version: 1,
 					path: '/src/app/foo.component.ts',
 					origin: 'http://localhost:5173',
-					evictPaths: ['http://localhost:5173/ns/m/src/app/foo.component.ts'],
+					evictPaths: ['http://localhost:5173/ns/v/src/app/foo.component.ts'],
 					importerEntry: '/src/main.ts',
+					entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
 				},
 				{ getCore: () => undefined, verbose: false },
 			);
@@ -1279,8 +1239,9 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 					version: 1,
 					path: '/src/foo.ts',
 					origin: 'http://localhost:5173',
-					evictPaths: ['http://localhost:5173/ns/m/src/foo.ts'],
+					evictPaths: ['http://localhost:5173/ns/v/src/foo.ts'],
 					importerEntry: '/src/main.ts',
+					entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
 				},
 				{ getCore: () => undefined, verbose: false },
 			);
@@ -1343,8 +1304,9 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 					version: 1,
 					path: '/src/cycle1.ts',
 					origin: 'http://localhost:5173',
-					evictPaths: ['http://localhost:5173/ns/m/src/cycle1.ts'],
+					evictPaths: ['http://localhost:5173/ns/v/src/cycle1.ts'],
 					importerEntry: '/src/main.ts',
+					entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
 				},
 				{ getCore: () => undefined, verbose: false },
 			);
@@ -1362,8 +1324,9 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 					version: 2,
 					path: '/src/cycle2.ts',
 					origin: 'http://localhost:5173',
-					evictPaths: ['http://localhost:5173/ns/m/src/cycle2.ts'],
+					evictPaths: ['http://localhost:5173/ns/v/src/cycle2.ts'],
 					importerEntry: '/src/main.ts',
+					entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
 				},
 				{ getCore: () => undefined, verbose: false },
 			);

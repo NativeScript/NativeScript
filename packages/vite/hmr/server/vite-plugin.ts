@@ -1,17 +1,12 @@
 import type { Plugin, ResolvedConfig } from 'vite';
-import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'path';
-import { pathToFileURL } from 'url';
 import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
-import { resolveDeviceReachableHost } from '../../helpers/dev-host.js';
 import { setUserDefineEntries } from '../../helpers/global-defines.js';
-import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
-import { isThinDeviceMode, thinDeviceUrl, viteUrlForFile } from './thin/thin-mode.js';
+import { thinDeviceUrl, viteUrlForFile } from './thin/thin-mode.js';
 import { registerThinRoute } from './thin/thin-route.js';
 import { getServerOrigin } from './server-origin.js';
 import { fileURLToPath } from 'node:url';
-const require = createRequire(import.meta.url);
 
 const runtimeFile = (relToHmrServer: string) => fileURLToPath(new URL(relToHmrServer, import.meta.url));
 
@@ -22,6 +17,9 @@ async function resolveThinBootstrapUrls(server: import('vite').ViteDevServer, or
 	// Use the resolver's id verbatim (no realpath): it is what Vite's import
 	// analysis serves, symlinked or not (the CLI runs with --preserve-symlinks).
 	const coreFile = resolvedCore?.id?.split('?')[0];
+	if (!coreFile) {
+		throw new Error('Unable to resolve @nativescript/core from the project root');
+	}
 	return {
 		client: urlFor(runtimeFile('../client/index.js')),
 		moduleUrls: {
@@ -30,60 +28,9 @@ async function resolveThinBootstrapUrls(server: import('vite').ViteDevServer, or
 			entryRuntime: urlFor(runtimeFile('../entry-runtime.js')),
 			cssHandler: urlFor(runtimeFile('../client/css-handler.js')),
 			launchBridge: urlFor(runtimeFile('../shared/runtime/launch-bridge.js')),
-			...(coreFile ? { coreBridge: urlFor(coreFile) } : {}),
+			coreBridge: urlFor(coreFile),
 		},
 	};
-}
-
-const VIRTUAL_ID = 'virtual:ns-hmr-client';
-const RESOLVED_ID = '\0' + VIRTUAL_ID;
-
-export function computeClientImportSpecifier(options: { projectRoot: string; clientFsPath: string }) {
-	const { projectRoot, clientFsPath } = options;
-	let clientImport = clientFsPath;
-	try {
-		const fsPosix = clientFsPath.replace(/\\/g, '/');
-		const rel = path.relative(projectRoot, clientFsPath);
-		const relPosix = rel.replace(/\\/g, '/');
-
-		if (path.isAbsolute(rel)) {
-			clientImport = pathToFileURL(clientFsPath).toString();
-		} else {
-			// Prefer routing via the absolute fs path's `node_modules/...` tail. This
-			// covers monorepo / pnpm setups where node_modules is hoisted ABOVE the
-			// project root and `path.relative` would otherwise produce a
-			// "../../node_modules/..." specifier. That relative form is sent to the
-			// device's bootstrap as `__NS_BROWSER_RUNTIME_CLIENT_IMPORT__`, where the
-			// URL constructor resolves it against `${origin}/__ns_dev__/client` and
-			// collapses the leading `..` segments back to `${origin}/node_modules/...`.
-			// That URL bypasses the `/ns/m/` AST-normalizer pipeline (which strips
-			// browser-only `/@vite/client` imports), so the on-device HTTP loader
-			// eventually tries to fetch `/@vite/client` and fails with
-			// "HTTP import failed (status=0)" / "Instantiation failed (http-loader)".
-			const lastNm = fsPosix.lastIndexOf('/node_modules/');
-			if (lastNm !== -1) {
-				return `/ns/m${fsPosix.slice(lastNm)}`;
-			}
-
-			// Monorepo dist symlink (e.g. `"@nativescript/vite": "file:../../dist/packages/vite"`):
-			// require.resolve follows the node_modules symlink to its REAL path under
-			// the workspace root, which contains no `/node_modules/` segment. The
-			// `../../dist/...` relative form below would resolve on-device to
-			// `${origin}/dist/...`, which Vite's middleware 404s (outside root, not
-			// /@fs/). Route through /ns/m with a workspace-root-relative path so the
-			// fetch goes through the same served-module pipeline as everything else.
-			const wsRoot = getMonorepoWorkspaceRoot(projectRoot)?.replace(/\\/g, '/');
-			if (wsRoot && fsPosix.startsWith(wsRoot + '/')) {
-				return `/ns/m/${fsPosix.slice(wsRoot.length + 1)}`;
-			}
-
-			const normalizedRel = (relPosix.startsWith('.') ? relPosix : `/${relPosix}`).replace(/\/+/g, '/');
-			clientImport = normalizedRel.startsWith('/node_modules/') ? `/ns/m${normalizedRel}` : normalizedRel;
-		}
-	} catch {
-		clientImport = clientFsPath.replace(/\\/g, '/');
-	}
-	return clientImport;
 }
 
 export function resolveProjectMainEntryPath(projectRoot: string) {
@@ -105,16 +52,11 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; req
 	const wsProtocol = options.secure ? 'wss' : 'ws';
 	const origin = `${protocol}://${options.requestHost}`;
 	const entryPathname = options.mainEntryPathname || resolveProjectMainEntryPath(options.projectRoot);
-	// Canonical (untagged) entry URL. Boot-progress instrumentation is
-	// injected self-gating by the /ns/m module server (the snippet no-ops
-	// once `__NS_HMR_BOOT_COMPLETE__` flips), so the entry URL needs no
-	// `__ns_boot__` decoration — module identity IS the URL.
-	const canonicalEntryPathname = entryPathname.startsWith('/ns/m/') ? entryPathname : `/ns/m${entryPathname.startsWith('/') ? entryPathname : `/${entryPathname}`}`;
 
 	return {
 		sessionId: options.sessionId,
 		origin,
-		entryUrl: isThinDeviceMode() ? thinDeviceUrl(origin, entryPathname) : `${origin}${canonicalEntryPathname}`,
+		entryUrl: thinDeviceUrl(origin, entryPathname),
 		clientUrl: `${origin}/__ns_dev__/client`,
 		wsUrl: `${wsProtocol}://${options.requestHost}/ns-hmr`,
 		platform: options.platform,
@@ -142,31 +84,28 @@ function resolveBootstrapImportUrl(origin: string, clientImport: string): string
 	}
 }
 
-/** Absolute device URLs for the bootstrap's own imports; each defaults to its `/ns/m` / `/ns/core` form. */
+/** Absolute device URLs for the bootstrap's own imports. */
 export interface NsDevBootstrapModuleUrls {
-	vendorBootstrap?: string;
-	hotContext?: string;
-	entryRuntime?: string;
-	cssHandler?: string;
-	coreBridge?: string;
-	launchBridge?: string;
+	vendorBootstrap: string;
+	hotContext: string;
+	entryRuntime: string;
+	cssHandler: string;
+	/** The `@nativescript/core` entry at the URL the app graph loads it from, so the bootstrap shares its module record. */
+	coreBridge: string;
+	launchBridge: string;
 }
 
-export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin: string; clientImport: string; hotContextImport?: string; verbose?: boolean; moduleUrls?: NsDevBootstrapModuleUrls }) {
+export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin: string; clientImport: string; verbose?: boolean; moduleUrls: NsDevBootstrapModuleUrls }) {
 	const normalizedOrigin = options.origin.replace(/\/$/, '');
-	const urls = options.moduleUrls || {};
+	const urls = options.moduleUrls;
 	const resolvedClientImport = resolveBootstrapImportUrl(normalizedOrigin, options.clientImport);
 	const vendorBundleUrl = `${normalizedOrigin}/@nativescript/vendor.mjs`;
-	const vendorBootstrapUrl = urls.vendorBootstrap || `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js`;
-	const resolvedHotContextImport = urls.hotContext || resolveBootstrapImportUrl(normalizedOrigin, options.hotContextImport || '/ns/m/node_modules/@nativescript/vite/hmr/client/hot-context.js');
-	const entryRuntimeUrl = urls.entryRuntime || `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js`;
-	const cssHandlerUrl = urls.cssHandler || `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/client/css-handler.js`;
-	// Canonical, unversioned core-bridge URL (see helpers/ns-core-url.ts) — the
-	// app graph already loaded this exact URL during boot, so importing it here
-	// resolves to the SAME module record/realm instead of minting a new one.
-	const coreBridgeUrl = urls.coreBridge || `${normalizedOrigin}/ns/core`;
-
-	const launchBridgeUrl = urls.launchBridge || `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/launch-bridge.js`;
+	const vendorBootstrapUrl = urls.vendorBootstrap;
+	const resolvedHotContextImport = urls.hotContext;
+	const entryRuntimeUrl = urls.entryRuntime;
+	const cssHandlerUrl = urls.cssHandler;
+	const coreBridgeUrl = urls.coreBridge;
+	const launchBridgeUrl = urls.launchBridge;
 
 	return `
 import { installVendorBootstrap as __nsBrowserRuntimeInstallVendorBootstrap } from ${JSON.stringify(vendorBootstrapUrl)};
@@ -176,7 +115,7 @@ import { installLaunchNotificationBridge as __nsBrowserRuntimeInstallLaunchBridg
 import * as __nsBrowserRuntimeCoreBridge from ${JSON.stringify(coreBridgeUrl)};
 import { installHttpCoreCssSupport as __nsBrowserRuntimeInstallHttpCoreCssSupport } from ${JSON.stringify(entryRuntimeUrl)};
 
-// Seeded app.css must land in the /ns/core realm before the app entry
+// Seeded app.css must land in the core realm before the app entry
 // evaluates, as it does in non-HMR builds. Views mounted unstyled are
 // restyled later, but anything that caches measurements on first layout
 // (iOS ListView row heights) keeps the unstyled sizes.
@@ -188,7 +127,7 @@ try {
 
 // Launch-notification bridge — must precede the app entry (this wrapper is
 // imported by the session bootstrap BEFORE the entry graph). Passing the
-// /ns/core realm's Application: that is the instance app code gets, and the
+// core realm's Application: that is the instance app code gets, and the
 // only deterministic wrap point (the full HMR client evaluates async and
 // loses the race against the entry). See shared/runtime/launch-bridge.ts.
 try {
@@ -439,10 +378,6 @@ function __nsBrowserRuntimeHandleSocketMessage(msg) {
 	if (!msg || typeof msg.type !== 'string') {
 		return;
 	}
-	if (msg.type === 'ns:hmr-full-graph') {
-		globalThis.__NS_HMR_BROWSER_RUNTIME_GRAPH_VERSION__ = typeof msg.version === 'number' ? msg.version : 0;
-		return;
-	}
 	if (globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__) {
 		return;
 	}
@@ -662,20 +597,13 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 		name: 'ns-hmr-client',
 		configResolved(c) {
 			config = c;
-			// Capture app-configured `__FOO__` defines so HMR-served modules get a
-			// const shim for them (Vite's text-substitution doesn't reach raw-served
-			// modules; without a shim a free `__FOO__` is mis-bound to /ns/rt → wrong
-			// value under HMR vs the production bundle). See setUserDefineEntries.
+			// Capture app-configured `__FOO__` defines for the dev deps bundle,
+			// which esbuild builds outside Vite's define substitution. See
+			// setUserDefineEntries.
 			setUserDefineEntries(c.define as Record<string, unknown> | undefined);
 		},
-		resolveId(id) {
-			if (id === VIRTUAL_ID) return RESOLVED_ID;
-			return null;
-		},
 		configureServer(server) {
-			if (isThinDeviceMode()) {
-				registerThinRoute(server, () => getServerOrigin(server));
-			}
+			registerThinRoute(server, () => getServerOrigin(server));
 			server.middlewares.use(async (req, res, next) => {
 				try {
 					const url = new URL(req.url || '', 'http://localhost');
@@ -684,27 +612,13 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 						const secure = !!config?.server?.https;
 						const origin = `${secure ? 'https' : 'http'}://${requestHost}`;
 						const wsUrl = `${secure ? 'wss' : 'ws'}://${requestHost}/ns-hmr`;
-						const clientFsPath = require.resolve('@nativescript/vite/hmr/client/index.js');
-						const projectRoot = config?.root || process.cwd();
-						let clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });
-						let hotContextImport: string | undefined;
-						try {
-							const hotContextFsPath = require.resolve('@nativescript/vite/hmr/client/hot-context.js');
-							hotContextImport = computeClientImportSpecifier({ projectRoot, clientFsPath: hotContextFsPath });
-						} catch {}
-						let moduleUrls: NsDevBootstrapModuleUrls | undefined;
-						if (isThinDeviceMode()) {
-							const thin = await resolveThinBootstrapUrls(server, getServerOrigin(server));
-							clientImport = thin.client;
-							moduleUrls = thin.moduleUrls;
-						}
+						const thin = await resolveThinBootstrapUrls(server, getServerOrigin(server));
 						const code = createNsDevClientBootstrapCode({
 							origin,
 							wsUrl,
-							clientImport,
-							hotContextImport,
+							clientImport: thin.client,
 							verbose: opts.verbose,
-							moduleUrls,
+							moduleUrls: thin.moduleUrls,
 						});
 
 						res.setHeader('Access-Control-Allow-Origin', '*');
@@ -745,52 +659,6 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 					res.end(JSON.stringify({ error: error?.message || 'Failed to build NativeScript dev session descriptor' }));
 				}
 			});
-		},
-		load(id) {
-			if (id !== RESOLVED_ID) return null;
-
-			/**
-			 * Use a POSIX-style import specifier for the client entry to avoid
-			 * Windows drive-letter paths (e.g. "D:\\...") accidentally
-			 * becoming bare import ids that Rollup/Vite cannot resolve.
-			 * We still resolve the real filesystem path for correctness, but convert it to a project-relative POSIX path before interpolating it into the generated module.
-			 **/
-			const clientFsPath = require.resolve('@nativescript/vite/hmr/client/index.js');
-			// Prefer project root when available; otherwise fall back to cwd.
-			const projectRoot = config?.root || process.cwd();
-			const clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });
-
-			// Build ws url from Vite server info. Routes through the same
-			// canonical helper as `main-entry.ts` / `base.ts` so the
-			// websocket endpoint embedded in `bundle.mjs` and every other
-			// `/ns/*` URL share one origin string — required by the iOS
-			// HTTP ESM cache identity rule, and necessary for Android
-			// emulators that can't reach `0.0.0.0` / `localhost`.
-			const port = Number(config?.server?.port || 5173);
-			// Pass `port` through so the Android emulator path attempts
-			// `adb reverse tcp:<port> tcp:<port>` before falling back to
-			// `10.0.2.2`. The websocket URL and bundle.mjs URLs both
-			// flow from this same helper, so they stay byte-identical
-			// (required by the iOS HTTP ESM cache identity rule).
-			const { host } = resolveDeviceReachableHost({
-				host: config?.server?.host,
-				platform: opts.platform,
-				port,
-			});
-			const secure = !!config?.server?.https;
-			const protocol = secure ? 'wss' : 'ws';
-			const wsUrl = `${protocol}://${host}:${port}/ns-hmr`;
-
-			// Import client and start it with explicit ws URL
-			const banner = opts.verbose ? `console.log('[ns-hmr-client] starting client -> ${wsUrl} (HTTP loader enabled via __NS_HTTP_ORIGIN__)');` : '';
-			return {
-				code: `
-import startViteHMR from "${clientImport}";
-${banner}
-startViteHMR({ wsUrl: ${JSON.stringify(wsUrl)} });
-`,
-				moduleType: 'js',
-			};
 		},
 	};
 }

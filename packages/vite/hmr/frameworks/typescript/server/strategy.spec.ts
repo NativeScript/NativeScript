@@ -58,7 +58,6 @@ describe('typescriptServerStrategy', () => {
 			await typescriptServerStrategy.buildRegistry({
 				server,
 				sfcFileMap: new Map(),
-				depFileMap: new Map(),
 				wss: { clients: new Set([client]) } as any,
 				verbose: false,
 			});

@@ -36,16 +36,16 @@ export async function rewriteThinSpecifiers(code: string, origin: string): Promi
 }
 
 /**
- * Thin-mode import map: each bare entry points at the thin URL of the file
- * Vite resolves it to. Prefix (`pkg/`) entries are dropped — a prefix cannot
- * apply platform-suffix or `index` resolution, so it would mint URLs that no
- * served module uses; served code carries no bare specifiers in this mode.
+ * Device import map: each bare specifier points at the thin URL of the file
+ * Vite resolves it to. No prefix (`pkg/`) entries — a prefix cannot apply
+ * platform-suffix or `index` resolution, so it would mint URLs that no served
+ * module uses; served code carries no bare specifiers.
  */
-export async function buildThinImportMap(server: ViteDevServer, imports: Record<string, string>, origin: string): Promise<Record<string, string>> {
+export async function buildThinImportMap(server: ViteDevServer, specifiers: Iterable<string>, origin: string): Promise<Record<string, string>> {
 	const root = server.config.root;
 	const importer = path.join(root, 'index.html');
 	const out: Record<string, string> = {};
-	for (const spec of Object.keys(imports)) {
+	for (const spec of specifiers) {
 		if (spec.endsWith('/')) continue;
 		try {
 			const resolved = await server.environments.client.pluginContainer.resolveId(spec, importer);

@@ -341,41 +341,6 @@ export function createTsConfigPathsResolver(opts: { paths: Record<string, string
 	};
 }
 
-// --- Project-level alias resolution for non-Vite consumers (HMR SFC routes) ---
-//
-// The HMR Vue SFC assembler/server rewrite `.vue` imports with their own regex
-// and read SFC source straight from disk, bypassing Vite's resolver — so they
-// were blind to tsconfig `paths` aliases (`@present/...`, `@app`, …) and 500'd
-// on any aliased `.vue` import. These helpers give those routes the SAME alias
-// resolution the build uses, memoized once per process.
-let _projectAliasResolver: ((source: string) => string | null) | null | undefined;
-
-export function resolveProjectTsAlias(spec: string): string | null {
-	if (_projectAliasResolver === undefined) {
-		try {
-			const tsConfig = getTsConfigData({ platform: '' });
-			_projectAliasResolver = createTsConfigSpecifierResolver({ paths: tsConfig.paths, baseUrl: tsConfig.baseUrl, platform: '' }) ?? null;
-		} catch {
-			_projectAliasResolver = null;
-		}
-	}
-	return _projectAliasResolver ? _projectAliasResolver(spec) : null;
-}
-
-/**
- * Resolve an aliased specifier to a POSIX, project-root-relative path
- * (`@present/components/ui/BasePage.vue` → `/src/presentation/components/ui/BasePage.vue`) —
- * the form the HMR SFC routes use as their on-disk `base`. Returns `null` when
- * the alias doesn't match or resolves outside the project root.
- */
-export function resolveProjectTsAliasRelative(spec: string, projectRoot: string): string | null {
-	const abs = resolveProjectTsAlias(spec);
-	if (!abs) return null;
-	const rel = path.relative(projectRoot, abs);
-	if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
-	return '/' + rel.split(path.sep).join('/');
-}
-
 // Get TypeScript path configuration
 type CachedTsConfig = {
 	paths: Record<string, string[]>;

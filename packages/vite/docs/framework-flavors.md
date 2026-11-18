@@ -118,7 +118,7 @@ registerFrameworkFlavor({
 
 ## 2. The server strategy
 
-Most frameworks need nothing new on the server. `typescriptServerStrategy` is the generic device-module pipeline — it serves app files over `/ns/m`, primes the module graph, and emits deltas. Spread it, rename the flavor, and write the one thing that differs: the hot-update tail.
+Most frameworks need nothing new on the server. `typescriptServerStrategy` is the generic device-module pipeline — the device loads app files from Vite over `/ns/v`, and the strategy primes the module graph and emits deltas. Spread it, rename the flavor, and write the one thing that differs: the hot-update tail.
 
 ```ts
 // src/server/strategy.ts
@@ -135,7 +135,7 @@ export const octaneServerStrategy: FrameworkServerStrategy = {
     const state = await runHotUpdatePrologue(ctx, deps);
     if (!state) return;
     const { root, metrics, emitSummary } = state;
-    const { moduleGraph, verbose, sharedTransformRequest } = deps;
+    const { moduleGraph, verbose } = deps;
     const { file, server } = ctx;
     if (!SCRIPT_FILE_RE.test(file)) return emitSummary();
     metrics.tAfterFramework = Date.now();
@@ -144,10 +144,10 @@ export const octaneServerStrategy: FrameworkServerStrategy = {
     const id = moduleGraph.normalizeGraphId(rel);
     if (!moduleGraph.get(id)) moduleGraph.upsert(rel, `/* hmr ${Date.now()} */`, [], { emitDeltaOnInsert: true });
 
-    // The device applies an edit by re-fetching the module. Purge BEFORE the
-    // delta goes out, or the re-fetch is served from the previous save.
-    purgeTransformCachesForHotUpdate({ file, server, sharedTransformRequest, verbose, label: 'octane' });
-    const fresh = await sharedTransformRequest(rel, 30000);
+    // The device applies an edit by re-fetching the module. Invalidate BEFORE
+    // the delta goes out, or the re-fetch is served from the previous save.
+    purgeTransformCachesForHotUpdate({ file, server, verbose, label: 'octane' });
+    const fresh = await server.transformRequest(rel);
     if (fresh?.code) {
       const mod = server.moduleGraph.getModuleById(file);
       const deps = mod ? Array.from(mod.importedModules).map((m) => (m.id || '').replace(/\?.*$/, '')).filter(Boolean) : moduleGraph.get(id)?.deps ?? [];
@@ -160,9 +160,9 @@ export const octaneServerStrategy: FrameworkServerStrategy = {
 };
 ```
 
-`deferDeltaBroadcast: true` is the contract that makes the purge-then-broadcast order hold: the shared prologue records the change but leaves the broadcast to you. Read the module's dependency edges *after* the re-transform — import analysis runs inside it — so a newly added import reaches the client graph on the save that introduced it.
+`deferDeltaBroadcast: true` is the contract that makes the invalidate-then-broadcast order hold: the shared prologue records the change but leaves the broadcast to you. Read the module's dependency edges *after* the re-transform — import analysis runs inside it — so a newly added import reaches the client graph on the save that introduced it.
 
-Other optional members of `FrameworkServerStrategy` cover the less common needs: `transformNodeModule` (patch a vendor module before it is served), `rewriteServedModule`, `registerRoutes` (framework-owned dev endpoints), `importMapEntries`, `volatilePatterns`, `handleClientCustomEvent` (a `hot.send` from the device). The interface is documented inline in `hmr/server/framework-strategy.ts`.
+Other optional members of `FrameworkServerStrategy` cover the less common needs: `registerRoutes` (framework-owned dev endpoints), `importMapEntries`, `volatilePatterns`, `handleClientCustomEvent` (a `hot.send` from the device). The interface is documented inline in `hmr/server/framework-strategy.ts`.
 
 ## 3. The client strategy
 
@@ -223,7 +223,7 @@ One subtlety worth knowing before you write `afterModuleReimport`: the registry 
 
 ### What the device must be able to load
 
-The client module is served at `/ns/m/node_modules/<package>/<file>` — the registry resolves your `client` specifier from the app root and expresses it relative to the package, so a linked workspace package works the same as an installed one. The package is classified as dev tooling, like `@nativescript/vite`: served per-module, never vendor-bundled, never wrapped as a plugin. That is why relative imports inside it (`./boundary-propagation.js`) and its imports of the shared surface resolve to the same canonical URLs the running client uses — and why importing any other client-internal path is unsupported.
+The client module is served at `/ns/v` followed by its Vite URL — the registry resolves your `client` specifier from the app root and expresses it relative to the package, so a linked workspace package works the same as an installed one. The package is classified as dev tooling, like `@nativescript/vite`: served per-module, never vendor-bundled, never wrapped as a plugin. That is why relative imports inside it (`./boundary-propagation.js`) and its imports of the shared surface resolve to the same canonical URLs the running client uses — and why importing any other client-internal path is unsupported.
 
 ## 4. Testing a strategy without a device
 

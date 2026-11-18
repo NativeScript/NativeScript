@@ -4,15 +4,13 @@ import os from 'os';
 import * as path from 'path';
 
 import { angularServerStrategy } from './strategy.js';
-import { prepareAngularEntryForDevice } from '../../../server/rewrite-imports.js';
-import type { FrameworkServedModuleContext } from '../../../server/framework-strategy.js';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 import * as serverOriginModule from '../../../server/server-origin.js';
 
 // angularServerStrategy.handleHotUpdate owns `prologue + the Angular tail`. Mock
 // the shared prologue so the handler tests isolate the migrated Angular tail
-// (broadcast + cache purge orchestration) without the full HMR pipeline; the
+// (invalidation + broadcast orchestration) without the full HMR pipeline; the
 // prologue itself is covered by websocket-hot-update.spec.ts and the deep
 // Angular helpers by their own websocket-angular-*.spec.ts suites.
 vi.mock('../../../server/websocket-hot-update.js', () => ({
@@ -29,25 +27,6 @@ describe('angularServerStrategy', () => {
 		expect(angularServerStrategy.matchesFile(getProjectAppVirtualPath('main.spec.ts'))).toBe(false);
 		expect(angularServerStrategy.matchesFile(`${getProjectAppVirtualPath('main.test.ts')}?import`)).toBe(false);
 		expect(angularServerStrategy.matchesFile(getProjectAppVirtualPath('__tests__/main.ts'))).toBe(false);
-	});
-
-	it('rewriteServedModule routes the /ns/m rewrite through the register-only Angular entry pass', () => {
-		const ctx: FrameworkServedModuleContext = {
-			moduleId: '/src/main.ts',
-			sfcFileMap: new Map(),
-			depFileMap: new Map(),
-			projectRoot: '/proj',
-			serverOrigin: 'http://localhost:5173',
-			verbose: false,
-		};
-		// Representative Angular entry: bootstrapApplication + a relative import the
-		// shared rewriteImports pass rewrites before the register-only transform runs.
-		const code = ["import { AppComponent } from './app.component';", 'bootstrapApplication(AppComponent);'].join('\n');
-
-		// The hook must be byte-identical to calling prepareAngularEntryForDevice
-		// with httpOrigin = serverOrigin and resolveVendorAsHttp = true — the exact
-		// arguments the inline `/ns/m` angular fork used.
-		expect(angularServerStrategy.rewriteServedModule!(code, ctx)).toBe(prepareAngularEntryForDevice(code, ctx.moduleId, ctx.sfcFileMap, ctx.depFileMap, ctx.projectRoot, ctx.verbose, undefined, ctx.serverOrigin, true));
 	});
 
 	it('supplies no import-map entries', () => {
@@ -96,7 +75,6 @@ describe('angularServerStrategy', () => {
 			await angularServerStrategy.buildRegistry({
 				server,
 				sfcFileMap: new Map(),
-				depFileMap: new Map(),
 				wss: {} as any,
 				verbose: false,
 			});
@@ -134,7 +112,6 @@ describe('angularServerStrategy', () => {
 			await angularServerStrategy.buildRegistry({
 				server,
 				sfcFileMap: new Map(),
-				depFileMap: new Map(),
 				wss: {} as any,
 				verbose: false,
 			});
@@ -186,7 +163,6 @@ describe('angularServerStrategy.handleHotUpdate', () => {
 			moduleGraph: { version: 7 },
 			strategy: { flavor: 'angular' },
 			verbose: false,
-			sharedTransformRequest: { invalidateMany: vi.fn() },
 			getBootstrapEntryRelPath: () => '/src/main.ts',
 			isSocketClientOpen: (c: any) => !!c && c.readyState === 1,
 			getHmrSocketRole: () => 'device',
@@ -195,7 +171,7 @@ describe('angularServerStrategy.handleHotUpdate', () => {
 		} as any;
 	}
 
-	it('purges caches and broadcasts ns:angular-update for a changed .ts component (reboot path)', async () => {
+	it('invalidates and broadcasts ns:angular-update for a changed .ts component (reboot path)', async () => {
 		const emitSummary = vi.fn();
 		const metrics = { invalidated: 0, recipients: 0, narrowed: undefined as boolean | undefined, tAfterFramework: 0 };
 		const deferredCssUpdates = [{ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: 123 }];
@@ -220,26 +196,38 @@ describe('angularServerStrategy.handleHotUpdate', () => {
 		expect(result).toEqual([]);
 	});
 
-	it('sends thin-mode device URLs (/ns/v) for eviction and the entry to re-import', async () => {
+	it('sends /ns/v device URLs for eviction and the entry to re-import', async () => {
 		const metrics = { invalidated: 0, recipients: 0, narrowed: undefined as boolean | undefined, tAfterFramework: 0 };
 		vi.mocked(runHotUpdatePrologue).mockResolvedValue({ root: '/proj', updateRel: '/src/app/home.component.ts', metrics, emitSummary: vi.fn() } as any);
 		vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
-		vi.stubEnv('NS_VITE_THIN', '1');
-		try {
-			const openClient: FakeClient = { readyState: 1, send: vi.fn() };
-			const mainImporter = { id: '/proj/src/main.ts', file: '/proj/src/main.ts', importers: new Set() };
-			const changedModule = { id: '/proj/src/app/home.component.ts', file: '/proj/src/app/home.component.ts', importers: new Set([mainImporter]), importedModules: new Set() };
-			const ctx = { file: '/proj/src/app/home.component.ts', server: makeServer(), modules: [changedModule], read: async () => '@Component({}) export class HomeComponent {}' } as any;
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const mainImporter = { id: '/proj/src/main.ts', file: '/proj/src/main.ts', importers: new Set() };
+		const changedModule = { id: '/proj/src/app/home.component.ts', file: '/proj/src/app/home.component.ts', importers: new Set([mainImporter]), importedModules: new Set() };
+		const ctx = { file: '/proj/src/app/home.component.ts', server: makeServer(), modules: [changedModule], read: async () => '@Component({}) export class HomeComponent {}' } as any;
 
-			await angularServerStrategy.handleHotUpdate!(ctx, makeDeps(openClient));
+		await angularServerStrategy.handleHotUpdate!(ctx, makeDeps(openClient));
 
-			const payload = JSON.parse(String(openClient.send.mock.calls[0][0]));
-			expect(payload.entryUrl).toBe('http://test:5173/ns/v/src/main.ts');
-			expect(payload.evictPaths).toEqual(expect.arrayContaining(['http://test:5173/ns/v/src/app/home.component.ts', 'http://test:5173/ns/v/src/main.ts']));
-			expect(payload.evictPaths.some((url: string) => url.includes('/ns/m/'))).toBe(false);
-		} finally {
-			vi.unstubAllEnvs();
-		}
+		const payload = JSON.parse(String(openClient.send.mock.calls[0][0]));
+		expect(payload.entryUrl).toBe('http://test:5173/ns/v/src/main.ts');
+		expect(payload.evictPaths).toEqual(expect.arrayContaining(['http://test:5173/ns/v/src/app/home.component.ts', 'http://test:5173/ns/v/src/main.ts']));
+	});
+
+	it('evicts transitive importers even when a decorator-free edit narrows Vite invalidation', async () => {
+		const metrics = { invalidated: 0, recipients: 0, narrowed: undefined as boolean | undefined, tAfterFramework: 0 };
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue({ root: '/proj', updateRel: '/src/app/constants.ts', metrics, emitSummary: vi.fn() } as any);
+		vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const importer = { id: '/proj/src/app/home.component.ts', file: '/proj/src/app/home.component.ts', importers: new Set() };
+		const changedModule = { id: '/proj/src/app/constants.ts', file: '/proj/src/app/constants.ts', importers: new Set([importer]), importedModules: new Set() };
+		const server = makeServer();
+		const ctx = { file: '/proj/src/app/constants.ts', server, modules: [changedModule], read: async () => 'export const TITLE = "x";' } as any;
+
+		await angularServerStrategy.handleHotUpdate!(ctx, makeDeps(openClient));
+
+		expect(metrics.narrowed).toBe(true);
+		expect(server.moduleGraph.invalidateModule).not.toHaveBeenCalledWith(importer);
+		const payload = JSON.parse(String(openClient.send.mock.calls[0][0]));
+		expect(payload.evictPaths).toContain('http://test:5173/ns/v/src/app/home.component.ts');
 	});
 
 	it('keeps app.css?direct out of the Angular runtime eviction closure', async () => {
@@ -258,7 +246,7 @@ describe('angularServerStrategy.handleHotUpdate', () => {
 		await angularServerStrategy.handleHotUpdate!(ctx, deps);
 
 		const payload = JSON.parse(String(openClient.send.mock.calls[0][0]));
-		expect(payload.evictPaths).toContain('http://test:5173/ns/m/src/main.ts');
+		expect(payload.evictPaths).toContain('http://test:5173/ns/v/src/main.ts');
 		expect(payload.evictPaths.some((url: string) => url.includes('app.css'))).toBe(false);
 	});
 
@@ -324,7 +312,6 @@ describe('angularServerStrategy.handleClientCustomEvent (angular:invalidate reco
 			moduleGraph: { version: 3 },
 			strategy: { flavor: 'angular' },
 			verbose: false,
-			sharedTransformRequest: { invalidateMany: vi.fn() },
 			getBootstrapEntryRelPath: () => '/src/main.ts',
 			isSocketClientOpen: (c: any) => !!c && c.readyState === 1,
 			getHmrSocketRole: () => 'device',

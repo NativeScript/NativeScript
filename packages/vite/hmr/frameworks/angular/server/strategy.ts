@@ -1,52 +1,36 @@
-import type { FrameworkModuleRequestContext, FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServedModuleContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
-import { interceptNgComponentRequest } from './ng-component-route.js';
+import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
 import type { NsHotUpdateContext } from '../../../server/websocket-hot-update.js';
 import type { ViteDevServer } from 'vite';
 import * as path from 'path';
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
 import { getMonorepoWorkspaceRoot } from '../../../../helpers/project.js';
-import { linkAngularPartialsIfNeeded } from './linker.js';
-import { prepareAngularEntryForDevice } from '../../../server/rewrite-imports.js';
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
 import { stripJsComments } from '../build/util.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
-import { collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, type HotUpdateGraphModuleLike } from './websocket-angular-hot-update.js';
+import { collectAngularHotUpdateRoots, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, type HotUpdateGraphModuleLike } from './websocket-angular-hot-update.js';
 import { collectTransitiveImportersForInvalidation, type TransitiveImporterModuleLike } from '../../../server/transform-cache-invalidation.js';
 import { getServerOrigin } from '../../../server/server-origin.js';
 import { isSameAngularModuleRel } from './angular-root-component.js';
 import type { AngularUpdateMessage } from '../../../shared/protocol.js';
-import { isThinDeviceMode, thinDeviceUrl, thinEvictionUrls } from '../../../server/thin/thin-mode.js';
+import { thinDeviceUrl, thinEvictionUrls } from '../../../server/thin/thin-mode.js';
 
 type GraphModuleRef = { id?: string | null; file?: string | null };
 
 /**
  * What the device evicts and re-imports for an Angular reboot. The server owns
  * these URLs because only it knows the URL space the device loaded modules
- * under (`/ns/v<vite-url>` in thin mode, `/ns/m<rel>` otherwise).
+ * under (`/ns/v<vite-url>`).
  */
-function angularReloadTargets(options: { file: string; hotUpdateRoots: Iterable<GraphModuleRef>; transitiveImporters: Iterable<GraphModuleRef>; root: string; origin: string; bootstrapEntryRel: string | null; workspaceRoot: string | null }): Pick<AngularUpdateMessage, 'evictPaths' | 'entryUrl'> {
+function angularReloadTargets(options: { file: string; hotUpdateRoots: Iterable<GraphModuleRef>; transitiveImporters: Iterable<GraphModuleRef>; root: string; origin: string; bootstrapEntryRel: string | null }): Pick<AngularUpdateMessage, 'evictPaths' | 'entryUrl'> {
 	const { file, root, origin, bootstrapEntryRel } = options;
-	if (isThinDeviceMode()) {
-		const files: Array<string | null | undefined> = [file];
-		for (const mod of options.hotUpdateRoots) files.push(mod?.file ?? mod?.id);
-		for (const mod of options.transitiveImporters) files.push(mod?.file ?? mod?.id);
-		if (bootstrapEntryRel) files.push(path.join(root, bootstrapEntryRel));
-		return {
-			evictPaths: thinEvictionUrls(origin, root, files),
-			...(bootstrapEntryRel ? { entryUrl: thinDeviceUrl(origin, bootstrapEntryRel) } : {}),
-		};
-	}
+	const files: Array<string | null | undefined> = [file];
+	for (const mod of options.hotUpdateRoots) files.push(mod?.file ?? mod?.id);
+	for (const mod of options.transitiveImporters) files.push(mod?.file ?? mod?.id);
+	if (bootstrapEntryRel) files.push(path.join(root, bootstrapEntryRel));
 	return {
-		evictPaths: collectAngularEvictionUrls({
-			file,
-			hotUpdateRoots: options.hotUpdateRoots,
-			transitiveImporters: options.transitiveImporters,
-			projectRoot: root,
-			origin,
-			bootstrapEntry: bootstrapEntryRel,
-			workspaceRoot: options.workspaceRoot,
-		}),
+		evictPaths: thinEvictionUrls(origin, root, files),
+		...(bootstrapEntryRel ? { entryUrl: thinDeviceUrl(origin, bootstrapEntryRel) } : {}),
 	};
 }
 
@@ -54,10 +38,8 @@ function angularReloadTargets(options: { file: string; hotUpdateRoots: Iterable<
 //
 // Responsibilities:
 // - Identify Angular app entry modules under /src.
-// - Use Vite dev server to transform HTTP-served Angular modules.
-// - Run resulting code through the Angular linker helper so no ɵɵngDeclare
-//   partial declarations reach the device, even in strict mode.
 // - Register external templates/styles with the watcher for live updates.
+// - Drive the Angular reboot / in-place component update on hot updates.
 
 const ANGULAR_APP_DIR = getProjectAppPath();
 const ANGULAR_APP_VIRTUAL_WITH_SLASH = `${getProjectAppVirtualPath()}/`;
@@ -118,9 +100,7 @@ const ANGULAR_INVALIDATE_REBOOT_DEDUPE_MS = 2000;
 /**
  * Project-relative posix path for the `ns:angular-update` broadcast. Files
  * outside the vite root (workspace libs) fall back to the monorepo
- * workspace-relative form — the same shape `rewriteFsAbsoluteToNsM` mints for
- * their device URLs — instead of a `/../../../libs/...` up-walk that matches
- * nothing on the device.
+ * workspace-relative form instead of a `/../../../libs/...` up-walk.
  */
 function angularUpdateRelPath(file: string, root: string, workspaceRoot: string | null): string {
 	const toPosixRel = (value: string) => '/' + path.posix.normalize(value.split(path.sep).join('/'));
@@ -160,7 +140,7 @@ function angularUpdateRelPath(file: string, root: string, workspaceRoot: string 
  * suspect, and over-evicting is safe while under-evicting re-wedges.
  */
 async function broadcastAngularReboot(file: string, server: ViteDevServer, deps: NsHotUpdateContext): Promise<void> {
-	const { wss, moduleGraph, sharedTransformRequest, getBootstrapEntryRelPath, isSocketClientOpen, rememberAngularReloadSuppression, verbose } = deps;
+	const { wss, moduleGraph, getBootstrapEntryRelPath, isSocketClientOpen, rememberAngularReloadSuppression, verbose } = deps;
 	if (!wss) return;
 	const root = server.config.root || process.cwd();
 	const monorepoWorkspaceRoot = getMonorepoWorkspaceRoot(root);
@@ -194,31 +174,13 @@ async function broadcastAngularReboot(file: string, server: ViteDevServer, deps:
 	}
 
 	try {
-		const transformCacheInvalidationUrls = new Set(
-			collectAngularTransformCacheInvalidationUrls({
-				file,
-				isTs: true,
-				hotUpdateRoots,
-				transitiveImporters,
-				projectRoot: root,
-				workspaceRoot: monorepoWorkspaceRoot,
-			}),
-		);
-		if (transformCacheInvalidationUrls.size) {
-			sharedTransformRequest.invalidateMany(transformCacheInvalidationUrls);
-		}
-	} catch (error) {
-		if (verbose) console.warn('[hmr-ws][angular] invalidate-reboot transform cache purge failed', error);
-	}
-
-	try {
 		const rel = angularUpdateRelPath(file, root, monorepoWorkspaceRoot);
 		rememberAngularReloadSuppression(root, file);
 		const origin = getServerOrigin(server);
 		const bootstrapEntryRel = getBootstrapEntryRelPath();
 		let targets: Pick<AngularUpdateMessage, 'evictPaths' | 'entryUrl'> = { evictPaths: [] };
 		try {
-			targets = angularReloadTargets({ file, hotUpdateRoots, transitiveImporters, root, origin, bootstrapEntryRel, workspaceRoot: monorepoWorkspaceRoot });
+			targets = angularReloadTargets({ file, hotUpdateRoots, transitiveImporters, root, origin, bootstrapEntryRel });
 		} catch (error) {
 			if (verbose) console.warn('[hmr-ws][angular] invalidate-reboot eviction set computation failed', error);
 		}
@@ -249,8 +211,8 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	},
 	// Defer the prologue's common-block delta broadcast: the Angular HMR client
 	// re-fetches the changed module, so the broadcast must come AFTER this
-	// strategy's hot-update tail purges its transform caches — otherwise the
-	// client's re-import races the server's invalidation and serves stale code.
+	// strategy's hot-update tail invalidates the Vite module graph — otherwise
+	// the client's re-import races the server's invalidation and serves stale code.
 	deferDeltaBroadcast: true,
 	// Angular HTML templates skip the prologue's default module-graph delta
 	// upsert: the tail below re-queries the graph and drives Analog's in-place
@@ -321,14 +283,14 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	},
 	// Full Angular hot-update handler: shared prologue, then the Angular tail
 	// (TS/HTML + root-component detection, hot-update-root + transitive-importer
-	// invalidation, shared transform-cache purge, and the `ns:angular-update`
+	// invalidation, and the `ns:angular-update`
 	// reboot broadcast). Reached directly from the WebSocket plugin's
 	// handleHotUpdate hook.
 	async handleHotUpdate(ctx, deps) {
 		const state = await runHotUpdatePrologue(ctx, deps);
 		if (!state) return;
 		const { root, updateRel, metrics: updateMetrics, emitSummary: emitHmrUpdateSummary, deferredCssUpdates } = state;
-		const { strategy, verbose, wss, moduleGraph, sharedTransformRequest, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
+		const { strategy, verbose, wss, moduleGraph, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
 		const { file, server } = ctx;
 
 		// For Angular, react to component TS or external template HTML changes under /src
@@ -526,13 +488,11 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 		//
 		// Compute the transitive importer closure ONCE here and reuse
 		// it for (a) `server.moduleGraph.invalidateModule` (so Vite's
-		// transform pipeline re-runs on next request), (b) the shared
-		// transform-request cache, and (c) the runtime eviction set
-		// we broadcast in `ns:angular-update`. Consolidating this
-		// removes a redundant graph walk and guarantees the three
-		// consumers see the exact same set of importers (otherwise a
-		// late module-graph mutation between calls could leave an
-		// asymmetric narrowed/broad mix).
+		// transform pipeline re-runs on next request) and (b) the runtime
+		// eviction set we broadcast in `ns:angular-update`. Both consumers
+		// must see the exact same set of importers (otherwise a late
+		// module-graph mutation between calls could leave an asymmetric
+		// narrowed/broad mix).
 		//
 		// We separate Vite-transform narrowing from runtime eviction:
 		// `angularNeedsTransitive` answers the question "does the
@@ -549,11 +509,10 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 		// user-visible symptom: HMR completes successfully, logs are
 		// clean, but the simulator does not reflect the change.
 		//
-		// The fix: ALWAYS compute the transitive importer closure
-		// for runtime eviction. Only skip Vite's
-		// `moduleGraph.invalidate` + transform-cache purge when
-		// `angularNeedsTransitive` is false — those are the genuine
-		// narrowing wins (saves re-transform work on the server).
+		// So ALWAYS compute the transitive importer closure for
+		// runtime eviction. Only skip Vite's `moduleGraph.invalidate`
+		// when `angularNeedsTransitive` is false — that is the genuine
+		// narrowing win (saves re-transform work on the server).
 		// The eviction set always includes importers so V8 re-fetches
 		// and re-binds them.
 		if (verbose) {
@@ -601,33 +560,6 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 			if (verbose) console.warn('[hmr-ws][angular] transitive importer collection failed', error);
 		}
 
-		try {
-			// Purge shared transform cache for the changed file +
-			// hot-update roots unconditionally (their transform
-			// output IS different now). Transitive importers are
-			// only purged when narrowing decides their output may
-			// have changed; otherwise their cached transforms are
-			// still valid (compiled JS is identical even though the
-			// runtime must re-evaluate them to refresh ESM bindings).
-			const transformCacheInvalidationUrls = new Set(
-				collectAngularTransformCacheInvalidationUrls({
-					file,
-					isTs,
-					hotUpdateRoots: angularHotUpdateRoots,
-					transitiveImporters: angularNeedsTransitive ? transitiveImporters : [],
-					projectRoot: server.config.root || process.cwd(),
-					workspaceRoot: getMonorepoWorkspaceRoot(server.config.root || process.cwd()),
-				}),
-			);
-			if (transformCacheInvalidationUrls.size) {
-				sharedTransformRequest.invalidateMany(transformCacheInvalidationUrls);
-				if (verbose) {
-					console.log('[hmr-ws][angular] purged shared transform cache entries:', transformCacheInvalidationUrls.size);
-				}
-			}
-		} catch (error) {
-			if (verbose) console.warn('[hmr-ws][angular] shared transform cache purge failed', error);
-		}
 		updateMetrics.tAfterFramework = Date.now();
 		try {
 			const root = server.config.root || process.cwd();
@@ -637,41 +569,13 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 			const origin = getServerOrigin(server);
 			const bootstrapEntryRel = getBootstrapEntryRelPath();
 
-			// Stable URL + Explicit Invalidation:
-			//
-			// `evictPaths` is the canonical list of `/ns/m/<rel>` URLs
-			// the runtime must drop from `g_moduleRegistry` before
-			// re-importing `importerEntry`. Older versions of the
-			// server signaled invalidation by bumping a global
-			// `graphVersion` counter and embedding it in every URL —
-			// but V8 keys the module registry by full URL, so a v1 →
-			// v2 bump effectively flushed the entire dependency
-			// graph from the cache and forced the runtime to
-			// re-fetch + re-eval every transitively-imported module
-			// on each save (~3s HMR cycles, dominated by Vite's
-			// single-threaded transform pipeline). The new model:
-			//
-			//   1. URLs are stable: `/ns/m/<rel>` everywhere, no `vN`.
-			//   2. The server walks the inverse-dependency closure and
-			//      sends only the modules that actually need to be
-			//      re-evaluated (typically O(1) for component edits,
-			//      or the changed file + entry for narrowed edits).
-			//   3. The client calls ns:module `invalidateModules(evictPaths)`
-			//      and re-imports `importerEntry`, which causes V8 to
-			//      refetch ONLY those modules. Everything else stays
-			//      hot in the registry.
-			//
-			// Invariants enforced by `collectAngularEvictionUrls`:
-			//   - Always includes the changed file (so the new source
-			//     is fetched).
-			//   - Always includes `importerEntry` (so re-import
-			//     re-evaluates).
-			//   - Excludes node_modules (vendor packages are stable).
-			//   - Excludes virtual / runtime-graph-excluded ids.
-			//   - Origin-prefixed: `http://host:port/ns/m/<rel>`.
+			// `evictPaths` lists exactly the modules the runtime must drop
+			// before re-importing `entryUrl` (changed file, hot-update roots,
+			// transitive importers, bootstrap entry); every other module
+			// stays live in the registry.
 			let targets: Pick<AngularUpdateMessage, 'evictPaths' | 'entryUrl'> = { evictPaths: [] };
 			try {
-				targets = angularReloadTargets({ file, hotUpdateRoots: angularHotUpdateRoots, transitiveImporters, root, origin, bootstrapEntryRel, workspaceRoot: monorepoWorkspaceRoot });
+				targets = angularReloadTargets({ file, hotUpdateRoots: angularHotUpdateRoots, transitiveImporters, root, origin, bootstrapEntryRel });
 			} catch (error) {
 				if (verbose) {
 					console.warn('[ns-hmr][server] eviction set computation failed', error);
@@ -728,22 +632,6 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 		}
 		return;
 	},
-	// AnalogJS `/@ng/component` metadata fetches: gate boot-time fetches to the
-	// no-update stub, delegate live update fetches downstream to Analog's
-	// middleware (with the empty-body guard the iOS ESM loader needs).
-	interceptModuleRequest(ctx: FrameworkModuleRequestContext): boolean {
-		return interceptNgComponentRequest(ctx);
-	},
-	// preClean/rewriteFrameworkImports/postClean/canonicalizeFrameworkImports default to
-	// identity: Angular runtime imports go through the vendor bridge and there are
-	// no Angular-specific HTTP endpoints to version.
-	//
-	// Override the `/ns/m` served-module rewrite: Angular entries need the
-	// register-only entry-preparation pass (`prepareAngularEntryForDevice`)
-	// instead of the shared `rewriteImports` default the other flavors use.
-	rewriteServedModule(code: string, ctx: FrameworkServedModuleContext): string {
-		return prepareAngularEntryForDevice(code, ctx.moduleId, ctx.sfcFileMap, ctx.depFileMap, ctx.projectRoot, ctx.verbose, undefined, ctx.serverOrigin, true);
-	},
 	// Angular module freshness is eviction-driven (the client evicts changed
 	// component/module URLs before re-import), with one exception: the
 	// `/@ng/component?c=<id>&t=<ts>` metadata endpoint. Each save mints a new
@@ -761,16 +649,11 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 		return ['/@ng/component'];
 	},
 	async processFile(ctx: FrameworkProcessFileContext) {
-		// Ensure any Angular code the HMR server assembles for HTTP consumption is fully linked.
 		const { filePath, server, verbose } = ctx;
 		if (isRuntimeGraphExcludedPath(filePath)) return;
 		try {
 			const transformed = await server.transformRequest(filePath);
 			if (!transformed?.code) return;
-			let code = transformed.code;
-			// Sanitize Angular partial declarations inline before device evaluation.
-			code = linkAngularPartialsIfNeeded(code, filePath);
-			// No additional per-file registry at the moment; core HMR loader will fetch via HTTP.
 			if (verbose) {
 				console.log(`[angular-hmr] processed ${filePath}`);
 			}
@@ -862,13 +745,11 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 			}
 		} catch {}
 
-		// At this stage, we only need to ensure Angular HMR roots are transformed and linked at least once.
+		// Prime the Angular HMR roots through the Vite transform pipeline once.
 		for (const rel of entries) {
 			try {
 				const transformed = await server.transformRequest(rel);
 				if (!transformed?.code) continue;
-				let code = transformed.code;
-				code = linkAngularPartialsIfNeeded(code, rel);
 				if (verbose) {
 					console.log(`[angular-registry] primed entry: ${rel}`);
 				}

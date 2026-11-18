@@ -5,6 +5,11 @@ vi.mock('./import-map.js', () => ({
 	buildRuntimeConfig: (...args: unknown[]) => mockBuildRuntimeConfig(...args),
 }));
 
+const mockBuildThinImportMap = vi.fn();
+vi.mock('./thin/thin-route.js', () => ({
+	buildThinImportMap: (...args: unknown[]) => mockBuildThinImportMap(...args),
+}));
+
 // The route derives the origin from the trusted, https-aware
 // `getServerOrigin(server)` (NOT the client-supplied `Host` header). Mock it to
 // a deterministic value so we can assert the route uses it verbatim.
@@ -58,10 +63,12 @@ describe('registerImportMapRoute', () => {
 	beforeEach(() => {
 		mockBuildRuntimeConfig.mockReset();
 		mockBuildRuntimeConfig.mockReturnValue({
-			importMap: JSON.stringify({ imports: { '@nativescript/core': 'http://localhost:5173/ns/core' } }),
+			specifiers: ['@nativescript/core'],
 			volatilePatterns: ['?v=', '&v='],
 			canonicalization: { stripParams: ['t', 'v', 'import'], forPathPrefixes: ['/ns/'], preserveQueryFor: [] },
 		});
+		mockBuildThinImportMap.mockReset();
+		mockBuildThinImportMap.mockResolvedValue({ '@nativescript/core': 'http://trusted-host:5173/ns/v/node_modules/@nativescript/core/index.js' });
 		mockGetServerOrigin.mockClear();
 		mockGetServerOrigin.mockReturnValue(TRUSTED_ORIGIN);
 	});
@@ -74,7 +81,7 @@ describe('registerImportMapRoute', () => {
 		const { handler } = mount();
 		const next = vi.fn();
 		const res = makeRes();
-		await handler({ url: '/ns/entry', method: 'GET', headers: {} }, res, next);
+		await handler({ url: '/ns/v/src/main.ts', method: 'GET', headers: {} }, res, next);
 		expect(next).toHaveBeenCalledTimes(1);
 		expect(res.ended).toBe(false);
 		expect(mockBuildRuntimeConfig).not.toHaveBeenCalled();
@@ -94,7 +101,7 @@ describe('registerImportMapRoute', () => {
 	});
 
 	it('serves the runtime config as JSON on GET', async () => {
-		const { handler } = mount();
+		const { handler, server } = mount();
 		const next = vi.fn();
 		const res = makeRes();
 		await handler({ url: '/ns/import-map.json', method: 'GET', headers: { host: 'localhost:5173' } }, res, next);
@@ -104,7 +111,8 @@ describe('registerImportMapRoute', () => {
 		expect(String(res.headers['Content-Type'])).toContain('application/json');
 		expect(mockBuildRuntimeConfig).toHaveBeenCalledTimes(1);
 		const parsed = JSON.parse(res.body || '{}');
-		expect(parsed.importMap).toEqual({ imports: { '@nativescript/core': 'http://localhost:5173/ns/core' } });
+		expect(mockBuildThinImportMap).toHaveBeenCalledWith(server, ['@nativescript/core'], TRUSTED_ORIGIN);
+		expect(parsed.importMap).toEqual({ imports: { '@nativescript/core': 'http://trusted-host:5173/ns/v/node_modules/@nativescript/core/index.js' } });
 		expect(parsed.volatilePatterns).toEqual(['?v=', '&v=']);
 		expect(parsed.canonicalization).toEqual({ stripParams: ['t', 'v', 'import'], forPathPrefixes: ['/ns/'], preserveQueryFor: [] });
 	});

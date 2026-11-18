@@ -1,8 +1,9 @@
 import { createRequire } from 'node:module';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import * as path from 'node:path';
 import type { FrameworkServerStrategy } from './server/framework-strategy.js';
 import { getProjectRootPath } from '../helpers/project.js';
+import { THIN_PREFIX, viteUrlForFile } from './server/thin/thin-mode.js';
 
 /**
  * A framework flavor contributed from outside this package.
@@ -29,10 +30,9 @@ export interface FrameworkFlavorDefinition {
 	/**
 	 * The device half: a module specifier resolvable from the app's root —
 	 * usually a package subpath such as `@my-framework/nativescript-vite/client`.
-	 * The module is served to the device as-is through `/ns/m`, so it must be
-	 * plain ESM with explicit `.js` import extensions, importing shared client
-	 * helpers only from `@nativescript/vite/hmr/client/framework.js`. It exports
-	 * the strategy as `default`, `clientStrategy`, or `<flavor>ClientStrategy`.
+	 * It must import shared client helpers only from
+	 * `@nativescript/vite/hmr/client/framework.js`, and exports the strategy as
+	 * `default`, `clientStrategy`, or `<flavor>ClientStrategy`.
 	 */
 	client: string;
 	/**
@@ -89,13 +89,7 @@ export function getFrameworkFlavor(flavor: string): FrameworkFlavorDefinition | 
 	return flavors.get(flavor);
 }
 
-/**
- * Package names that ship a registered flavor's client strategy. The device
- * pipeline treats them like `@nativescript/vite` itself: served per-module
- * through `/ns/m`, never through the vendor bundle or the plugin registry
- * shim, so the module's own relative imports and its imports of the shared
- * client surface resolve to the live client's canonical URLs.
- */
+/** Package names that ship a registered flavor's client strategy. */
 export function getFlavorClientPackages(): ReadonlySet<string> {
 	const names = new Set<string>();
 	for (const definition of flavors.values()) {
@@ -123,10 +117,11 @@ export function isBuiltInFlavor(flavor: string): boolean {
 
 /**
  * The device-side URL path of a registered flavor's client strategy module —
- * `/ns/m/node_modules/<package>/<file>` — or `''` for a built-in / unknown
- * flavor. The specifier is resolved from the app root like any import, then
- * expressed relative to its package so the path holds whether the package is
- * installed or linked from a workspace.
+ * `/ns/v<vite-url>`, without origin — or `''` for a built-in / unknown flavor.
+ * The specifier is resolved from the app root like any import. The dev config
+ * sets `resolve.preserveSymlinks`, so the Vite URL uses the
+ * `node_modules/<package>` spelling Node's lookup reaches from the app root,
+ * not the symlink target of a linked package.
  */
 export function getClientStrategyDevicePath(flavor: string, projectRoot: string = getProjectRootPath()): string {
 	const definition = flavors.get(flavor);
@@ -136,8 +131,25 @@ export function getClientStrategyDevicePath(flavor: string, projectRoot: string 
 	if (!pkg) {
 		throw new Error(`[@nativescript/vite] flavor "${flavor}": client module ${definition.client} resolved to ${resolved}, which is not inside a package.`);
 	}
-	const inside = path.relative(pkg.dir, resolved).split(path.sep).join('/');
-	return `/ns/m/node_modules/${pkg.name}/${inside}`;
+	const inside = path.relative(pkg.dir, resolved);
+	return `${THIN_PREFIX}${viteUrlForFile(unresolvedPackageFile(pkg.name, inside, resolved, projectRoot), projectRoot)}`;
+}
+
+function unresolvedPackageFile(pkgName: string, inside: string, resolved: string, projectRoot: string): string {
+	let real = resolved;
+	try {
+		real = realpathSync(resolved);
+	} catch {}
+	let dir = path.resolve(projectRoot);
+	for (;;) {
+		const candidate = path.join(dir, 'node_modules', pkgName, inside);
+		try {
+			if (realpathSync(candidate) === real) return candidate;
+		} catch {}
+		const parent = path.dirname(dir);
+		if (parent === dir) return resolved;
+		dir = parent;
+	}
 }
 
 function resolveFromProject(specifier: string, projectRoot: string): string {

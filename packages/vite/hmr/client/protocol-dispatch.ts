@@ -6,7 +6,7 @@
  * template swaps.
  */
 
-import { pendingModuleFetches, moduleFetchCache, resolveHmrHttpOrigin, graph, setGraphVersion, getGraphVersion, getCore, ENV_VERBOSE } from './utils.js';
+import { resolveHmrHttpOrigin, graph, setGraphVersion, getGraphVersion, getCore, ENV_VERBOSE } from './utils.js';
 import { handleCssUpdates } from './css-handler.js';
 import { buildCssApplyingDetail, buildCssAppliedDetail } from './css-update-overlay.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
@@ -235,29 +235,6 @@ export async function handleHmrMessage(ev: any) {
 				return;
 			}
 		}
-	}
-	// On-demand module fetch response (Option A)
-	if (msg.type === 'ns:module-response' && typeof msg.requestId === 'number') {
-		const pending = pendingModuleFetches.get(msg.requestId);
-		if (pending) {
-			pendingModuleFetches.delete(msg.requestId);
-			if (msg.error) {
-				if (VERBOSE) console.warn('[hmr-fetch] error', msg.error, 'spec=', pending.spec, 'id=', msg.requestId);
-				pending.reject(new Error(`[hmr-fetch] ${msg.error} for ${pending.spec}`));
-			} else {
-				try {
-					const origin = resolveHmrHttpOrigin();
-					if (!origin) throw new Error('no-http-origin');
-					const url = origin + '/ns/m' + (String(pending.spec).startsWith('/') ? pending.spec : '/' + pending.spec);
-					moduleFetchCache.set(pending.spec, url);
-					if (VERBOSE) console.log('[hmr-fetch] resolved via URL', pending.spec, '->', url, 'id=', msg.requestId);
-					pending.resolve(url);
-				} catch (e) {
-					pending.reject(e);
-				}
-			}
-		}
-		return;
 	}
 	if (msg.type === 'ns:css-updates' && Array.isArray(msg.updates)) {
 		// Drive the HMR-applying overlay past the 'received' (5%) frame

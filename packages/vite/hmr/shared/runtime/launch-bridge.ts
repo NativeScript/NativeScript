@@ -16,7 +16,7 @@
 //
 // Ordering contract: this MUST be installed before the app entry evaluates.
 // The /__ns_dev__/client bootstrap wrapper imports this module and the
-// canonical /ns/core bridge STATICALLY and calls the installer at its own
+// app graph's @nativescript/core entry STATICALLY and calls the installer at its own
 // evaluation — the session bootstrap imports that wrapper before the entry,
 // so the wrap is deterministically in place when app code runs. (The full HMR
 // client module cannot own this: the wrapper starts it asynchronously, and
@@ -72,10 +72,10 @@ function wrapLaunchNotificationObserverApi(appIos: any): boolean {
 
 /**
  * Wrap every reachable `Application.ios`. Multiple `Application` instances can
- * coexist on device (the /ns/core bridge realm the APP graph imports, the
+ * coexist on device (the core realm the APP graph imports, the
  * vendor-registry/deps-bundle realm, whatever landed on globalThis) — which
  * one an app's registration goes through depends on its import path, so wrap
- * them all. `explicitApplication` should be the /ns/core realm's Application
+ * them all. `explicitApplication` should be the app graph's core Application
  * (what app code actually gets); extra candidates are best-effort.
  */
 export function installLaunchNotificationBridge(explicitApplication?: any, extraCandidates?: any[]): boolean {

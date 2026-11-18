@@ -5,7 +5,7 @@ import * as esbuild from 'esbuild';
 import { build, type Plugin, type UserConfig } from 'vite';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 
-import { builtinModulesEsbuildPlugin, isBuiltinModuleId, nativescriptBuiltinModules, resetBuiltinModules, unwrapBuiltinModuleIds } from './builtin-modules.js';
+import { builtinModulesEsbuildPlugin, isBuiltinModuleId, nativescriptBuiltinModules, resetBuiltinModules } from './builtin-modules.js';
 
 describe('builtin modules', () => {
 	afterEach(() => resetBuiltinModules());
@@ -26,13 +26,6 @@ describe('builtin modules', () => {
 			// a global RegExp must not carry lastIndex between calls
 			expect(isBuiltinModuleId('node:url')).toBe(true);
 			expect(isBuiltinModuleId('node:fs')).toBe(false);
-		});
-
-		it('restores /@id/-wrapped builtin specifiers only', () => {
-			nativescriptBuiltinModules({ include: ['node:worker_threads'] });
-			const code = [`import { inspect } from "/@id/ns:util";`, `export * from '/@id/node:worker_threads';`, `import("/@id/ns:runtime");`, `import z from "/@id/ns:util?t=123";`, `import x from "/@id/__x00__virtual";`, `import y from "/@id/node:fs";`].join('\n');
-
-			expect(unwrapBuiltinModuleIds(code)).toBe([`import { inspect } from "ns:util";`, `export * from 'node:worker_threads';`, `import("ns:runtime");`, `import z from "ns:util";`, `import x from "/@id/__x00__virtual";`, `import y from "/@id/node:fs";`].join('\n'));
 		});
 	});
 

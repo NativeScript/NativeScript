@@ -1,4 +1,4 @@
-// Spike: validate the experimental thin device mode (NS_VITE_THIN=1) server-side.
+// Spike: validate the thin device mode server-side.
 // Boots an app's real flavor config, then walks the module graph the device
 // would load (session entry, HMR bootstrap, import map) through /ns/v.
 //
@@ -21,7 +21,6 @@ const appRoot = path.resolve(repoRoot, take('--app', 'apps/toolbox'));
 const flavor = take('--flavor', 'typescript');
 const platform = take('--platform', 'ios');
 
-process.env.NS_VITE_THIN = '1';
 process.chdir(appRoot);
 process.argv.push('--', `--env.${platform}`, '--env.hmr');
 process.env.NS_HMR_PORT = process.env.NS_HMR_PORT || '5199';

@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { clearSolidDevEntryCache, getSolidDevEntryNsmPath, getSolidJsDevEntryRelPath, isSolidRuntimePackage, resolveSolidDevEntry } from './solid-runtime.js';
+import { clearSolidDevEntryCache, isSolidRuntimePackage, resolveSolidDevEntry } from './solid-runtime.js';
 
 // Export maps copied from the published packages.
 const SOLID_1_9_9_EXPORTS = {
@@ -91,24 +91,6 @@ describe('resolveSolidDevEntry', () => {
 		expect(resolveSolidDevEntry('@solidjs/signals', root)).toBeNull();
 		installPackage('vue', { '.': { development: './dist/vue.dev.js' } }, ['dist/vue.dev.js']);
 		expect(resolveSolidDevEntry('vue', root)).toBeNull();
-	});
-});
-
-describe('getSolidDevEntryNsmPath', () => {
-	it('falls back to the legacy solid-js layout when solid-js is not found', () => {
-		expect(getSolidJsDevEntryRelPath(root)).toBe('dist/dev.js');
-		expect(getSolidDevEntryNsmPath('solid-js', root)).toBe('/ns/m/node_modules/solid-js/dist/dev.js');
-	});
-
-	it('builds /ns/m URLs from each package dev build', () => {
-		installPackage('solid-js', SOLID_2_RC_19_EXPORTS, ['dist/solid.dev.js']);
-		installPackage('@solidjs/signals', SIGNALS_RC_21_EXPORTS, ['dist/dev.js']);
-		expect(getSolidDevEntryNsmPath('solid-js', root)).toBe('/ns/m/node_modules/solid-js/dist/solid.dev.js');
-		expect(getSolidDevEntryNsmPath('@solidjs/signals', root)).toBe('/ns/m/node_modules/@solidjs/signals/dist/dev.js');
-	});
-
-	it('returns null for a non-solid-js package without a dev build', () => {
-		expect(getSolidDevEntryNsmPath('@solidjs/web', root)).toBeNull();
 	});
 });
 
