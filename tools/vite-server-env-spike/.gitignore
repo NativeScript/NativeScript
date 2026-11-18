@@ -1,4 +1,6 @@
 out/
+# Pre-thin @nativescript/vite, exported and built by legacy-vite.sh.
+legacy/
 apps/*/.local/
 apps/*/node_modules/
 apps/*/platforms/

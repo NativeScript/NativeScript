@@ -5,8 +5,9 @@
 # not symlinks into dist/ — Vite's config loader bundles linked packages and
 # then resolves their dependencies from the link target).
 #
-# Usage: tools/vite-server-env-spike/refresh-fixture-packages.sh [--skip-build] [vite] [core] [angular]
-# With no package names, all three are refreshed. The lockfile is regenerated,
+# Usage: tools/vite-server-env-spike/refresh-fixture-packages.sh [--skip-build] [vite | vite-legacy] [core] [angular]
+# `vite-legacy` installs the pre-thin package built by legacy-vite.sh instead of
+# the working tree's. With no package names, vite, core and angular are refreshed. The lockfile is regenerated,
 # which reinstalls core and invalidates the native project, so platforms/ is
 # deleted too (the next `ns run` does a clean native build).
 set -euo pipefail
@@ -23,7 +24,7 @@ PKGS=()
 for arg in "$@"; do
 	case "$arg" in
 		--skip-build) SKIP_BUILD=1 ;;
-		vite | core | angular) PKGS+=("$arg") ;;
+		vite | vite-legacy | core | angular) PKGS+=("$arg") ;;
 		*) echo "unknown argument: $arg" >&2; exit 1 ;;
 	esac
 done
@@ -49,6 +50,11 @@ cd "$APP"
 for p in "${PKGS[@]}"; do
 	case "$p" in
 		vite) pack "$REPO/dist/packages/vite" nativescript-vite.tgz ;;
+		vite-legacy)
+			[ -f "$SPIKE/legacy/dist/package.json" ] || { echo "run legacy-vite.sh first" >&2; exit 1; }
+			pack "$SPIKE/legacy/dist" nativescript-vite.tgz
+			p=vite
+			;;
 		core) pack "$REPO/dist/packages/core" nativescript-core.tgz ;;
 		angular) pack "$NS_ANGULAR_DIST" nativescript-angular.tgz ;;
 	esac
