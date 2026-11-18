@@ -1,4 +1,6 @@
 import type { Plugin } from 'vite';
+import { existsSync } from 'node:fs';
+import { isThinDeviceMode, thinDeviceUrl, viteUrlForFile } from '../hmr/server/thin/thin-mode.js';
 import { buildCoreUrl, corePathToSub, specToCoreSub } from './ns-core-url.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
 import { getMonorepoWorkspaceRoot } from './project.js';
@@ -60,6 +62,14 @@ export function nsCoreExternalUrlsPlugin(opts: NsCoreExternalUrlsPluginOptions):
 		enforce: 'pre',
 		apply: 'build',
 		async resolveId(source: string, importer: string | undefined) {
+			if (isThinDeviceMode() && (specToCoreSub(source) !== null || corePathToSub(source, nsCoreRoot) !== null)) {
+				const resolved = await this.resolve(source, importer, { skipSelf: true });
+				const file = resolved && !resolved.external ? resolved.id.split('?')[0] : null;
+				if (file && existsSync(file)) {
+					// Same resolver id the dev server's import analysis serves (no realpath).
+					return { id: thinDeviceUrl(origin, viteUrlForFile(file, projectRoot)), external: 'absolute' as const };
+				}
+			}
 			// Route every `@nativescript/core*` reference (bare specifier OR
 			// absolute path into the installed @nativescript/core package OR
 			// its subpath import-map aliases) through the ONE canonical URL

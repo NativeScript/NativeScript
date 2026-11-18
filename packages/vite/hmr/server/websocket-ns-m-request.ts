@@ -1,7 +1,7 @@
 import type { TransformResult } from 'vite';
 import * as path from 'path';
 
-import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
+import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath } from './websocket-module-specifiers.js';
 import { resolvePlatform } from '../../helpers/cli-flags.js';
 import { collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
 
@@ -236,14 +236,6 @@ export async function resolveNsMTransformedModule(options: ResolveNsMTransformed
 				};
 			}
 		} catch {}
-	}
-
-	const rawExplicitModule = tryReadRawExplicitJavaScriptModule(spec, serverRoot);
-	if (rawExplicitModule) {
-		return {
-			transformed: { code: rawExplicitModule.code } as TransformResult,
-			resolvedCandidate: rawExplicitModule.resolvedId,
-		};
 	}
 
 	for (const candidate of transformCandidates) {

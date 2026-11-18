@@ -265,7 +265,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			};
 			const loadVirtualId = (id: string) => server.pluginContainer.load(id);
 			// Canonical "spec → transformed module" resolution
-			// (websocket-ns-m-request.ts): raw explicit JS read → transform
+			// (websocket-ns-m-request.ts): transform
 			// candidates → resolveId → bare node_modules specifier →
 			// /@fs project+workspace roots → ?import hint.
 			const resolution = await resolveNsMTransformedModule({

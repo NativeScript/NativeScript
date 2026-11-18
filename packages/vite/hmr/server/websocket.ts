@@ -40,6 +40,7 @@ import { createSharedTransformRequestRunner, type SharedTransformRequestRunner }
 import type { NsHotUpdateContext } from './websocket-hot-update.js';
 import { maybeSendConnectCssSync } from './css-connect-sync.js';
 import { isSocketClientOpen } from './socket-utils.js';
+import { toDeviceRelayPayload } from './device-relay-payload.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 const APP_ROOT_DIR = getProjectAppPath();
@@ -329,20 +330,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 						} else {
 							normalized = payload;
 						}
+						normalized = toDeviceRelayPayload(normalized);
 						if (!normalized) return;
-						// Vite's stock `update` payload includes per-module
-						// HMR boundary info that our device-side client
-						// has no handler for (we drive HMR via our own
-						// `ns:angular-update`/`ns:hmr-delta`/`ns:css-updates`
-						// messages). Forwarding it would just look like
-						// noise to the client. Custom events
-						// (`type: 'custom'`) — including
-						// `angular:component-update` and Analog's
-						// CSS-direct/inline `update` shorthand — DO need
-						// to reach the device, since they drive the
-						// in-place `ɵɵreplaceMetadata` template-swap path.
-						// Filter the relay to those.
-						if (normalized.type !== 'custom') return;
 						// Root-component guard. Analog's in-place
 						// `ɵɵreplaceMetadata` recreates the edited
 						// component's `LView`s without re-navigating. For

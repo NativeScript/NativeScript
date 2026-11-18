@@ -66,9 +66,16 @@ describe('rewriteImports — ?raw imports', () => {
 		expect(out).not.toContain('const icons =');
 	});
 
-	it('keeps the full Vite query on a ?raw /@fs URL that stays with Vite', () => {
+	it('routes a ?raw /@fs URL outside both roots through /ns/m', () => {
 		const out = rewrite(`import svg from "/@fs/outside-roots/lib/icon.svg?import&raw";\n`);
-		expect(out).toContain(`from "/@fs/outside-roots/lib/icon.svg?import&raw"`);
+		expect(out).toContain(`/ns/m/@fs/outside-roots/lib/icon.svg?raw"`);
+		expect(out).not.toContain(`"/@fs/`);
+	});
+
+	it('never leaves a raw Vite /@fs URL for a module outside both roots', () => {
+		const out = rewrite(`import { calc } from "/@fs/outside-roots/node_modules/@csstools/css-calc/dist/index.mjs";\n`);
+		expect(out).toContain(`/ns/m/@fs/outside-roots/node_modules/@csstools/css-calc/dist/index.mjs"`);
+		expect(out).not.toContain(`"/@fs/`);
 	});
 
 	it('leaves imports without ?raw as they were', () => {

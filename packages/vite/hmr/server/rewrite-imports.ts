@@ -259,18 +259,14 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 		// UMD module like papaparse crashes on `(this).Papa = factory()`
 		// because top-level `this` is `undefined` in ESM context.
 		if (spec.startsWith('/@fs/')) {
-			const rewritten = rewriteFsAbsoluteToNsM(spec, projectRoot, monorepoWorkspaceRootForRewrite);
-			if (rewritten) {
-				if (httpOriginSafe) {
-					return `${prefix}${httpOriginSafe}${rewritten}${suffix}`;
-				}
-				return `${prefix}${rewritten}${suffix}`;
+			// Outside both roots there is no relative form; `/ns/m/@fs/<abs>` is
+			// the spelling the core bridge emits for the same files, so a raw
+			// Vite `/@fs/` URL must never reach the device (second module record).
+			const rewritten = rewriteFsAbsoluteToNsM(spec, projectRoot, monorepoWorkspaceRootForRewrite) ?? `/ns/m${spec}`;
+			if (httpOriginSafe) {
+				return `${prefix}${httpOriginSafe}${rewritten}${suffix}`;
 			}
-			// Path resolves outside both roots — leave Vite's URL alone as a
-			// last resort. The original behaviour was to fall through here
-			// and let downstream branches (e.g. `normalizeNodeModulesSpecifier`)
-			// handle paths whose abs form happens to contain `/node_modules/`,
-			// so preserve that for the unrewritable case below.
+			return `${prefix}${rewritten}${suffix}`;
 		}
 
 		// Vite 8 oxc runtime helpers (decorators etc.) — emitted as
@@ -287,12 +283,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 
 		// Route Vite virtual modules (/@solid-refresh, etc.) through /ns/m/ so their
 		// internal imports (e.g. solid-js) get vendor-rewritten by our pipeline.
-		// Skip known Vite internals (/@vite/, /@id/) which are handled elsewhere.
-		// `/@fs/` is intentionally excluded above; if we ever reach here with a
-		// `/@fs/` spec it means the rewrite-to-`/ns/m/` pass couldn't anchor it
-		// under projectRoot or workspaceRoot, so we fall through and rely on the
-		// `normalizeNodeModulesSpecifier` branch below for paths that still
-		// contain a `/node_modules/<pkg>/` segment.
+		// Skip known Vite internals (/@vite/, /@id/, /@fs/) which are handled elsewhere.
 		if (spec.startsWith('/@') && !/^\/@(?:vite|id|fs)\//.test(spec)) {
 			const out = `/ns/m${spec}`;
 			if (httpOriginSafe) {

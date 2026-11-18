@@ -2,6 +2,8 @@ import type { ViteDevServer } from 'vite';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { buildRuntimeConfig } from './import-map.js';
 import { getServerOrigin } from './server-origin.js';
+import { isThinDeviceMode } from './thin/thin-mode.js';
+import { buildThinImportMap } from './thin/thin-route.js';
 
 export interface RegisterImportMapRouteOptions {
 	/** The active framework strategy — only its `flavor` is consulted. */
@@ -45,11 +47,16 @@ export function registerImportMapRoute(server: ViteDevServer, options: RegisterI
 				strategy,
 			});
 
+			let importMap = JSON.parse(runtimeConfig.importMap);
+			if (isThinDeviceMode()) {
+				importMap = { ...importMap, imports: await buildThinImportMap(server, importMap.imports || {}, origin) };
+			}
+
 			res.setHeader('Content-Type', 'application/json');
 			res.end(
 				JSON.stringify(
 					{
-						importMap: JSON.parse(runtimeConfig.importMap),
+						importMap,
 						volatilePatterns: runtimeConfig.volatilePatterns,
 						canonicalization: runtimeConfig.canonicalization,
 					},

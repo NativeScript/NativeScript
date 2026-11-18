@@ -221,51 +221,6 @@ export function isLikelyNativeScriptPluginSpecifier(spec: string, projectRoot: s
 	return true;
 }
 
-export function tryReadRawExplicitJavaScriptModule(spec: string, projectRoot: string): { code: string; resolvedId: string } | null {
-	if (!spec || !spec.startsWith('/')) return null;
-	if (spec.startsWith('/@id/') || spec.startsWith('/@fs/')) return null;
-	if (!/\.js$/i.test(spec) || /\.(?:mjs|cjs)$/i.test(spec)) return null;
-
-	try {
-		const nodeModulesSpecifier = normalizeNodeModulesSpecifier(spec);
-		if (nodeModulesSpecifier) {
-			const pkgName = extractRootPackageName(nodeModulesSpecifier);
-			if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName, projectRoot)) {
-				return null;
-			}
-		}
-	} catch {}
-
-	// source-map-js ships as CJS with relative require() calls that need
-	// ESM conversion via sourceMapJsCompatPlugin. Force Vite transforms.
-	if (/\/node_modules\/source-map-js\//.test(spec)) return null;
-
-	const root = path.resolve(projectRoot);
-	const absPath = path.resolve(root, `.${spec}`);
-	if (!absPath.startsWith(root + path.sep) && absPath !== root) return null;
-	try {
-		const code = existsSync(absPath) ? readFileSync(absPath, 'utf-8') : null;
-		if (code != null) {
-			const usesNodeModuleInterop = /(?:from\s*['"](?:node:)?module['"]|import\s*\{[^}]*\bcreateRequire\b[^}]*\}\s*from\s*['"](?:node:)?module['"]|\bcreateRequire\s*\()/m.test(code);
-			if (usesNodeModuleInterop) {
-				return null;
-			}
-
-			// For node_modules files that use CJS require() with relative
-			// specifiers, defer to Vite transforms so the ESM conversion
-			// plugins (e.g. sourceMapJsCompatPlugin) can run. Raw reads
-			// leave `require('./x')` intact, which then hits NS's native
-			// file-based require and fails on HTTP URLs.
-			if (/\/node_modules\//.test(spec) && /\brequire\s*\(\s*['"]\.{1,2}\//.test(code)) {
-				return null;
-			}
-
-			return { code, resolvedId: spec };
-		}
-	} catch {}
-	return null;
-}
-
 export function resolveVendorFromCandidate(specifier: string | null | undefined): string | null {
 	if (!specifier) {
 		return null;

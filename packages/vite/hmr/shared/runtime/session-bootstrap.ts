@@ -196,6 +196,9 @@ function applyDevSessionGlobals(session: NsDevSessionDescriptor) {
 	try {
 		g.__NS_DEV_SESSION__ = { sessionId: session.sessionId, origin: session.origin, entryUrl: session.entryUrl, clientUrl: session.clientUrl, wsUrl: session.wsUrl, platform: session.platform };
 	} catch {}
+	// Documented contract for frameworks resolving dev-server-relative URLs
+	// (e.g. @nativescript/angular's NATIVESCRIPT_STYLE_BASE_URL default).
+	g.__NS_DEV_ORIGIN__ = session.origin;
 }
 
 export async function startBrowserRuntimeSession(defaultSessionUrl: string, verbose?: boolean) {

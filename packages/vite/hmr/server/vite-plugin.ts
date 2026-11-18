@@ -7,7 +7,33 @@ import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, type NsDevPlatfo
 import { resolveDeviceReachableHost } from '../../helpers/dev-host.js';
 import { setUserDefineEntries } from '../../helpers/global-defines.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
+import { isThinDeviceMode, thinDeviceUrl, viteUrlForFile } from './thin/thin-mode.js';
+import { registerThinRoute } from './thin/thin-route.js';
+import { getServerOrigin } from './server-origin.js';
+import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
+
+const runtimeFile = (relToHmrServer: string) => fileURLToPath(new URL(relToHmrServer, import.meta.url));
+
+async function resolveThinBootstrapUrls(server: import('vite').ViteDevServer, origin: string): Promise<{ client: string; moduleUrls: NsDevBootstrapModuleUrls }> {
+	const root = server.config.root;
+	const urlFor = (file: string) => thinDeviceUrl(origin, viteUrlForFile(file, root));
+	const resolvedCore = await server.environments.client.pluginContainer.resolveId('@nativescript/core', path.join(root, 'index.html'));
+	// Use the resolver's id verbatim (no realpath): it is what Vite's import
+	// analysis serves, symlinked or not (the CLI runs with --preserve-symlinks).
+	const coreFile = resolvedCore?.id?.split('?')[0];
+	return {
+		client: urlFor(runtimeFile('../client/index.js')),
+		moduleUrls: {
+			vendorBootstrap: urlFor(runtimeFile('../shared/runtime/vendor-bootstrap.js')),
+			hotContext: urlFor(runtimeFile('../client/hot-context.js')),
+			entryRuntime: urlFor(runtimeFile('../entry-runtime.js')),
+			cssHandler: urlFor(runtimeFile('../client/css-handler.js')),
+			launchBridge: urlFor(runtimeFile('../shared/runtime/launch-bridge.js')),
+			...(coreFile ? { coreBridge: urlFor(coreFile) } : {}),
+		},
+	};
+}
 
 const VIRTUAL_ID = 'virtual:ns-hmr-client';
 const RESOLVED_ID = '\0' + VIRTUAL_ID;
@@ -88,7 +114,7 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; req
 	return {
 		sessionId: options.sessionId,
 		origin,
-		entryUrl: `${origin}${canonicalEntryPathname}`,
+		entryUrl: isThinDeviceMode() ? thinDeviceUrl(origin, entryPathname) : `${origin}${canonicalEntryPathname}`,
 		clientUrl: `${origin}/__ns_dev__/client`,
 		wsUrl: `${wsProtocol}://${options.requestHost}/ns-hmr`,
 		platform: options.platform,
@@ -116,20 +142,31 @@ function resolveBootstrapImportUrl(origin: string, clientImport: string): string
 	}
 }
 
-export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin: string; clientImport: string; hotContextImport?: string; verbose?: boolean }) {
+/** Absolute device URLs for the bootstrap's own imports; each defaults to its `/ns/m` / `/ns/core` form. */
+export interface NsDevBootstrapModuleUrls {
+	vendorBootstrap?: string;
+	hotContext?: string;
+	entryRuntime?: string;
+	cssHandler?: string;
+	coreBridge?: string;
+	launchBridge?: string;
+}
+
+export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin: string; clientImport: string; hotContextImport?: string; verbose?: boolean; moduleUrls?: NsDevBootstrapModuleUrls }) {
 	const normalizedOrigin = options.origin.replace(/\/$/, '');
+	const urls = options.moduleUrls || {};
 	const resolvedClientImport = resolveBootstrapImportUrl(normalizedOrigin, options.clientImport);
 	const vendorBundleUrl = `${normalizedOrigin}/@nativescript/vendor.mjs`;
-	const vendorBootstrapUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js`;
-	const resolvedHotContextImport = resolveBootstrapImportUrl(normalizedOrigin, options.hotContextImport || '/ns/m/node_modules/@nativescript/vite/hmr/client/hot-context.js');
-	const entryRuntimeUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js`;
-	const cssHandlerUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/client/css-handler.js`;
+	const vendorBootstrapUrl = urls.vendorBootstrap || `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js`;
+	const resolvedHotContextImport = urls.hotContext || resolveBootstrapImportUrl(normalizedOrigin, options.hotContextImport || '/ns/m/node_modules/@nativescript/vite/hmr/client/hot-context.js');
+	const entryRuntimeUrl = urls.entryRuntime || `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js`;
+	const cssHandlerUrl = urls.cssHandler || `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/client/css-handler.js`;
 	// Canonical, unversioned core-bridge URL (see helpers/ns-core-url.ts) — the
 	// app graph already loaded this exact URL during boot, so importing it here
 	// resolves to the SAME module record/realm instead of minting a new one.
-	const coreBridgeUrl = `${normalizedOrigin}/ns/core`;
+	const coreBridgeUrl = urls.coreBridge || `${normalizedOrigin}/ns/core`;
 
-	const launchBridgeUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/launch-bridge.js`;
+	const launchBridgeUrl = urls.launchBridge || `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/launch-bridge.js`;
 
 	return `
 import { installVendorBootstrap as __nsBrowserRuntimeInstallVendorBootstrap } from ${JSON.stringify(vendorBootstrapUrl)};
@@ -636,7 +673,10 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 			return null;
 		},
 		configureServer(server) {
-			server.middlewares.use((req, res, next) => {
+			if (isThinDeviceMode()) {
+				registerThinRoute(server, () => getServerOrigin(server));
+			}
+			server.middlewares.use(async (req, res, next) => {
 				try {
 					const url = new URL(req.url || '', 'http://localhost');
 					if (url.pathname === '/__ns_dev__/client') {
@@ -646,18 +686,25 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 						const wsUrl = `${secure ? 'wss' : 'ws'}://${requestHost}/ns-hmr`;
 						const clientFsPath = require.resolve('@nativescript/vite/hmr/client/index.js');
 						const projectRoot = config?.root || process.cwd();
-						const clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });
+						let clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });
 						let hotContextImport: string | undefined;
 						try {
 							const hotContextFsPath = require.resolve('@nativescript/vite/hmr/client/hot-context.js');
 							hotContextImport = computeClientImportSpecifier({ projectRoot, clientFsPath: hotContextFsPath });
 						} catch {}
+						let moduleUrls: NsDevBootstrapModuleUrls | undefined;
+						if (isThinDeviceMode()) {
+							const thin = await resolveThinBootstrapUrls(server, getServerOrigin(server));
+							clientImport = thin.client;
+							moduleUrls = thin.moduleUrls;
+						}
 						const code = createNsDevClientBootstrapCode({
 							origin,
 							wsUrl,
 							clientImport,
 							hotContextImport,
 							verbose: opts.verbose,
+							moduleUrls,
 						});
 
 						res.setHeader('Access-Control-Allow-Origin', '*');

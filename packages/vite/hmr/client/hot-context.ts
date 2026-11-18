@@ -81,8 +81,16 @@ export interface NsHotRegistry {
 	getDepAcceptors(depKey: string): Array<{ owner: string; callback: HotCallback }>;
 	/** True when `ownerKey`'s current evaluation accepts `depKey` via the dependency form. */
 	acceptsDep(ownerKey: string, depKey: string): boolean;
-	/** Fire `hot.on(event, cb)` listeners. Returns the number of listeners invoked. */
+	/** Fire `hot.on(event, cb)` and registry `on(event, cb)` listeners. Returns the number of listeners invoked. */
 	dispatchHotEvent(event: string, payload?: unknown): number;
+	/**
+	 * Subscribe to HMR events (Vite's client events such as `vite:beforeUpdate`,
+	 * and server custom events) outside any module's hot context: for app-lifetime
+	 * owners like a framework renderer. Unlike `hot.on`, the listener is never
+	 * pruned by a module re-evaluation; remove it with `off`.
+	 */
+	on(event: string, cb: HotCallback): void;
+	off(event: string, cb: HotCallback): void;
 	listHotEventListeners(): Record<string, number>;
 	/** Wire `hot.send(...)` to the active WebSocket (installed by the full client). */
 	setSendToServer(fn: ((event: string, data?: unknown) => void) | null): void;
@@ -421,6 +429,18 @@ function createRegistry(): NsHotRegistry {
 				}
 			}
 			return invoked;
+		},
+		on(event: string, cb: HotCallback) {
+			if (typeof event !== 'string' || typeof cb !== 'function') return;
+			let set = eventListeners.get(event);
+			if (!set) {
+				set = new Set();
+				eventListeners.set(event, set);
+			}
+			set.add(cb);
+		},
+		off(event: string, cb: HotCallback) {
+			eventListeners.get(event)?.delete(cb);
 		},
 		listHotEventListeners(): Record<string, number> {
 			const out: Record<string, number> = {};

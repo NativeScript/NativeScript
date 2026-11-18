@@ -8,6 +8,7 @@ import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath,
 import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { buildCoreUrl } from './ns-core-url.js';
+import { isThinDeviceMode } from '../hmr/server/thin/thin-mode.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
 import { setAppCssState } from './app-css-state.js';
 import { createAppCssRefresher } from './app-css-refresh.js';
@@ -283,7 +284,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// uses the same function so iOS's HTTP ESM cache sees byte-identical
 			// URLs.
 			const coreSpec = (subpath?: string | null): string => {
-				const origin = getBootOrigin();
+				const origin = isThinDeviceMode() ? null : getBootOrigin();
 				if (origin) {
 					return buildCoreUrl(origin, subpath);
 				}
@@ -408,6 +409,14 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// Under non-HMR: Vite's `define` config handles substitution
 			// statically at build time — no runtime seeding needed.
 			if (opts.hmrActive) {
+				// Thin mode: Vite's client environment never substitutes `define` in
+				// dev; its `/@vite/env` module installs them on globalThis instead.
+				// It must be an external import (evaluated before the externalized
+				// core graph), not a bundled module (whose body runs after it).
+				const thinOrigin = isThinDeviceMode() ? getBootOrigin() : null;
+				if (thinOrigin) {
+					imports += `import '${thinOrigin}/ns/v/@vite/env';\n`;
+				}
 				imports += `import '${DEFINES_SEED_VIRTUAL_ID}';\n`;
 			}
 			// consistent verbose flag to easily reference below

@@ -135,3 +135,32 @@ describe('hot-context dependency accepts', () => {
 		expect(registry.getDepAcceptors('octane')).toEqual([]);
 	});
 });
+
+describe('hot-context registry-level listeners', () => {
+	it('fires registry on() listeners alongside hot.on listeners and stops after off()', () => {
+		const registry = getNsHotRegistry();
+		const moduleCb = vi.fn();
+		const ownerCb = vi.fn();
+		registry.createHotContext('/src/app/five.component.ts').on('spec:five-update', moduleCb);
+		registry.on('spec:five-update', ownerCb);
+
+		expect(registry.dispatchHotEvent('spec:five-update', { n: 1 })).toBe(2);
+		expect(ownerCb).toHaveBeenCalledWith({ n: 1 });
+
+		registry.off('spec:five-update', ownerCb);
+		expect(registry.dispatchHotEvent('spec:five-update', { n: 2 })).toBe(1);
+		expect(ownerCb).toHaveBeenCalledTimes(1);
+	});
+
+	it('keeps registry on() listeners when a module re-evaluates', () => {
+		const registry = getNsHotRegistry();
+		const ownerCb = vi.fn();
+		registry.createHotContext('/src/app/six.component.ts').on('spec:six-update', vi.fn());
+		registry.on('spec:six-update', ownerCb);
+
+		registry.createHotContext('/src/app/six.component.ts');
+
+		expect(registry.dispatchHotEvent('spec:six-update', {})).toBe(1);
+		expect(ownerCb).toHaveBeenCalledTimes(1);
+	});
+});

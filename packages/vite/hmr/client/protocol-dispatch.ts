@@ -174,6 +174,22 @@ export async function handleHmrMessage(ev: any) {
 			// any framework-specific handling). The reboot path falls through
 			// for `ns:angular-update` (the legacy/`.ts`-edit broadcast) and
 			// for any framework not yet using the in-place replacement path.
+			// Stock Vite `update` (the server relays only its `css-update`
+			// entries). There is no `<link>` to swap on device: whoever loaded
+			// the stylesheet at runtime (e.g. the Angular renderer's external
+			// component styles) reloads it from `vite:beforeUpdate`, the same
+			// event Vite's client fires before applying an update.
+			if (msg.type === 'update' && Array.isArray(msg.updates)) {
+				const registry = getNsHotRegistry();
+				const handled = registry.dispatchHotEvent('vite:beforeUpdate', msg);
+				registry.dispatchHotEvent('vite:afterUpdate', msg);
+				const paths = msg.updates.map((u: any) => String(u?.path || '').split('?')[0]).filter(Boolean);
+				if (VERBOSE) console.log('[hmr-client][update] css-update for', paths.join(', '), 'listeners=', handled);
+				try {
+					setUpdateOverlayStage('complete', { detail: handled ? `Updated ${paths.join(', ')}` : `No stylesheet owner for ${paths.join(', ')}` });
+				} catch {}
+				return;
+			}
 			if (msg.type === 'custom' && typeof msg.event === 'string') {
 				// Diagnostic policy: listener exceptions log loud (compiled
 				// HmrLoad fetch/parse error). Successful dispatches are silent.
