@@ -80,6 +80,58 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
 	masterPage.off(View.unloadedEvent, unloadedEventHandler);
 }
 
+export function test_WhenGoingBackToPageThatShowsModal_FrameCompletesTheNavigation() {
+	const frame = Frame.topmost();
+
+	const masterPage = new Page();
+	addLabelToPage(masterPage, 'Master');
+	helper.navigate(() => masterPage);
+
+	const modalPage = new Page();
+	addLabelToPage(modalPage, 'Modal');
+	let modalShown = false;
+	let modalClosed = false;
+	modalPage.on(View.shownModallyEvent, () => (modalShown = true));
+	masterPage.showModal(modalPage, {
+		context: null,
+		closeCallback: () => (modalClosed = true),
+		fullscreen: false,
+		animated: false,
+	});
+
+	try {
+		TKUnit.waitUntilReady(() => modalShown);
+
+		helper.navigateWithHistory(() => {
+			const page = new Page();
+			addLabelToPage(page, 'Covering');
+
+			return page;
+		});
+
+		frame.goBack();
+		TKUnit.waitUntilReady(() => frame.ios.controller.topViewController === masterPage.ios && !frame.ios.controller.transitionCoordinator);
+		TKUnit.waitUntilReady(() => !frame._executingContext, 1, false);
+
+		modalPage.closeModal();
+		TKUnit.waitUntilReady(() => modalClosed);
+	} finally {
+		if (!modalClosed && masterPage.modal) {
+			modalPage.closeModal();
+			TKUnit.waitUntilReady(() => modalClosed, 5, false);
+		}
+	}
+
+	TKUnit.assertEqual(frame.currentPage, masterPage, 'frame.currentPage should be the page navigated back to');
+	TKUnit.assertTrue(frame.navigationQueueIsEmpty(), 'frame navigation queue should be empty');
+	TKUnit.assertNull(frame._executingContext, 'frame should not be executing a navigation');
+
+	const nextPage = new Page();
+	addLabelToPage(nextPage, 'Next');
+	helper.navigateWithHistory(() => nextPage);
+	TKUnit.assertEqual(frame.currentPage, nextPage, 'frame should complete a navigation after going back');
+}
+
 // function getHeight(view: View): number {
 //     const bounds = view._getCurrentLayoutBounds();
 //     return bounds.bottom - bounds.top;
