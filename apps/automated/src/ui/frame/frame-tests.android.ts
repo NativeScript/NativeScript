@@ -1,5 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import { PercentLength, unsetValue, Frame, Page } from '@nativescript/core';
+import { PercentLength, unsetValue, Frame, Page, StackLayout } from '@nativescript/core';
 export * from './frame-tests-common';
 
 export function test_percent_width_and_height_set_to_page_support() {
@@ -86,6 +86,42 @@ export function test_back_after_activity_recreation(done: (error?: Error) => voi
 				return;
 			}
 			TKUnit.assertTrue(Date.now() < deadline, wentBack ? 'Back navigation stalled after Activity recreation' : 'Activity recreated and Frame loaded');
+			setTimeout(poll, 50);
+		} catch (e) {
+			done(e);
+		}
+	};
+	setTimeout(poll, 50);
+}
+
+export function test_nested_frame_removed_before_its_first_page_is_shown(done: (error?: Error) => void) {
+	const topFrame = Frame.topmost();
+	const layout = new StackLayout();
+	const hostPage = new Page();
+	hostPage.content = layout;
+	topFrame.navigate({ create: () => hostPage, clearHistory: true, animated: false });
+	TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty() && hostPage.isLoaded, 15);
+
+	const nestedFrame = new Frame();
+	layout.addChild(nestedFrame);
+	nestedFrame.navigate({ create: () => new Page(), animated: false });
+	const fragment = nestedFrame._executingContext?.entry?.fragment;
+	TKUnit.assertNotNull(fragment, 'Nested frame started navigating');
+	TKUnit.assertFalse(fragment.isAdded(), 'Nested frame fragment transaction is still pending');
+	layout.removeChild(nestedFrame);
+
+	const deadline = Date.now() + 10000;
+	let navigatedAway = false;
+	const poll = () => {
+		try {
+			if (!navigatedAway) {
+				navigatedAway = true;
+				topFrame.navigate({ create: () => new Page(), animated: false });
+			} else if (topFrame.navigationQueueIsEmpty() && !nestedFrame._executingContext) {
+				done();
+				return;
+			}
+			TKUnit.assertTrue(Date.now() < deadline, 'Navigation settled after removing the nested frame');
 			setTimeout(poll, 50);
 		} catch (e) {
 			done(e);

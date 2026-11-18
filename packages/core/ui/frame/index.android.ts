@@ -508,6 +508,24 @@ export class Frame extends FrameBase {
 		this._android.rootViewGroup.setId(this._containerViewId);
 	}
 
+	public _tearDownUI(force?: boolean): void {
+		// A committed but not yet executed transaction uses this frame's native view as its container,
+		// which the fragment manager can only find while the view is still in the hierarchy.
+		const fragment = this._executingContext?.entry?.fragment;
+		if (this._context && fragment && !fragment.isAdded()) {
+			try {
+				const manager = fragment.getParentFragmentManager();
+				if (!manager.isDestroyed()) {
+					manager.executePendingTransactions();
+				}
+			} catch (e) {
+				Trace.write(`${this}._tearDownUI: ${e}`, Trace.categories.Navigation, Trace.messageType.error);
+			}
+		}
+
+		super._tearDownUI(force);
+	}
+
 	public disposeNativeView() {
 		const nativeView = this.nativeViewProtected as android.view.ViewGroup;
 		const listener = getAttachListener();
