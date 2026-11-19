@@ -9,7 +9,15 @@ import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 export type HmrUpdateOverlayStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete' | 'failed' | 'restart-required';
 export type HmrConnectionOverlayStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline' | 'healthy';
-export type HmrOverlayInfo = { detail?: string; progress?: number | null };
+/** A button on the overlay panel; the overlay draws it on the `failed` stage only. */
+export type HmrOverlayAction = { label: string; onTap: () => void };
+export type HmrOverlayInfo = {
+	detail?: string;
+	progress?: number | null;
+	/** Preformatted text (a code frame, a stack), monospaced where the overlay supports it. */
+	code?: string;
+	action?: HmrOverlayAction;
+};
 
 export interface HmrOverlayDriver {
 	setUpdateStage(stage: HmrUpdateOverlayStage, info?: HmrOverlayInfo): void;

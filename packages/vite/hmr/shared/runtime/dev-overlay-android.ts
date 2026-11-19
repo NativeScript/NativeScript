@@ -14,7 +14,7 @@
  * Activity to attach to (tests, web, early boot).
  */
 import { type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
-import { type AndroidOverlayRefs, formatStatusText, getHmrDevOverlayPosition, getOverlayGlobal, type HmrOverlayRuntimeState, resolveCoreExport } from './dev-overlay-shared.js';
+import { type AndroidOverlayRefs, formatStatusText, getHmrDevOverlayPosition, getOverlayGlobal, type HmrOverlayRuntimeState, MAX_CODE_LINES, resolveCoreExport, runOverlayAction } from './dev-overlay-shared.js';
 import { type AndroidSafeAreaInsets, computeAndroidToastMargin, readAndroidSafeAreaInsets } from './dev-overlay-tree.js';
 
 export type AndroidOverlayHost = {
@@ -34,6 +34,8 @@ const PANEL_PADDING_DP = 16;
 const PANEL_RADIUS_DP = 12;
 const PANEL_ELEVATION_DP = 8;
 const LABEL_SPACING_DP = 10;
+const BUTTON_RADIUS_DP = 8;
+const ACTION_BACKGROUND = '#b41810ff';
 const SLIDE_DISTANCE_DP = 80;
 
 const MATCH_PARENT = -1;
@@ -144,6 +146,32 @@ function detachRoot(refs: AndroidOverlayRefs | null): void {
 	} catch {}
 }
 
+// The root stays non-clickable in toast mode, so only the button takes
+// touches and the app keeps receiving the rest.
+function buildActionButton(android: any, activity: any, dp: (value: number) => number, onTap: () => void): any {
+	const Button = android.widget.Button;
+	const OnClickListener = android.view.View.OnClickListener;
+	if (!Button || !OnClickListener) return null;
+	try {
+		const button = new Button(activity);
+		button.setVisibility(android.view.View.GONE);
+		try {
+			button.setAllCaps(false);
+			button.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14);
+			button.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+			button.setTextColor(hexRgbaToAndroidArgb('#FFFFFFFF'));
+			const background = new android.graphics.drawable.GradientDrawable();
+			background.setCornerRadius(dp(BUTTON_RADIUS_DP));
+			background.setColor(hexRgbaToAndroidArgb(ACTION_BACKGROUND));
+			button.setBackground(background);
+		} catch {}
+		button.setOnClickListener(new OnClickListener({ onClick: () => onTap() }));
+		return button;
+	} catch {
+		return null;
+	}
+}
+
 function buildAndroidOverlayRefs(host: AndroidOverlayHost, state: HmrOverlayRuntimeState): AndroidOverlayRefs | null {
 	const { android, activity, decor } = host;
 	try {
@@ -188,27 +216,46 @@ function buildAndroidOverlayRefs(host: AndroidOverlayHost, state: HmrOverlayRunt
 			statusLabel.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 13);
 		} catch {}
 
-		panel.addView(titleLabel, new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
-		const statusParams = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+		const codeLabel = new TextView(activity);
+		codeLabel.setVisibility(android.view.View.GONE);
 		try {
-			statusParams.topMargin = dp(LABEL_SPACING_DP);
+			codeLabel.setGravity(android.view.Gravity.LEFT);
+			codeLabel.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 11);
+			codeLabel.setTypeface(android.graphics.Typeface.MONOSPACE);
+			codeLabel.setMaxLines(MAX_CODE_LINES);
 		} catch {}
-		panel.addView(statusLabel, statusParams);
 
-		root.addView(panel, new FrameLayout.LayoutParams(dp(PANEL_MAX_WIDTH_DP), WRAP_CONTENT));
-		decor.addView(root, new FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+		const spaced = () => {
+			const params = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+			try {
+				params.topMargin = dp(LABEL_SPACING_DP);
+			} catch {}
+			return params;
+		};
+		panel.addView(titleLabel, new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+		panel.addView(statusLabel, spaced());
+		panel.addView(codeLabel, spaced());
 
-		return {
+		const refs: AndroidOverlayRefs = {
 			decor,
 			root,
 			panel,
 			panelBackground,
 			titleLabel,
 			statusLabel,
+			codeLabel,
+			actionButton: null,
 			density,
 			wasVisible: false,
 			currentPosition: getHmrDevOverlayPosition(),
 		};
+		refs.actionButton = buildActionButton(android, activity, dp, () => runOverlayAction(refs.currentAction));
+		if (refs.actionButton) panel.addView(refs.actionButton, spaced());
+
+		root.addView(panel, new FrameLayout.LayoutParams(dp(PANEL_MAX_WIDTH_DP), WRAP_CONTENT));
+		decor.addView(root, new FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+
+		return refs;
 	} catch (err) {
 		if (state.verbose) {
 			console.warn('[ns-hmr-overlay] Android overlay construction failed:', (err as any)?.message || err);
@@ -306,6 +353,7 @@ export function applySnapshotToAndroidRefs(refs: AndroidOverlayRefs | null, snap
 		const isToast = position !== 'center';
 
 		if (!visible) {
+			refs.currentAction = undefined;
 			if (wasVisible && isToast) {
 				animateAndroidPanelOut(refs, previousPosition, () => refs.root.setVisibility(View.GONE));
 			} else {
@@ -324,6 +372,16 @@ export function applySnapshotToAndroidRefs(refs: AndroidOverlayRefs | null, snap
 		const textColor = hexRgbaToAndroidArgb(isError ? '#b41810e6' : isSuccess ? '#0e6e2fff' : '#563e3fb1');
 		refs.titleLabel.setTextColor(textColor);
 		refs.statusLabel.setTextColor(textColor);
+		if (refs.codeLabel) {
+			refs.codeLabel.setText(snapshot.code || '');
+			refs.codeLabel.setTextColor(textColor);
+			refs.codeLabel.setVisibility(snapshot.code ? View.VISIBLE : View.GONE);
+		}
+		refs.currentAction = snapshot.action;
+		if (refs.actionButton) {
+			refs.actionButton.setText(snapshot.action?.label || '');
+			refs.actionButton.setVisibility(snapshot.action ? View.VISIBLE : View.GONE);
+		}
 		try {
 			refs.panelBackground?.setColor(hexRgbaToAndroidArgb(isSuccess ? '#E6F8E9FF' : '#FFFFFFFF'));
 		} catch {}

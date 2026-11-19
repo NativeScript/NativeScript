@@ -8,7 +8,7 @@
 
 import { BOOT_PLACEHOLDER_MOTION, computeBootProgressFillScale, formatBootDetailLine, formatBootPrimaryLine } from './boot-placeholder-ui.js';
 import { BOOT_TITLE, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
-import { asColor, formatStatusText, getHmrDevOverlayPosition, getOverlayGlobal, getRuntimeState, resolveCoreExport, type BootOverlayRefs, type LiveOverlayRefs } from './dev-overlay-shared.js';
+import { asColor, formatStatusText, getHmrDevOverlayPosition, getOverlayGlobal, getRuntimeState, MAX_CODE_LINES, resolveCoreExport, runOverlayAction, type BootOverlayRefs, type LiveOverlayRefs } from './dev-overlay-shared.js';
 
 export function buildBootOverlayRefs(snapshot: HmrOverlaySnapshot): BootOverlayRefs | null {
 	const Page = resolveCoreExport('Page');
@@ -466,17 +466,49 @@ function buildLiveOverlayView(snapshot: HmrOverlaySnapshot): Omit<LiveOverlayRef
 	statusLabel.fontSize = 13;
 	statusLabel.marginTop = 10;
 
+	const codeLabel = new Label();
+	codeLabel.textAlignment = 'left';
+	codeLabel.textWrap = true;
+	codeLabel.fontSize = 11;
+	codeLabel.fontFamily = 'monospace';
+	codeLabel.marginTop = 10;
+	codeLabel.visibility = 'collapse';
+	try {
+		codeLabel.maxLines = MAX_CODE_LINES;
+	} catch {}
+
 	panel.addChild(titleLabel);
 	panel.addChild(statusLabel);
-	overlay.addChild(panel);
+	panel.addChild(codeLabel);
 
-	const refs = {
+	const refs: Omit<LiveOverlayRefs, 'page' | 'wrapper'> = {
 		overlay,
 		titleLabel,
 		statusLabel,
+		codeLabel,
 		wasVisible: false,
 		currentPosition: getHmrDevOverlayPosition(),
 	};
+
+	const Button = resolveCoreExport('Button');
+	if (Button) {
+		try {
+			const actionButton = new Button();
+			actionButton.marginTop = 10;
+			actionButton.fontSize = 14;
+			actionButton.fontWeight = 'bold';
+			actionButton.textTransform = 'none';
+			actionButton.color = asColor('#FFFFFFFF');
+			actionButton.backgroundColor = asColor('#b41810ff');
+			actionButton.borderRadius = 8;
+			actionButton.visibility = 'collapse';
+			// `ensureLiveOverlayRefs` copies these refs into the runtime state, which is what later snapshots update.
+			actionButton.on('tap', () => runOverlayAction(getRuntimeState().liveRefs?.currentAction));
+			panel.addChild(actionButton);
+			refs.actionButton = actionButton;
+		} catch {}
+	}
+	overlay.addChild(panel);
 	applySnapshotToLiveRefs(refs, snapshot);
 	return refs;
 }
@@ -533,7 +565,7 @@ export function ensureLiveOverlayRefs(snapshot: HmrOverlaySnapshot): LiveOverlay
 	return state.liveRefs;
 }
 
-export function applySnapshotToLiveRefs(refs: Pick<LiveOverlayRefs, 'overlay' | 'titleLabel' | 'statusLabel'> & Partial<Pick<LiveOverlayRefs, 'wasVisible' | 'currentPosition'>>, snapshot: HmrOverlaySnapshot): void;
+export function applySnapshotToLiveRefs(refs: Pick<LiveOverlayRefs, 'overlay' | 'titleLabel' | 'statusLabel'> & Partial<Pick<LiveOverlayRefs, 'wasVisible' | 'currentPosition' | 'codeLabel' | 'actionButton' | 'currentAction'>>, snapshot: HmrOverlaySnapshot): void;
 export function applySnapshotToLiveRefs(refs: null, snapshot: HmrOverlaySnapshot): void;
 export function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot): void {
 	if (!refs) {
@@ -555,6 +587,17 @@ export function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot)
 	const textColor = snapshot.tone === 'error' ? '#b41810e6' : snapshot.tone === 'success' ? '#0e6e2fff' : '#563e3fb1';
 	refs.titleLabel.color = asColor(textColor);
 	refs.statusLabel.color = asColor(textColor);
+	if (refs.codeLabel) {
+		refs.codeLabel.text = snapshot.code || '';
+		refs.codeLabel.color = asColor(textColor);
+		refs.codeLabel.visibility = snapshot.code ? 'visible' : 'collapse';
+	}
+	const hasAction = visible && !!snapshot.action && !!refs.actionButton;
+	refs.currentAction = hasAction ? snapshot.action : undefined;
+	if (refs.actionButton) {
+		refs.actionButton.text = snapshot.action?.label || '';
+		refs.actionButton.visibility = hasAction ? 'visible' : 'collapse';
+	}
 
 	// Backdrop tints (centered modal only). Toast modes use a fully
 	// transparent backdrop so the rest of the app stays visible AND
@@ -624,8 +667,10 @@ export function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot)
 
 	// Touch passthrough for toast; centered mode keeps the
 	// blocking modal so the dim backdrop is meaningful.
+	// A shown button needs the overlay interactive; on iOS the full-page
+	// overlay then also takes the touches around the panel until the stage changes.
 	try {
-		refs.overlay.isUserInteractionEnabled = !isToast;
+		refs.overlay.isUserInteractionEnabled = !isToast || hasAction;
 	} catch {}
 
 	const positionChanged = previousPosition !== position;

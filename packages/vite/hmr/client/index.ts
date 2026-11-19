@@ -14,11 +14,13 @@ import type { ConnectedPayload, CustomPayload, ErrorPayload, FullReloadPayload, 
 import { Queue, type HMRClient, type ModuleNamespace } from './hmr-client.js';
 import { clearEntryBoundary, getEntryBoundarySettled, hmrClient } from './hot-state.js';
 import { createViteSocketTransport, waitForSuccessfulPing, type ViteSocketTransport, type WebSocketFactory } from './vite-transport.js';
-import { overlayDriver, type HmrOverlayDriver } from './overlay-driver.js';
+import { overlayDriver, type HmrOverlayDriver, type HmrOverlayInfo } from './overlay-driver.js';
+import { describeRuntimeError, describeServerError, deviceModuleUrlsInStack, type ErrorOverlayText } from './error-overlay.js';
 import { handleCssUpdates } from './css-handler.js';
 import { buildCssAppliedDetail, buildCssApplyingDetail } from './css-update-overlay.js';
 import { NS_AFTER_REBOOT_EVENT, NS_BEFORE_REBOOT_EVENT, NS_BEFORE_RERUN_EVENT, NS_BEFORE_RESTART_EVENT, NS_CSS_UPDATES_EVENT, NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT, NS_UPDATE_RERUN_EVENT, type BeforeRerunEventData, type CssUpdateItem, type CssUpdatesEventData, type RebootEventData, type RestartEventData, type UpdateRerunEventData } from '../shared/protocol.js';
 import { createUpdateModules, viteUrlCandidates, type UpdateModules } from '../shared/update-modules.js';
+import { readNsRuntimeDevHostApi, type NsRuntimeDevHostApi } from '../shared/runtime/browser-runtime-contract.js';
 import { ENV_VERBOSE } from './utils.js';
 
 type DeviceFullReloadPayload = FullReloadPayload & { ifFallback?: boolean };
@@ -32,6 +34,8 @@ export interface NsHmrStartOptions {
 	entryUrl: string;
 	/** Dev-server origin every `/ns/v` module URL starts with. */
 	origin: string;
+	/** Vite's project root; error locations under it are shown root-relative. */
+	root?: string;
 }
 
 export interface NsHmrRuntimeDeps {
@@ -45,6 +49,8 @@ export interface NsHmrRuntimeDeps {
 	rebootSettledTimeoutMs?: number;
 	/** How long `nativescript:beforeRestart` listeners may hold up a restart. */
 	beforeRestartTimeoutMs?: number;
+	/** The runtime's `ns:module` API; read from the runtime when absent. */
+	devHost?: Pick<NsRuntimeDevHostApi, 'invalidateModules'>;
 }
 
 export interface NsHmrRuntime {
@@ -61,6 +67,8 @@ export interface NsHmrRuntime {
 const THIN_PREFIX = '/ns/v';
 
 const MAX_ANNOUNCED_RERUNS = 16;
+
+const RESTART_ACTION_LABEL = 'Restart app';
 
 const defaultCreateSocket: WebSocketFactory = (url, protocol) => new (globalThis as any).WebSocket(url, protocol);
 
@@ -125,6 +133,9 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 	const announcedReruns = new Map<number, UpdateRerunEventData>();
 	let entryImportStarted = false;
 	let entryImportError: unknown;
+	let projectRoot = options.root;
+	// The message of the last soft reboot whose entry import failed; cleared by one whose import succeeds.
+	let failedRebootMessage: string | undefined;
 
 	const overlay: HmrOverlayDriver = {
 		setUpdateStage: (stage, info) => {
@@ -139,6 +150,24 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 	};
 	const queue = new Queue();
 	let connectionOverlayShown = false;
+
+	const restartAction = { label: RESTART_ACTION_LABEL, onTap: () => void requestRestart('requested from the error overlay') };
+
+	function showFailed(text: ErrorOverlayText): void {
+		const info: HmrOverlayInfo = { detail: text.detail, action: restartAction };
+		if (text.code) info.code = text.code;
+		overlay.setUpdateStage('failed', info);
+	}
+
+	function invalidateModules(urls: string[]): void {
+		if (!urls.length) return;
+		try {
+			const invalidate = (deps.devHost ?? readNsRuntimeDevHostApi(globalThis)).invalidateModules;
+			if (typeof invalidate === 'function') invalidate(urls);
+		} catch (err) {
+			client.logger.error(err);
+		}
+	}
 
 	const onMessage = (payload: DeviceHotPayload) =>
 		queue
@@ -260,11 +289,15 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 			overlay.setUpdateStage('complete', { detail: `Updated ${paths}` });
 		} catch (err) {
 			client.logger.error(err);
-			overlay.setUpdateStage('failed', { detail: errorMessage(err) });
+			showFailed(describeRuntimeError(err, origin));
 		}
 	}
 
-	/** Resolves to the provider's rejection, or undefined once it settles or times out. */
+	/**
+	 * Resolves to the provider's failure, or undefined once it settles or times
+	 * out. A provider reports a failed boot by rejecting or by resolving to
+	 * `{ error }` (which spares it an unhandled rejection when nobody awaits it).
+	 */
 	async function waitForEntrySettled(): Promise<unknown> {
 		const settled = getEntryBoundarySettled();
 		if (!settled) return undefined;
@@ -273,7 +306,15 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 				Promise.resolve().then(() => settled()),
 				rebootSettledTimeoutMs,
 			);
-			if (result === TIMED_OUT) console.warn(`[vite] the app did not report its reboot settled within ${rebootSettledTimeoutMs} ms; continuing.`);
+			if (result === TIMED_OUT) {
+				console.warn(`[vite] the app did not report its reboot settled within ${rebootSettledTimeoutMs} ms; continuing.`);
+				return undefined;
+			}
+			if (result && typeof result === 'object' && 'error' in result) {
+				const failure = (result as { error: unknown }).error ?? new Error('the app failed to boot');
+				client.logger.error(failure);
+				return failure;
+			}
 			return undefined;
 		} catch (err) {
 			client.logger.error(err);
@@ -287,13 +328,21 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 		overlay.setUpdateStage('received', { detail });
 
 		let beforeRebootSent = false;
-		let teardownFailed = false;
+		// What threw while the old app was torn down, if anything.
+		let teardownFailure: string | undefined;
 		let thrown: { err: unknown } | undefined;
 		let error: unknown;
+		let importError: unknown;
 		try {
 			await client.notifyListeners('vite:beforeUpdate', payload);
 			beforeRebootSent = true;
-			await client.notifyListeners(NS_BEFORE_REBOOT_EVENT, event);
+			const rejected = (await client.notifyListenersSettled(NS_BEFORE_REBOOT_EVENT, event)).filter((r): r is PromiseRejectedResult => r.status === 'rejected');
+			if (rejected.length) {
+				// The listeners that did run have already released their part of the app.
+				teardownFailure = `a ${NS_BEFORE_REBOOT_EVENT} listener failed`;
+				rejected.slice(1).forEach((r) => client.logger.error(r.reason));
+				throw rejected[0].reason;
+			}
 			await notifyBeforeRerun(announced);
 			overlay.setUpdateStage('rebooting', { detail });
 			// Only a provider the new entry registers may be awaited: after a
@@ -302,10 +351,11 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 			entryImportStarted = false;
 			entryImportError = undefined;
 			await applyJsUpdates(payload).catch((err) => {
-				teardownFailed = !entryImportStarted;
+				if (!entryImportStarted) teardownFailure = 'dispose before the app reboot failed';
 				throw err;
 			});
-			error = entryImportError ?? (await waitForEntrySettled());
+			importError = entryImportError;
+			error = importError ?? (await waitForEntrySettled());
 		} catch (err) {
 			client.logger.error(err);
 			thrown = { err };
@@ -328,10 +378,30 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 			}
 		}
 		if (error === undefined) overlay.setUpdateStage('complete', { detail: `Rebooted for ${detail}` });
-		else overlay.setUpdateStage('failed', { detail: errorMessage(error) });
-		// A dispose that threw before the new entry was imported leaves the app
+		else showFailed(describeRuntimeError(error, origin));
+		// A teardown that threw before the new entry was imported leaves the app
 		// half torn down; only a failed import is retried by the next edit.
-		if (teardownFailed) await requestRestart(`dispose before the app reboot failed: ${errorMessage(error)}`);
+		if (teardownFailure !== undefined) {
+			await requestRestart(`${teardownFailure}: ${errorMessage(error)}`);
+		} else if (!thrown) {
+			if (importError === undefined) failedRebootMessage = undefined;
+			else await onRebootImportFailed(importError, event);
+		}
+	}
+
+	async function onRebootImportFailed(err: unknown, event: RebootEventData): Promise<void> {
+		const message = errorMessage(err);
+		const stackUrls = deviceModuleUrlsInStack((err as any)?.stack, origin);
+		// Only modules this reboot evaluated may hold a failed record; evicting a
+		// module outside it would re-evaluate a live module into a second instance.
+		invalidateModules(stackUrls.filter((url) => event.isRerun(url)));
+		const previous = failedRebootMessage;
+		failedRebootMessage = message;
+		if (previous === undefined) return;
+		// Without device URLs in the stack or the update's module set the culprit
+		// can't be placed, so the same failure twice in a row stands in for "outside".
+		const outsideChain = stackUrls.length && event.modules.size ? !stackUrls.some((url) => event.isRerun(url)) : previous === message;
+		if (outsideChain) await requestRestart(`the app failed to reload: ${message}`);
 	}
 
 	async function handleNsCssUpdates(data: CssUpdatesEventData | undefined): Promise<void> {
@@ -346,7 +416,7 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 			if (!silent) overlay.setUpdateStage('complete', { detail: buildCssAppliedDetail(updates.length) });
 		} catch (err) {
 			console.warn('[ns-hmr] CSS update failed:', errorMessage(err));
-			if (!silent) overlay.setUpdateStage('failed', { detail: errorMessage(err) });
+			if (!silent) showFailed({ detail: errorMessage(err) });
 		}
 	}
 
@@ -427,6 +497,7 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 					else await handleNsCssUpdates(payload.data);
 				} else if (payload.event === NS_UPDATE_RERUN_EVENT) {
 					const data = payload.data as UpdateRerunEventData | undefined;
+					if (typeof data?.root === 'string' && data.root) projectRoot = data.root;
 					if (typeof data?.timestamp === 'number') {
 						announcedReruns.set(data.timestamp, data);
 						// Bounded: an announced update may never arrive (dropped while a restart is pending).
@@ -460,7 +531,7 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 				await client.notifyListeners('vite:error', payload);
 				const err = payload.err;
 				console.error(`[vite] Internal Server Error\n${err.message}\n${err.stack}`);
-				overlay.setUpdateStage('failed', { detail: err.message });
+				showFailed(describeServerError(err, projectRoot));
 				break;
 			}
 			case 'ping':

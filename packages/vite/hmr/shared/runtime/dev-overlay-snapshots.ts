@@ -25,8 +25,17 @@ export type HmrConnectionStage = 'connecting' | 'reconnecting' | 'synchronizing'
 // terminal: the change can only be applied by restarting the app.
 export type HmrUpdateStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete' | 'failed' | 'restart-required';
 
+/** A button on the panel. Only the `failed` update stage shows one. */
+export type HmrOverlayAction = {
+	label: string;
+	onTap: () => void;
+};
+
 export type HmrOverlayStageInfo = {
 	detail?: string;
+	/** Preformatted text (a code frame, a stack) drawn in a monospaced font below the detail. */
+	code?: string;
+	action?: HmrOverlayAction;
 	origin?: string;
 	progress?: number | null;
 	attempt?: number;
@@ -44,6 +53,8 @@ export type HmrOverlaySnapshot = {
 	busy: boolean;
 	blocking: boolean;
 	tone: HmrOverlayTone;
+	code?: string;
+	action?: HmrOverlayAction;
 };
 
 export const BOOT_TITLE = 'NativeScript Vite preparing dev session...';
@@ -395,9 +406,14 @@ export function createUpdateOverlaySnapshot(stage: HmrUpdateStage, info?: HmrOve
 	};
 
 	const base = phaseInfo[stage];
-	return {
+	const snapshot: HmrOverlaySnapshot = {
 		...base,
 		detail: info?.detail || base.detail,
 		progress: typeof info?.progress === 'number' || info?.progress === null ? info.progress : base.progress,
 	};
+	if (stage === 'failed') {
+		if (info?.code) snapshot.code = info.code;
+		if (info?.action && typeof info.action.onTap === 'function') snapshot.action = info.action;
+	}
+	return snapshot;
 }

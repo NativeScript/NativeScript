@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { init, parse } from 'es-module-lexer';
+import { getServedModules, servedTimestamp } from '../served-modules.js';
 import { THIN_PREFIX, thinDeviceUrl, transformIdForViteUrl, viteUrlForFile } from './thin-mode.js';
 
 const VITE_CLIENT_URL = '/@vite/client';
@@ -169,6 +170,8 @@ export function registerThinRoute(server: ViteDevServer, getOrigin: () => string
 			viteUrl = viteUrlForFile(THIN_VITE_CLIENT_FILE, server.config.root);
 		}
 		const moduleUrl = normalizeThinViteUrl(viteUrl);
+		// Before the transform: an edit landing mid-request must count as after the fetch.
+		const requestedAt = Date.now();
 		let result: Awaited<ReturnType<typeof server.environments.client.transformRequest>> = null;
 		try {
 			result = await server.environments.client.transformRequest(transformIdForViteUrl(moduleUrl));
@@ -198,6 +201,7 @@ export function registerThinRoute(server: ViteDevServer, getOrigin: () => string
 			res.setHeader('Cache-Control', 'no-cache');
 			res.setHeader('Access-Control-Allow-Origin', '*');
 			res.end(code);
+			getServedModules(server).record(moduleUrl, servedTimestamp(viteUrl), requestedAt);
 		} catch (error: any) {
 			res.statusCode = 500;
 			res.setHeader('Content-Type', 'text/plain; charset=utf-8');

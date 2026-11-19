@@ -491,6 +491,52 @@ After each reboot, the boot fetches of `AppComponent` and `HomeComponent` metada
 
 **Not verified on a device:** everything above.
 
+## Round 13: phase 2d, errors without restarting
+
+The design is in DESIGN.md ("Failures"): a compile check gates every update, a reboot that fails at evaluation stays recoverable, every `failed` overlay offers "Restart app", and a device that connects having missed updates gets one catch-up reboot.
+
+**Analog doesn't throw for a broken template.** With type checking disabled, a template that doesn't parse (`count(`) compiles to the plain `@Component` decorator with no `ɵcmp`, so the transform succeeds and the device would only fail when it evaluates the component. The Angular `verifyTransform` catches that output and recovers the message with the app's own `@angular/compiler` `parseTemplate`.
+
+**Analog's batched flush uses object form.** In the first probe run of (e2a), `angular:component-update` reached the wire 3 ms before the `error`: Analog flushes its buffered notifications as `{ type: 'custom', event }` objects, which the gate only recognized as strings. The gate now holds both forms.
+
+**Wire payloads** (`payload-probe.mjs --only e`, default Analog mode, packages rebuilt from both worktrees; each new edit has automatic expectations: **12/12 ok**, also 12/12 in the full run, where the e-edits run after (a)–(i) and before the restart edits (r1)–(r3), which end a device session):
+
+| Edit                                                           | Wire                                                                                                                                                                          |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| (e1a) syntax error in `home.component.ts`                      | only `error`: `home.component.ts:15:33: ')' expected` (Analog/esbuild). The raw `angular:component-update` and entry `update` are suppressed                                  |
+| (e1b) fix it                                                   | `ns:rerun` (rerun {main, app.routes, home.component.ts}) + entry `js-update`                                                                                                  |
+| (e2a) template compile error in `home.component.html`          | only `error`: "Angular could not compile the component in home.component.ts: Parser Error: Unexpected end of expression…". The in-place `angular:component-update` is dropped |
+| (e2b) fix it                                                   | `angular:component-update` + `ns:rerun` (rerun `[]`) + the template `js-update`: applied in place                                                                             |
+| (e3a) service throws at evaluation                             | the transform is fine, so `ns:rerun` (rerun includes `probe.service.ts`) + entry `js-update`; the device side is covered by specs                                             |
+| (e3b) fix it                                                   | entry reboot                                                                                                                                                                  |
+| (e4a) reconnect, no edits                                      | `connected` only, no catch-up                                                                                                                                                 |
+| (e4b) template edit while connected                            | delivered (reboots via `main.ts`; see below)                                                                                                                                  |
+| (e4c) `.css` edit                                              | in place                                                                                                                                                                      |
+| (e4d) reconnect after delivered edits                          | no catch-up                                                                                                                                                                   |
+| (e4e) template edit while the socket is closed, then reconnect | exactly one catch-up, +3 ms after `connected`: `ns:rerun` (changed {main, app.routes, home.component.ts}, rerun includes home.component.ts) + entry `js-update`               |
+| (e4f) reconnect after the catch-up                             | nothing                                                                                                                                                                       |
+
+- (e2b)'s `rerun` is `[]`, not round 12's {html}: `rerun` comes from served stamps and leaves out templates, which are never device modules.
+- (e4b) reboots only because (e3)'s non-component `.ts` edits made Analog clear its `classNames` (round 11, (f)). Run alone, it applies in place.
+- The catch-up's `changed` is every module Vite stamped since it was served, importers included, not only the edited file.
+
+**Latency of the compile check** (the update reaching `server.ws.send` → the first gated payload on the wire, warm graph): 1–6 ms across (e) and (e1)–(e4): e1a 6 ms, e1b 5, e2a 3, e2b 3, e3a 2, e3b 3, css 1. In the full run every edit (a)–(f) also gates in 1–6 ms, except the first edit after boot, (a), at 47 ms (cold). Save → wire stays at ~165–385 ms, dominated by Vite's watcher and Analog's compile. The check mostly re-reads transforms Analog already produced and Vite caches; the work moves forward rather than adds, since the device would fetch those modules anyway.
+
+**Specs.**
+
+- `update-gate.spec.ts`: (e1) sends only `error`, and the fix re-runs everything since; `changed` accumulates over failed saves; gated events in string and object form; no `error` to an empty channel; catch-up reboot; restart without an entry boundary; a normal boot gets no catch-up.
+- `client/index.spec.ts`: an `error` payload only shows the overlay; a failed reboot import shows the overlay, keeps the process and the next update retries; eviction limited to stack URLs inside `rerun`; a retry failing again outside the chain restarts; a throwing or rejecting teardown (`dispose`, a `beforeReboot` listener) restarts; a settled provider that rejects or resolves `{ error }` is a failed boot.
+- `@nativescript/angular`: `prepareHmrReboot` is a no-op on the retry; snapshots from the last good app survive a failed attempt and the second teardown, and restore when the retry succeeds; `whenHmrRebootSettled()` resolves `{ error }` and never rejects.
+
+**Checked:** the probe's wire payloads and the specs above. **Not verified on a device.**
+
+**Open questions.**
+
+- Per-device tracking: served modules and delivered saves are per server, so with two devices, one booting while the other is connected can miss an update.
+- A teardown that throws during a retry, when the app is already torn down, restarts. Should it be tolerated?
+- A bootstrap failure never escalates to a restart; it keeps retrying.
+- The catch-up's `changed` lists every module stamped since it was served, importers included, not only the edited files.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

@@ -19,11 +19,11 @@ import { resolveOverlayEnabled } from './overlay-flag.js';
 // Re-export the snapshot model and backend pure helpers so existing
 // `./dev-overlay.js` importers keep working.
 export { createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot } from './dev-overlay-snapshots.js';
-export type { HmrBootStage, HmrConnectionStage, HmrOverlayPosition, HmrOverlaySnapshot, HmrOverlayStageInfo, HmrUpdateStage } from './dev-overlay-snapshots.js';
+export type { HmrBootStage, HmrConnectionStage, HmrOverlayAction, HmrOverlayPosition, HmrOverlaySnapshot, HmrOverlayStageInfo, HmrUpdateStage } from './dev-overlay-snapshots.js';
 export { getHmrDevOverlayPosition } from './dev-overlay-shared.js';
 export { computeAndroidToastMargin } from './dev-overlay-tree.js';
 export type { AndroidSafeAreaInsets, AndroidToastMargin } from './dev-overlay-tree.js';
-export { computeIosOverlayLayout, computeIosOverlayWindowLevel } from './dev-overlay-ios.js';
+export { computeIosOverlayLayout, computeIosOverlayWindowLevel, iosOverlayCapturesTouch } from './dev-overlay-ios.js';
 export { computeAndroidPanelLayout, getAndroidOverlayHost, hexRgbaToAndroidArgb } from './dev-overlay-android.js';
 export type { AndroidOverlayHost, AndroidPanelLayout } from './dev-overlay-android.js';
 export type { IosOverlayLayout, IosRect, IosSafeInsets } from './dev-overlay-ios.js';

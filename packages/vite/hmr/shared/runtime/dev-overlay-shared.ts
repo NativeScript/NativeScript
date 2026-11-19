@@ -6,7 +6,7 @@
  * `dev-overlay.ts` for that.
  */
 
-import { DEFAULT_SNAPSHOT, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
+import { DEFAULT_SNAPSHOT, type HmrOverlayAction, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
 import { getGlobalScope } from './global-scope.js';
 import { getVendorRequire } from './vendor-resolve.js';
 
@@ -26,6 +26,9 @@ export type LiveOverlayRefs = {
 	overlay: any;
 	titleLabel: any;
 	statusLabel: any;
+	codeLabel?: any;
+	actionButton?: any;
+	currentAction?: HmrOverlayAction;
 	// Previous visibility/position so we only fire the slide-in
 	// animation on hidden→visible transitions or when the position
 	// actually changes (avoids re-animating every progress tick
@@ -45,6 +48,16 @@ export type IosOverlayRefs = {
 	panel: any;
 	titleLabel: any;
 	statusLabel: any;
+	codeLabel: any;
+	actionButton: any;
+	// Keeps the tap handler alive: UIKit holds a button target weakly.
+	actionHandler: any;
+	currentAction?: HmrOverlayAction;
+	// Window coordinates of the button while one is shown; in toast mode the
+	// window takes touches only there, so the app stays usable around it.
+	actionHitRect: { x: number; y: number; width: number; height: number } | null;
+	// False when the pass-through window subclass could not be defined.
+	passThrough: boolean;
 	// See LiveOverlayRefs comment — same animation gating semantics.
 	wasVisible: boolean;
 	currentPosition: HmrOverlayPosition;
@@ -57,6 +70,9 @@ export type AndroidOverlayRefs = {
 	panelBackground: any;
 	titleLabel: any;
 	statusLabel: any;
+	codeLabel: any;
+	actionButton: any;
+	currentAction?: HmrOverlayAction;
 	density: number;
 	wasVisible: boolean;
 	currentPosition: HmrOverlayPosition;
@@ -192,6 +208,19 @@ export function asColor(value: string): any {
 	} catch {}
 	return value as any;
 }
+
+/** Runs the shown action's tap handler; a throwing handler must not take the overlay down. */
+export function runOverlayAction(action: HmrOverlayAction | undefined): void {
+	if (!action) return;
+	try {
+		action.onTap();
+	} catch (err) {
+		console.warn('[ns-hmr-overlay] overlay action failed:', (err as any)?.message || err);
+	}
+}
+
+/** Most lines of `code` any backend draws, so the button stays on screen. */
+export const MAX_CODE_LINES = 14;
 
 export function formatStatusText(snapshot: HmrOverlaySnapshot): string {
 	const progressText = typeof snapshot.progress === 'number' ? ` (${Math.round(Number(snapshot.progress))}%)` : '';

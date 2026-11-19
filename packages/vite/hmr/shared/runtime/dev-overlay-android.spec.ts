@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { computeAndroidPanelLayout, ensureHmrDevOverlayRuntimeInstalled, hexRgbaToAndroidArgb } from './dev-overlay.js';
 import { getGlobalScope } from './global-scope.js';
 
@@ -13,6 +13,8 @@ class FakeView {
 	text = '';
 	translationY = 0;
 	alpha = 1;
+	typeface: unknown = null;
+	clickListener: { onClick(view: unknown): void } | null = null;
 	endAction: any = null;
 	addView(child: FakeView, params?: any) {
 		child.parent = this;
@@ -46,7 +48,17 @@ class FakeView {
 	setOrientation() {}
 	setGravity() {}
 	setTextSize() {}
-	setTypeface() {}
+	setTypeface(value: unknown) {
+		this.typeface = value;
+	}
+	setMaxLines() {}
+	setAllCaps() {}
+	setOnClickListener(listener: { onClick(view: unknown): void }) {
+		this.clickListener = listener;
+	}
+	performClick() {
+		this.clickListener?.onClick(this);
+	}
 	setText(value: string) {
 		this.text = value;
 	}
@@ -106,6 +118,16 @@ class FakeLinearLayout extends FakeView {
 	static VERTICAL = 1;
 }
 class FakeTextView extends FakeView {}
+class FakeButton extends FakeView {}
+
+class FakeOnClickListener {
+	constructor(private readonly impl: { onClick: (view: unknown) => void }) {}
+	onClick(view: unknown) {
+		this.impl.onClick(view);
+	}
+}
+
+const MONOSPACE = { name: 'monospace' };
 
 class FakeRunnable {
 	constructor(private readonly impl: { run: () => void }) {}
@@ -125,14 +147,14 @@ class FakeNsLayout {
 function installFakeAndroid(decor: FakeView, page: { content: any }) {
 	const g = getGlobalScope();
 	g.android = {
-		widget: { FrameLayout: FakeFrameLayout, LinearLayout: FakeLinearLayout, TextView: FakeTextView },
+		widget: { FrameLayout: FakeFrameLayout, LinearLayout: FakeLinearLayout, TextView: FakeTextView, Button: FakeButton },
 		view: {
-			View: { VISIBLE: 0, GONE: 8 },
-			Gravity: { TOP: 48, BOTTOM: 80, CENTER: 17, CENTER_HORIZONTAL: 1 },
+			View: { VISIBLE: 0, GONE: 8, OnClickListener: FakeOnClickListener },
+			Gravity: { TOP: 48, BOTTOM: 80, LEFT: 3, CENTER: 17, CENTER_HORIZONTAL: 1 },
 			animation: { DecelerateInterpolator: class {}, AccelerateInterpolator: class {} },
 		},
 		util: { TypedValue: { COMPLEX_UNIT_SP: 2 } },
-		graphics: { Typeface: { DEFAULT_BOLD: {} }, drawable: { GradientDrawable: FakeDrawable } },
+		graphics: { Typeface: { DEFAULT_BOLD: {}, MONOSPACE }, drawable: { GradientDrawable: FakeDrawable } },
 	};
 	g.java = { lang: { Runnable: FakeRunnable } };
 	const activity = {
@@ -233,5 +255,42 @@ describe('Android overlay host', () => {
 
 		expect(firstDecor.children).toHaveLength(0);
 		expect(secondDecor.children).toHaveLength(1);
+	});
+
+	it('draws the failed stage with a monospaced code block and a tappable action that later stages remove', () => {
+		const decor = new FakeView();
+		installFakeAndroid(decor, { content: {} });
+		const api = ensureHmrDevOverlayRuntimeInstalled(true);
+		const onTap = vi.fn();
+
+		api.setUpdateStage('failed', { detail: 'src/a.ts:1:2\nUnexpected token', code: '1 | x(', action: { label: 'Restart app', onTap } });
+
+		const root = decor.children[0];
+		const [panel] = root.children;
+		const [, status, code, button] = panel.children;
+		expect(status.text).toContain('src/a.ts:1:2\nUnexpected token');
+		expect(code).toMatchObject({ visibility: 0, text: '1 | x(', typeface: MONOSPACE });
+		expect(button).toBeInstanceOf(FakeButton);
+		expect(button).toMatchObject({ visibility: 0, text: 'Restart app' });
+		// Only the button takes touches; the rest of the toast passes them to the app.
+		expect(root.clickable).toBe(false);
+		button.performClick();
+		expect(onTap).toHaveBeenCalledTimes(1);
+
+		api.setUpdateStage('restart-required', { detail: 'requested from the error overlay' });
+		expect(button.visibility).toBe(8);
+		expect(code.visibility).toBe(8);
+		button.performClick();
+		expect(onTap).toHaveBeenCalledTimes(1);
+	});
+
+	it('keeps the button hidden on stages without an action', () => {
+		const decor = new FakeView();
+		installFakeAndroid(decor, { content: {} });
+		const api = ensureHmrDevOverlayRuntimeInstalled(true);
+		api.setUpdateStage('failed', { detail: 'boom' });
+		const [, , code, button] = decor.children[0].children[0].children;
+		expect(button.visibility).toBe(8);
+		expect(code.visibility).toBe(8);
 	});
 });

@@ -182,6 +182,7 @@ describe('nsHmrClientVitePlugin middleware', () => {
 			wsProtocol: 'vite-hmr',
 			entryUrl: `${SERVER_ORIGIN}/ns/v/src/app.ts`,
 			origin: SERVER_ORIGIN,
+			root: '/app',
 		});
 	});
 });

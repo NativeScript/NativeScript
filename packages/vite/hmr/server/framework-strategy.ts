@@ -1,3 +1,5 @@
+import { verifyAngularComponentOutput } from '../frameworks/angular/server/compile-check.js';
+
 /**
  * The dev-time teardown a framework exposes for a soft reboot. The dev server
  * makes the app entry self-accepting and wires these into its `hot.dispose`
@@ -41,6 +43,20 @@ export interface FrameworkServerStrategy {
 	 * sends `full-reload`, which restarts the app.
 	 */
 	entryBoundary?: FrameworkEntryBoundary;
+
+	/**
+	 * Rejects a module whose transform succeeded but whose output can't run,
+	 * before an update carrying it goes out (Angular: a component its compiler
+	 * gave up on). The rejection reaches the device as Vite's `error` payload.
+	 */
+	verifyTransform?(module: { id: string; url: string; code: string }): Promise<Error | undefined> | Error | undefined;
+
+	/**
+	 * Custom events the dev server holds until the update of the same save has
+	 * passed its compile check, and drops when it failed (Angular's in-place
+	 * `angular:component-update`).
+	 */
+	gatedEvents?: readonly string[];
 }
 
 // Analog serves recompiled component metadata at `<importer dir>/@ng/component?c=<id>&t=<ts>`;
@@ -50,6 +66,8 @@ const angularServerStrategy: FrameworkServerStrategy = {
 	volatilePatterns: () => ['/@ng/component'],
 	preserveQueryPaths: () => ['/@ng/component'],
 	entryBoundary: { module: '@nativescript/angular', dispose: 'prepareHmrReboot', settled: 'whenHmrRebootSettled' },
+	verifyTransform: (module) => verifyAngularComponentOutput(module),
+	gatedEvents: ['angular:component-update'],
 };
 
 const BUILT_IN_STRATEGIES = new Map<string, FrameworkServerStrategy>([

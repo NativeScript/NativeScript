@@ -75,6 +75,7 @@ interface SetupOptions {
 	pings?: boolean[];
 	rebootSettledTimeoutMs?: number;
 	beforeRestartTimeoutMs?: number;
+	root?: string;
 }
 
 function setup(options: SetupOptions = {}) {
@@ -101,14 +102,16 @@ function setup(options: SetupOptions = {}) {
 	);
 	const overlay = { setUpdateStage: vi.fn(), setConnectionStage: vi.fn(), hide: vi.fn() };
 	const applyCssUpdates = vi.fn(async () => {});
+	const devHost = { invalidateModules: vi.fn() };
 	const runtime = createNsHmrRuntime(
-		{ wsUrl: WS_URL, wsProtocol: 'vite-hmr', entryUrl: ENTRY, origin: ORIGIN },
+		{ wsUrl: WS_URL, wsProtocol: 'vite-hmr', entryUrl: ENTRY, origin: ORIGIN, root: options.root },
 		{
 			client,
 			createSocket,
 			importModule,
 			overlay,
 			applyCssUpdates,
+			devHost,
 			pingRetryMs: 1,
 			rebootSettledTimeoutMs: options.rebootSettledTimeoutMs ?? 1000,
 			beforeRestartTimeoutMs: options.beforeRestartTimeoutMs ?? 1000,
@@ -122,7 +125,7 @@ function setup(options: SetupOptions = {}) {
 		return hmrSockets().at(-1)!;
 	};
 	const stages = () => overlay.setUpdateStage.mock.calls.map(([stage]) => stage);
-	return { runtime, client, logger, sockets, hmrSockets, connect, imports, importModule, overlay, applyCssUpdates, stages };
+	return { runtime, client, logger, sockets, hmrSockets, connect, imports, importModule, overlay, applyCssUpdates, devHost, stages };
 }
 
 function restartsSent(socket: FakeSocket): unknown[] {
@@ -144,6 +147,8 @@ function jsUpdate(path: string, acceptedPath = path, extra: Partial<Update> = {}
 function announceRerun(data: Partial<UpdateRerunEventData> = {}): DeviceHotPayload {
 	return { type: 'custom', event: NS_UPDATE_RERUN_EVENT, data: { timestamp: 123, changed: [], rerun: [], root: '/repo/app', ...data } };
 }
+
+const RESTART_ACTION = { label: 'Restart app', onTap: expect.any(Function) };
 
 function quiet() {
 	vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -307,6 +312,7 @@ describe('soft reboot (an update whose boundary is the app entry)', () => {
 				return {};
 			},
 		});
+		const socket = await t.connect();
 		arrangeEntry(t, order);
 		// The torn-down app's provider must not be awaited after a failed import.
 		registerEntryBoundary(() => new Promise(() => {}));
@@ -315,7 +321,7 @@ describe('soft reboot (an update whose boundary is the app entry)', () => {
 		await send(t.runtime, update(jsUpdate(ENTRY_PATH)));
 
 		expect(order).toEqual(['vite:beforeUpdate', 'beforeReboot', 'dispose', `import ${ENTRY}?t=123`, 'afterReboot error: SyntaxError: Unexpected token', 'vite:afterUpdate']);
-		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('failed', { detail: 'SyntaxError: Unexpected token' });
+		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('failed', expect.objectContaining({ detail: 'SyntaxError: Unexpected token', action: RESTART_ACTION }));
 
 		order.length = 0;
 		fail = false;
@@ -323,6 +329,65 @@ describe('soft reboot (an update whose boundary is the app entry)', () => {
 
 		expect(order).toEqual(['vite:beforeUpdate', 'beforeReboot', 'dispose', `import ${ENTRY}?t=124`, 'afterReboot', 'vite:afterUpdate']);
 		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('complete', expect.anything());
+		expect(t.stages()).not.toContain('restart-required');
+		expect(restartsSent(socket)).toEqual([]);
+	});
+
+	it.each([
+		['a dependency of the entry throws', 'dispose app 0', 'dependency'],
+		['the entry throws after registering its boundary', 'dispose app 1', 'entry'],
+		['the new app fails to bootstrap', 'dispose app 1', 'bootstrap'],
+	] as const)('%s: the retry tears down again through %s, and no-op teardowns do not restart', async (_name, retryDisposer, failure) => {
+		quiet();
+		const order: string[] = [];
+		const bare = (message: string) => Object.assign(new Error(message), { stack: `Error: ${message}` });
+		let appLive = true;
+		let generation = 0;
+		let attempt = 0;
+		const t = setup({
+			importModule: async () => {
+				attempt++;
+				const failing = attempt !== 2;
+				if (failing && (failure === 'dependency' || attempt === 3)) throw bare('boom');
+				evaluateEntry();
+				if (failing && failure === 'entry') throw bare('boom');
+				registerEntryBoundary(async () => {
+					if (failing) throw bare('boom');
+					appLive = true;
+				});
+				return {};
+			},
+		});
+		function evaluateEntry() {
+			const app = generation++;
+			const hot = new HMRContext(t.client, ENTRY_PATH);
+			hot.accept();
+			hot.dispose(() => {
+				order.push(`dispose app ${app}${appLive ? '' : ' (no-op)'}`);
+				appLive = false;
+			});
+		}
+		const socket = await t.connect();
+		evaluateEntry();
+		const host = new HMRContext(t.client, LIB);
+		host.on(NS_BEFORE_REBOOT_EVENT, () => order.push(`beforeReboot${appLive ? '' : ' (no-op)'}`));
+		host.on(NS_AFTER_REBOOT_EVENT, (data: RebootEventData) => order.push(data.error ? `afterReboot error: ${data.error}` : 'afterReboot'));
+
+		await send(t.runtime, update(jsUpdate(ENTRY_PATH)));
+		expect(order).toEqual(['beforeReboot', 'dispose app 0', 'afterReboot error: boom']);
+		expect(t.stages().at(-1)).toBe('failed');
+
+		order.length = 0;
+		await send(t.runtime, update(jsUpdate(ENTRY_PATH, ENTRY_PATH, { timestamp: 124 })));
+		expect(order).toEqual(['beforeReboot (no-op)', `${retryDisposer} (no-op)`, 'afterReboot']);
+		expect(t.stages().at(-1)).toBe('complete');
+
+		// The same failure twice in a row restarts, so this one passing shows the retry cleared it.
+		await send(t.runtime, update(jsUpdate(ENTRY_PATH, ENTRY_PATH, { timestamp: 125 })));
+		expect(t.stages().at(-1)).toBe('failed');
+
+		expect(t.stages()).not.toContain('restart-required');
+		expect(restartsSent(socket)).toEqual([]);
 	});
 
 	it('a settled provider that never resolves times out, logs and continues without an error', async () => {
@@ -345,13 +410,15 @@ describe('soft reboot (an update whose boundary is the app entry)', () => {
 		expect(t.stages().at(-1)).toBe('complete');
 	});
 
-	it('a settled provider that rejects reports afterReboot with the error', async () => {
+	it.each([
+		['rejects', () => Promise.reject(new Error('bootstrap failed'))],
+		['resolves to { error }', () => Promise.resolve({ error: new Error('bootstrap failed') })],
+	])('a settled provider that %s reports afterReboot with the error', async (_how, settled) => {
+		quiet();
 		const order: string[] = [];
 		const t = setup({
 			importModule: async () => {
-				registerEntryBoundary(async () => {
-					throw new Error('bootstrap failed');
-				});
+				registerEntryBoundary(settled);
 				return {};
 			},
 		});
@@ -361,7 +428,7 @@ describe('soft reboot (an update whose boundary is the app entry)', () => {
 		await send(t.runtime, update(jsUpdate(ENTRY_PATH)));
 
 		expect(order.slice(-2)).toEqual(['afterReboot error: bootstrap failed', 'vite:afterUpdate']);
-		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('failed', { detail: 'bootstrap failed' });
+		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('failed', expect.objectContaining({ detail: 'bootstrap failed', action: RESTART_ACTION }));
 	});
 
 	it('an entry dispose that throws sends afterReboot with the error, then asks for a restart', async () => {
@@ -382,6 +449,132 @@ describe('soft reboot (an update whose boundary is the app entry)', () => {
 		expect(t.importModule).not.toHaveBeenCalled();
 		expect(restartsSent(socket)).toEqual([{ type: 'custom', event: NS_RESTART_EVENT, data: { reason: 'dispose before the app reboot failed: teardown failed' } }]);
 		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('restart-required', { detail: 'dispose before the app reboot failed: teardown failed' });
+	});
+
+	it.each([
+		[
+			'throws',
+			() => {
+				throw new Error('cleanup failed');
+			},
+		],
+		[
+			'rejects',
+			async () => {
+				throw new Error('cleanup failed');
+			},
+		],
+	])('a beforeReboot listener that %s skips dispose and import, reports afterReboot with the error, then asks for a restart', async (_name, listener) => {
+		quiet();
+		const order: string[] = [];
+		const t = setup();
+		const socket = await t.connect();
+		arrangeEntry(t, order);
+		recordEvents(t, order);
+		new HMRContext(t.client, '/src/participant.ts').on(NS_BEFORE_REBOOT_EVENT, listener);
+
+		await send(t.runtime, update(jsUpdate(ENTRY_PATH)));
+
+		expect(order).toEqual(['vite:beforeUpdate', 'beforeReboot', 'afterReboot error: cleanup failed']);
+		expect(t.importModule).not.toHaveBeenCalled();
+		await vi.waitFor(() => expect(restartsSent(socket)).toEqual([{ type: 'custom', event: NS_RESTART_EVENT, data: { reason: `a ${NS_BEFORE_REBOOT_EVENT} listener failed: cleanup failed` } }]));
+	});
+});
+
+describe('soft reboot: the new app fails to evaluate', () => {
+	const APP = '/src/app.ts';
+	const OTHER = '/src/other.ts';
+
+	function evaluationError(message: string, ...viteUrls: string[]) {
+		const err = new Error(message);
+		err.stack = [`Error: ${message}`, `    at helper (${ORIGIN}/ns/v/node_modules/lib/x.js:1:2)`, ...viteUrls.map((url) => `    at ${ORIGIN}/ns/v${url}:4:5`)].join('\n');
+		return err;
+	}
+
+	function arrange(failures: Array<Error | undefined>) {
+		quiet();
+		const t = setup({
+			importModule: async () => {
+				const failure = failures.shift();
+				if (failure) throw failure;
+				arrangeEntry();
+				return {};
+			},
+		});
+		const afterReboot: Array<string | undefined> = [];
+		function arrangeEntry() {
+			new HMRContext(t.client, ENTRY_PATH).accept();
+		}
+		arrangeEntry();
+		new HMRContext(t.client, LIB).on(NS_AFTER_REBOOT_EVENT, (data: RebootEventData) => afterReboot.push(data.error));
+		const reboot = async (timestamp: number, rerun: string[]) => {
+			await send(t.runtime, announceRerun({ timestamp, changed: rerun.slice(0, 1), rerun: [...rerun, ENTRY_PATH] }));
+			await send(t.runtime, update(jsUpdate(ENTRY_PATH, ENTRY_PATH, { timestamp })));
+		};
+		return { t, afterReboot, reboot };
+	}
+
+	it('evicts the failed modules of the reboot, keeps the app alive and shows the error with its stack', async () => {
+		const { t, afterReboot, reboot } = arrange([evaluationError('boom', `${APP}?t=123`)]);
+		const socket = await t.connect();
+
+		await reboot(123, [APP]);
+
+		expect(t.devHost.invalidateModules).toHaveBeenCalledWith([`${ORIGIN}/ns/v${APP}?t=123`]);
+		expect(afterReboot).toEqual(['boom']);
+		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('failed', { detail: 'boom', code: `at helper (/node_modules/lib/x.js:1:2)\nat ${APP}?t=123:4:5`, action: RESTART_ACTION });
+		expect(restartsSent(socket)).toEqual([]);
+	});
+
+	it('restarts when the retry fails again on a module outside its chain', async () => {
+		const failure = evaluationError('boom', `${APP}?t=123`);
+		const { t, reboot } = arrange([failure, failure]);
+		const socket = await t.connect();
+
+		await reboot(123, [APP]);
+		await reboot(124, [OTHER]);
+
+		await vi.waitFor(() => expect(restartsSent(socket)).toEqual([{ type: 'custom', event: NS_RESTART_EVENT, data: { reason: 'the app failed to reload: boom' } }]));
+	});
+
+	it('keeps retrying while the failure is inside the new chain', async () => {
+		const { t, reboot } = arrange([evaluationError('boom', `${APP}?t=123`), evaluationError('boom', `${APP}?t=124`)]);
+		const socket = await t.connect();
+
+		await reboot(123, [APP]);
+		await reboot(124, [APP]);
+
+		expect(t.devHost.invalidateModules).toHaveBeenLastCalledWith([`${ORIGIN}/ns/v${APP}?t=124`]);
+		expect(t.stages().at(-1)).toBe('failed');
+		expect(restartsSent(socket)).toEqual([]);
+	});
+
+	it('without device URLs in the stack, restarts on the same failure twice in a row only', async () => {
+		const bare = (message: string) => Object.assign(new Error(message), { stack: `Error: ${message}` });
+		const { t, reboot } = arrange([bare('first'), bare('second'), bare('second')]);
+		const socket = await t.connect();
+
+		await reboot(123, [APP]);
+		await reboot(124, [APP]);
+		expect(restartsSent(socket)).toEqual([]);
+
+		await reboot(125, [APP]);
+		await vi.waitFor(() => expect(restartsSent(socket)).toEqual([{ type: 'custom', event: NS_RESTART_EVENT, data: { reason: 'the app failed to reload: second' } }]));
+		expect(t.devHost.invalidateModules).not.toHaveBeenCalled();
+	});
+
+	it('a successful reboot clears the failure', async () => {
+		const failure = evaluationError('boom', `${APP}?t=123`);
+		const { t, afterReboot, reboot } = arrange([failure, undefined, failure]);
+		const socket = await t.connect();
+
+		await reboot(123, [APP]);
+		await reboot(124, [APP]);
+		expect(t.stages().at(-1)).toBe('complete');
+		await reboot(125, [OTHER]);
+
+		expect(afterReboot).toEqual(['boom', undefined, 'boom']);
+		expect(restartsSent(socket)).toEqual([]);
 	});
 });
 
@@ -579,7 +772,47 @@ describe('error', () => {
 		const payload: DeviceHotPayload = { type: 'error', err: { message: 'Transform failed', stack: 'at x' } };
 		await send(t.runtime, payload);
 		expect(listener).toHaveBeenCalledWith(payload);
-		expect(t.overlay.setUpdateStage).toHaveBeenCalledWith('failed', { detail: 'Transform failed' });
+		expect(t.overlay.setUpdateStage).toHaveBeenCalledWith('failed', { detail: 'Transform failed', action: RESTART_ACTION });
+	});
+
+	it('shows the root-relative location, the message without ANSI and the code frame, and leaves the app alone', async () => {
+		quiet();
+		const t = setup();
+		const order: string[] = [];
+		const entry = new HMRContext(t.client, ENTRY_PATH);
+		entry.accept();
+		entry.dispose(() => order.push('dispose'));
+		new HMRContext(t.client, LIB).on(NS_BEFORE_REBOOT_EVENT, () => order.push('beforeReboot'));
+		const frame = '1 | const a = ;\n  |           ^';
+
+		await send(t.runtime, announceRerun({ timestamp: 1, root: '/repo/app' }));
+		await send(t.runtime, {
+			type: 'error',
+			err: { message: '\u001b[31mExpected an expression\u001b[39m', stack: 'at transform (vite/dist/node.js:1:1)', id: '/repo/app/src/app.ts', frame: `\n${frame}\n`, loc: { file: '/repo/app/src/app.ts', line: 1, column: 11 }, plugin: 'vite:oxc' },
+		});
+
+		expect(t.overlay.setUpdateStage).toHaveBeenCalledWith('failed', { detail: 'src/app.ts:1:11\nExpected an expression', code: frame, action: RESTART_ACTION });
+		expect(order).toEqual([]);
+		expect(t.importModule).not.toHaveBeenCalled();
+	});
+});
+
+describe('the Restart app action', () => {
+	it('asks for a restart after beforeRestart, moving the overlay to restart-required', async () => {
+		quiet();
+		const t = setup();
+		const socket = await t.connect();
+		const order: string[] = [];
+		new HMRContext(t.client, LIB).on(NS_BEFORE_RESTART_EVENT, (data: { reason: string }) => order.push(`beforeRestart: ${data.reason}`));
+		await send(t.runtime, { type: 'error', err: { message: 'Transform failed', stack: '' } });
+
+		const [, info] = t.overlay.setUpdateStage.mock.calls.at(-1)!;
+		info.action.onTap();
+		info.action.onTap();
+
+		await vi.waitFor(() => expect(restartsSent(socket)).toEqual([{ type: 'custom', event: NS_RESTART_EVENT, data: { reason: 'requested from the error overlay' } }]));
+		expect(order).toEqual(['beforeRestart: requested from the error overlay']);
+		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('restart-required', { detail: 'requested from the error overlay' });
 	});
 });
 

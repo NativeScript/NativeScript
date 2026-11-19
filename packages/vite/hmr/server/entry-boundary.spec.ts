@@ -5,7 +5,8 @@ import { createServer, type Plugin, type ViteDevServer } from 'vite';
 import { afterEach, describe, expect, it } from 'vitest';
 import { registerFrameworkFlavor } from '../framework-flavors.js';
 import { NS_UPDATE_RERUN_EVENT } from '../shared/protocol.js';
-import { createEntryBoundaryCode, nsEntryBoundaryPlugin, nsRerunPlugin } from './entry-boundary.js';
+import { createEntryBoundaryCode, nsEntryBoundaryPlugin } from './entry-boundary.js';
+import { nsRerunPlugin } from './update-gate.js';
 
 describe('createEntryBoundaryCode', () => {
 	it('makes the entry self-accepting and wires the framework teardown and settle signal', () => {

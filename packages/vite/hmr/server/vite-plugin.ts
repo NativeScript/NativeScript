@@ -246,6 +246,7 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 								wsProtocol: session.wsProtocol,
 								entryUrl: session.entryUrl,
 								origin: session.origin,
+								root: server.config.root,
 							},
 						});
 						res.setHeader('Content-Type', 'application/javascript; charset=utf-8');

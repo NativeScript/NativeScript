@@ -123,6 +123,20 @@ const EDITS = [
 	{ key: 'f', label: '(f) root app.component.html', file: 'src/app/app.component.html', from: '<GridLayout>', to: '<GridLayout class="probe">' },
 	{ key: 'g', label: '(g) global app.css', file: 'src/app.css', append: '\n.probe-global { color: red; }\n' },
 	{ key: 'i', label: '(i) device sends angular:invalidate', send: { type: 'custom', event: 'angular:invalidate', data: { id: 'probe', message: 'probe: replaceMetadata threw' } } },
+	{ key: 'e1a', label: '(e1) syntax error in home.component.ts', file: 'src/app/home/home.component.ts', from: '(n) => n + 1);', to: '(n) => n + 1;', expect: { error: true, update: false } },
+	{ key: 'e1b', label: '(e1) fix the syntax error', file: 'src/app/home/home.component.ts', from: '(n) => n + 1;', to: '(n) => n + 1);', expect: { error: false, reboot: 1, rerunIncludes: '/src/app/home/home.component.ts' } },
+	{ key: 'e2a', label: '(e2) template compile error in home.component.html', file: 'src/app/home/home.component.html', from: `+ count()"`, to: `+ count("`, expect: { error: true, update: false, inPlace: false } },
+	{ key: 'e2b', label: '(e2) fix the template', file: 'src/app/home/home.component.html', from: `+ count("`, to: `+ count()"`, expect: { error: false, reboot: 0, inPlace: true } },
+	{ key: 'e3a', label: '(e3) service throws at evaluation', file: SERVICE_TS, from: 'export class ProbeService {', to: "throw new Error('probe: evaluation failed');\nexport class ProbeService {", expect: { error: false, reboot: 1, rerunIncludes: `/${SERVICE_TS}` } },
+	{ key: 'e3b', label: '(e3) fix the service', file: SERVICE_TS, from: "throw new Error('probe: evaluation failed');\nexport class ProbeService {", to: 'export class ProbeService {', expect: { error: false, reboot: 1 } },
+	{ key: 'e4a', label: '(e4) reconnect without edits', reconnect: true, expect: { update: false, rerun: false } },
+	// After (e3)'s non-component .ts edits Analog has dropped its class names, so
+	// this template edit reboots instead of applying in place; run alone it applies in place.
+	{ key: 'e4b', label: '(e4) template edit while connected', file: 'src/app/home/home.component.html', from: `+ count()"`, to: `+ count() + '?'"`, expect: { error: false, update: true } },
+	{ key: 'e4c', label: '(e4) css edit applied in place', file: 'src/app/home/home.component.css', append: '\n.probe-e4 { color: red; }\n', expect: { reboot: 0 } },
+	{ key: 'e4d', label: '(e4) reconnect after delivered edits', reconnect: true, expect: { update: false, rerun: false } },
+	{ key: 'e4e', label: '(e4) edit while the device is offline, then reconnect', offlineEdit: { file: 'src/app/home/home.component.html', from: `+ count() + '?'"`, to: `+ count() + '!'"` }, expect: { error: false, reboot: 1, rerunIncludes: '/src/app/home/home.component.ts' } },
+	{ key: 'e4f', label: '(e4) reconnect after the catch-up', reconnect: true, expect: { update: false, rerun: false } },
 	{ key: 'r1', label: '(r1) edit inside node_modules/@nativescript/core', coreEdit: true },
 	{ key: 'r2', label: '(r2) server.restart(), then the device reconnects', serverRestart: true },
 	{ key: 'r3', label: '(r3) device sends ns:restart', send: { type: 'custom', event: 'ns:restart', data: { reason: 'probe: hot.decline() in /src/app/x.ts' } } },
@@ -195,7 +209,7 @@ const hook = (target, tag) => {
 	const orig = target.send.bind(target);
 	target.send = (...a) => {
 		const payload = typeof a[0] === 'string' ? { type: 'custom', event: a[0], data: a[1] } : a[0];
-		log.push({ via: `raw:${tag}`, text: summarize(payload), payload });
+		log.push({ via: `raw:${tag}`, text: summarize(payload), payload, at: Date.now() });
 		return orig(...a);
 	};
 };
@@ -226,7 +240,7 @@ async function openSocket(reuseUrl) {
 		} catch {
 			payload = String(ev.data);
 		}
-		log.push({ via: 'wire', text: summarize(payload), payload });
+		log.push({ via: 'wire', text: summarize(payload), payload, at: Date.now() });
 		if (payload?.type === 'custom' && payload.event === 'angular:component-update') void emulateComponentUpdate(payload.data);
 	});
 	await new Promise((resolve, reject) => {
@@ -335,11 +349,24 @@ await settle();
 log.length = 0;
 
 const results = [];
+const checks = [];
 try {
 	for (const edit of EDITS) {
 		if (edit.send) ws.send(JSON.stringify(edit.send));
 		else if (edit.coreEdit) await editCoreFile();
-		else if (edit.serverRestart) {
+		else if (edit.reconnect) {
+			ws.close();
+			await sleep(300);
+			log.length = 0;
+			ws = await openSocket(socketUrl);
+		} else if (edit.offlineEdit) {
+			ws.close();
+			await sleep(300);
+			replaceIn(edit.offlineEdit.file, edit.offlineEdit.from, edit.offlineEdit.to);
+			await settle();
+			log.length = 0;
+			ws = await openSocket(socketUrl);
+		} else if (edit.serverRestart) {
 			await server.restart();
 			hook(server.ws, 'server.ws');
 			ws.close();
@@ -349,7 +376,21 @@ try {
 			ws = await openSocket(socketUrl);
 		} else if (edit.append) write(edit.file, fs.readFileSync(P(edit.file), 'utf8') + edit.append);
 		else replaceIn(edit.file, edit.from, edit.to);
+		const editedAt = Date.now();
 		await settle();
+		if (process.env.PROBE_TRANSFORM_CHECK) {
+			for (const rel of process.env.PROBE_TRANSFORM_CHECK.split(',')) {
+				const mod = server.environments.client.moduleGraph.getModuleById(P(rel));
+				if (mod) server.environments.client.moduleGraph.invalidateModule(mod);
+				try {
+					const r = await server.environments.client.transformRequest(`/${rel}`);
+					log.push({ via: 'check', text: `${rel} transform ok (${r?.code?.length}b)` });
+					if (process.env.PROBE_DUMP) fs.writeFileSync(`${process.env.PROBE_DUMP}-${edit.key}.js`, r?.code ?? '');
+				} catch (err) {
+					log.push({ via: 'check', text: `${rel} transform FAILED: ${String(err?.message).slice(0, 200)} plugin=${err?.plugin} id=${err?.id} loc=${JSON.stringify(err?.loc)}` });
+				}
+			}
+		}
 		const entries = log.splice(0);
 		// A device re-imports the entry on a soft reboot, which re-transforms the changed chain.
 		const reboot = entries.find((e) => e.via === 'wire' && e.payload?.type === 'update' && e.payload.updates.some((u) => u.type === 'js-update' && u.path === new URL(session.entryUrl).pathname.slice('/ns/v'.length)));
@@ -365,7 +406,29 @@ try {
 		results.push({ edit, entries });
 		console.log(`\n--- ${edit.label}`);
 		if (!entries.length) console.log('    (nothing sent)');
-		for (const e of entries) console.log(`    ${e.via.padEnd(16)} ${e.text}`);
+		for (const e of entries) console.log(`    ${e.via.padEnd(16)} ${e.at && typeof editedAt === 'number' ? `+${e.at - editedAt}ms `.padEnd(9) : ''}${e.text}`);
+		// The compile check runs between the update reaching `server.ws.send` and the wire.
+		const rawUpdate = entries.find((e) => e.via.startsWith('raw:') && e.payload?.type === 'update');
+		const gated = rawUpdate && entries.find((e) => e.via === 'wire' && e.at >= rawUpdate.at && (e.payload?.type === 'error' || e.payload?.type === 'update' || e.payload?.event === 'ns:rerun'));
+		if (gated) console.log(`    gate             ${gated.at - rawUpdate.at}ms from server.ws.send to the wire`);
+		if (edit.expect) {
+			const wire = entries.filter((e) => e.via === 'wire').map((e) => e.payload);
+			const entryPath = new URL(session.entryUrl).pathname.slice('/ns/v'.length);
+			const reboots = wire.filter((p) => p?.type === 'update' && p.updates.some((u) => u.path === entryPath));
+			const rerun = wire.find((p) => p?.type === 'custom' && p.event === 'ns:rerun');
+			const facts = {
+				error: wire.some((p) => p?.type === 'error'),
+				update: wire.some((p) => p?.type === 'update'),
+				rerun: !!rerun,
+				reboot: reboots.length,
+				inPlace: wire.some((p) => p?.type === 'custom' && p.event === 'angular:component-update'),
+				rerunIncludes: rerun?.data?.rerun ?? [],
+			};
+			const failures = Object.entries(edit.expect).filter(([k, v]) => (k === 'rerunIncludes' ? !facts.rerunIncludes.includes(v) : facts[k] !== v));
+			const verdict = failures.length ? `FAIL ${failures.map(([k, v]) => `${k}: expected ${JSON.stringify(v)}, got ${JSON.stringify(facts[k])}`).join('; ')}` : 'ok';
+			checks.push({ key: edit.key, verdict });
+			console.log(`    expect           ${verdict}`);
+		}
 	}
 } finally {
 	restore();
@@ -385,4 +448,8 @@ fs.writeFileSync(
 	),
 );
 console.log(`\nmode=${mode} wrote ${path.relative(process.cwd(), outFile)}`);
+if (checks.length) {
+	const failed = checks.filter((c) => c.verdict !== 'ok').map((c) => c.key);
+	console.log(`expectations: ${checks.length - failed.length}/${checks.length} ok${failed.length ? ` (failed: ${failed.join(', ')})` : ''}`);
+}
 process.exit(0);
