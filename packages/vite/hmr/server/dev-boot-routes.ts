@@ -123,7 +123,7 @@ export function registerDevBootRoutes(server: ViteDevServer, options: DevBootRou
 		if ((pathname === NS_DEV_RESTART_PATH || pathname === NS_DEV_BOOT_FAILED_PATH) && !hasToken(req, server.config)) {
 			if (!rejectedPaths.has(pathname)) {
 				rejectedPaths.add(pathname);
-				server.config.logger.warn(`[NativeScript] rejected ${pathname} without this dev server's token; reinstall the app if its bundle.mjs predates the token.`, { timestamp: true });
+				server.config.logger.warn(`[NativeScript] rejected ${pathname} without this dev server's token, as from an app process an earlier dev server launched.`, { timestamp: true });
 			}
 			return sendJson(res, { ok: false, reason: 'missing or wrong token' }, 403);
 		}

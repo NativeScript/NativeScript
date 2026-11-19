@@ -8,7 +8,8 @@ import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath,
 import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
-import { readOrCreateDevWsToken } from './dev-ws-token.js';
+import { devWsTokenFile, devWsTokenForBundle } from './dev-ws-token.js';
+import { devServerAddressOf, waitForDevServerListening } from './ns-cli-plugins.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
 import { BUNDLE_CSS_AST_SENTINEL, inlineBundleCss } from './bundle-css.js';
 import { deviceUrlForGraphUrl } from '../hmr/server/vite-url.js';
@@ -353,8 +354,8 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 	// instead of failing the main module's link. It runs before
 	// session-bootstrap's `configureLoader` installs the import map, so it
 	// names absolute URLs only.
-	const generateHmrBundleEntry = (bootOrigin: string): string => {
-		const loaderOptions = { origin: bootOrigin, bootUrl: bootOrigin + DEV_BOOT_DEVICE_PATH, token: readOrCreateDevWsToken(resolvedConfig.root), verbose: opts.verbose };
+	const generateHmrBundleEntry = (bootOrigin: string, token: string): string => {
+		const loaderOptions = { origin: bootOrigin, bootUrl: bootOrigin + DEV_BOOT_DEVICE_PATH, token, verbose: opts.verbose };
 		return `import { bootFromDevServer } from '@nativescript/vite/runtime/dev-boot-loader.js';\nawait bootFromDevServer(${JSON.stringify(loaderOptions)});\n` + appComponentImports(opts);
 	};
 
@@ -448,7 +449,13 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 			if (id !== RESOLVED) return null;
 			if (opts.hmrActive) {
-				return { code: generateHmrBundleEntry(resolveBootOrigin()), moduleType: 'js' };
+				const token = await devWsTokenForBundle({
+					file: devWsTokenFile(resolvedConfig.root, devServerAddressOf(resolvedConfig.server).port),
+					underCli: typeof process.send === 'function',
+					waitForServer: () => waitForDevServerListening(devServerAddressOf(resolvedConfig.server)),
+					warn: (message) => console.warn(message),
+				});
+				return { code: generateHmrBundleEntry(resolveBootOrigin(), token), moduleType: 'js' };
 			}
 			return { code: generateBootCode(bootOptions, ''), moduleType: 'js' };
 		},

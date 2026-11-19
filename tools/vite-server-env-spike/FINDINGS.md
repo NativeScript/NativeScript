@@ -1446,10 +1446,10 @@ The boot module graph (core) dominates. The timestamps print unconditionally und
 | vue warm, CLI-started server, simulator app alive (1) | 1.33 | 2.46 | 2.75 | 2.78 | 322 / 8,893 |
 | vue, core pre-bundled, cold | 1.28 | 1.73 | 2.00 | 2.03 | 77 / 10,103 |
 | vue, core pre-bundled, warm (2) | 1.07–1.17 | 1.53–1.61 | 1.78–1.87 | 1.80–1.89 | 77 / 10,103 |
-| ng cold | 0.99 | 2.09 | 2.37 | 2.39 | 329 / 9,001 |
-| ng warm (2) | 0.98–1.06 | 2.08–2.16 | 2.38–2.41 | 2.40–2.43 | 329 / 9,001 |
-| ng, core pre-bundled, cold | 1.01 | 1.37 | 1.63 | 1.65 | 85 / 5,928 |
-| ng, core pre-bundled, warm (2) | 0.98–0.99 | 1.34–1.35 | 1.60–1.63 | 1.62–1.65 | 85 / 5,928 |
+| ng cold (Vite 8.0.2) | 0.99 | 2.09 | 2.37 | 2.39 | 329 / 9,001 |
+| ng warm (2, Vite 8.0.2) | 0.98–1.06 | 2.08–2.16 | 2.38–2.41 | 2.40–2.43 | 329 / 9,001 |
+| ng, core pre-bundled, cold (Vite 8.0.2) | 1.01 | 1.37 | 1.63 | 1.65 | 85 / 5,928 |
+| ng, core pre-bundled, warm (2, Vite 8.0.2) | 0.98–0.99 | 1.34–1.35 | 1.60–1.63 | 1.62–1.65 | 85 / 5,928 |
 
 - **Budget** (20–30 s for `UIApplicationMain`): the launch event lands 2.3–2.8 s after the launch command with core served as files (about 7–13× headroom) and 1.6–2.0 s with core pre-bundled, the new default (10–19×).
 - **The core graph dominates:** first request → `session start` is 1.1 s with core served as files and 0.36–0.45 s pre-bundled. The entry adds 0.25–0.3 s. Pre-bundling saves 0.5 s (vue) and 0.75 s (ng) per boot on the phone.
@@ -1476,6 +1476,26 @@ The boot module graph (core) dominates. The timestamps print unconditionally und
 - vue: pre-bundles 9,667 KiB, of which 7,041 KiB are maps; served `node_modules` 390 / 200 KiB; app and virtual modules 47 / 28 KiB.
 - ng: Vite 8.0.2 writes pre-bundle maps as separate `.map` files (`//# sourceMappingURL=<name>.js.map`), which the device never requests; only served files carry inline maps (369 KiB served `node_modules` with 190 KiB of maps, 48 KiB app with 29 KiB). The ng crawl runs Vite 8.3.8 (`thin-crawl.mjs` resolves the copy nested under `apps/ng/node_modules/@nativescript/vite/node_modules`, while `ns run` uses the repo root's 8.0.2), which inlines the pre-bundle maps: hence its 18,915 KiB against the 5,929 KiB the phone and simulator load.
 - Serving maps by URL would cut vue's boot payload from 10.1 MB to 2.8 MB. On the phone over this Wi-Fi the boot is compile-bound, so the time saved is small; it matters on slower networks.
+
+## Round 23: per-session token, one Vite per fixture
+
+**The WebSocket token is per `vite serve` process again** (Round 22's per-project file is gone).
+- **Server:** `pinWebSocketToken` keeps Vite's first token for the process (an in-process `server.restart()` keeps it) and publishes it to `<os tmpdir>/nativescript-vite/<sha1(root:port)>/dev-ws-token` (mode 0600, rename, rewritten only on change), before the server listens. The port is in the key because the CLI runs one server per platform (`ViteHmrPortService`: 5173, then the next free port) for the same project.
+- **Round 22's file was served:** `node_modules/.ns-vite/dev-ws-token` came back from `GET http://<LAN>:5173/node_modules/.ns-vite/dev-ws-token` (200, as a JS module), and through `/@fs/`. The tmpdir file is outside `fs.allow`: `/@fs/…` answers 403.
+- **Build:** under the CLI (`process.send`), the HMR entry's `load` waits until the dev server accepts TCP connections (`waitForDevServerListening`, 30 s cap) and only then reads the file; before that it may hold the previous session's token. Without the CLI it reads what is there (the crawl's `build-bundle.mjs` has no server). A timeout or a missing file warns.
+- **No rebuild on a later token change:** `this.addWatchFile(<token file>)` in the HMR entry's `load` didn't trigger a rebuild in `vite build --watch` (Vite 8.3.8, Rolldown) when the file was rewritten in place or replaced by a rename; cause not isolated; removed. Under the CLI the build and the server share a lifetime, so it never matters there; with both started by hand, a restarted server needs the build restarted too.
+- **Simulator** (Vue, cold): the file token, the `session.mjs` `wsUrl` token and the one in `bundle.mjs` match. Server down → relaunch → fallback → `ns run`: the old process's poll carried the old session's token and got 403; one CLI launch, one `/@vite/env`, one launch event. `curl`: no token 403, the previous session's token 403 (`restart` and `boot-failed`), the current token with a huge `age` 409, with `age=1` one restart. Angular (on 8.3.8, below): syntax error in `src/main.ts` → card → fix → one restart.
+- **What the `age` rule does now:** a process from an earlier session stops at the token check (403), so under the CLI the 409 branch is reached only by current-token requests that are older than the server, which a real device can't send. The rule still matters under `legacy.skipWebSocketTokenCheck` (no token check: it alone prevents the double boot; specced) and decides a current-session process that met the Local Network prompt (younger: restart).
+- **Slow server start:** if the server takes longer than the 30 s caps (listen wait, warm wait) to listen, the CLI launches first; that process is older than the server and carries a stale or empty token, so it gets 403 or 409 forever. Round 22's "a wrong guess costs an extra restart" doesn't hold in that case.
+- **Launch delay of the listen wait:** none measurable. Initial builds took 645–693 ms (vue) and 642 ms (ng) against 517–663 ms before, and the server was listening before the build reached the entry.
+- vue pins `"vite": "8.3.8"` too (it was 8.3.8 by hoisting; the installed tree already matches).
+- **Hand-installed phone apps never hold a valid token:** their `bundle.mjs` comes from whichever session built it.
+
+**One Vite per fixture.** `apps/ng/package.json` gains `"vite": "8.3.8"` (the vue fixture's version); `refresh-fixture-packages.sh --app ng --skip-build vite` regenerated the lockfile (untracked) and deleted `platforms/` (the iPhone device build with it).
+- Resolution of `vite` from the app, from `node_modules/@nativescript/vite` and from Analog: all `apps/ng/node_modules/vite` 8.3.8 (before: the repo root's 8.0.2 for `ns run` and Analog, a nested 8.3.8 for the crawl). The nested copy is gone. `@angular/build` keeps its own 7.3.6. vue: 8.3.8 everywhere. The toolbox: the repo root's 8.0.2 from both, one version.
+- ng crawl on 8.3.8 (`crawl-ng-flag-vite838.*`): PASS, 81 requests / 18,915 KiB, unchanged (it already ran 8.3.8).
+- Simulator, ng cold on 8.3.8 (clean native build): boot (86 device requests), template edit, class edit (soft reboot), syntax error + fix in one process; the card path above.
+- **Cost:** ng's boot payload on 8.3.8 is 18,929 KiB, of which 13,432 KiB (71%) are inline maps, against 5,929 KiB on 8.0.2, which writes pre-bundle maps as separate files. The iPhone rows in Round 22 (ng) are on 8.0.2.
 
 ## Next
 

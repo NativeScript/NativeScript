@@ -81,6 +81,19 @@ describe('devServerAddressOf', () => {
 	});
 });
 
+describe('waitForDevServerListening', () => {
+	it('resolves once the port accepts connections, and false after the deadline', async () => {
+		const net = await import('node:net');
+		const { waitForDevServerListening } = await import('./ns-cli-plugins.js');
+		const server = net.createServer((socket) => socket.destroy());
+		await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+		const port = (server.address() as { port: number }).port;
+		expect(await waitForDevServerListening({ port })).toBe(true);
+		await new Promise((resolve) => server.close(resolve));
+		expect(await waitForDevServerListening({ port }, Date.now() + 300)).toBe(false);
+	});
+});
+
 describe('hashBootBundle', () => {
 	it('hashes bundle.mjs from a chunk or an asset, and nothing else', async () => {
 		const { hashBootBundle } = await import('./ns-cli-plugins.js');

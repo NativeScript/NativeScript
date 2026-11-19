@@ -136,6 +136,16 @@ describe('registerDevBootRoutes', () => {
 		expect((await call(handlers[0], NS_DEV_WARM_PATH)).status).toBe(200);
 	});
 
+	it('under legacy.skipWebSocketTokenCheck, takes requests without a token and still leaves an older process to the CLI', async () => {
+		const request = vi.fn();
+		const { server, handlers } = fakeServer(idleEnv());
+		server.config.legacy = { skipWebSocketTokenCheck: true };
+		registerDevBootRoutes(server, { bootGraphUrls: () => [], request, cliLaunchesApp: () => true, now: () => 10_000 });
+		expect((await call(handlers[0], `${NS_DEV_RESTART_PATH}?reason=old&age=20000`)).status).toBe(409);
+		expect((await call(handlers[0], `${NS_DEV_RESTART_PATH}?reason=young&age=0`)).status).toBe(200);
+		expect(request.mock.calls).toEqual([['young']]);
+	});
+
 	it('passes other requests on', async () => {
 		const { server, handlers } = fakeServer(idleEnv());
 		registerDevBootRoutes(server, { bootGraphUrls: () => [], request: vi.fn() });

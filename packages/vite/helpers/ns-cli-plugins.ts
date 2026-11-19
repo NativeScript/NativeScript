@@ -3,6 +3,7 @@ import { createHash } from 'crypto';
 import { readdirSync, statSync, existsSync, mkdirSync } from 'fs';
 import http from 'http';
 import https from 'https';
+import net from 'net';
 import { NS_DEV_WARM_PATH } from '../hmr/server/dev-routes.js';
 
 let isInitialBuild = true;
@@ -57,6 +58,25 @@ export function waitForDevServerWarm(address: DevServerAddress, deadline = Date.
 			req.on('error', retry);
 		};
 		const retry = () => setTimeout(attempt, WARM_RETRY_MS);
+		attempt();
+	});
+}
+
+/** Resolves true once the dev server on `address` accepts connections, false after `deadline`. */
+export function waitForDevServerListening(address: DevServerAddress, deadline = Date.now() + WARM_WAIT_MS): Promise<boolean> {
+	return new Promise((resolve) => {
+		const attempt = () => {
+			if (Date.now() >= deadline) return resolve(false);
+			const socket = net.connect({ host: address.host ?? '127.0.0.1', port: address.port });
+			socket.once('connect', () => {
+				socket.destroy();
+				resolve(true);
+			});
+			socket.once('error', () => {
+				socket.destroy();
+				setTimeout(attempt, WARM_RETRY_MS);
+			});
+		};
 		attempt();
 	});
 }
