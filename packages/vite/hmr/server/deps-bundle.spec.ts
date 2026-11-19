@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { setUserDefineEntries } from '../../helpers/global-defines.js';
-import { DEPS_BUNDLE_PATH, buildDepsBundleEntryCode, buildDepsCandidateSpecs, buildDepsShimCode, buildDepsVendorRuntimeModule, collectDepsModuleExportInfo, computeDepsBundleCacheKey, createDepsBundleService, depsRegistryKeyForFile, generateDepsBundle, isDepsPerModuleServingEnabled, resolveDepsEntriesFromRecording, resolveDepsEntriesFromVendorCollection } from './deps-bundle.js';
+import { DEPS_BUNDLE_PATH, buildDepsBundleEntryCode, buildDepsCandidateSpecs, buildDepsShimCode, buildDepsVendorRuntimeModule, collectDepsModuleExportInfo, computeDepsBundleCacheKey, createDepsBundleService, depsRegistryKeyForFile, generateDepsBundle, hasExistingDefaultExport, isDepsPerModuleServingEnabled, resolveDepsEntriesFromRecording, resolveDepsEntriesFromVendorCollection } from './deps-bundle.js';
 import { registerFrameworkFlavor } from '../framework-flavors.js';
 
 describe('isDepsPerModuleServingEnabled', () => {
@@ -771,5 +771,71 @@ describe('createDepsBundleService', () => {
 		service.disableServingForSession('package.json changed');
 		expect(service.getShimForSpec('/node_modules/pkg-a/index.js')).toBeNull();
 		expect(service.getState()).not.toBeNull();
+	});
+});
+
+describe('hasExistingDefaultExport', () => {
+	it('detects `export default <expression>` form', () => {
+		expect(hasExistingDefaultExport(`export default something;`)).toBe(true);
+		expect(hasExistingDefaultExport(`export default { a: 1 };`)).toBe(true);
+		expect(hasExistingDefaultExport(`export default 42;`)).toBe(true);
+	});
+
+	it('detects `export default function` and `export default class` forms', () => {
+		expect(hasExistingDefaultExport(`export default function foo() {}`)).toBe(true);
+		expect(hasExistingDefaultExport(`export default async function foo() {}`)).toBe(true);
+		expect(hasExistingDefaultExport(`export default class Foo {}`)).toBe(true);
+	});
+
+	it('detects `export { X as default }` form', () => {
+		expect(hasExistingDefaultExport(`export { foo as default };`)).toBe(true);
+		expect(hasExistingDefaultExport(`export { foo, bar as default };`)).toBe(true);
+		expect(hasExistingDefaultExport(`export { default as default };`)).toBe(true);
+	});
+
+	it('detects `export { default }` shorthand', () => {
+		expect(hasExistingDefaultExport(`export { default };`)).toBe(true);
+		expect(hasExistingDefaultExport(`export { default, named };`)).toBe(true);
+	});
+
+	it('detects `export { default } from "other-module"` re-export', () => {
+		expect(hasExistingDefaultExport(`export { default } from './other';`)).toBe(true);
+		expect(hasExistingDefaultExport(`export { default as Foo } from './other';`)).toBe(true);
+	});
+
+	it('returns false for modules with no default export', () => {
+		expect(hasExistingDefaultExport(`export const x = 1;`)).toBe(false);
+		expect(hasExistingDefaultExport(`export function foo() {}`)).toBe(false);
+		expect(hasExistingDefaultExport(`export class Foo {}`)).toBe(false);
+		expect(hasExistingDefaultExport(`export { a, b };`)).toBe(false);
+		expect(hasExistingDefaultExport(`export * from './other';`)).toBe(false);
+		expect(hasExistingDefaultExport(`export * as X from './other';`)).toBe(false);
+	});
+
+	it('does not false-positive on the string "default" in non-export contexts', () => {
+		expect(hasExistingDefaultExport(`const x = { default: 1 };`)).toBe(false);
+		expect(hasExistingDefaultExport(`function defaultBehavior() {}`)).toBe(false);
+		expect(hasExistingDefaultExport(`const defaultValue = 42;`)).toBe(false);
+		// Destructuring that merely uses the name 'default' as a property
+		// is fine — no export keyword in sight.
+		expect(hasExistingDefaultExport(`const { default: d } = obj;`)).toBe(false);
+	});
+
+	it('known limitation: comments containing `export default` are treated as a default export', () => {
+		// A lightweight regex rather than a parser: a comment like
+		// `// export default disabled` counts as a default export.
+		expect(hasExistingDefaultExport(`// export default disabled`)).toBe(true);
+	});
+
+	it('handles empty and malformed input gracefully', () => {
+		expect(hasExistingDefaultExport('')).toBe(false);
+		expect(hasExistingDefaultExport(null as any)).toBe(false);
+		expect(hasExistingDefaultExport(undefined as any)).toBe(false);
+		expect(hasExistingDefaultExport(123 as any)).toBe(false);
+	});
+
+	it('detects default export among multiple exports (regression: realistic module shapes)', () => {
+		const code = [`export const a = 1;`, `export function b() {}`, `export { c };`, `export default class Foo {}`].join('\n');
+		expect(hasExistingDefaultExport(code)).toBe(true);
 	});
 });

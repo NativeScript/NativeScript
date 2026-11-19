@@ -86,10 +86,29 @@ export function applySnapshotToBootRefs(refs: BootOverlayRefs | null, snapshot: 
 	}
 }
 
+export type BootPlaceholderRefs = { statusLabel?: any; detailLabel?: any; progressFill?: any; activityIndicator?: any };
+
+let bootPlaceholderRefs: BootPlaceholderRefs = {};
+let lastBootProgressScale = 0;
+
+/** The boot placeholder page's views, registered by `root-placeholder.ts` when it builds the page. */
+export function setBootPlaceholderRefs(refs: BootPlaceholderRefs): void {
+	bootPlaceholderRefs = { ...refs };
+}
+
+export function hasBootPlaceholderRefs(): boolean {
+	return !!(bootPlaceholderRefs.statusLabel || bootPlaceholderRefs.activityIndicator);
+}
+
+export function clearBootPlaceholderRefs(): void {
+	bootPlaceholderRefs = {};
+	lastBootProgressScale = 0;
+}
+
 function findBootActivityIndicator(): any {
 	const g = getOverlayGlobal();
-	if (g.__NS_DEV_BOOT_ACTIVITY_INDICATOR__) {
-		return g.__NS_DEV_BOOT_ACTIVITY_INDICATOR__;
+	if (bootPlaceholderRefs.activityIndicator) {
+		return bootPlaceholderRefs.activityIndicator;
 	}
 	try {
 		const frame = g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
@@ -100,7 +119,7 @@ function findBootActivityIndicator(): any {
 		if (children >= 3) {
 			const indicator = content.getChildAt?.(2);
 			if (indicator && typeof indicator.busy !== 'undefined') {
-				g.__NS_DEV_BOOT_ACTIVITY_INDICATOR__ = indicator;
+				bootPlaceholderRefs.activityIndicator = indicator;
 				return indicator;
 			}
 		}
@@ -110,9 +129,8 @@ function findBootActivityIndicator(): any {
 
 function findBootStatusLabel(): any {
 	const g = getOverlayGlobal();
-	// Try direct reference first
-	if (g.__NS_DEV_BOOT_STATUS_LABEL__) {
-		return g.__NS_DEV_BOOT_STATUS_LABEL__;
+	if (bootPlaceholderRefs.statusLabel) {
+		return bootPlaceholderRefs.statusLabel;
 	}
 	// Fallback: walk from placeholder root view
 	try {
@@ -127,8 +145,7 @@ function findBootStatusLabel(): any {
 		if (children >= 2) {
 			const label = content.getChildAt?.(1);
 			if (label && typeof label.text !== 'undefined') {
-				// Cache for next time
-				g.__NS_DEV_BOOT_STATUS_LABEL__ = label;
+				bootPlaceholderRefs.statusLabel = label;
 				return label;
 			}
 		}
@@ -137,13 +154,11 @@ function findBootStatusLabel(): any {
 }
 
 function findBootDetailLabel(): any {
-	const g = getOverlayGlobal();
-	return g.__NS_DEV_BOOT_DETAIL_LABEL__ || null;
+	return bootPlaceholderRefs.detailLabel || null;
 }
 
 function findBootProgressFill(): any {
-	const g = getOverlayGlobal();
-	return g.__NS_DEV_BOOT_PROGRESS_FILL__ || null;
+	return bootPlaceholderRefs.progressFill || null;
 }
 
 export function updateBootStatusLabel(snapshot: HmrOverlaySnapshot): void {
@@ -209,20 +224,16 @@ export function updateBootStatusLabel(snapshot: HmrOverlaySnapshot): void {
 
 // Drive the progress fill scaleX from the snapshot. Uses NS's view
 // animate API for a smooth 220 ms easeOut between heartbeat ticks; a
-// monotonic ratchet on `globalThis.__NS_DEV_BOOT_PROGRESS_LAST_SCALE__`
-// guards against the fill snapping backwards if a less-progressed
-// snapshot ever lands between ticks (mirrors the JS-side
-// `applyMonotonicBootProgress` contract).
+// monotonic ratchet on the last applied scale guards against the fill
+// snapping backwards if a less-progressed snapshot ever lands between ticks
+// (mirrors the JS-side `applyMonotonicBootProgress` contract).
 function applyBootProgressFill(progressFill: any, snapshot: HmrOverlaySnapshot): void {
 	if (!progressFill) return;
-	const g = getOverlayGlobal();
 	const isError = snapshot.tone === 'error';
 	progressFill.backgroundColor = asColor(isError ? '#B41810' : '#3B6FE5');
 	const targetScale = computeBootProgressFillScale(snapshot.progress ?? null);
-	const previousRaw = Number(g.__NS_DEV_BOOT_PROGRESS_LAST_SCALE__);
-	const previous = Number.isFinite(previousRaw) ? previousRaw : 0;
-	const next = Math.max(previous, targetScale);
-	g.__NS_DEV_BOOT_PROGRESS_LAST_SCALE__ = next;
+	const next = Math.max(lastBootProgressScale, targetScale);
+	lastBootProgressScale = next;
 	try {
 		// NS view.animate scales around `originX`/`originY`; the
 		// placeholder builder pins `originX = 0` so the fill grows
@@ -281,14 +292,7 @@ export type AndroidSafeAreaInsets = { top: number; bottom: number; left: number;
 // string.
 export type AndroidToastMargin = { top: number; right: number; bottom: number; left: number };
 
-function readCachedAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
-	const g = getOverlayGlobal();
-	const cached = g.__NS_HMR_ANDROID_SAFE_INSETS__;
-	if (cached && typeof cached.top === 'number') {
-		return cached as AndroidSafeAreaInsets;
-	}
-	return null;
-}
+let cachedAndroidSafeAreaInsets: AndroidSafeAreaInsets | null = null;
 
 /**
  * Read the Android system-bar safe-area insets (status bar / navigation
@@ -299,8 +303,8 @@ function readCachedAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
  * chip out from under the system bars (see `computeAndroidToastMargin`).
  *
  * Returns null on non-Android runtimes (iOS / web / vitest) so callers
- * fall back to base margins. The last good reading is cached on the
- * global so a transient null (e.g. insets queried before the decor view
+ * fall back to base margins. The last good reading is cached so a
+ * transient null (e.g. insets queried before the decor view
  * is attached) reuses the previous value instead of snapping the chip
  * back under the status bar.
  */
@@ -318,7 +322,7 @@ export function readAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
 		const decorView = activity?.getWindow?.()?.getDecorView?.();
 		const rootInsets = decorView?.getRootWindowInsets?.();
 		if (!rootInsets) {
-			return readCachedAndroidSafeAreaInsets();
+			return cachedAndroidSafeAreaInsets;
 		}
 
 		let density = 1;
@@ -357,10 +361,10 @@ export function readAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
 			left: px.left / density,
 			right: px.right / density,
 		};
-		g.__NS_HMR_ANDROID_SAFE_INSETS__ = insets;
+		cachedAndroidSafeAreaInsets = insets;
 		return insets;
 	} catch {
-		return readCachedAndroidSafeAreaInsets();
+		return cachedAndroidSafeAreaInsets;
 	}
 }
 

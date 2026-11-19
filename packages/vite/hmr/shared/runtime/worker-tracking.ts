@@ -25,6 +25,8 @@ export interface WorkerSweepResult {
 	total: number;
 }
 
+const trackedScopes = new WeakSet<object>();
+
 /**
  * Patch the global `Worker` constructor so every construction is recorded in
  * `g.__NS_HMR_WORKERS__`. Idempotent (safe to call from every boot path);
@@ -45,7 +47,7 @@ export function installWorkerConstructorTracking(g: any, options?: { verbose?: b
 	if (typeof NativeWorker !== 'function') {
 		return false;
 	}
-	if (g.__NS_HMR_WORKER_TRACKING_INSTALLED__ === true) {
+	if (trackedScopes.has(g)) {
 		return true;
 	}
 
@@ -72,7 +74,7 @@ export function installWorkerConstructorTracking(g: any, options?: { verbose?: b
 
 	try {
 		g.Worker = TrackedWorker;
-		g.__NS_HMR_WORKER_TRACKING_INSTALLED__ = true;
+		trackedScopes.add(g);
 	} catch {
 		return false;
 	}

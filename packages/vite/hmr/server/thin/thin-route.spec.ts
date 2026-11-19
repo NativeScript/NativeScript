@@ -4,6 +4,7 @@ import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { coreRequireKeys, isThinStylesheetRequest, normalizeThinViteUrl, registerThinRoute, rewriteThinSpecifiers } from './thin-route.js';
 import { thinDeviceUrl, transformIdForViteUrl, viteUrlForFile } from './thin-mode.js';
+import { NS_DEV_EXPR } from '../../shared/runtime/dev-globals.js';
 
 const ORIGIN = 'http://192.168.1.2:5173';
 const T = '1700000000000';
@@ -159,6 +160,7 @@ describe('registerThinRoute', () => {
 		expect(res.body).toContain(`import * as __ns_thin_self__ from "${ORIGIN}/ns/v/node_modules/@nativescript/core/index.js";`);
 		expect(res.body).toContain('if (!t[k]) t[k] = v;');
 		expect(res.body).toContain('"@nativescript/core"');
+		expect(res.body).toContain(`const d = ${NS_DEV_EXPR}; const t = d.coreModules || (d.coreModules = {});`);
 	});
 
 	it('registers a ?t= core instance under its own URL and replaces the previous one', async () => {
@@ -185,6 +187,6 @@ describe('registerThinRoute', () => {
 	it('does not register a core file requested with an identity query', async () => {
 		const { request } = mount();
 		const { res } = await request('/ns/v/node_modules/@nativescript/core/index.js?worker');
-		expect(res.body).not.toContain('__NS_CORE_MODULES__');
+		expect(res.body).not.toContain('coreModules');
 	});
 });

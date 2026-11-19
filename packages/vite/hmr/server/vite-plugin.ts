@@ -4,6 +4,7 @@ import path from 'path';
 import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, VITE_HMR_WS_PROTOCOL, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
 import type { NsHmrStartOptions } from '../client/index.js';
 import { setUserDefineEntries } from '../../helpers/global-defines.js';
+import { NS_DEV_EXPR } from '../shared/runtime/dev-globals.js';
 import { thinDeviceUrl, viteUrlForFile } from './thin/thin-mode.js';
 import { registerThinRoute } from './thin/thin-route.js';
 import { getServerOrigin } from './server-origin.js';
@@ -163,11 +164,12 @@ if (!(globalThis.__nsVendorRegistry && typeof globalThis.__nsVendorRegistry.get 
 
 const __nsHmrClientUrl = ${JSON.stringify(options.clientImport)};
 const __nsHmrStartOptions = ${JSON.stringify(options.start)};
+const __nsDev = ${NS_DEV_EXPR};
 
 // The HMR socket opens only once the app has booted: socket traffic racing
 // the boot-time module fetches has crashed the native runtime.
 function __nsStartHmrClientAfterBoot() {
-	if (!globalThis.__NS_HMR_BOOT_COMPLETE__) {
+	if (!__nsDev.bootComplete) {
 		setTimeout(__nsStartHmrClientAfterBoot, 100);
 		return;
 	}

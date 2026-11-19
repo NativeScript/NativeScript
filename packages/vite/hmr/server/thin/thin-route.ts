@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 import { init, parse } from 'es-module-lexer';
 import { getServedModules, servedTimestamp } from '../served-modules.js';
 import { THIN_PREFIX, thinDeviceUrl, transformIdForViteUrl, viteUrlForFile } from './thin-mode.js';
+import { NS_DEV_EXPR } from '../../shared/runtime/dev-globals.js';
 
 const VITE_CLIENT_URL = '/@vite/client';
 const THIN_VITE_CLIENT_FILE = fileURLToPath(new URL('../../client/thin-vite-client.js', import.meta.url));
@@ -65,7 +66,7 @@ export async function buildThinImportMap(server: ViteDevServer, specifiers: Iter
 
 /**
  * `require('@nativescript/core[/sub]')` keys a served core file answers to, in
- * the shapes the bundle.mjs require shim looks up (`__NS_CORE_MODULES__`).
+ * the shapes the bundle.mjs require shim looks up (the dev globals' `coreModules`).
  */
 export function coreRequireKeys(fileAbs: string, coreRoot: string): string[] {
 	const rel = path.relative(coreRoot, fileAbs).replace(/\\/g, '/');
@@ -84,7 +85,7 @@ export function coreRequireKeys(fileAbs: string, coreRoot: string): string[] {
 // the registered one; otherwise the first file to claim a key keeps it.
 export function coreRegistrationFooter(selfUrl: string, keys: string[], replace: boolean): string {
 	const assign = replace ? 't[k] = v;' : 'if (!t[k]) t[k] = v;';
-	return `\nimport * as __ns_thin_self__ from ${JSON.stringify(selfUrl)};\n` + `try { const g = globalThis; const t = g.__NS_CORE_MODULES__ || (g.__NS_CORE_MODULES__ = {}); ` + `const v = typeof g.__NS_CJS_SHAPE__ === 'function' ? g.__NS_CJS_SHAPE__(__ns_thin_self__) : __ns_thin_self__; ` + `for (const k of ${JSON.stringify(keys)}) ${assign} } catch {}\n`;
+	return `\nimport * as __ns_thin_self__ from ${JSON.stringify(selfUrl)};\n` + `try { const d = ${NS_DEV_EXPR}; const t = d.coreModules || (d.coreModules = {}); ` + `const v = typeof d.cjsShape === 'function' ? d.cjsShape(__ns_thin_self__) : __ns_thin_self__; ` + `for (const k of ${JSON.stringify(keys)}) ${assign} } catch {}\n`;
 }
 
 // Vite's own query regexes (`removeTimestampQuery`, `removeImportQuery`,

@@ -2,6 +2,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { neutralizeWorkerImportMeta, viteWorkerAssetPathToNsMUrl, workerHmrUrlPlugin } from './workers.js';
+import { NS_DEV_EXPR } from '../hmr/shared/runtime/dev-globals.js';
 
 // --- viteWorkerAssetPathToNsMUrl ---------------------------------------
 //
@@ -151,7 +152,7 @@ describe('workerHmrUrlPlugin (transform)', () => {
 
 		expect(result).not.toBeNull();
 		expect(result.code).toContain('"/ns/m/src/workers/light-controller/light-controller.worker"');
-		expect(result.code).toContain('__NS_HTTP_ORIGIN__');
+		expect(result.code).toContain(`${NS_DEV_EXPR}.httpOrigin`);
 		// The ASSERT line: the new URL+import.meta.url indirection is gone,
 		// which is the entire reason this plugin exists.
 		expect(result.code).not.toContain('new URL(');

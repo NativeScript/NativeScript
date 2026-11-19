@@ -537,6 +537,84 @@ The design is in DESIGN.md ("Failures"): a compile check gates every update, a r
 - A bootstrap failure never escalates to a restart; it keeps retrying.
 - The catch-up's `changed` lists every module stamped since it was served, importers included, not only the edited files.
 
+## Round 14: phase 3a, defines and globals
+
+The design is in DESIGN.md ("Globals", "Defines", "Dev globals").
+
+**Defines.** `config.define` (`getGlobalDefines`) is the single source. The deleted seed (`virtual:ns-defines-seed`, `getRuntimeSeedValues`, `getRuntimeDefineValues`, `buildGlobalSeedStatements`, and the rule that seed and `define` must agree) was redundant. Its values were a subset of `define` plus bare `isIOS`/`isAndroid`, which nothing read. As a bundled module it evaluated after the externalized core graph, so served core already took its values from `/@vite/env`. `/@vite/env`, the first import of `bundle.mjs`, is now the only installer, and building `bundle.mjs` with HMR active fails when no device-reachable origin resolves.
+- **Kept**, shared contract with `@nativescript/webpack` or read by core and app code: `__DEV__`, `__ANDROID__`, `__IOS__`, `__VISIONOS__`, `__APPLE__`, `__COMMONJS__`, `__NS_WEBPACK__`, `__NS_ENV_VERBOSE__`, `__UI_USE_XML_PARSER__`, `__UI_USE_EXTERNAL_RENDERER__`, `__CSS_PARSER__`, `global.isIOS`/`global.isAndroid`, `process.env.NODE_ENV`, `__non_webpack_require__`.
+- **Kept**, no reader in this repo but generic app-facing names: `__TEST__`, `__CI__`.
+- **Kept**, read only by bundled overlay code and therefore substituted: `__NS_HMR_PROGRESS_OVERLAY_ENABLED__`. Its `globalThis` fallback is deleted.
+- **Deleted**, no reader in vite, core, webpack5 or `@nativescript/angular`: `__NS_TARGET_FLAVOR__`, `__NS_APP_ROOT_DIR__`, `__NS_APP_ROOT_VIRTUAL__`; and the seed-only bare `isIOS`/`isAndroid`.
+- Bundled member reads `g.__ANDROID__` (`core-aliases-early.ts`, `root-placeholder.ts`) are bare identifiers now, so substitution covers them.
+- Unchanged: user `define`s, and the deps bundle's esbuild `define` (`setUserDefineEntries`/`getUserDefineEntries`).
+
+**The dev object.** `globalThis[Symbol.for('nativescript.dev')]`, typed `NativeScriptDevGlobals` (`hmr/shared/runtime/dev-globals.ts`).
+- Accessor `nsDev()`, stateless and dependency-free, so the bundled and served copies resolve the same object. `NS_DEV_EXPR` is the same lookup for code generated as strings.
+- Members: `bootComplete`, `appCss`, `appCssAst`, `knownApplications`, `overlay`, `httpOrigin`, `coreModules`, `cjsShape`.
+- Rule: state inside one world is module state shared by ESM import (each served module has one URL, `bundle.mjs` evaluates once). Only state crossing worlds goes on the dev object.
+
+**Globals, before → after** (round-11 inventory; B = `bundle.mjs`, V = `/ns/v`, N = node):
+
+| Global | Before (writer → readers, world) | After | Action |
+|---|---|---|---|
+| `__NS_HMR_BOOT_COMPLETE__` | `boot-complete` → `/__ns_dev__/client` bootstrap, `entry-runtime` (B → V) | `bootComplete` | dev object |
+| `__NS_HMR_APP_CSS__`, `__NS_HMR_APP_CSS_AST__` | `main-entry` → `entry-runtime` (B → V) | `appCss`, `appCssAst` | dev object |
+| `__NS_DEV_KNOWN_APPLICATIONS__` | `root-placeholder` → `entry-runtime` (B → V) | `knownApplications` | dev object |
+| `__NS_HMR_DEV_OVERLAY__` | `dev-overlay` → `overlay-driver` (B → V) | `overlay` | dev object |
+| `__NS_HTTP_ORIGIN__` | `session-bootstrap` → generated worker code (B → V) | `httpOrigin` | dev object |
+| `__NS_CORE_MODULES__` | thin-route core footer → `main-entry` require shim, `vendor-device-shim` (V → B, V) | `coreModules` | dev object |
+| `__NS_CJS_SHAPE__` | `main-entry` → core footer, `vendor-device-shim` (B → V) | `cjsShape` | dev object |
+| `__NS_CJS_SHAPE_CACHE__` | `main-entry` (B) | a local of the generated entry | module state |
+| `__NS_IMPORT_MAP_CONFIGURED__` | `session-bootstrap` (B) | `session-bootstrap.ts` | module state |
+| `__NS_HMR_BOOT_LAST_PROGRESS__` | `boot-progress` (B) | `boot-progress.ts` | module state |
+| `__NS_HMR_DEV_OVERLAY_STATE__` | `dev-overlay-shared` (B) | `dev-overlay-shared.ts` | module state |
+| `__NS_HMR_ANDROID_SAFE_INSETS__` | `dev-overlay-tree` (B) | `dev-overlay-tree.ts` | module state |
+| `__NS_HMR_WORKER_TRACKING_INSTALLED__` (not in round 11) | `worker-tracking` (B) | a `WeakSet` of scopes in `worker-tracking.ts` | module state |
+| `__NS_DEV_RESTORE_PLACEHOLDER__`, `__NS_DEV_PATCHED_RESET_ROOT__` | `root-placeholder` → `core-aliases-early`, `session-bootstrap` (B) | new `placeholder-hooks.ts`, dependency-free because `core-aliases-early` is in release bundles too | module state |
+| `__NS_DEV_PATCHED_ANDROID_INIT__` | `core-aliases-early` (B) | `core-aliases-early.ts` | module state |
+| `__NS_DEV_ORIGINAL_APP_RUN__`, `__NS_DEV_PLACEHOLDER_{APPLICATION,LAUNCH_HANDLER,RESTORE_TIMER}__`, `__NS_DEV_PATCHED_RESET_ROOT_VIEW__`, `__NS_PLACEHOLDER_DIAG_LAST_FINALIZE__` | `root-placeholder` (B) | `root-placeholder.ts` | module state |
+| `__NS_DEV_BOOT_*` (5) | `root-placeholder`, `dev-overlay-tree` (B) | accessors in `dev-overlay-tree.ts` | module state |
+| `__NS_HMR_APPLY_CSS__` | `entry-runtime` → `css-handler` (V) | new `app-css-applier.ts`; both import it relatively, so one URL | module state |
+| `__NS_HMR_HTTP_APP_CSS_APPLIED__` | `entry-runtime` (V) | a local of `entry-runtime.ts` | module state |
+| `__NS_ENTRY_TRACE__` | dead | — | delete |
+| `__NS_ENTRY_ERROR__` | `main-entry`, write-only | `console.error` kept | delete |
+| `__NS_BOOT_TRACE__` | `boot-timeline` `publishBootTrace`, write-only | the verbose timeline log kept | delete |
+| `__NS_HMR_BOOT_LAST_PROGRESS_AT__`, `__NS_HMR_BOOT_LAST_YIELD_AT__` | dead | — | delete |
+| `__NS_HMR_BOOT_IMPORT_STARTED_AT__` | write-only | — | delete |
+| `__NS_HMR_BOOT_MODULE_COUNT__`, `__NS_HMR_BOOT_LAST_MODULE__` | read by the boot heartbeat, no writer | the count axis and `formatBootImportDetail` deleted too; progress is elapsed time only | delete |
+| `__NS_ORIG_{GET_REGISTERED_MODULES,MODULE_EXISTS,LOAD_MODULE}__`, `globalThis.__nsOrigRequire` | `main-entry`, write-only | `__nsOrigRequire` stays a local `var` of the generated require shim | delete |
+| `__NS_ANGULAR_APP_REF__`, the `__reboot_ng_modules__` read | `root-placeholder` diagnostics, no writer under Vite | — | delete |
+| `__NS_BRIDGE_NONCANON__` | `websocket-core-bridge` diagnostic (N) | — | delete |
+| `__NS_ENV_VERBOSE__` on the Node side | `helpers/logging.ts` fallback (N) | the device define is kept | delete |
+| seeded defines (`__DEV__`, `__ANDROID__`, …) | `virtual:ns-defines-seed` (B) → served core, `@nativescript/angular` | `/@vite/env` | see Defines |
+| `__nsVendorRegistry`, `__nsRequire`, `__nsVendorRequire`, `__nsBaseRequire`, `__nsVendorHash`, `__nsVendorManifest`, `__nsVendorAliases`, `__nsResolveVendor`, `__nsRequireIsShim`, `__NS_DEPS_MODULES__`, `__NS_DOCUMENTS_PATH__`, `__NS_VENDOR_MANIFEST__`, `__NS_RECORD_MODULE_PROVENANCE__` | vendor bootstrap and deps bundle (B, V, N) | unchanged | kept until phase 3c |
+| `__NS_DEV_PLACEHOLDER_ROOT_VIEW__`, `__NS_DEV_PLACEHOLDER_ROOT_EARLY__` | `root-placeholder` → core `application.ios.ts` (B → V) | unchanged | kept, core-owned |
+| `__NS_LAST_XML_ERROR__` | core `ui/builder` → `root-placeholder` (V → B) | unchanged | kept, core-owned |
+| `__NS_HMR_OVERLAY_POSITION__` | app → `dev-overlay` (B) | unchanged | kept, app-facing override |
+| `__NS_DEV_TELEMETRY__`, `__NS_TELEMETRY__` | manual opt-in → `core-aliases-early` (B) | unchanged | kept, opt-in diagnostics |
+| `__NS_HMR_IMPORT__` | no writer → `session-bootstrap` (B) | unchanged | kept, optional hook |
+| `__NS_HMR_WORKERS__` | `worker-tracking` (B); the sweeper has no caller | unchanged | kept; dev-object candidate with worker HMR |
+
+Also deleted: `hmr/server/ns-core-cjs-shape.ts`. Only `hasExistingDefaultExport` was live; it moved into `deps-bundle.ts`.
+
+**Checked:**
+- vitest 1196/1196. The suite dropped from 1250 because the specs of deleted code went with it.
+- `tsc -p tsconfig.lib.json`: 261 errors, all under `../core`, the same as before.
+- `payload-probe.mjs`, full run: 12/12 ok. The wire payloads are identical to the pre-change run, apart from timestamps.
+- `thin-crawl.mjs` (Angular): 669 modules, up from 667. The two new ones are `dev-globals.js` and `app-css-applier.js`, each under one URL. 0 failures, 0 duplicates, 505 import-map entries.
+- `/ns/v/@vite/env`: 18 keys, 21 before, minus the three deleted defines. User defines, including dotted `process.env.*` keys, reach it.
+- `bundle.mjs` (HMR): it has no seed and its first import is `/@vite/env`. Defines are substituted, with no bare `__DEV__`/`__APPLE__`/`__ANDROID__`/`__IOS__` left. The hash is stable across two builds. A release bundle contains no `nativescript.dev` and no `/@vite/env`.
+
+**Not verified on a device.**
+
+**Open questions.**
+
+- `package.json` still exports `./hmr/shared/runtime/dev-overlay` and `./hmr/shared/runtime/boot-complete`. An external importer gets a second module instance with empty module state.
+- `websocket-core-bridge.ts` still holds `/ns/core` bridge code; `deps-bundle.ts` imports some of its helpers.
+- `getGlobalDefines`'s `flavor` parameter is unused.
+- The deps-bundle disk cache key hashes the defines, not the generated shim text.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

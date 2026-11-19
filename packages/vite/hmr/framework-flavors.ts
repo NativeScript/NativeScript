@@ -9,8 +9,7 @@ import { getBuiltInServerStrategy } from './server/framework-strategy.js';
 export interface FrameworkFlavorDefinition {
 	/**
 	 * The flavor name. It is what the config helper declares through
-	 * `baseConfig({ flavor })` and what the device receives as
-	 * `__NS_TARGET_FLAVOR__`. Must not collide with a built-in name.
+	 * `baseConfig({ flavor })`. Must not collide with a built-in name.
 	 */
 	flavor: string;
 	/** Device loader configuration for this flavor (import-map entries, query identity). */

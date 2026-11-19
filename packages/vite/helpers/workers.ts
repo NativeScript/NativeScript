@@ -8,6 +8,7 @@ import { findMonorepoWorkspaceRoot, getProjectRootPath } from './project.js';
 import { normalizeModuleId } from './normalize-id.js';
 import { sbgClassNamesPlugin } from './sbg-class-names.js';
 import { nativescriptBuiltinModules } from './builtin-modules.js';
+import { NS_DEV_EXPR } from '../hmr/shared/runtime/dev-globals.js';
 
 export interface WorkerPluginsOptions {
 	platform: string;
@@ -187,8 +188,8 @@ export function getWorkerPlugins(platformOrOpts: string | WorkerPluginsOptions) 
 //      bypass the `/ns/m/` pipeline — the worker crashes on its first
 //      transitive import.
 //
-// The rewrite uses `__NS_HTTP_ORIGIN__` (set by `hmr/entry-runtime.ts`) so
-// non-localhost origins work. Production counterpart: `workerUrlPlugin()`.
+// The rewrite prefixes the dev globals' `httpOrigin` (set by
+// `hmr/shared/runtime/session-bootstrap.ts`) so non-localhost origins work. Production counterpart: `workerUrlPlugin()`.
 
 // Matches Vite-emitted dev shape:
 //   new Worker(new URL(/* @vite-ignore */ "/src/.../foo.worker.ts?worker_file&type=classic", '' + import.meta.url))
@@ -361,7 +362,7 @@ export function workerHmrUrlPlugin(opts?: WorkerHmrUrlPluginOptions): Plugin {
 				const optionsTail = options ? options : '';
 				// `__nsHmrTrackWorker` registers the worker for HMR cleanup and
 				// returns the instance unchanged, so the wrap is transparent.
-				return `__nsHmrTrackWorker(new Worker((typeof globalThis !== "undefined" && typeof globalThis.__NS_HTTP_ORIGIN__ === "string" ? globalThis.__NS_HTTP_ORIGIN__ : "") + ${JSON.stringify(nsmUrl)}${optionsTail}))`;
+				return `__nsHmrTrackWorker(new Worker((${NS_DEV_EXPR}.httpOrigin || "") + ${JSON.stringify(nsmUrl)}${optionsTail}))`;
 			});
 
 			if (!modified) {

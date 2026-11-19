@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { corePackageDir, createNsDevClientBootstrapCode, createNsDevSessionDescriptor, pinWebSocketToken, resolveViteHmrWsUrl, type NsDevBootstrapModuleUrls, type ViteHmrWsConfig } from './vite-plugin.js';
+import { NS_DEV_EXPR } from '../shared/runtime/dev-globals.js';
 
 function wsConfig(server: Partial<ViteHmrWsConfig['server']> & { ws?: unknown }, extra: Partial<Pick<ViteHmrWsConfig, 'base' | 'webSocketToken'>> = {}): ViteHmrWsConfig {
 	return { base: '/', webSocketToken: 'tok-1', ...extra, server: { port: 5173, hmr: undefined, ...server } } as ViteHmrWsConfig;
@@ -104,7 +105,8 @@ describe('createNsDevClientBootstrapCode', () => {
 		expect(code).toContain(`const __nsHmrClientUrl = "${ORIGIN}/ns/v/@fs/pkg/vite/hmr/client/index.js";`);
 		expect(code).toContain(`const __nsHmrStartOptions = ${JSON.stringify(START)};`);
 		expect(code).toContain('.then((mod) => mod.start(__nsHmrStartOptions))');
-		expect(code).toContain('if (!globalThis.__NS_HMR_BOOT_COMPLETE__) {');
+		expect(code).toContain(`const __nsDev = ${NS_DEV_EXPR};`);
+		expect(code).toContain('if (!__nsDev.bootComplete) {');
 		expect(code).not.toContain('WebSocket');
 		expect(code).not.toContain('ns_hmr_role');
 		expect(code).not.toContain('__NS_HMR_BROWSER_RUNTIME');

@@ -1,9 +1,13 @@
 import { getGlobalScope } from '../hmr/shared/runtime/global-scope.js';
 import { getVendorRequire } from '../hmr/shared/runtime/vendor-resolve.js';
+import { isResetRootPatched, markResetRootPatched, restorePlaceholder } from '../hmr/shared/runtime/placeholder-hooks.js';
 // Early alias installer for @nativescript/core plus Android init resilience.
 // Runs on device in the virtual entry context.
 
 declare const android: any;
+declare const __ANDROID__: boolean | undefined;
+
+let androidInitPatched = false;
 
 export function installCoreAliasesEarly(verbose?: boolean) {
 	try {
@@ -112,8 +116,8 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 
 		// Android-only resilience: patch AndroidApplication.init
 		try {
-			if (g['__NS_DEV_PATCHED_ANDROID_INIT__']) return;
-			if (!(g.__ANDROID__ || typeof android !== 'undefined')) return;
+			if (androidInitPatched) return;
+			if (!((typeof __ANDROID__ !== 'undefined' && __ANDROID__) || typeof android !== 'undefined')) return;
 			const App = g.Application;
 			if (!App) return;
 			const proto = Object.getPrototypeOf(App);
@@ -215,9 +219,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 					throw e;
 				}
 			};
-			try {
-				g['__NS_DEV_PATCHED_ANDROID_INIT__'] = true;
-			} catch {}
+			androidInitPatched = true;
 			if (verbose) {
 				console.info('[ns-entry] AndroidApplication.init patched for resilience');
 			}
@@ -226,10 +228,10 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 		// Android-only: wrap Application.resetRootView to defer until Activity is ready during early HTTP boot
 		try {
 			const App: any = g.Application;
-			if (App && (g.__ANDROID__ || typeof android !== 'undefined')) {
+			if (App && ((typeof __ANDROID__ !== 'undefined' && __ANDROID__) || typeof android !== 'undefined')) {
 				const proto = Object.getPrototypeOf(App);
 				const origReset = (App && App.resetRootView) || (proto && proto.resetRootView);
-				if (typeof origReset === 'function' && !g['__NS_DEV_PATCHED_RESET_ROOT__']) {
+				if (typeof origReset === 'function' && !isResetRootPatched()) {
 					const isReady = () => {
 						try {
 							const a: any = App.android;
@@ -279,8 +281,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 								try {
 									origReset.call(this, entry);
 									try {
-										const restore = g['__NS_DEV_RESTORE_PLACEHOLDER__'];
-										if (typeof restore === 'function') restore();
+										restorePlaceholder();
 									} catch {}
 								} catch (e) {
 									console.error('[ns-entry][android] deferred resetRootView failed', e);
@@ -290,8 +291,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 						}
 						const res = origReset.call(this, entry);
 						try {
-							const restore = g['__NS_DEV_RESTORE_PLACEHOLDER__'];
-							if (typeof restore === 'function') restore();
+							restorePlaceholder();
 						} catch {}
 						return res;
 					} as any;
@@ -301,9 +301,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 					try {
 						if (proto && typeof proto === 'object') (proto as any).resetRootView = patched;
 					} catch {}
-					try {
-						g['__NS_DEV_PATCHED_RESET_ROOT__'] = true;
-					} catch {}
+					markResetRootPatched();
 					if (verbose) {
 						console.info('[ns-entry] Application.resetRootView patched for early-boot readiness');
 					}

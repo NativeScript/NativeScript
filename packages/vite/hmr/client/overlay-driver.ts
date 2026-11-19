@@ -1,11 +1,11 @@
 /**
  * Client-side access to the HMR dev overlay. The overlay runtime and its state
  * are installed by `bundle.mjs` (`shared/runtime/dev-overlay.ts`) and reached
- * through `__NS_HMR_DEV_OVERLAY__`: a static import here would load a second
- * copy under a `/ns/v` URL with its own state. Every call soft-fails when the
- * overlay is absent or opted out.
+ * through the dev globals' `overlay`: a static import of the overlay module
+ * here would load a second copy under a `/ns/v` URL with its own state. Every
+ * call soft-fails when the overlay is absent or opted out.
  */
-import { getGlobalScope } from '../shared/runtime/global-scope.js';
+import { nsDev } from '../shared/runtime/dev-globals.js';
 
 export type HmrUpdateOverlayStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete' | 'failed' | 'restart-required';
 export type HmrConnectionOverlayStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline' | 'healthy';
@@ -27,7 +27,7 @@ export interface HmrOverlayDriver {
 
 function getOverlayApi(): any {
 	try {
-		return getGlobalScope().__NS_HMR_DEV_OVERLAY__ || null;
+		return nsDev().overlay || null;
 	} catch {}
 	return null;
 }

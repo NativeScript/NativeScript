@@ -1,10 +1,13 @@
+import { NS_DEV_EXPR } from '../runtime/dev-globals.js';
+
 // Device-side require() shim bundled verbatim into the vendor module. Runs on
 // device: normalizes specifiers, resolves `@nativescript/core` subpaths from the
-// globalThis registry the /ns/core bridge installs, and CJS-shapes ESM namespaces
-// so vendor `install()` hooks don't crash. Kept as a string because esbuild emits
-// it directly as the vendor shim's contents.
+// served core modules registered on the dev globals, and CJS-shapes ESM
+// namespaces so vendor `install()` hooks don't crash. Kept as a string because
+// esbuild emits it directly as the vendor shim's contents.
 export const vendorModuleShim = `
 const g = globalThis;
+const nsDev = ${NS_DEV_EXPR};
 const BACKSLASH = String.fromCharCode(92);
 
 function toForwardSlashes(input) {
@@ -100,17 +103,13 @@ function normalizeCoreSubLocal(s) {
 
 // Invariant D: shape ESM namespaces before returning to CJS callers.
 //
-// The /ns/v core registration footer (see hmr/server/thin/thin-route.ts) and the
-// main-entry require shim (see helpers/main-entry.ts) both install the
-// shape function on globalThis. In practice, entries stored in
-// __NS_CORE_MODULES__ are ALREADY shaped, so this pass-through is a
-// fast no-op (the shape function's fast path returns obj as-is when it
-// already has Object.prototype). We call it anyway as defense-in-depth
-// against future callers that might populate the registry without
-// shaping.
+// The main-entry require shim (see helpers/main-entry.ts) installs the shape
+// function as the dev globals' cjsShape. The /ns/v core registration footer
+// (see hmr/server/thin/thin-route.ts) can run before it, so registered core
+// namespaces may be unshaped; shape them on read.
 function shapeForCjs(value) {
   if (!value || typeof value !== "object") return value;
-  const shape = g.__NS_CJS_SHAPE__;
+  const shape = nsDev.cjsShape;
   if (typeof shape === "function") {
     try { return shape(value); } catch (e) {}
   }
@@ -124,7 +123,7 @@ function resolveCoreFromRegistry(normalizedId) {
   ) {
     return null;
   }
-  const table = g.__NS_CORE_MODULES__;
+  const table = nsDev.coreModules;
   if (!table) return null;
   if (table[normalizedId]) return shapeForCjs(table[normalizedId]);
   const rawSub =
@@ -154,9 +153,9 @@ export function createRequire(_url) {
   }
   const req = function (id) {
     const normalizedId = normalizeSpecifier(id);
-    // Invariant C: @nativescript/core and its subpaths are served ONCE via
-    // the /ns/core HTTP bridge, which self-registers each module's ESM
-    // namespace on globalThis.__NS_CORE_MODULES__. CommonJS require() from
+    // Invariant C: @nativescript/core and its subpaths are served ONCE under
+    // /ns/v, and each module registers its ESM namespace in the dev globals'
+    // coreModules. CommonJS require() from
     // vendor packages (e.g. \`require('@nativescript/core/ui/core/view').View\`
     // in @nativescript-community/gesturehandler, or \`require('@nativescript/core').View\`
     // in @nativescript-community/ui-material-core) MUST resolve to that

@@ -74,7 +74,6 @@ import { generatePlatformPolyfills } from '../shared/runtime/platform-polyfills.
 import { getAngularLinkerFactory, runAngularLinker } from '../frameworks/angular/build/shared-linker.js';
 import { getBlockedDeviceNodeModulesReason, resolveCandidateFilePath } from './websocket-module-specifiers.js';
 import { extractDirectExportedNames, JS_IDENTIFIER_RE, maskJsComments, parseExportSpecList } from './websocket-core-bridge.js';
-import { hasExistingDefaultExport } from './ns-core-cjs-shape.js';
 import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
 import { loadPersistedBootRecording } from './boot-recording.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
@@ -1027,6 +1026,18 @@ export function collectDepsModuleExportInfo(absPath: string, platform: string, s
 	}
 	names.delete('default');
 	return { names: Array.from(names).sort(), hasDefault: hasExistingDefaultExport(code) };
+}
+
+/**
+ * Whether a module body declares a default export: `export default …`,
+ * `export { x as default }` or `export { default }`, re-exports included.
+ * Regex-based, so a comment containing `export default` also counts.
+ */
+export function hasExistingDefaultExport(code: string): boolean {
+	if (!code || typeof code !== 'string') return false;
+	if (/\bexport\s+default\b/.test(code)) return true;
+	if (/\bexport\s*\{[^}]*\bdefault\b[^}]*\}/.test(code)) return true;
+	return false;
 }
 
 const RESERVED_EXPORT_NAMES = new Set(['default', 'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'delete', 'do', 'else', 'enum', 'export', 'extends', 'false', 'finally', 'for', 'function', 'if', 'import', 'in', 'instanceof', 'new', 'null', 'return', 'super', 'switch', 'this', 'throw', 'true', 'try', 'typeof', 'var', 'void', 'while', 'with', 'let', 'static', 'yield', 'await', 'eval', 'arguments', 'implements', 'interface', 'package', 'private', 'protected', 'public', '__ns_dep_ns__']);

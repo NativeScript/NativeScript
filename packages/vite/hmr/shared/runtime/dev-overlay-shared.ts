@@ -1,7 +1,7 @@
 /**
  * Internals shared by the dev-overlay backends (boot placeholder, in-tree
- * live overlay, iOS UIWindow overlay): the per-session runtime state held on
- * `globalThis`, core-class resolution that respects the realm rule, and
+ * live overlay, iOS UIWindow overlay): the per-session runtime state,
+ * core-class resolution that respects the realm rule, and
  * snapshot/text formatting. Not part of the public overlay API — import
  * `dev-overlay.ts` for that.
  */
@@ -129,34 +129,23 @@ export function getHmrDevOverlayPosition(): HmrOverlayPosition {
 	return DEFAULT_OVERLAY_POSITION;
 }
 
+let runtimeState: HmrOverlayRuntimeState | null = null;
+
 export function getRuntimeState(): HmrOverlayRuntimeState {
-	const g = getOverlayGlobal();
-	if (!g.__NS_HMR_DEV_OVERLAY_STATE__) {
-		g.__NS_HMR_DEV_OVERLAY_STATE__ = {
-			snapshot: { ...DEFAULT_SNAPSHOT },
-			bootRefs: null,
-			liveRefs: null,
-			iosRefs: null,
-			iosBuildFailed: false,
-			androidRefs: null,
-			androidBuildFailed: false,
-			verbose: false,
-			updateAutoHideTimer: null,
-			updateCycleStartedAt: 0,
-			restartRequired: false,
-		} satisfies HmrOverlayRuntimeState;
-	}
-	const state = g.__NS_HMR_DEV_OVERLAY_STATE__ as Partial<HmrOverlayRuntimeState>;
-	// Backfill newer fields for legacy state objects (e.g. after hot reload)
-	// so we never observe an undefined iosRefs/iosBuildFailed at runtime.
-	if (typeof state.iosRefs === 'undefined') state.iosRefs = null;
-	if (typeof state.iosBuildFailed === 'undefined') state.iosBuildFailed = false;
-	if (typeof state.androidRefs === 'undefined') state.androidRefs = null;
-	if (typeof state.androidBuildFailed === 'undefined') state.androidBuildFailed = false;
-	if (typeof state.updateAutoHideTimer === 'undefined') state.updateAutoHideTimer = null;
-	if (typeof state.updateCycleStartedAt !== 'number') state.updateCycleStartedAt = 0;
-	if (typeof state.restartRequired !== 'boolean') state.restartRequired = false;
-	return state as HmrOverlayRuntimeState;
+	runtimeState ||= {
+		snapshot: { ...DEFAULT_SNAPSHOT },
+		bootRefs: null,
+		liveRefs: null,
+		iosRefs: null,
+		iosBuildFailed: false,
+		androidRefs: null,
+		androidBuildFailed: false,
+		verbose: false,
+		updateAutoHideTimer: null,
+		updateCycleStartedAt: 0,
+		restartRequired: false,
+	};
+	return runtimeState;
 }
 
 export function resolveCoreExport(name: string): any {

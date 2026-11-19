@@ -1,10 +1,18 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { APP_CSS_TAG, applyCssText, handleCssUpdates } from './css-handler.js';
+import { APP_CSS_TAG } from './css-handler.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 describe('css-handler', () => {
-	beforeEach(() => {
-		delete getGlobalScope().__NS_HMR_APPLY_CSS__;
+	let applyCssText: typeof import('./css-handler.js').applyCssText;
+	let handleCssUpdates: typeof import('./css-handler.js').handleCssUpdates;
+	let setAppCssApplier: typeof import('../shared/runtime/app-css-applier.js').setAppCssApplier;
+
+	// The installed app.css applier is module state: each case gets a fresh
+	// instance, shared with the css-handler it imports.
+	beforeEach(async () => {
+		vi.resetModules();
+		({ applyCssText, handleCssUpdates } = await import('./css-handler.js'));
+		({ setAppCssApplier } = await import('../shared/runtime/app-css-applier.js'));
 		delete getGlobalScope().Application;
 		delete getGlobalScope().__nsVendorRegistry;
 		delete getGlobalScope().__nsVendorRequire;
@@ -20,7 +28,7 @@ describe('css-handler', () => {
 
 	it('prefers the HTTP-realm CSS applier when one is installed (used by HTTP-ESM cold boot)', () => {
 		const realmApplier = vi.fn();
-		getGlobalScope().__NS_HMR_APPLY_CSS__ = realmApplier;
+		setAppCssApplier(realmApplier);
 		getGlobalScope().Application = { addCss: vi.fn(), getRootView: vi.fn() };
 
 		applyCssText('.login { color: red; }');
@@ -53,7 +61,7 @@ describe('css-handler', () => {
 		const realmApplier = vi.fn();
 		const addTaggedAdditionalCSS = vi.fn(() => true);
 		const removeTaggedAdditionalCSS = vi.fn(() => true);
-		getGlobalScope().__NS_HMR_APPLY_CSS__ = realmApplier;
+		setAppCssApplier(realmApplier);
 		getGlobalScope().Application = { addCss: vi.fn(), getRootView: vi.fn(() => null) };
 		getGlobalScope().addTaggedAdditionalCSS = addTaggedAdditionalCSS;
 		getGlobalScope().removeTaggedAdditionalCSS = removeTaggedAdditionalCSS;
@@ -130,7 +138,7 @@ describe('css-handler', () => {
 
 	it('applies the stylesheet text each update carries, without any fetch', async () => {
 		const realmApplier = vi.fn();
-		getGlobalScope().__NS_HMR_APPLY_CSS__ = realmApplier;
+		setAppCssApplier(realmApplier);
 		const fetch = vi.fn();
 		vi.stubGlobal('fetch', fetch);
 

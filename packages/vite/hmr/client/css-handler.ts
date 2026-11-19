@@ -1,24 +1,12 @@
-import { getCore } from './utils.js';
-import { getGlobalScope } from '../shared/runtime/global-scope.js';
+import { ENV_VERBOSE as VERBOSE, getCore } from './utils.js';
+import { getAppCssApplier } from '../shared/runtime/app-css-applier.js';
 import { restyleRootAndModals } from '../shared/runtime/restyle-roots.js';
 import type { CssUpdateItem } from '../shared/protocol.js';
-
-const VERBOSE = !!getGlobalScope().__NS_ENV_VERBOSE__;
 
 // Must match the tag used by the boot virtual `app.css` emitter in
 // `helpers/main-entry.ts` and `entry-runtime.ts::APP_CSS_TAG` so HMR's
 // remove/add pair replaces the boot-time selectors instead of stacking.
 export const APP_CSS_TAG = 'app.css';
-
-function getPreferredCssApplier(): ((cssText: string, refreshRoot?: boolean) => void) | null {
-	try {
-		const applier = getGlobalScope().__NS_HMR_APPLY_CSS__;
-		if (typeof applier === 'function') {
-			return applier;
-		}
-	} catch {}
-	return null;
-}
 
 type TaggedCssApi = {
 	add?: (cssText: string, tag: string) => unknown;
@@ -45,14 +33,14 @@ export function applyCssText(cssText: string, tag: string = APP_CSS_TAG): void {
 	if (typeof cssText !== 'string' || !cssText.length) return;
 
 	try {
-		// The HTTP-core-realm applier (entry-runtime's `__NS_HMR_APPLY_CSS__`)
-		// always replaces under the global `app.css` tag, so it is only correct
+		// The HTTP-core-realm applier (installed by `entry-runtime.ts`) always
+		// replaces under the global `app.css` tag, so it is only correct
 		// for GLOBAL stylesheet updates — routing a component-tagged update
 		// through it would wipe the global stylesheet and install the
 		// component's rules in its place. Component tags take the tagged
 		// remove+add path below.
 		if (tag === APP_CSS_TAG) {
-			const applyInHttpCoreRealm = getPreferredCssApplier();
+			const applyInHttpCoreRealm = getAppCssApplier();
 			if (applyInHttpCoreRealm) {
 				applyInHttpCoreRealm(cssText, true);
 				if (VERBOSE) console.info('[ns-hmr] CSS applied through HTTP core realm');

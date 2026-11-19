@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import * as path from 'node:path';
 import { normalizeCoreSub } from '../../helpers/ns-core-url.js';
-import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 export type CoreExportOrigin = {
 	moduleId: string;
@@ -465,11 +464,6 @@ export async function normalizeCoreExportOriginsForRuntime(exportOrigins: Record
 	return normalizedOrigins;
 }
 
-export function hasModuleDefaultExport(moduleCode: string): boolean {
-	if (!moduleCode || typeof moduleCode !== 'string') return false;
-	return /\bexport\s+default\b/.test(moduleCode) || /\bexport\s*\{[^}]*\bdefault\b[^}]*\}/.test(moduleCode);
-}
-
 /**
  * Parse an incoming `/ns/core` bridge request.
  *
@@ -508,14 +502,6 @@ export function parseCoreBridgeRequest(pathname: string, _searchParams: URLSearc
 		const expectedPath = canonical ? `/ns/core/${canonical}` : '/ns/core';
 		if (pathname !== expectedPath) {
 			canonicalPath = expectedPath;
-			try {
-				const g = getGlobalScope();
-				g.__NS_BRIDGE_NONCANON__ ||= { count: 0, samples: [] };
-				g.__NS_BRIDGE_NONCANON__.count++;
-				if (g.__NS_BRIDGE_NONCANON__.samples.length < 10) {
-					g.__NS_BRIDGE_NONCANON__.samples.push({ raw: normalizedSub, canonical, pathname });
-				}
-			} catch {}
 		}
 	}
 	return {

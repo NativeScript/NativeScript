@@ -1,8 +1,20 @@
 import { setHmrBootStage } from './dev-overlay.js';
+import { clearBootPlaceholderRefs, hasBootPlaceholderRefs, setBootPlaceholderRefs } from './dev-overlay-tree.js';
 import { buildPlaceholderPage } from './root-placeholder-view.js';
 import { getGlobalScope } from './global-scope.js';
 import { getVendorRequire } from './vendor-resolve.js';
 import { markDevBootComplete } from './boot-complete.js';
+import { nsDev } from './dev-globals.js';
+import { isResetRootPatched, markResetRootPatched, restorePlaceholder, setRestorePlaceholder } from './placeholder-hooks.js';
+
+declare const __ANDROID__: boolean | undefined;
+
+let placeholderApplication: any = null;
+let placeholderLaunchHandler: ((args?: any) => void) | null = null;
+let originalApplicationRun: ((...args: any[]) => any) | null = null;
+let restoreTimer: ReturnType<typeof setTimeout> | null = null;
+let resetRootViewPatched = false;
+let lastFinalizeDiagAt = 0;
 
 function isPlaceholderView(view: any, placeholderRoot: any): boolean {
 	if (!view) {
@@ -40,8 +52,7 @@ function getCommittedRootView(application: any, placeholderRoot: any): any | nul
 	// know about so we can detect the commit regardless of which twin
 	// Angular actually wrote to.
 	try {
-		const g: any = getGlobalScope();
-		const known: any[] = g['__NS_DEV_KNOWN_APPLICATIONS__'] || [];
+		const known = nsDev().knownApplications || [];
 		for (const app of known) {
 			if (!app || app === application) continue;
 			const r = probe(app);
@@ -54,11 +65,9 @@ function getCommittedRootView(application: any, placeholderRoot: any): any | nul
 
 function getPlaceholderWaitDiagnosticSnapshot(g: any, application: any, placeholderRoot: any): Record<string, unknown> {
 	const snapshot: Record<string, unknown> = {
-		bootComplete: !!g.__NS_HMR_BOOT_COMPLETE__,
+		bootComplete: !!nsDev().bootComplete,
 		hasPlaceholderRoot: !!placeholderRoot,
 		hasPlaceholderFlag: !!g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__,
-		hasAngularAppRef: !!g.__NS_ANGULAR_APP_REF__,
-		hasAngularReboot: typeof g.__reboot_ng_modules__ === 'function',
 	};
 
 	try {
@@ -78,12 +87,12 @@ function getPlaceholderWaitDiagnosticSnapshot(g: any, application: any, placehol
 }
 
 function restoreOriginalApplicationRun(g: any): void {
-	const originalRun = g['__NS_DEV_ORIGINAL_APP_RUN__'];
+	const originalRun = originalApplicationRun;
 	if (typeof originalRun !== 'function') {
 		return;
 	}
 
-	const application = g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application;
+	const application = placeholderApplication || g.Application;
 	try {
 		if (application) {
 			(application as any).run = originalRun;
@@ -100,33 +109,28 @@ function restoreOriginalApplicationRun(g: any): void {
 			proto.run = originalRun;
 		}
 	} catch {}
-	delete g['__NS_DEV_ORIGINAL_APP_RUN__'];
+	originalApplicationRun = null;
 }
 
-function clearPlaceholderGlobals(g: any): void {
+function clearPlaceholderState(g: any): void {
 	delete g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'];
 	delete g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'];
-	delete g['__NS_DEV_BOOT_STATUS_LABEL__'];
-	delete g['__NS_DEV_BOOT_DETAIL_LABEL__'];
-	delete g['__NS_DEV_BOOT_PROGRESS_FILL__'];
-	delete g['__NS_DEV_BOOT_PROGRESS_LAST_SCALE__'];
-	delete g['__NS_DEV_BOOT_ACTIVITY_INDICATOR__'];
-	delete g['__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__'];
-	delete g['__NS_DEV_PLACEHOLDER_APPLICATION__'];
-	const timer = g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'];
-	if (timer) {
+	clearBootPlaceholderRefs();
+	placeholderLaunchHandler = null;
+	placeholderApplication = null;
+	if (restoreTimer) {
 		try {
-			clearTimeout(timer);
+			clearTimeout(restoreTimer);
 		} catch {}
 	}
-	delete g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'];
+	restoreTimer = null;
 }
 
 export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): boolean {
 	const g: any = getGlobalScope();
 	const placeholderRoot = g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null;
-	const hadPlaceholder = !!placeholderRoot || !!g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'] || !!g['__NS_DEV_BOOT_STATUS_LABEL__'] || !!g['__NS_DEV_BOOT_ACTIVITY_INDICATOR__'];
-	const application = g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application;
+	const hadPlaceholder = !!placeholderRoot || !!g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'] || hasBootPlaceholderRefs();
+	const application = placeholderApplication || g.Application;
 	const committedRoot = getCommittedRootView(application, placeholderRoot);
 
 	if (!committedRoot) {
@@ -134,9 +138,8 @@ export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): 
 		try {
 			if (verbose) {
 				const now = Date.now();
-				const last = g.__NS_PLACEHOLDER_DIAG_LAST_FINALIZE__ || 0;
-				if (now - last > 1000) {
-					g.__NS_PLACEHOLDER_DIAG_LAST_FINALIZE__ = now;
+				if (now - lastFinalizeDiagAt > 1000) {
+					lastFinalizeDiagAt = now;
 					const describe = (app: any) => {
 						try {
 							const r = app?.getRootView?.();
@@ -152,7 +155,7 @@ export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): 
 							return { appType: 'error' };
 						}
 					};
-					const known = (g['__NS_DEV_KNOWN_APPLICATIONS__'] || []) as any[];
+					const known = nsDev().knownApplications || [];
 					console.warn('[ns-placeholder][diag] tryFinalize: no committed root', {
 						reason,
 						hadPlaceholder,
@@ -170,13 +173,13 @@ export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): 
 	let detachedPlaceholder = false;
 	if (hadPlaceholder) {
 		try {
-			const launchHandler = g['__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__'];
+			const launchHandler = placeholderLaunchHandler;
 			if (application && typeof (application as any).off === 'function' && launchHandler) {
 				(application as any).off((application as any).launchEvent, launchHandler);
 			}
 		} catch {}
 		restoreOriginalApplicationRun(g);
-		clearPlaceholderGlobals(g);
+		clearPlaceholderState(g);
 		detachedPlaceholder = true;
 	}
 
@@ -204,7 +207,7 @@ export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): 
 
 function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): void {
 	const g: any = getGlobalScope();
-	if (g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__']) {
+	if (restoreTimer) {
 		return;
 	}
 
@@ -212,7 +215,7 @@ function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): vo
 	const maxWaitMs = 20000;
 	let attempts = 0;
 	const tick = () => {
-		delete g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'];
+		restoreTimer = null;
 		if (tryFinalizeBootPlaceholder(reason, verbose)) {
 			return;
 		}
@@ -239,13 +242,13 @@ function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): vo
 						reason,
 						attempts,
 						waitMs: Date.now() - startedAt,
-						state: getPlaceholderWaitDiagnosticSnapshot(g, g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application, g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null),
+						state: getPlaceholderWaitDiagnosticSnapshot(g, placeholderApplication || g.Application, g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null),
 					});
 				}
 			} catch {}
 			return;
 		}
-		g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'] = setTimeout(tick, attempts === 1 ? 0 : 100);
+		restoreTimer = setTimeout(tick, attempts === 1 ? 0 : 100);
 	};
 
 	tick();
@@ -267,11 +270,11 @@ export function installRootPlaceholder(verbose?: boolean) {
 	const g: any = getGlobalScope();
 	if (g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__']) return;
 	g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'] = true;
-	g['__NS_DEV_RESTORE_PLACEHOLDER__'] = (reason?: string) => {
+	setRestorePlaceholder((reason?: string) => {
 		if (!tryFinalizeBootPlaceholder(reason, verbose)) {
 			scheduleBootPlaceholderFinalize(reason, verbose);
 		}
-	};
+	});
 	try {
 		type ResolvedModule = { value: any; via: string; moduleId: string };
 		const resolveModule = (moduleIds: string[]): ResolvedModule | undefined => {
@@ -373,15 +376,14 @@ export function installRootPlaceholder(verbose?: boolean) {
 			}
 			return;
 		}
-		g['__NS_DEV_PLACEHOLDER_APPLICATION__'] = Application;
-		const isAndroid = !!(g.__ANDROID__ || typeof g.android !== 'undefined');
+		placeholderApplication = Application;
+		const isAndroid = !!((typeof __ANDROID__ !== 'undefined' && __ANDROID__) || typeof g.android !== 'undefined');
 		// Patch `Application.resetRootView` on BOTH platforms so the placeholder
-		// finalize callback (`__NS_DEV_RESTORE_PLACEHOLDER__`) fires every time the
-		// framework swaps the root view. The early Android wrapper in
-		// `core-aliases-early.ts` is unreliable under HTTP HMR boot (it runs before
-		// `g.Application` exists), so we wrap here too and coordinate via
-		// `__NS_DEV_PATCHED_RESET_ROOT__` to avoid double-wrapping.
-		const earlyAndroidWrapped = !!g['__NS_DEV_PATCHED_RESET_ROOT__'];
+		// finalize callback fires every time the framework swaps the root view.
+		// The early Android wrapper in `core-aliases-early.ts` is unreliable under
+		// HTTP HMR boot (it runs before `g.Application` exists), so we wrap here
+		// too and coordinate through `placeholder-hooks.ts` to avoid double-wrapping.
+		const earlyAndroidWrapped = isResetRootPatched();
 		// Verbose-gated: the diag stream (resetRootView wraps, launch-handler
 		// entries, placeholder install state) only matters when investigating a stall.
 		const diag: (...args: any[]) => void = verbose
@@ -397,7 +399,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 			applicationType: Application?.constructor?.name,
 			hasReset: typeof (Application as any).resetRootView === 'function',
 			alreadyPatchedEarly: earlyAndroidWrapped,
-			alreadyPatchedView: !!g['__NS_DEV_PATCHED_RESET_ROOT_VIEW__'],
+			alreadyPatchedView: resetRootViewPatched,
 			globalApplicationSame: g.Application === Application,
 			vendorApplicationSame: (() => {
 				try {
@@ -425,10 +427,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 				});
 				const result = origReset(entry);
 				try {
-					const restore = g['__NS_DEV_RESTORE_PLACEHOLDER__'];
-					if (typeof restore === 'function') {
-						restore(`Application.resetRootView (${label})`);
-					}
+					restorePlaceholder(`Application.resetRootView (${label})`);
 				} catch (e: any) {
 					diag('patched resetRootView restore threw', String(e && (e.message || e)));
 				}
@@ -488,7 +487,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 		// `tryFinalizeBootPlaceholder` can poll the real root view on the
 		// instance Angular actually committed to.
 		try {
-			const apps: any[] = (g['__NS_DEV_KNOWN_APPLICATIONS__'] ||= []);
+			const apps = (nsDev().knownApplications ||= []);
 			const push = (a: any) => {
 				if (a && apps.indexOf(a) === -1) apps.push(a);
 			};
@@ -506,8 +505,8 @@ export function installRootPlaceholder(verbose?: boolean) {
 				}
 			} catch {}
 		} catch {}
-		g['__NS_DEV_PATCHED_RESET_ROOT_VIEW__'] = true;
-		g['__NS_DEV_PATCHED_RESET_ROOT__'] = true;
+		resetRootViewPatched = true;
+		markResetRootPatched();
 		diag('patched Application.resetRootView', {
 			platform: isAndroid ? 'android' : 'ios',
 			wrappedLocal,
@@ -515,7 +514,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 			wrappedProto,
 			wrappedVendor,
 			wrappedVendorAppModule,
-			knownApplications: (g['__NS_DEV_KNOWN_APPLICATIONS__'] || []).length,
+			knownApplications: (nsDev().knownApplications || []).length,
 		});
 		const canCreatePlaceholderRoot = !!Frame && !!Page && !!Label;
 		if (!canCreatePlaceholderRoot && verbose) {
@@ -552,10 +551,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 					const built = buildPlaceholderPage({ Page, Label, ActivityIndicator, StackLayout: getCore('StackLayout').value, GridLayout: getCore('GridLayout').value, ContentView: getCore('ContentView').value, Image: getCore('Image').value, Color: getCore('Color').value, verbose });
 					const { page, statusLabel, detailLabel, progressFill, activityIndicator } = built;
 
-					g['__NS_DEV_BOOT_STATUS_LABEL__'] = statusLabel;
-					g['__NS_DEV_BOOT_DETAIL_LABEL__'] = detailLabel;
-					g['__NS_DEV_BOOT_PROGRESS_FILL__'] = progressFill;
-					g['__NS_DEV_BOOT_ACTIVITY_INDICATOR__'] = activityIndicator;
+					setBootPlaceholderRefs({ statusLabel, detailLabel, progressFill, activityIndicator });
 
 					const frame = new Frame();
 					frame.navigate({ create: () => page, clearHistory: true, animated: false });
@@ -591,7 +587,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 				try {
 					if (Application && typeof (Application as any).run === 'function') {
 						const _originalRun = (Application as any).run.bind(Application);
-						g['__NS_DEV_ORIGINAL_APP_RUN__'] = _originalRun;
+						originalApplicationRun = _originalRun;
 						// HMR ordering invariant: the patched `Application.run` MUST yield
 						// back to the synchronous caller before any iOS view-lifecycle event
 						// fires on the new root view.
@@ -719,7 +715,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 				} catch {}
 			}
 		};
-		g['__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__'] = __ns_launch_handler;
+		placeholderLaunchHandler = __ns_launch_handler;
 
 		try {
 			if (Application && (Application as any).on) {

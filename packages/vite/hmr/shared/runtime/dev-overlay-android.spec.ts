@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { computeAndroidPanelLayout, ensureHmrDevOverlayRuntimeInstalled, hexRgbaToAndroidArgb } from './dev-overlay.js';
+import { computeAndroidPanelLayout, hexRgbaToAndroidArgb } from './dev-overlay.js';
 import { getGlobalScope } from './global-scope.js';
+import { NS_DEV_SYMBOL_KEY } from './dev-globals.js';
 
 // Minimal stand-ins for the Android widget surface the host touches. Method
 // bodies record just enough to assert attachment and visibility.
@@ -167,7 +168,7 @@ function installFakeAndroid(decor: FakeView, page: { content: any }) {
 	g.Label = FakeNsLayout;
 }
 
-const GLOBALS = ['__NS_HMR_DEV_OVERLAY__', '__NS_HMR_DEV_OVERLAY_STATE__', '__NS_HMR_ANDROID_SAFE_INSETS__', 'android', 'java', 'Application', 'GridLayout', 'StackLayout', 'Label'];
+const GLOBALS: PropertyKey[] = [Symbol.for(NS_DEV_SYMBOL_KEY), 'android', 'java', 'Application', 'GridLayout', 'StackLayout', 'Label'];
 
 function clearGlobals() {
 	const g = getGlobalScope();
@@ -205,7 +206,15 @@ describe('Android overlay panel layout', () => {
 });
 
 describe('Android overlay host', () => {
-	beforeEach(clearGlobals);
+	let ensureHmrDevOverlayRuntimeInstalled: typeof import('./dev-overlay.js').ensureHmrDevOverlayRuntimeInstalled;
+
+	// The overlay runtime state and safe-area cache are module state: each case
+	// gets fresh instances.
+	beforeEach(async () => {
+		clearGlobals();
+		vi.resetModules();
+		({ ensureHmrDevOverlayRuntimeInstalled } = await import('./dev-overlay.js'));
+	});
 	afterEach(clearGlobals);
 
 	it('mounts the chip on the DecorView and leaves the page content untouched', () => {

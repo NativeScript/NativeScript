@@ -1,9 +1,13 @@
 import { assertNsDevSessionDescriptor, readNsRuntimeDevHostApi, type NsDevSessionDescriptor, type NsRuntimeDevHostApi } from './browser-runtime-contract.js';
 import { ensureHmrDevOverlayRuntimeInstalled, setHmrBootStage } from './dev-overlay.js';
-import { formatBootTimeline, publishBootTrace, type BootTrace } from './boot-timeline.js';
-import { applyMonotonicBootProgress, clearBootProgressState, computeBootImportProgress, formatBootImportDetail } from './boot-progress.js';
+import { formatBootTimeline, type BootTrace } from './boot-timeline.js';
+import { applyMonotonicBootProgress, BOOT_IMPORT_DETAIL, clearBootProgressState, computeBootImportProgress } from './boot-progress.js';
 import { getGlobalScope } from './global-scope.js';
+import { nsDev } from './dev-globals.js';
 import { installWorkerConstructorTracking } from './worker-tracking.js';
+import { restorePlaceholder } from './placeholder-hooks.js';
+
+let importMapConfigured = false;
 
 function describeError(error: unknown) {
 	if (error instanceof Error) {
@@ -20,13 +24,9 @@ function describeError(error: unknown) {
 // (`HMRSupport.mm`) gives the JS-thread CFRunLoop a 1 ms slice between
 // fetches so this 250 ms `setInterval` can fire and repaint the bar.
 //
-// Reads the `__NS_HMR_BOOT_MODULE_COUNT__` / `__NS_HMR_BOOT_LAST_MODULE__`
-// globals (when anything bumps them) plus elapsed wall-clock since
-// `__NS_HMR_BOOT_IMPORT_STARTED_AT__`, runs them through
-// `computeBootImportProgress` + `applyMonotonicBootProgress` (so the
-// bar never goes backwards when count temporarily wins over time), and
-// re-asserts `'importing-main'` so only the progress + detail change.
-// The wall-clock term keeps the bar moving while no module reports.
+// Drives the bar from elapsed wall-clock time through
+// `computeBootImportProgress` + `applyMonotonicBootProgress` and
+// re-asserts `'importing-main'` so only the progress changes.
 //
 // Stopped in the caller's `finally` so it never races past
 // `'waiting-for-app'` or stomps an `'error'` frame.
@@ -38,17 +38,12 @@ function startBootImportHeartbeat(startedAt: number, verbose?: boolean): () => v
 			if (stopped) {
 				return;
 			}
-			const g: any = getGlobalScope();
-			if (g.__NS_HMR_BOOT_COMPLETE__) {
+			if (nsDev().bootComplete) {
 				return;
 			}
 			try {
-				const count = Number(g.__NS_HMR_BOOT_MODULE_COUNT__ || 0);
-				const lastModule = typeof g.__NS_HMR_BOOT_LAST_MODULE__ === 'string' ? g.__NS_HMR_BOOT_LAST_MODULE__ : '';
-				const elapsedMs = Math.max(0, Date.now() - startedAt);
-				const progress = applyMonotonicBootProgress(computeBootImportProgress({ count, elapsedMs }));
-				const detail = formatBootImportDetail({ count, lastModule });
-				setHmrBootStage('importing-main', { detail, progress });
+				const progress = applyMonotonicBootProgress(computeBootImportProgress(Date.now() - startedAt));
+				setHmrBootStage('importing-main', { detail: BOOT_IMPORT_DETAIL, progress });
 			} catch (heartbeatErr) {
 				if (verbose) {
 					console.warn('[ns-entry] boot-progress heartbeat tick failed', heartbeatErr);
@@ -74,7 +69,7 @@ function startBootImportHeartbeat(startedAt: number, verbose?: boolean): () => v
 
 function getSessionUrl(defaultSessionUrl: string) {
 	try {
-		const origin = getGlobalScope().__NS_HTTP_ORIGIN__;
+		const origin = nsDev().httpOrigin;
 		if (typeof origin === 'string' && /^https?:\/\//.test(origin)) {
 			return `${origin.replace(/\/$/, '')}/__ns_dev__/session`;
 		}
@@ -113,10 +108,9 @@ async function configureLoaderImportMap(runtimeConfigUrl: string, runtimeApi: Ns
 		return;
 	}
 
-	// Gate on `__NS_IMPORT_MAP_CONFIGURED__` so the first writer wins and
-	// subsequent calls short-circuit (saves one extra fetch per boot).
-	const g = getGlobalScope();
-	if (g.__NS_IMPORT_MAP_CONFIGURED__ === true) {
+	// The first configure wins; later calls short-circuit (saves one extra
+	// fetch per boot).
+	if (importMapConfigured) {
 		if (verbose) {
 			console.info('[ns-entry] import map already configured by an earlier boot stage; skipping fetch', {
 				importMapUrl: runtimeConfigUrl,
@@ -149,9 +143,7 @@ async function configureLoaderImportMap(runtimeConfigUrl: string, runtimeApi: Ns
 		// the field ignore it.
 		...(config.canonicalization && typeof config.canonicalization === 'object' ? { canonicalization: config.canonicalization } : {}),
 	});
-	try {
-		g.__NS_IMPORT_MAP_CONFIGURED__ = true;
-	} catch {}
+	importMapConfigured = true;
 
 	if (verbose) {
 		console.info('[ns-entry] import map configured', {
@@ -166,9 +158,8 @@ async function prepareRuntimeForSession(session: NsDevSessionDescriptor, runtime
 }
 
 // Dynamic import with an overridable seam: hosts/tests can install
-// `__NS_HMR_IMPORT__` (also used by the HMR clients) to observe or stub
-// the module loads; otherwise this is a plain dynamic `import()` through
-// the runtime's HTTP ESM loader.
+// `__NS_HMR_IMPORT__` to observe or stub the module loads; otherwise this is
+// a plain dynamic `import()` through the runtime's HTTP ESM loader.
 function importModule(url: string): Promise<unknown> {
 	const g: any = getGlobalScope();
 	if (typeof g.__NS_HMR_IMPORT__ === 'function') {
@@ -180,10 +171,7 @@ function importModule(url: string): Promise<unknown> {
 // Session globals — plain JS policy; the native runtime writes none of
 // these.
 function applyDevSessionGlobals(session: NsDevSessionDescriptor) {
-	const g: any = getGlobalScope();
-	try {
-		g.__NS_HTTP_ORIGIN__ = session.origin;
-	} catch {}
+	nsDev().httpOrigin = session.origin;
 }
 
 export async function startBrowserRuntimeSession(defaultSessionUrl: string, verbose?: boolean) {
@@ -230,7 +218,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		const runtimeApi = readNsRuntimeDevHostApi(globalThis);
 
 		const tImap = Date.now();
-		const alreadyConfigured = getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__ === true;
+		const alreadyConfigured = importMapConfigured;
 		await prepareRuntimeForSession(session, runtimeApi, verbose);
 		// Skip the import-map segment when an earlier stage already did
 		// the work (dedup path returns instantly with no I/O).
@@ -253,15 +241,9 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		setHmrBootStage('importing-main', {
 			detail: session.entryUrl,
 		});
-		// Reset boot-progress globals so a re-bootstrapped session
-		// starts a fresh
-		// ratchet, then stamp the time origin both the snippet and the
-		// heartbeat share for elapsed-ms math.
+		// A re-bootstrapped session starts a fresh progress ratchet.
 		clearBootProgressState();
 		const tBoot = Date.now();
-		try {
-			getGlobalScope().__NS_HMR_BOOT_IMPORT_STARTED_AT__ = tBoot;
-		} catch {}
 		const stopBootImportHeartbeat = startBootImportHeartbeat(tBoot, verbose);
 		try {
 			// No prewarm/seeding phase: the runtime's async module-graph walk
@@ -269,7 +251,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			// NSURLSession fetches overlapped with on-device compile), which
 			// measured faster than any server-computed closure/archive seeding.
 			// The dev client bootstrap runs first: it installs what must
-			// precede app code (launch-notification bridge, seeded app.css).
+			// precede app code (launch-notification bridge, bundled app.css).
 			if (verbose) {
 				console.info('[ns-entry] importing dev client + entry', {
 					clientUrl: session.clientUrl,
@@ -286,10 +268,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			detail: 'The deterministic NativeScript dev session is active. Waiting for the real app root to replace the boot placeholder.',
 		});
 		try {
-			const restorePlaceholder = getGlobalScope().__NS_DEV_RESTORE_PLACEHOLDER__;
-			if (typeof restorePlaceholder === 'function') {
-				restorePlaceholder('session-active');
-			}
+			restorePlaceholder('session-active');
 		} catch {}
 		if (verbose) {
 			console.info('[ns-entry] browser runtime session active; waiting for real app root commit', {
@@ -310,10 +289,6 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		throw error;
 	} finally {
 		trace.t1 = Date.now();
-		publishBootTrace(trace);
-		// Trace is always stashed on `globalThis.__NS_BOOT_TRACE__` for
-		// on-demand inspection; the human-readable line is verbose-only
-		// so the dev console stays quiet by default.
 		if (verbose) {
 			console.info(formatBootTimeline(trace));
 		}

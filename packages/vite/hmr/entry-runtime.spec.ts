@@ -1,13 +1,19 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { APP_CSS_TAG, installHttpCoreCssSupport } from './entry-runtime.js';
+import { APP_CSS_TAG } from './entry-runtime.js';
 import { getGlobalScope } from './shared/runtime/global-scope.js';
+import { NS_DEV_SYMBOL_KEY, nsDev } from './shared/runtime/dev-globals.js';
 
 describe('installHttpCoreCssSupport', () => {
-	beforeEach(() => {
-		delete getGlobalScope().__NS_HMR_APPLY_CSS__;
-		delete getGlobalScope().__NS_HMR_APP_CSS__;
-		delete getGlobalScope().__NS_HMR_APP_CSS_AST__;
-		delete getGlobalScope().__NS_HMR_HTTP_APP_CSS_APPLIED__;
+	let installHttpCoreCssSupport: typeof import('./entry-runtime.js').installHttpCoreCssSupport;
+	let getAppCssApplier: typeof import('./shared/runtime/app-css-applier.js').getAppCssApplier;
+
+	// The cold-boot "already applied" flag and the installed applier are module
+	// state: each case gets fresh instances, all from the same module graph.
+	beforeEach(async () => {
+		vi.resetModules();
+		({ installHttpCoreCssSupport } = await import('./entry-runtime.js'));
+		({ getAppCssApplier } = await import('./shared/runtime/app-css-applier.js'));
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 		delete getGlobalScope().addTaggedAdditionalCSS;
 		delete getGlobalScope().removeTaggedAdditionalCSS;
 	});
@@ -24,6 +30,7 @@ describe('installHttpCoreCssSupport', () => {
 
 		const applier = installHttpCoreCssSupport({ Application, addTaggedAdditionalCSS, removeTaggedAdditionalCSS });
 		expect(typeof applier).toBe('function');
+		expect(getAppCssApplier()).toBe(applier);
 
 		applier!('.foo { color: blue; }');
 
@@ -50,14 +57,18 @@ describe('installHttpCoreCssSupport', () => {
 		const addCss = vi.fn();
 		const onCssStateChange = vi.fn();
 		const Application = { addCss, getRootView: vi.fn(() => ({ _onCssStateChange: onCssStateChange })) };
-		getGlobalScope().__NS_HMR_APP_CSS__ = '.boot { color: red; }';
+		nsDev().appCss = '.boot { color: red; }';
 
 		const applier = installHttpCoreCssSupport({ Application }, true);
 
 		expect(typeof applier).toBe('function');
 		expect(addCss).toHaveBeenCalledWith('.boot { color: red; }');
 		expect(onCssStateChange).toHaveBeenCalled();
-		expect(getGlobalScope().__NS_HMR_HTTP_APP_CSS_APPLIED__).toBe(true);
+
+		// The bundled app.css is applied once per process.
+		addCss.mockClear();
+		installHttpCoreCssSupport({ Application }, true);
+		expect(addCss).not.toHaveBeenCalled();
 	});
 
 	it('does not refresh the root view when refreshRoot=false', () => {
@@ -93,7 +104,7 @@ describe('installHttpCoreCssSupport', () => {
 
 	it('cold-boot prefers the rework AST stashed on globalThis over the raw text fallback', () => {
 		// `helpers/main-entry.ts` stashes the rework AST on
-		// `__NS_HMR_APP_CSS_AST__` so HMR cold boot mirrors the no-HMR
+		// `appCssAst` so HMR cold boot mirrors the no-HMR
 		// rolldown bundle's application path. The raw text remains as a
 		// fallback for live HMR edits arriving via the dev-server WS.
 		const addCss = vi.fn();
@@ -102,8 +113,8 @@ describe('installHttpCoreCssSupport', () => {
 		const Application = { addCss, getRootView: vi.fn(() => null) };
 
 		const ast = { type: 'stylesheet', stylesheet: { rules: [{ type: 'rule', selectors: ['.text-sm'], declarations: [{ type: 'declaration', property: 'line-height', value: '20' }] }] } };
-		getGlobalScope().__NS_HMR_APP_CSS_AST__ = ast;
-		getGlobalScope().__NS_HMR_APP_CSS__ = '.text-sm { line-height: 20; }';
+		nsDev().appCssAst = ast;
+		nsDev().appCss = '.text-sm { line-height: 20; }';
 
 		installHttpCoreCssSupport({ Application, addTaggedAdditionalCSS, removeTaggedAdditionalCSS });
 
@@ -111,7 +122,10 @@ describe('installHttpCoreCssSupport', () => {
 		expect(addTaggedAdditionalCSS).toHaveBeenCalledTimes(1);
 		expect(addTaggedAdditionalCSS).toHaveBeenCalledWith(ast, APP_CSS_TAG);
 		expect(addCss).not.toHaveBeenCalled();
-		expect(getGlobalScope().__NS_HMR_HTTP_APP_CSS_APPLIED__).toBe(true);
+
+		addTaggedAdditionalCSS.mockClear();
+		installHttpCoreCssSupport({ Application, addTaggedAdditionalCSS, removeTaggedAdditionalCSS });
+		expect(addTaggedAdditionalCSS).not.toHaveBeenCalled();
 	});
 
 	it('cold-boot falls back to raw text when the AST apply throws', () => {
@@ -125,14 +139,17 @@ describe('installHttpCoreCssSupport', () => {
 		const removeTaggedAdditionalCSS = vi.fn(() => true);
 		const Application = { addCss, getRootView: vi.fn(() => null) };
 
-		getGlobalScope().__NS_HMR_APP_CSS_AST__ = { type: 'stylesheet', stylesheet: { rules: [] } };
-		getGlobalScope().__NS_HMR_APP_CSS__ = '.x { color: red; }';
+		nsDev().appCssAst = { type: 'stylesheet', stylesheet: { rules: [] } };
+		nsDev().appCss = '.x { color: red; }';
 
 		installHttpCoreCssSupport({ Application, addTaggedAdditionalCSS, removeTaggedAdditionalCSS });
 
 		// First call attempts AST; throws. Second call is raw text via applyCss.
 		expect(addTaggedAdditionalCSS).toHaveBeenCalledTimes(2);
 		expect(addTaggedAdditionalCSS).toHaveBeenLastCalledWith('.x { color: red; }', APP_CSS_TAG);
-		expect(getGlobalScope().__NS_HMR_HTTP_APP_CSS_APPLIED__).toBe(true);
+
+		addTaggedAdditionalCSS.mockClear();
+		installHttpCoreCssSupport({ Application, addTaggedAdditionalCSS, removeTaggedAdditionalCSS });
+		expect(addTaggedAdditionalCSS).not.toHaveBeenCalled();
 	});
 });

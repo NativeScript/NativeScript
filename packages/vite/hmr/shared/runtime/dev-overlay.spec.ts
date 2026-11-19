@@ -1,13 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { computeAndroidToastMargin, computeIosOverlayLayout, computeIosOverlayWindowLevel, iosOverlayCapturesTouch, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, ensureHmrDevOverlayRuntimeInstalled, getHmrDevOverlayPosition, setHmrDevOverlayPosition, setHmrUpdateStage } from './dev-overlay.js';
+import { computeAndroidToastMargin, computeIosOverlayLayout, computeIosOverlayWindowLevel, iosOverlayCapturesTouch, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, getHmrDevOverlayPosition } from './dev-overlay.js';
 import { applySnapshotToIosRefs } from './dev-overlay-ios.js';
 import { applySnapshotToLiveRefs } from './dev-overlay-tree.js';
 import { getGlobalScope } from './global-scope.js';
+import { NS_DEV_SYMBOL_KEY, nsDev } from './dev-globals.js';
+
+type DevOverlayModule = typeof import('./dev-overlay.js');
+let ensureHmrDevOverlayRuntimeInstalled: DevOverlayModule['ensureHmrDevOverlayRuntimeInstalled'];
+let setHmrDevOverlayPosition: DevOverlayModule['setHmrDevOverlayPosition'];
+let setHmrUpdateStage: DevOverlayModule['setHmrUpdateStage'];
+
+// The overlay runtime state is module state: each case gets a fresh instance.
+beforeEach(async () => {
+	vi.resetModules();
+	({ ensureHmrDevOverlayRuntimeInstalled, setHmrDevOverlayPosition, setHmrUpdateStage } = await import('./dev-overlay.js'));
+});
 
 describe('HMR dev overlay snapshots', () => {
 	afterEach(() => {
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	it('builds a phase-based boot snapshot with attempt detail', () => {
@@ -53,13 +64,11 @@ describe('HMR dev overlay snapshots', () => {
 
 describe('HMR dev overlay runtime API', () => {
 	beforeEach(() => {
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	afterEach(() => {
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	it('installs a stable global API and tracks boot stages', () => {
@@ -67,7 +76,7 @@ describe('HMR dev overlay runtime API', () => {
 		const sameApi = ensureHmrDevOverlayRuntimeInstalled(false);
 
 		expect(api).toBe(sameApi);
-		expect(getGlobalScope().__NS_HMR_DEV_OVERLAY__).toBe(api);
+		expect(nsDev().overlay).toBe(api);
 
 		api.setBootStage('loading-core-bridge', {
 			detail: 'http://localhost:5173/ns/core/7',
@@ -463,14 +472,12 @@ describe('Android toast margin', () => {
 describe('HMR overlay position config', () => {
 	beforeEach(() => {
 		delete getGlobalScope().__NS_HMR_OVERLAY_POSITION__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	afterEach(() => {
 		delete getGlobalScope().__NS_HMR_OVERLAY_POSITION__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	it("defaults to 'top' so the centered modal does NOT obscure app UI", () => {
@@ -600,13 +607,11 @@ describe('HMR apply overlay snapshots', () => {
 
 describe('HMR apply overlay runtime API', () => {
 	beforeEach(() => {
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	afterEach(() => {
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	it('drives the overlay through update stages via setUpdateStage', () => {
@@ -806,7 +811,7 @@ describe('HMR apply overlay runtime API', () => {
 			tone: 'success',
 			progress: 5,
 		});
-		expect(getGlobalScope().__NS_HMR_DEV_OVERLAY__).toBeDefined();
+		expect(nsDev().overlay).toBeDefined();
 	});
 
 	// The cycle clock — used by the auto-hide minimum-visible window —

@@ -1,12 +1,9 @@
 import { getVendorRequire } from '../shared/runtime/vendor-resolve.js';
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
 
-// Build-time verbose flag, read defensively so unit tests (where the
-// `define` substitution doesn't run) don't blow up. Exported as the ONE
-// canonical copy for client modules — on device these files are served raw
-// (no define substitution), so the identifier resolves through the
-// globalThis seed planted by the entry's defines-seed module, which this
-// helper reads identically from any importer.
+// Verbose flag, the one copy for client modules. Served modules get no
+// `define` substitution: the identifier resolves to the global `/@vite/env`
+// installs. Read defensively because unit tests have neither.
 export const ENV_VERBOSE: boolean = (() => {
 	try {
 		return typeof __NS_ENV_VERBOSE__ === 'boolean' ? __NS_ENV_VERBOSE__ : false;

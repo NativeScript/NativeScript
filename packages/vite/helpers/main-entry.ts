@@ -11,7 +11,7 @@ import { resolveDeviceReachableOrigin } from './dev-host.js';
 import { setAppCssState } from './app-css-state.js';
 import { createAppCssRefresher } from './app-css-refresh.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
-import { buildGlobalSeedStatements, getRuntimeSeedValues } from './global-defines.js';
+import { NS_DEV_EXPR } from '../hmr/shared/runtime/dev-globals.js';
 import { BUNDLE_CSS_AST_SENTINEL, inlineBundleCss } from './bundle-css.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
@@ -71,44 +71,12 @@ const BUNDLE_CSS_RESOLVED = '\0' + BUNDLE_CSS_VIRTUAL_ID;
 const XHR_POLYFILL_VIRTUAL_ID = 'virtual:ns-xhr-polyfill';
 const XHR_POLYFILL_RESOLVED = '\0' + XHR_POLYFILL_VIRTUAL_ID;
 
-// Virtual module that seeds compile-time defines (`__APPLE__`, `__IOS__`,
-// `__DEV__`, etc.) on `globalThis` BEFORE any other module evaluates.
-//
-// Why this exists. The per-module shim that `processCodeForDevice` injects
-// at the top of every served module reads these values from `globalThis`:
-//   const __APPLE__ = globalThis.__APPLE__ !== undefined
-//     ? globalThis.__APPLE__
-//     : (__IOS__ || __VISIONOS__);
-// `const` evaluates ONCE at module instantiation. So every module needs
-// `globalThis.__APPLE__` to already be set when it instantiates — otherwise
-// it locks in `false` for the lifetime of the module.
-//
-// In ESM, all `import` statements hoist to the top of the module's
-// evaluation phase: imports run in DFS post-order BEFORE the importing
-// module's body. If we put the seed assignments inline in the entry's
-// body (e.g. `globalThis.__APPLE__ = true`), they run AFTER every module
-// transitively imported via `bundle-entry-points` (which reaches the
-// user's `main.ts` → `app.module.ts` → services → util files). Those
-// utility modules then snapshot `globalThis.__APPLE__ = undefined` and
-// fall through to the `false` branch — landing iOS code in the
-// `else { /* Android */ }` branch and crashing on `Utils.android.*`.
-//
-// The fix is to import this virtual module FIRST in the entry. As a leaf
-// in the dependency graph it evaluates before every sibling import, so
-// its body assignments happen before any user module instantiates and
-// reads `globalThis.__*`. This is the architecturally-correct way to
-// make values available to other modules across the import graph in ESM.
-const DEFINES_SEED_VIRTUAL_ID = 'virtual:ns-defines-seed';
-const DEFINES_SEED_RESOLVED = '\0' + DEFINES_SEED_VIRTUAL_ID;
-
 export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'; isDevMode: boolean; verbose: boolean; hmrActive: boolean; useHttps: boolean; flavor?: string }) {
 	let resolvedConfig: ResolvedConfig;
 	// Prefer the flavor the active config DECLARES (threaded from baseConfig)
 	// over deps-based detection: in workspaces whose app package.json doesn't
 	// list the framework package (hoisted to the root), detection falls through
-	// to 'typescript' — which previously emitted the ts-only
-	// `virtual:ns-ui-registration` import into an Angular entry with no
-	// resolver registered, and seeded the wrong `__NS_TARGET_FLAVOR__`.
+	// to 'typescript', whose entry imports ts-only virtual modules.
 	const effectiveFlavor = opts.flavor || flavor;
 	return {
 		name: 'main-entry',
@@ -226,39 +194,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			if (id === APP_CSS_VIRTUAL_ID) return APP_CSS_RESOLVED;
 			if (id === BUNDLE_CSS_VIRTUAL_ID) return BUNDLE_CSS_RESOLVED;
 			if (id === XHR_POLYFILL_VIRTUAL_ID) return XHR_POLYFILL_RESOLVED;
-			if (id === DEFINES_SEED_VIRTUAL_ID) return DEFINES_SEED_RESOLVED;
 			return null;
 		},
 		async load(id: string) {
-			// Dev server origin baked into bundle.mjs (null when HMR is off).
-			//
-			// bundle.mjs is a local ES module entry, so its static import graph is
-			// fetched and keyed by the runtime BEFORE its body runs
-			// `configureLoader` (session-bootstrap). Unconfigured, the runtime keys
-			// an HTTP module by its URL verbatim (fragment stripped, nothing else).
-			// Every URL reachable from this entry's static graph must therefore be
-			// canonical on its own — absolute, query-free, resolvable without the
-			// import map — or the same module requested after configuration lands
-			// under a second registry key and evaluates twice.
-			//
-			// Routes through `resolveDeviceReachableOrigin` so the URL is something
-			// the DEVICE can reach: wildcard binds (`0.0.0.0`) and Android loopback
-			// get remapped to a real LAN IP (preferred) or the platform's reachable
-			// fallback (`10.0.2.2` for the Android emulator).
-			const getBootOrigin = (): string | null => {
-				if (!opts.hmrActive) return null;
-				try {
-					const { origin } = resolveDeviceReachableOrigin({
-						host: resolvedConfig.server.host,
-						platform: opts.platform,
-						protocol: resolvedConfig.server.https || opts.useHttps ? 'https' : 'http',
-						port: Number(resolvedConfig.server.port || 5173),
-					});
-					return origin;
-				} catch {
-					return null;
-				}
-			};
 			// Bare `@nativescript/core[/sub]` specifier. Under HMR the
 			// `ns-core-external-urls` build plugin externalizes it to its device URL.
 			const coreSpec = (subpath?: string | null): string => {
@@ -275,26 +213,20 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// CSS to JS without setting moduleType:'js', so vite:css still tries to run
 			// PostCSS on the JS output). This virtual module sidesteps that.
 			//
-			// We still export the raw CSS string as default so the entry can seed
-			// `globalThis.__NS_HMR_APP_CSS__` for HMR's HTTP-core-realm replay path.
+			// The default export is the raw CSS text: the served entry runtime's
+			// fallback when no AST is available (`appCss` on the dev globals).
 			//
 			// We always pre-parse with rework `css` and either:
 			//   - non-HMR: call `addTaggedAdditionalCSS(astJson, 'app.css')` directly
 			//     so the bundled `style-scope` realm gets the styles before any view
 			//     is created.
-			//   - HMR: stash the AST on `globalThis.__NS_HMR_APP_CSS_AST__` so
-			//     `installHttpCoreCssSupport` can apply it via the SAME AST path
-			//     in the HTTP-core realm. Without this, the HTTP path would fall
-			//     back to applying the raw text via `cssTreeParse` at runtime,
-			//     which has produced subtle behavioral mismatches with the rework
-			//     AST (e.g. `.text-sm { line-height: 20 }` rendering with extra
-			//     line spacing under HMR but not under the no-HMR rolldown
-			//     bundle, even though both bundles serialize the identical
-			//     declaration). Pre-parsing once at build time and shipping the
-			//     AST to BOTH paths keeps cold-boot rendering identical between
-			//     the two modes. Live HMR edits still arrive as raw text via the
-			//     dev-server WebSocket, so `installHttpCoreCssSupport` keeps the
-			//     raw-text fallback for that case.
+			//   - HMR: publish the AST as the dev globals' `appCssAst` so
+			//     `installHttpCoreCssSupport` applies it via the SAME AST path in
+			//     the served-core realm. Applying the raw text there goes through
+			//     `cssTreeParse`, which renders differently from the rework AST
+			//     (e.g. `.text-sm { line-height: 20 }` gains extra line spacing).
+			//     Live HMR edits still arrive as raw text over the dev-server
+			//     WebSocket, so `installHttpCoreCssSupport` keeps the raw-text path.
 			if (id === APP_CSS_RESOLVED) {
 				// Same resolver as the entry generator (app.css → styles.css fallback)
 				// so both always pick the same file. Only reached when a global
@@ -318,11 +250,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				const astJson = JSON.stringify(ast, (key, value) => (key === 'position' ? undefined : value));
 				const lines: string[] = [];
 				if (opts.hmrActive) {
-					// Stash AST on globalThis BEFORE the entry seeds
-					// `__NS_HMR_APP_CSS__` from this module's default export, so
-					// `installHttpCoreCssSupport` can prefer the AST and match
-					// the no-HMR application path exactly.
-					lines.push(`try { (globalThis).__NS_HMR_APP_CSS_AST__ = ${astJson}; } catch {}`);
+					lines.push(`try { ${NS_DEV_EXPR}.appCssAst = ${astJson}; } catch {}`);
 				} else {
 					lines.push(`import { addTaggedAdditionalCSS } from ${JSON.stringify(coreSpec('ui/styling/style-scope'))};`, `addTaggedAdditionalCSS(${astJson}, 'app.css');`);
 				}
@@ -352,46 +280,48 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 					moduleType: 'js',
 				};
 			}
-			// Virtual module that seeds compile-time defines on globalThis.
-			// Imported FIRST in the entry so it evaluates as a leaf before
-			// any other module — including the `bundle-entry-points` chain
-			// that transitively reaches the user's app code. See the
-			// DEFINES_SEED_VIRTUAL_ID comment at the top of this file.
-			if (id === DEFINES_SEED_RESOLVED) {
-				// The FULL seed map: canonical platform defines (shared with Vite's
-				// `define` config and the dev server's per-module shims) PLUS every
-				// `__NS_*__` value raw-served client files consume (runtime flavor,
-				// app-root paths, overlay knobs). Vite's define substitution
-				// never reaches those raw-served files, so anything they read must be
-				// planted on globalThis here — see getRuntimeSeedValues for the rule.
-				const seedLines = buildGlobalSeedStatements(getRuntimeSeedValues({ platform: opts.platform, isDevMode: opts.isDevMode, verbose: opts.verbose, flavor: effectiveFlavor, isCI: !!process.env.CI }));
-				return {
-					code: seedLines.join('\n') + '\n',
-					moduleType: 'js',
-				};
-			}
 			if (id !== RESOLVED) return null;
 
-			let imports = '';
-			// Under HMR: import the defines-seed virtual module FIRST so its
-			// body — which sets `globalThis.__APPLE__`, `__IOS__`, `__DEV__`,
-			// etc. — evaluates as a leaf in the dependency graph BEFORE any
-			// other module instantiates. Per-module shims injected by
-			// `processCodeForDevice` read these from globalThis and snapshot
-			// them at instantiation time, so they MUST be set first.
+			// Dev server origin baked into bundle.mjs.
 			//
-			// Under non-HMR: Vite's `define` config handles substitution
-			// statically at build time — no runtime seeding needed.
+			// bundle.mjs is a local ES module entry, so its static import graph is
+			// fetched and keyed by the runtime BEFORE its body runs
+			// `configureLoader` (session-bootstrap). Unconfigured, the runtime keys
+			// an HTTP module by its URL verbatim (fragment stripped, nothing else).
+			// Every URL reachable from this entry's static graph must therefore be
+			// canonical on its own — absolute, query-free, resolvable without the
+			// import map — or the same module requested after configuration lands
+			// under a second registry key and evaluates twice.
+			//
+			// Routes through `resolveDeviceReachableOrigin` so the URL is something
+			// the DEVICE can reach: wildcard binds (`0.0.0.0`) and Android loopback
+			// get remapped to a real LAN IP (preferred) or the platform's reachable
+			// fallback (`10.0.2.2` for the Android emulator).
+			let bootOrigin = '';
 			if (opts.hmrActive) {
-				// Thin mode: Vite's client environment never substitutes `define` in
-				// dev; its `/@vite/env` module installs them on globalThis instead.
-				// It must be an external import (evaluated before the externalized
-				// core graph), not a bundled module (whose body runs after it).
-				const bootOrigin = getBootOrigin();
-				if (bootOrigin) {
-					imports += `import '${bootOrigin}/ns/v/@vite/env';\n`;
+				try {
+					bootOrigin = resolveDeviceReachableOrigin({
+						host: resolvedConfig.server.host,
+						platform: opts.platform,
+						protocol: resolvedConfig.server.https || opts.useHttps ? 'https' : 'http',
+						port: Number(resolvedConfig.server.port || 5173),
+					}).origin;
+				} catch (error: any) {
+					throw new Error(`[ns-entry] cannot resolve a device-reachable dev server origin for bundle.mjs: ${error?.message || error}`);
 				}
-				imports += `import '${DEFINES_SEED_VIRTUAL_ID}';\n`;
+				if (!bootOrigin) {
+					throw new Error('[ns-entry] cannot resolve a device-reachable dev server origin for bundle.mjs');
+				}
+			}
+
+			let imports = '';
+			if (opts.hmrActive) {
+				// `/@vite/env` installs `config.define` on globalThis for served
+				// modules: Vite's client environment does no define substitution.
+				// It must stay an external import placed first, so it evaluates
+				// before the externalized core graph (a bundled module's body would
+				// run after it).
+				imports += `import '${bootOrigin}/ns/v/@vite/env';\n`;
 			}
 			// consistent verbose flag to easily reference below
 			imports += "const __nsVerboseLog = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;\n";
@@ -416,11 +346,14 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			//   - If the specifier is a Node built-in (fs, path, os, …) or
 			//     a webpack-only runtime hook (require.context), return a
 			//     safe empty stub.
-			//   - Otherwise, consult the `globalThis.__NS_CORE_MODULES__`
-			//     registry (when present), then delegate to the preserved
-			//     original `globalThis.require` (NativeScript's native CJS
-			//     loader).
+			//   - Otherwise (HMR only), consult the served core modules registered
+			//     on the dev globals (`coreModules`), then delegate to the
+			//     preserved original `globalThis.require` (NativeScript's native
+			//     CJS loader).
 			imports += "try { if (typeof globalThis !== 'undefined') {\n";
+			if (opts.hmrActive) {
+				imports += `  var __nsDev = ${NS_DEV_EXPR};\n`;
+			}
 			imports += "  var __nsOrigRequire = typeof globalThis.require === 'function' ? globalThis.require : null;\n";
 			imports += '  var __nsNodeBuiltins = { fs: 1, path: 1, os: 1, url: 1, crypto: 1, util: 1, stream: 1, events: 1, buffer: 1, http: 1, https: 1, net: 1, tls: 1, dns: 1, child_process: 1, module: 1, zlib: 1, querystring: 1, assert: 1, constants: 1, vm: 1 };\n';
 			// Mirrors normalizeCoreSub() in helpers/ns-core-url.ts.
@@ -435,7 +368,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			imports += '  };\n';
 			// Invariant D: CJS/ESM interop shape helper.
 			//
-			// Install a global, idempotent shape function that converts
+			// A shape function that converts
 			// ESM Module Namespace Objects (which have [[Prototype]] = null
 			// per spec §9.4.6) into plain Objects that inherit from
 			// Object.prototype. CJS consumers — especially zone.js's
@@ -451,11 +384,11 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			//     underlying namespace. zone.js MUTATES its target (stashes
 			//     delegate symbols, overwrites methods); a fresh copy per
 			//     require() would lose those mutations on the next lookup.
-			//   - Installed ONCE on globalThis so the vendor shim's
-			//     createRequire and any other consumer share the same cache
-			//     and see mutation-consistent shapes.
-			imports += '  var __nsShapeCache = globalThis.__NS_CJS_SHAPE_CACHE__ || (globalThis.__NS_CJS_SHAPE_CACHE__ = new WeakMap());\n';
-			imports += '  var __nsShapeCjs = globalThis.__NS_CJS_SHAPE__ || (globalThis.__NS_CJS_SHAPE__ = function __nsShape(obj) {\n';
+			//   - Under HMR, published as the dev globals' `cjsShape` so the served
+			//     core's registration footer and the deps bundle's createRequire
+			//     share this one cache and see mutation-consistent shapes.
+			imports += '  var __nsShapeCache = new WeakMap();\n';
+			imports += `  var __nsShapeCjs = ${opts.hmrActive ? '__nsDev.cjsShape || (__nsDev.cjsShape = ' : '('}function __nsShape(obj) {\n`;
 			imports += "    if (!obj || typeof obj !== 'object') return obj;\n";
 			imports += '    var proto = Object.getPrototypeOf(obj);\n';
 			imports += '    var isNsModule = false;\n';
@@ -482,19 +415,21 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			imports += '      }\n';
 			imports += "      var stripped = n.indexOf('node:') === 0 ? n.slice(5) : n;\n";
 			imports += '      if (__nsNodeBuiltins[stripped]) return {};\n';
-			imports += "      if (n === '@nativescript/core' || n.indexOf('@nativescript/core/') === 0) {\n";
-			imports += '        var table = globalThis.__NS_CORE_MODULES__;\n';
-			imports += '        if (table) {\n';
-			// __nsShapeCjs is a no-op on already-shaped values (fast path:
-			// `proto !== null && !isNsModule` returns obj as-is).
-			imports += '          if (table[n]) return __nsShapeCjs(table[n]);\n';
-			imports += "          var rawSub = n === '@nativescript/core' ? '' : n.slice('@nativescript/core/'.length);\n";
-			imports += '          var normSub = __nsNormSub(rawSub);\n';
-			imports += "          var bareKey = normSub ? '@nativescript/core/' + normSub : '@nativescript/core';\n";
-			imports += '          if (table[bareKey]) return __nsShapeCjs(table[bareKey]);\n';
-			imports += '          if (table[normSub]) return __nsShapeCjs(table[normSub]);\n';
-			imports += '        }\n';
-			imports += '      }\n';
+			if (opts.hmrActive) {
+				imports += "      if (n === '@nativescript/core' || n.indexOf('@nativescript/core/') === 0) {\n";
+				imports += '        var table = __nsDev.coreModules;\n';
+				imports += '        if (table) {\n';
+				// The served core's footer can register namespaces before this
+				// shim installs `cjsShape`, so entries may be unshaped; shape on read.
+				imports += '          if (table[n]) return __nsShapeCjs(table[n]);\n';
+				imports += "          var rawSub = n === '@nativescript/core' ? '' : n.slice('@nativescript/core/'.length);\n";
+				imports += '          var normSub = __nsNormSub(rawSub);\n';
+				imports += "          var bareKey = normSub ? '@nativescript/core/' + normSub : '@nativescript/core';\n";
+				imports += '          if (table[bareKey]) return __nsShapeCjs(table[bareKey]);\n';
+				imports += '          if (table[normSub]) return __nsShapeCjs(table[normSub]);\n';
+				imports += '        }\n';
+				imports += '      }\n';
+			}
 			// The native loader may return a raw (null-proto) ESM namespace.
 			imports += '      if (__nsOrigRequire) return __nsShapeCjs(__nsOrigRequire(id));\n';
 			imports += '    } catch (e) {}\n';
@@ -503,7 +438,6 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			imports += '  _nsReq.context = function () { var _c = { keys: function () { return []; } }; _c.__esModule = true; return _c; };\n';
 			imports += '  if (__nsOrigRequire) { try { _nsReq.resolve = __nsOrigRequire.resolve ? __nsOrigRequire.resolve.bind(__nsOrigRequire) : function (id) { return id; }; } catch (e) {} }\n';
 			imports += '  globalThis.require = _nsReq;\n';
-			imports += '  globalThis.__nsOrigRequire = __nsOrigRequire;\n';
 			imports += '} } catch {}\n';
 
 			// Banner diagnostics for visibility at runtime
@@ -581,14 +515,6 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			if (effectiveFlavor === 'typescript') {
 				// Statically import bundler context synchronously before app code
 				imports += "import 'virtual:ns-bundler-context';\n";
-				if (opts.hmrActive) {
-					// Snapshot original module registry functions for HMR diagnostics
-					imports += `(function() {
-  globalThis.__NS_ORIG_GET_REGISTERED_MODULES__ = globalThis.getRegisteredModules;
-  globalThis.__NS_ORIG_MODULE_EXISTS__ = globalThis.moduleExists;
-  globalThis.__NS_ORIG_LOAD_MODULE__ = globalThis.loadModule;
-})();\n`;
-				}
 			}
 
 			// ---- Custom App Components (Activity/Application) ----
@@ -650,18 +576,14 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 					//   - non-HMR: calls `addTaggedAdditionalCSS(ast, 'app.css')`
 					//     as an import-time side-effect, landing CSS in NS's
 					//     selector tables before any view is created.
-					//   - HMR: stashes the rework AST on
-					//     `globalThis.__NS_HMR_APP_CSS_AST__` so
-					//     `installHttpCoreCssSupport` can apply it via the SAME
-					//     AST path in the HTTP-core realm. The default export
-					//     is the raw CSS string, also seeded onto
-					//     `globalThis.__NS_HMR_APP_CSS__` here as a
-					//     raw-text fallback (used for live HMR edits via the
-					//     dev-server WebSocket).
-					imports += `// Apply global CSS before app bootstrap (AST under non-HMR; AST stashed for HMR cold boot)\n`;
+					//   - HMR: publishes the rework AST as the dev globals'
+					//     `appCssAst` for `installHttpCoreCssSupport` in the
+					//     served-core realm. The raw CSS text (the default export)
+					//     goes to `appCss` as the fallback when no AST is present.
+					imports += `// Apply global CSS before app bootstrap (AST under non-HMR; AST published for HMR cold boot)\n`;
 					imports += `import appCssContent from '${APP_CSS_VIRTUAL_ID}';\n`;
 					if (opts.hmrActive) {
-						imports += `try { globalThis.__NS_HMR_APP_CSS__ = appCssContent; } catch {}\n`;
+						imports += `try { ${NS_DEV_EXPR}.appCss = appCssContent; } catch {}\n`;
 					}
 					if (opts.verbose) {
 						imports += `console.info('[ns-entry] app.css applied as AST');\n`;
@@ -705,17 +627,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				if (opts.verbose) {
 					imports += `console.info('[ns-entry] including deterministic dev session bootstrap', { platform: ${JSON.stringify(opts.platform)}, mainRel: ${JSON.stringify(mainEntryRelPosix)} });\n`;
 				}
-				// Same device-reachable origin as `getBootOrigin()`.
-				const { origin: bootOrigin } = resolveDeviceReachableOrigin({
-					host: resolvedConfig.server.host,
-					platform: opts.platform,
-					protocol: resolvedConfig.server.https || opts.useHttps ? 'https' : 'http',
-					port: Number(resolvedConfig.server.port || 5173),
-				});
 				const sessionUrl = bootOrigin + '/__ns_dev__/session';
 				imports += "import { startBrowserRuntimeSession } from '@nativescript/vite/hmr/shared/runtime/session-bootstrap.js';\n";
 				imports += `startBrowserRuntimeSession(${JSON.stringify(sessionUrl)}, __nsVerboseLog).catch((error) => {\n`;
-				imports += `  try { globalThis.__NS_ENTRY_ERROR__ = { phase: 'deterministic-dev-session', message: String(error && (error.message || error)), stack: error && error.stack ? String(error.stack) : '' }; } catch {}\n`;
 				imports += `  console.error('[ns-entry] deterministic dev session bootstrap failed', error && error.stack ? error.stack : error);\n`;
 				imports += `});\n`;
 				if (opts.verbose) {

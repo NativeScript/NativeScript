@@ -1,14 +1,16 @@
 import { getGlobalScope } from './shared/runtime/global-scope.js';
 import { restyleRootAndModals } from './shared/runtime/restyle-roots.js';
+import { nsDev } from './shared/runtime/dev-globals.js';
+import { setAppCssApplier, type AppCssApplier } from './shared/runtime/app-css-applier.js';
 
-type HmrCssApplier = (cssText: string, refreshRoot?: boolean) => void;
+let appCssApplied = false;
 
 // `addTaggedAdditionalCSS` accepts either raw CSS text (string) or a
 // pre-parsed rework `css` AST object — `CSSSource.fromDetect` routes
 // based on typeof. We type the param as `any` so HMR can pass the AST
-// stashed by the bundle on `globalThis.__NS_HMR_APP_CSS_AST__`, which
-// keeps the cold-boot application path identical between HMR and the
-// no-HMR rolldown bundle (both use the rework AST).
+// `bundle.mjs` publishes as the dev globals' `appCssAst`, which keeps the
+// cold-boot application path identical between HMR and the no-HMR rolldown
+// bundle (both use the rework AST).
 type TaggedCssAdd = (cssOrAst: any, tag: string) => unknown;
 type TaggedCssRemove = (tag: string) => unknown;
 type TaggedCssApi = { add?: TaggedCssAdd; remove?: TaggedCssRemove };
@@ -31,7 +33,7 @@ function resolveTaggedCssApi(coreModule: any): TaggedCssApi {
 	return {};
 }
 
-export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): HmrCssApplier | null {
+export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): AppCssApplier | null {
 	try {
 		const g = getGlobalScope();
 		const core = coreModule?.default ?? coreModule;
@@ -44,13 +46,11 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 		// Application realm is not always the realm whose Application.run()
 		// committed the root, so also consult the seeded global and the
 		// Application singletons the root-placeholder run-wrapper records in
-		// __NS_DEV_KNOWN_APPLICATIONS__.
+		// the dev globals' `knownApplications`.
 		const refreshRootViews = () => {
 			const candidates: any[] = [Application, g.Application];
-			try {
-				const known = (g as any).__NS_DEV_KNOWN_APPLICATIONS__;
-				if (Array.isArray(known)) candidates.push(...known);
-			} catch {}
+			const known = nsDev().knownApplications;
+			if (Array.isArray(known)) candidates.push(...known);
 			const seenRoots = new Set<any>();
 			for (const candidate of candidates) {
 				try {
@@ -63,7 +63,7 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 		// rules disappear (the additive `Application.addCss` cannot
 		// undo previously installed selectors).
 		const taggedCss = resolveTaggedCssApi(coreModule);
-		const applyCss: HmrCssApplier = (cssText: string, refreshRoot = true) => {
+		const applyCss: AppCssApplier = (cssText: string, refreshRoot = true) => {
 			if (typeof cssText !== 'string' || !cssText.length) {
 				return;
 			}
@@ -87,10 +87,10 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 			refreshRootViews();
 		};
 
-		g.__NS_HMR_APPLY_CSS__ = applyCss;
+		setAppCssApplier(applyCss);
 
-		if (!g.__NS_HMR_HTTP_APP_CSS_APPLIED__) {
-			// Cold boot: prefer the pre-parsed rework AST stashed by
+		if (!appCssApplied) {
+			// Cold boot: prefer the pre-parsed rework AST published by
 			// `helpers/main-entry.ts` so the HTTP-core realm follows the
 			// SAME application path as the no-HMR rolldown bundle. If the
 			// AST isn't present (e.g. older bundle, future entry shape),
@@ -98,8 +98,7 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 			// the dev-server WebSocket continue to use `applyCss(rawText)`
 			// — `addTaggedAdditionalCSS` accepts either via
 			// `CSSSource.fromDetect`.
-			const appCssAst = (g as any).__NS_HMR_APP_CSS_AST__;
-			const appCssText = g.__NS_HMR_APP_CSS__;
+			const { appCssAst, appCss: appCssText } = nsDev();
 			let cssApplied = false;
 
 			if (appCssAst && typeof appCssAst === 'object' && taggedCss.add && taggedCss.remove) {
@@ -120,11 +119,11 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 			}
 
 			if (cssApplied) {
-				g.__NS_HMR_HTTP_APP_CSS_APPLIED__ = true;
+				appCssApplied = true;
 				// Normally installed before the app mounts, so no refresh is
 				// needed. A late install finds views already mounted with
 				// stale (empty) styling, so re-style.
-				if (g.__NS_HMR_BOOT_COMPLETE__) {
+				if (nsDev().bootComplete) {
 					refreshRootViews();
 				}
 			}

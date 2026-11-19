@@ -15,6 +15,7 @@ import { applySnapshotToBootRefs, applySnapshotToLiveRefs, buildBootOverlayRefs,
 import { applySnapshotToIosRefs, ensureIosOverlayRefs, getIosOverlayHost } from './dev-overlay-ios.js';
 import { applySnapshotToAndroidRefs, ensureAndroidOverlayRefs, getAndroidOverlayHost } from './dev-overlay-android.js';
 import { resolveOverlayEnabled } from './overlay-flag.js';
+import { nsDev } from './dev-globals.js';
 
 // Re-export the snapshot model and backend pure helpers so existing
 // `./dev-overlay.js` importers keep working.
@@ -28,7 +29,7 @@ export { computeAndroidPanelLayout, getAndroidOverlayHost, hexRgbaToAndroidArgb 
 export type { AndroidOverlayHost, AndroidPanelLayout } from './dev-overlay-android.js';
 export type { IosOverlayLayout, IosRect, IosSafeInsets } from './dev-overlay-ios.js';
 
-type HmrOverlayApi = {
+export type HmrOverlayApi = {
 	ensureBootPage: (verbose?: boolean) => any | null;
 	setBootStage: (stage: HmrBootStage, info?: HmrOverlayStageInfo) => HmrOverlaySnapshot;
 	setConnectionStage: (stage: HmrConnectionStage, info?: HmrOverlayStageInfo) => HmrOverlaySnapshot;
@@ -283,7 +284,7 @@ function createOverlayApi(): HmrOverlayApi {
 
 // When the overlay is opted out, every surface (boot / connection / update / pending)
 // becomes a no-op so nothing is ever drawn. The boot placeholder root and the
-// `__NS_HMR_BOOT_COMPLETE__` signal are owned by `root-placeholder.ts` and are
+// boot-complete signal are owned by `root-placeholder.ts` and are
 // unaffected, so boot + HMR keep working — the user just sees no progress UI.
 function createNoopOverlayApi(): HmrOverlayApi {
 	const snapshot = () => getRuntimeState().snapshot;
@@ -308,13 +309,13 @@ function createNoopOverlayApi(): HmrOverlayApi {
 }
 
 export function ensureHmrDevOverlayRuntimeInstalled(verbose?: boolean): HmrOverlayApi {
-	const g = getOverlayGlobal();
+	const dev = nsDev();
 	const state = getRuntimeState();
 	state.verbose = state.verbose || !!verbose;
-	if (!g.__NS_HMR_DEV_OVERLAY__) {
-		g.__NS_HMR_DEV_OVERLAY__ = resolveOverlayEnabled() ? createOverlayApi() : createNoopOverlayApi();
+	if (!dev.overlay) {
+		dev.overlay = resolveOverlayEnabled() ? createOverlayApi() : createNoopOverlayApi();
 	}
-	return g.__NS_HMR_DEV_OVERLAY__ as HmrOverlayApi;
+	return dev.overlay;
 }
 
 export function createHmrBootOverlayPage(verbose?: boolean): any | null {
