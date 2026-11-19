@@ -21,6 +21,7 @@ describe('createEntryBoundaryCode', () => {
 
 	it('is only built for a flavor that declares an entry boundary', () => {
 		expect(nsEntryBoundaryPlugin({ flavor: 'react' })).toBeUndefined();
+		expect(nsEntryBoundaryPlugin({ flavor: 'vue' })?.name).toBe('nativescript-entry-boundary');
 	});
 });
 

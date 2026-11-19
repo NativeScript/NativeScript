@@ -11,6 +11,7 @@
 // Usage (from anywhere):
 //   node --preserve-symlinks tools/vite-server-env-spike/payload-probe.mjs [--compilation-api] [--keep-ns-strategy] [--only a,b,c]
 //   node --preserve-symlinks tools/vite-server-env-spike/payload-probe.mjs --flavor typescript --app ../../apps/toolbox
+//   node --preserve-symlinks tools/vite-server-env-spike/payload-probe.mjs --flavor vue --app apps/vue
 // --flavor            the flavor config to boot (default angular); a non-Angular flavor runs its own case table
 // --app               app root, relative to this directory (default apps/ng)
 // --compilation-api   Analog `experimental.useAngularCompilationAPI: true` (default: Analog default mode)
@@ -50,6 +51,10 @@ const only = take('--only', '')
 const appRoot = path.resolve(spikeDir, take('--app', 'apps/ng'));
 const flavor = take('--flavor', 'angular');
 const isAngular = flavor === 'angular';
+const isVue = flavor === 'vue';
+// The toolbox case table spawns a worker; the Vue fixture has none.
+const hasWorker = !isAngular && !isVue;
+if (isVue && contentCss) throw new Error('--content-css has no Vue case table');
 if (!isAngular && (compilationApi || freshPlugins || noNsRules)) throw new Error('--compilation-api, --fresh-plugins and --no-ns-rules apply to --flavor angular only');
 
 process.chdir(appRoot);
@@ -217,6 +222,27 @@ const TS_EDITS = [
 ];
 
 // --content-css: the stand-in emits a rule per class found in the content files, so a fresh stylesheet carries the edited class.
+// Vue (`apps/vue`): a root SFC, a child SFC with scoped and module styles, a util, an entry-only module and app.css.
+const COUNTER_VUE = 'app/components/Counter.vue';
+const HOME_VUE = 'app/components/Home.vue';
+const SFC_IN_PLACE = { error: false, reboot: 0, fullReload: false, restart: false, fileChangedFirst: true };
+const VUE_EDITS = [
+	{ key: 't1', label: '(t1) child template Counter.vue', file: COUNTER_VUE, from: '<Label class="count" :text="label" />', to: `<Label class="count" :text="label + '!'" />`, expect: { ...SFC_IN_PLACE, selfUpdate: '/app/components/Counter.vue', inPlaceHas: 'export const _rerender_only' } },
+	{ key: 't2', label: '(t2) root template Home.vue', file: HOME_VUE, from: '<Label text="Home" />', to: '<Label text="Home!" />', expect: { ...SFC_IN_PLACE, selfUpdate: '/app/components/Home.vue', inPlaceHas: 'export const _rerender_only' } },
+	{ key: 's1', label: '(s1) child script Counter.vue', file: COUNTER_VUE, from: 'ref(0)', to: 'ref(1)', expect: { ...SFC_IN_PLACE, selfUpdate: '/app/components/Counter.vue', inPlaceLacks: 'export const _rerender_only' } },
+	{ key: 's2', label: '(s2) root script Home.vue', file: HOME_VUE, from: `'Blank {N}-Vue app'`, to: `'Blank {N}-Vue app!'`, expect: { ...SFC_IN_PLACE, selfUpdate: '/app/components/Home.vue', inPlaceLacks: 'export const _rerender_only' } },
+	{ key: 'y1', label: '(y1) child <style scoped> Counter.vue', file: COUNTER_VUE, from: 'color: #65adf1;\n\ttext-align', to: 'color: #3366ff;\n\ttext-align', expect: { ...SFC_IN_PLACE, selfUpdateLike: '/app/components/Counter.vue?vue&type=style&index=0&scoped=', inPlaceHas: '#3366ff' } },
+	{ key: 'm1', label: '(m1) child <style module> Counter.vue', file: COUNTER_VUE, from: 'background-color: #65adf1;', to: 'background-color: #3366ff;', expect: { ...SFC_IN_PLACE, selfUpdate: '/app/components/Counter.vue', inPlaceLacks: 'export const _rerender_only' } },
+	{ key: 'm2', label: '(m2) root <style module> Home.vue', file: HOME_VUE, from: 'color: #333333;', to: 'color: #222222;', expect: { ...SFC_IN_PLACE, selfUpdate: '/app/components/Home.vue', inPlaceLacks: 'export const _rerender_only' } },
+	// A util imported by an SFC stops at that SFC, Vite's first self-accepting importer: a component reload, not a reboot.
+	{ key: 'u1', label: '(u1) util format.ts imported by Counter.vue', file: 'app/utils/format.ts', from: `'time' : 'times'`, to: `'tap' : 'taps'`, expect: { error: false, reboot: 0, fullReload: false, restart: false, selfUpdate: '/app/components/Counter.vue', rerunIncludes: '/app/utils/format.ts' } },
+	{ key: 'x1', label: '(x1) entry-only module setup.ts', file: 'app/setup.ts', from: 'setup v1', to: 'setup v2', expect: { error: false, reboot: 1, rerunIncludes: '/app/setup.ts', fullReload: false, restart: false } },
+	{ key: 'a1', label: '(a1) entry app.ts', file: 'app/app.ts', append: '// probe a1\n', expect: { error: false, reboot: 1, rerunIncludes: '/app/app.ts', fullReload: false, restart: false } },
+	{ key: 'g1', label: '(g1) global app.css', file: 'app/app.css', append: '\n.probe-global { color: red; }\n', expect: { error: false, reboot: 0, selfUpdate: '/app/app.css', fullReload: false, restart: false, inPlaceHas: '.probe-global' } },
+	{ key: 'e1a', label: '(e1) syntax error in Counter.vue <script setup>', file: COUNTER_VUE, from: 'ref(1)', to: 'ref(1;', expect: { error: true, update: false, fullReload: false, restart: false } },
+	{ key: 'e1b', label: '(e1) fix the syntax error', file: COUNTER_VUE, from: 'ref(1;', to: 'ref(2)', expect: { ...SFC_IN_PLACE, selfUpdate: '/app/components/Counter.vue', inPlaceLacks: 'export const _rerender_only' } },
+];
+
 const CONTENT_CSS_EXPECT = { error: false, reboot: 0, selfUpdate: '/src/app.css', fullReload: false, restart: false };
 const ANGULAR_CONTENT_EDITS = [
 	{ key: 'ca', label: '(ca) content: loaded home.component.html gains a class', file: 'src/app/home/home.component.html', from: 'class="title"', to: 'class="title probe-ca"', expect: { ...CONTENT_CSS_EXPECT, inPlace: true, inPlaceHas: '.probe-ca' } },
@@ -241,7 +267,7 @@ const contentDependencyPlugin = {
 	},
 };
 
-const EDITS = (contentCss ? (isAngular ? ANGULAR_CONTENT_EDITS : TS_CONTENT_EDITS) : isAngular ? ANGULAR_EDITS : TS_EDITS).filter((e) => !only.length || only.includes(e.key) || only.includes(e.key[0]));
+const EDITS = (contentCss ? (isAngular ? ANGULAR_CONTENT_EDITS : TS_CONTENT_EDITS) : isAngular ? ANGULAR_EDITS : isVue ? VUE_EDITS : TS_EDITS).filter((e) => !only.length || only.includes(e.key) || only.includes(e.key[0]));
 
 // ---- server ----------------------------------------------------------------
 let server;
@@ -358,6 +384,8 @@ if (server.environments?.client?.hot && server.environments.client.hot !== serve
 const session = await (await fetch(`${local}/__ns_dev__/session`)).json();
 const deviceOrigin = new URL(session.entryUrl).origin;
 const ENTRY_PATH = new URL(session.entryUrl).pathname;
+// The app directory (`/src/`, `/app/`): the crawl follows only app modules.
+const APP_PREFIX = `/${ENTRY_PATH.split('/')[1]}/`;
 const toLocal = (u) => u.replace(deviceOrigin, local);
 let mapUrl;
 let importMap = {};
@@ -442,12 +470,12 @@ async function crawl(url, opts = {}) {
 		if (target.origin !== deviceOrigin) crawlFailure(`foreign origin '${r.url}' in ${key}`);
 		// App modules only: node_modules never import app code, so they add no importer edges.
 		// Virtual modules (the bundler context) do.
-		else if (target.pathname.startsWith('/src/') || target.pathname.startsWith('/@id/__x00__virtual:')) await crawl(r.url, opts);
+		else if (target.pathname.startsWith(APP_PREFIX) || target.pathname.startsWith('/@id/__x00__virtual:')) await crawl(r.url, opts);
 	}
 }
 await crawl(session.entryUrl);
 // The device spawns the toolbox worker on a tap; spawn it now so its modules are in the graph.
-if (!isAngular) await crawl(new URL(WORKER_URL, deviceOrigin).href);
+if (hasWorker) await crawl(new URL(WORKER_URL, deviceOrigin).href);
 if (isAngular) {
 	const home = await (await fetch(`${local}/src/app/home/home.component.ts`)).text();
 	console.log(`home.component.ts compiled with HMR listener: ${home.includes('angular:component-update')}`);
@@ -671,10 +699,13 @@ try {
 		if (!isAngular || contentCss) {
 			for (const p of entries.filter((e) => e.via === 'wire' && e.payload?.type === 'update').map((e) => e.payload)) {
 				for (const u of p.updates.filter((x) => x.type === 'js-update' && x.path !== ENTRY_PATH && (!isAngular || x.path === '/src/app.css'))) {
-					const url = `${deviceOrigin}${u.acceptedPath}?${u.explicitImportRequired ? 'import&' : ''}t=${u.timestamp}`;
+					const [acceptedPathWithoutQuery, query] = u.acceptedPath.split('?');
+					const url = `${deviceOrigin}${acceptedPathWithoutQuery}?${u.explicitImportRequired ? 'import&' : ''}t=${u.timestamp}${query ? `&${query}` : ''}`;
 					const res = await fetch(toLocal(url));
 					const body = await res.text();
 					edit.inPlaceBodies = [...(edit.inPlaceBodies ?? []), body];
+					// The device's import also loads what the accepted module imports at new stamps (an SFC's style modules).
+					await crawl(url);
 					entries.push({ via: 'device', text: `imported ${new URL(url).pathname}${new URL(url).search}: ${res.status} ${body.length}b` });
 				}
 			}
@@ -712,7 +743,7 @@ try {
 			seen.clear();
 			const bodies = new Map();
 			await crawl(boot.entryUrl, { bodies });
-			await crawl(new URL(WORKER_URL, deviceOrigin).href, { bodies });
+			if (hasWorker) await crawl(new URL(WORKER_URL, deviceOrigin).href, { bodies });
 			edit.restartBootFailures = crawlFailureCount - failuresBefore;
 			ws = await openSocket();
 			await settle();
@@ -743,6 +774,15 @@ try {
 				stamped: edit.stamped,
 				restartBootFailures: edit.restartBootFailures,
 				inPlaceHas: edit.expect.inPlaceHas ? !!edit.inPlaceBodies?.some((b) => b.includes(edit.expect.inPlaceHas)) : undefined,
+				inPlaceLacks: edit.expect.inPlaceLacks ? !!edit.inPlaceBodies?.length && !edit.inPlaceBodies.some((b) => b.includes(edit.expect.inPlaceLacks)) : undefined,
+				// plugin-vue's `file-changed` sets `__VUE_HMR_RUNTIME__.CHANGED_FILE`, which the re-imported SFC reads to choose rerender over reload.
+				fileChangedFirst: (() => {
+					const at = (match) => wire.findIndex(match);
+					const changed = at((p) => p?.type === 'custom' && p.event === 'file-changed');
+					const rerunAt = at((p) => p?.type === 'custom' && p.event === 'ns:rerun');
+					const updateAt = at((p) => p?.type === 'update');
+					return changed >= 0 && (rerunAt < 0 || changed < rerunAt) && (updateAt < 0 || changed < updateAt);
+				})(),
 				fullReload: wire.some((p) => p?.type === 'full-reload'),
 				restart: entries.some((e) => e.via === 'ipc' && e.payload?.type === 'nativescript:restart'),
 				cssUpdatesEvent: wire.some((p) => p?.type === 'custom' && p.event === 'ns:css-updates'),
@@ -755,6 +795,8 @@ try {
 				if (k === 'selfUpdate') return facts.selfUpdate.includes(`${v}>${v}`);
 				if (k === 'servedIncludes') return facts.servedIncludes[1] === true;
 				if (k === 'inPlaceHas') return facts.inPlaceHas;
+				if (k === 'inPlaceLacks') return facts.inPlaceLacks;
+				if (k === 'selfUpdateLike') return facts.selfUpdate.some((u) => u.split('>')[0] === u.split('>')[1] && u.includes(v));
 				return facts[k] === v;
 			};
 			const failures = Object.entries(edit.expect).filter(([k, v]) => !met(k, v));

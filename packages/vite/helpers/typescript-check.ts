@@ -1,4 +1,4 @@
-import type { Plugin } from 'vite';
+import type { Plugin, ResolvedConfig } from 'vite';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -129,7 +129,7 @@ function createTsrxCheckConfig(tsConfigPath: string, parsedConfig: TS.ParsedComm
 	};
 }
 
-function runTsrxTypeCheck(binPath: string, opts: { platform?: PlatformType; verbose?: boolean; logDiagnostics?: boolean }, tsConfigPath: string, parsedConfig: TS.ParsedCommandLine, rootNames: readonly string[], failOnError: boolean): void {
+function runTsrxTypeCheck(binPath: string, opts: { platform?: PlatformType; verbose?: boolean; logDiagnostics?: boolean }, tsConfigPath: string, parsedConfig: TS.ParsedCommandLine, rootNames: readonly string[], failure: TypeCheckFailure): void {
 	// TypeScript resolves typeRoots and `types` entries from the config's directory.
 	const scratchRoot = path.join(getProjectRootPath(), 'node_modules', '.ns-vite');
 	fs.mkdirSync(scratchRoot, { recursive: true });
@@ -137,13 +137,13 @@ function runTsrxTypeCheck(binPath: string, opts: { platform?: PlatformType; verb
 	try {
 		const configPath = path.join(tempDir, 'tsconfig.json');
 		fs.writeFileSync(configPath, JSON.stringify(createTsrxCheckConfig(tsConfigPath, parsedConfig, rootNames, opts.platform)));
-		runTscBinary('tsrx-tsc', [binPath, '--pretty', '-p', configPath], opts, failOnError);
+		runTscBinary('tsrx-tsc', [binPath, '--pretty', '-p', configPath], opts, failure);
 	} finally {
 		fs.rmSync(tempDir, { recursive: true, force: true });
 	}
 }
 
-function runTscBinary(tool: string, args: string[], opts: { verbose?: boolean; logDiagnostics?: boolean }, failOnError: boolean): void {
+function runTscBinary(tool: string, args: string[], opts: { verbose?: boolean; logDiagnostics?: boolean }, failure: TypeCheckFailure): void {
 	const result = spawnSync(process.execPath, args, {
 		cwd: process.cwd(),
 		env: { ...process.env, FORCE_COLOR: '1' },
@@ -163,11 +163,11 @@ function runTscBinary(tool: string, args: string[], opts: { verbose?: boolean; l
 
 	const output = `${result.stdout || ''}${result.stderr || ''}`.trim();
 	if (output && opts.logDiagnostics !== false) {
-		(failOnError ? console.error : console.warn)(output);
+		(failure.failOnError ? console.error : console.warn)(output);
 	}
 
-	if (!failOnError) {
-		console.warn(`[ns-vite] ${tool} reported type errors; continuing build because tsconfig does not require failing on type errors.`);
+	if (!failure.failOnError) {
+		console.warn(`[ns-vite] ${tool} reported type errors; continuing build because ${failure.continueReason}.`);
 		return;
 	}
 
@@ -232,12 +232,23 @@ function applyTypeCheckMode(base: ResolvedTypeCheckOptions, mode: TypeCheckMode)
 	}
 }
 
-function shouldFailOnTypeCheckError(opts: { failOnError?: boolean }, parsedConfig: TS.ParsedCommandLine): boolean {
+type TypeCheckFailure = { failOnError: boolean; continueReason: string };
+
+function resolveTypeCheckFailure(opts: { failOnError?: boolean }, parsedConfig: TS.ParsedCommandLine, hmrActive: boolean): TypeCheckFailure {
+	const continueReason = 'tsconfig does not require failing on type errors';
 	if (typeof opts.failOnError === 'boolean') {
-		return opts.failOnError;
+		return { failOnError: opts.failOnError, continueReason };
 	}
 
-	return parsedConfig.options.noEmitOnError === true;
+	if (hmrActive) {
+		return { failOnError: false, continueReason: 'type errors do not fail HMR dev builds (NS_VITE_TYPECHECK=error makes them fail)' };
+	}
+
+	return { failOnError: parsedConfig.options.noEmitOnError === true, continueReason };
+}
+
+function isHmrDevBuild(config: ResolvedConfig): boolean {
+	return config.mode === 'development' && !!getCliFlags().hmr;
 }
 
 function normalizeTypeCheckSetting(base: ResolvedTypeCheckOptions, setting?: TypeCheckSetting): ResolvedTypeCheckOptions {
@@ -378,9 +389,13 @@ function shouldSkipFileForPlatform(fileName: string, platform: PlatformType | un
 }
 
 export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?: boolean; failOnError?: boolean; logDiagnostics?: boolean }): Plugin {
+	let hmrActive = false;
 	return {
 		name: 'ns-typescript-check',
 		apply: 'build',
+		configResolved(config) {
+			hmrActive = isHmrDevBuild(config);
+		},
 		async buildStart() {
 			const tsConfigPath = getProjectTSConfigPath();
 			if (!tsConfigPath) {
@@ -394,11 +409,11 @@ export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?:
 
 			const projectRoot = path.resolve(process.cwd());
 			const parsedConfig = getParsedConfig(ts, tsConfigPath, opts.platform);
-			const failOnError = shouldFailOnTypeCheckError(opts, parsedConfig);
+			const failure = resolveTypeCheckFailure(opts, parsedConfig, hmrActive);
 			const rootNames = parsedConfig.fileNames.filter((fileName) => !shouldSkipFileForPlatform(fileName, opts.platform));
 			const tsrxTscBinPath = getTsrxTscBinPath();
 			if (tsrxTscBinPath && hasTsrxImports(ts, rootNames)) {
-				runTsrxTypeCheck(tsrxTscBinPath, opts, tsConfigPath, parsedConfig, rootNames, failOnError);
+				runTsrxTypeCheck(tsrxTscBinPath, opts, tsConfigPath, parsedConfig, rootNames, failure);
 				return;
 			}
 
@@ -421,11 +436,11 @@ export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?:
 					console.warn('[ns-vite] Unresolved .tsrx imports: install @tsrx/typescript-plugin so the type check can run through tsrx-tsc.');
 				}
 				const output = ts.formatDiagnosticsWithColorAndContext(diagnostics, getFormatHost(ts));
-				(failOnError ? console.error : console.warn)(output);
+				(failure.failOnError ? console.error : console.warn)(output);
 			}
 			const errorCount = diagnostics.length;
-			if (!failOnError) {
-				console.warn(`[ns-vite] TypeScript found ${errorCount} error${errorCount === 1 ? '' : 's'}; continuing build because tsconfig does not require failing on type errors.`);
+			if (!failure.failOnError) {
+				console.warn(`[ns-vite] TypeScript found ${errorCount} error${errorCount === 1 ? '' : 's'}; continuing build because ${failure.continueReason}.`);
 				return;
 			}
 
@@ -435,9 +450,13 @@ export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?:
 }
 
 export function vueTypeCheckPlugin(opts: { platform?: PlatformType; verbose?: boolean; failOnError?: boolean; logDiagnostics?: boolean }): Plugin {
+	let hmrActive = false;
 	return {
 		name: 'ns-vue-tsc-check',
 		apply: 'build',
+		configResolved(config) {
+			hmrActive = isHmrDevBuild(config);
+		},
 		buildStart() {
 			const tsConfigPath = getProjectTSConfigPath();
 			if (!tsConfigPath) {
@@ -450,11 +469,11 @@ export function vueTypeCheckPlugin(opts: { platform?: PlatformType; verbose?: bo
 			}
 
 			const parsedConfig = getParsedConfig(ts, tsConfigPath, opts.platform);
-			const failOnError = shouldFailOnTypeCheckError(opts, parsedConfig);
+			const failure = resolveTypeCheckFailure(opts, parsedConfig, hmrActive);
 
 			const vueTscBinPath = getVueTscBinPath();
 			const moduleSuffixes = getModuleSuffixes(opts.platform).join(',');
-			runTscBinary('vue-tsc', [vueTscBinPath, '--noEmit', '--pretty', '-p', tsConfigPath, '--moduleSuffixes', moduleSuffixes], opts, failOnError);
+			runTscBinary('vue-tsc', [vueTscBinPath, '--noEmit', '--pretty', '-p', tsConfigPath, '--moduleSuffixes', moduleSuffixes], opts, failure);
 		},
 	};
 }

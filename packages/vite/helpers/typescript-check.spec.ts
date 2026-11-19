@@ -2,7 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { typescriptCheckPlugin } from './typescript-check.js';
+import type { Plugin, ResolvedConfig } from 'vite';
+import { getTypeCheckPlugins, typescriptCheckPlugin, type TypeCheckSetting } from './typescript-check.js';
+
+const cliFlags = vi.hoisted(() => ({ current: {} as Record<string, string | boolean> }));
+vi.mock('./cli-flags.js', () => ({ getCliFlags: () => cliFlags.current, resolvePlatform: () => 'ios' }));
 
 const FAKE_TSRX_TSC = `
 const fs = require('node:fs');
@@ -73,6 +77,7 @@ describe('typescriptCheckPlugin with .tsrx imports', () => {
 		process.chdir(cwd);
 		delete process.env.NS_TSRX_TEST_OUT;
 		delete process.env.NS_TSRX_TEST_EXIT;
+		cliFlags.current = {};
 		vi.restoreAllMocks();
 		fs.rmSync(root, { recursive: true, force: true });
 	});
@@ -126,6 +131,19 @@ describe('typescriptCheckPlugin with .tsrx imports', () => {
 		expect(fs.readdirSync(path.join(root, 'node_modules', '.ns-vite'))).toEqual([]);
 	});
 
+	it('warns instead of failing when tsrx-tsc reports errors in an HMR dev build', async () => {
+		installFakeTsrxPlugin(root);
+		process.env.NS_TSRX_TEST_EXIT = '2';
+		cliFlags.current = { hmr: true };
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const plugin = typescriptCheckPlugin({ platform: 'ios' });
+
+		(plugin.configResolved as unknown as (config: Partial<ResolvedConfig>) => void)({ mode: 'development' });
+		await (plugin.buildStart as unknown as () => Promise<void>)();
+
+		expect(warn.mock.calls.flat().join('\n')).toContain('tsrx-tsc reported type errors; continuing build because type errors do not fail HMR dev builds');
+	});
+
 	it('hints at @tsrx/typescript-plugin when the in-process check cannot resolve .tsrx imports', async () => {
 		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -134,5 +152,88 @@ describe('typescriptCheckPlugin with .tsrx imports', () => {
 		expect(warn.mock.calls.flat().join('\n')).toContain('install @tsrx/typescript-plugin');
 		expect(fs.existsSync(outFile)).toBe(false);
 		expect(fs.existsSync(path.join(root, 'node_modules', '.ns-vite'))).toBe(false);
+	});
+});
+
+function createProjectWithTypeError(): string {
+	const root = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'ns-vite-type-check-'));
+	fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'type-check-app', private: true }));
+	fs.writeFileSync(
+		path.join(root, 'tsconfig.json'),
+		JSON.stringify({
+			compilerOptions: { target: 'es2020', module: 'esnext', moduleResolution: 'bundler', strict: true, noEmit: true, noEmitOnError: true, skipLibCheck: true, lib: ['es2020'], types: [] },
+			include: ['src/**/*.ts'],
+		}),
+	);
+	fs.mkdirSync(path.join(root, 'src'));
+	fs.writeFileSync(path.join(root, 'src', 'main.ts'), "export const count: number = 'one';\n");
+	return root;
+}
+
+describe('type check failure policy', () => {
+	let cwd: string;
+	let root: string;
+	let warn: ReturnType<typeof vi.spyOn>;
+	let error: ReturnType<typeof vi.spyOn>;
+
+	beforeEach(() => {
+		cwd = process.cwd();
+		root = createProjectWithTypeError();
+		process.chdir(root);
+		warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		error = vi.spyOn(console, 'error').mockImplementation(() => {});
+	});
+
+	afterEach(() => {
+		process.chdir(cwd);
+		delete process.env.NS_VITE_TYPECHECK;
+		cliFlags.current = {};
+		vi.restoreAllMocks();
+		fs.rmSync(root, { recursive: true, force: true });
+	});
+
+	async function runBuild(build: { mode: string; hmr?: boolean; typecheckFlag?: string }, setting?: TypeCheckSetting): Promise<void> {
+		cliFlags.current = { ...(build.hmr ? { hmr: true } : {}), ...(build.typecheckFlag ? { typecheck: build.typecheckFlag } : {}) };
+		const [plugin] = getTypeCheckPlugins('typescript', setting) as Plugin[];
+		(plugin.configResolved as unknown as (config: Partial<ResolvedConfig>) => void)({ mode: build.mode });
+		await (plugin.buildStart as unknown as () => Promise<void>)();
+	}
+
+	const output = (spy: ReturnType<typeof vi.spyOn>) => spy.mock.calls.flat().join('\n');
+
+	it('warns in an HMR dev build, overriding tsconfig noEmitOnError, with the same diagnostics', async () => {
+		await runBuild({ mode: 'development', hmr: true });
+
+		expect(output(warn)).toContain('TS2322');
+		expect(output(warn)).toContain('TypeScript found 1 error; continuing build because type errors do not fail HMR dev builds (NS_VITE_TYPECHECK=error makes them fail).');
+		expect(error).not.toHaveBeenCalled();
+	});
+
+	it('fails an HMR dev build when NS_VITE_TYPECHECK=error', async () => {
+		process.env.NS_VITE_TYPECHECK = 'error';
+
+		await expect(runBuild({ mode: 'development', hmr: true })).rejects.toThrow('TypeScript found 1 error.');
+		expect(output(error)).toContain('TS2322');
+	});
+
+	it('fails an HMR dev build when --env.typecheck=error', async () => {
+		await expect(runBuild({ mode: 'development', hmr: true, typecheckFlag: 'error' })).rejects.toThrow('TypeScript found 1 error.');
+	});
+
+	it('lets an explicit typeCheck option fail an HMR dev build', async () => {
+		await expect(runBuild({ mode: 'development', hmr: true }, 'error')).rejects.toThrow('TypeScript found 1 error.');
+		await expect(runBuild({ mode: 'development', hmr: true }, true)).rejects.toThrow('TypeScript found 1 error.');
+	});
+
+	it('follows tsconfig noEmitOnError in dev builds without HMR and in production', async () => {
+		await expect(runBuild({ mode: 'development' })).rejects.toThrow('TypeScript found 1 error.');
+		await expect(runBuild({ mode: 'production', hmr: true })).rejects.toThrow('TypeScript found 1 error.');
+	});
+
+	it('lets an explicit typeCheck option warn in a build without HMR', async () => {
+		await runBuild({ mode: 'production' }, 'warn');
+
+		expect(output(warn)).toContain('TypeScript found 1 error; continuing build');
+		expect(output(warn)).not.toContain('HMR');
 	});
 });

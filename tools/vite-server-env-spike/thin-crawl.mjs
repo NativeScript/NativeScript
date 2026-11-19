@@ -156,7 +156,7 @@ if (bundle) {
 	}
 }
 
-const PREFIXES = ['/node_modules/.vite/', '/node_modules/', '/src/', '/@fs/', '/@id/', '/@vite/', '/__ns_dev__/'];
+const PREFIXES = ['/node_modules/.vite/', '/node_modules/', '/src/', '/app/', '/@fs/', '/@id/', '/@vite/', '/__ns_dev__/'];
 const prefixOf = (pathname) => PREFIXES.find((p) => pathname.startsWith(p))?.replace(/\/$/, '') ?? 'other';
 
 const fetched = new Map();
@@ -890,7 +890,23 @@ lines.push(
 	...top(importMapDiff, 5),
 	`  optimizer present ${optimizer.depsOptimizerPresent} (noDiscovery=${optimizer.config.noDiscovery} include=${JSON.stringify(optimizer.config.include)}); browserHash ${optimizerAtStart.browserHash} -> ${optimizerAtEnd.browserHash}${optimizer.changed ? ' CHANGED' : ''}; optimized ${optimizerAtStart.optimized} -> ${optimizerAtEnd.optimized}, discovered ${optimizerAtStart.discovered} -> ${optimizerAtEnd.discovered}; full-reloads sent ${fullReloads.length}; hot payloads ${hotSentDuringCrawl.length}`,
 );
-const ok = failureCount === 0 && duplicates.length === 0 && sameFileFailures === 0 && importMapVsAnalysisFail === 0 && nonce.length > 0 && (allowDupInstances || dupInstanceCount === 0);
+// Vue: Vite's client-inject substitutes `process.env.NODE_ENV` in served modules (no other define),
+// which selects runtime-core's dev branch that registers `__VUE_HMR_RUNTIME__`; the entry boundary
+// imports the Vue reboot module.
+let vueRuntimeOk = true;
+if (flavor === 'vue') {
+	const runtimeCore = [...bodies].filter(([u]) => new URL(u).pathname.endsWith('/@vue/runtime-core/dist/runtime-core.esm-bundler.js'));
+	const body = runtimeCore[0]?.[1] ?? '';
+	const at = body.indexOf('getGlobalThis().__VUE_HMR_RUNTIME__ = {');
+	const guard = at >= 0 ? body.slice(Math.max(0, body.lastIndexOf('\n', at - 2) - 60), at).trim() : '';
+	const devBranch = at >= 0 && !body.includes('process.env.NODE_ENV') && /"development"\s*!==\s*"production"|\(true\)|!!true/.test(guard);
+	const rebootLoaded = [...deviceReached].some((u) => new URL(u).pathname.endsWith('/@nativescript/vite/hmr/frameworks/vue/client/reboot.js'));
+	vueRuntimeOk = runtimeCore.length === 1 && devBranch && rebootLoaded;
+	report.vue = { runtimeCoreUrls: runtimeCore.map(([u]) => u), hmrRuntimeGuard: guard, devBranch, rebootLoaded };
+	fs.writeFileSync(outFile, JSON.stringify(report, null, 2));
+	lines.push(`  vue: runtime-core URLs ${runtimeCore.length}; __VUE_HMR_RUNTIME__ guard ${JSON.stringify(guard)} → dev branch ${devBranch}; reboot module loaded ${rebootLoaded} → ${vueRuntimeOk ? 'ok' : 'FAIL'}`);
+}
+const ok = vueRuntimeOk && failureCount === 0 && duplicates.length === 0 && sameFileFailures === 0 && importMapVsAnalysisFail === 0 && nonce.length > 0 && (allowDupInstances || dupInstanceCount === 0);
 lines.push(`${ok ? 'PASS' : 'FAIL'} failures=${failureCount} duplicates=${duplicates.length} sameFileTwoUrls=${sameFileFailures} importMapVsAnalysis=${importMapVsAnalysisFail} duplicateInstanceFiles=${dupInstanceCount}${allowDupInstances ? ' (allowed)' : ''} → ${path.relative(repoRoot, outFile)}`);
 if (!bundle) lines.push(noBundleWarning);
 console.log(lines.join('\n'));

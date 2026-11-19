@@ -74,10 +74,14 @@ const angularServerStrategy: FrameworkServerStrategy = {
 // module turns that call into `Application.resetRootView(entry)`.
 const coreEntryBoundary: FrameworkEntryBoundary = { module: '@nativescript/vite/hmr/frameworks/core/client/reboot.js', dispose: 'prepareHmrReboot', settled: 'whenHmrRebootSettled' };
 
+// `createApp(...).start()` calls `Application.run`; the module redirects it
+// like the core one and unmounts the replaced app.
+const vueEntryBoundary: FrameworkEntryBoundary = { module: '@nativescript/vite/hmr/frameworks/vue/client/reboot.js', dispose: 'prepareHmrReboot', settled: 'whenHmrRebootSettled' };
+
 const BUILT_IN_STRATEGIES = new Map<string, FrameworkServerStrategy>([
 	['angular', angularServerStrategy],
 	// Key order is significant for the import map.
-	['vue', { flavor: 'vue', importMapSpecifiers: () => ['nativescript-vue', 'vue'] }],
+	['vue', { flavor: 'vue', importMapSpecifiers: () => ['nativescript-vue', 'vue'], entryBoundary: vueEntryBoundary }],
 	['solid', { flavor: 'solid', importMapSpecifiers: () => ['solid-js'] }],
 	['react', { flavor: 'react' }],
 	['typescript', { flavor: 'typescript', entryBoundary: coreEntryBoundary }],

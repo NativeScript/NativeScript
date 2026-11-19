@@ -305,7 +305,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			}),
 			// Ensure explicit keep markers are honored
 			preserveImportsPlugin(),
-			// Vue HMR plugins for development mode
 			// HMR plugins (source streaming replaces prior exploded source plugin when enabled)
 			...(hmrActive ? [...getHMRPlugins({ platform, flavor, verbose })] : []),
 			// TODO: make flavor plugins dynamic

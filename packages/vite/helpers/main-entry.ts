@@ -9,7 +9,7 @@ import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
-import { NS_DEV_EXPR } from '../hmr/shared/runtime/dev-globals.js';
+import { createRequireShimCode } from './require-shim.js';
 import { BUNDLE_CSS_AST_SENTINEL, inlineBundleCss } from './bundle-css.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
@@ -213,117 +213,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// consistent verbose flag to easily reference below
 			imports += "const __nsVerboseLog = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;\n";
 
-			// Ensure any CommonJS-style tooling requires (e.g. from Babel or
-			// other build-time libraries that may be accidentally bundled) do
-			// not attempt to resolve Node built-ins like 'fs' or 'path' on
-			// device. These modules are not used at runtime for NativeScript
-			// apps, so we safely return an empty object from a shim.
-			//
-			// IMPORTANT: this shim is the final `globalThis.require`. The native
-			// loader resolves only on disk and never consults the import map, yet
-			// served dependency code calls require() with `@nativescript/core/<sub>`
-			// specifiers (e.g. `require('@nativescript/core/ui/core/view').View` in
-			// `@nativescript-community/gesturehandler`). A blanket stub would hand
-			// those `{}`, cascading into `TypeError: Cannot read properties of
-			// undefined (reading 'prototype')` inside `applyMixins`.
-			//
-			// Instead, install a DELEGATING shim:
-			//   - If the specifier is a Node built-in (fs, path, os, …) or
-			//     a webpack-only runtime hook (require.context), return a
-			//     safe empty stub.
-			//   - Otherwise (HMR only), consult the served core modules registered
-			//     on the dev globals (`coreModules`), then delegate to the
-			//     preserved original `globalThis.require` (NativeScript's native
-			//     CJS loader).
-			imports += "try { if (typeof globalThis !== 'undefined') {\n";
-			if (opts.hmrActive) {
-				imports += `  var __nsDev = ${NS_DEV_EXPR};\n`;
-			}
-			imports += "  var __nsOrigRequire = typeof globalThis.require === 'function' ? globalThis.require : null;\n";
-			imports += '  var __nsNodeBuiltins = { fs: 1, path: 1, os: 1, url: 1, crypto: 1, util: 1, stream: 1, events: 1, buffer: 1, http: 1, https: 1, net: 1, tls: 1, dns: 1, child_process: 1, module: 1, zlib: 1, querystring: 1, assert: 1, constants: 1, vm: 1 };\n';
-			// Mirrors normalizeCoreSub() in helpers/ns-core-url.ts.
-			imports += '  var __nsNormSub = function (s) {\n';
-			imports += "    if (!s) return '';\n";
-			imports += "    var t = String(s).split('?')[0].split('#')[0].trim();\n";
-			imports += "    t = t.replace(/^\\/+/, '').replace(/\\/+$/, '');\n";
-			imports += "    t = t.replace(/\\.(?:mjs|cjs|js)$/, '');\n";
-			imports += "    if (t.length >= 6 && t.substring(t.length - 6) === '/index') t = t.substring(0, t.length - 6);\n";
-			imports += "    if (!t || t === 'index') return '';\n";
-			imports += '    return t;\n';
-			imports += '  };\n';
-			// Invariant D: CJS/ESM interop shape helper.
-			//
-			// A shape function that converts
-			// ESM Module Namespace Objects (which have [[Prototype]] = null
-			// per spec §9.4.6) into plain Objects that inherit from
-			// Object.prototype. CJS consumers — especially zone.js's
-			// patchMethod() — call `hasOwnProperty`, `toString`, etc. on
-			// their require() result; a null-proto namespace throws
-			// "X is not a function" on the first such call.
-			//
-			// Properties:
-			//   - Recursive: @nativescript/core re-exports Utils/Http/Trace
-			//     as nested namespaces (`export * as Utils from './utils'`),
-			//     each also null-proto. Shallow wrapping leaves those.
-			//   - Identity-preserving via a WeakMap cache keyed on the
-			//     underlying namespace. zone.js MUTATES its target (stashes
-			//     delegate symbols, overwrites methods); a fresh copy per
-			//     require() would lose those mutations on the next lookup.
-			//   - Under HMR, published as the dev globals' `cjsShape` so the served
-			//     core's registration footer shares this one cache and sees
-			//     mutation-consistent shapes.
-			imports += '  var __nsShapeCache = new WeakMap();\n';
-			imports += `  var __nsShapeCjs = ${opts.hmrActive ? '__nsDev.cjsShape || (__nsDev.cjsShape = ' : '('}function __nsShape(obj) {\n`;
-			imports += "    if (!obj || typeof obj !== 'object') return obj;\n";
-			imports += '    var proto = Object.getPrototypeOf(obj);\n';
-			imports += '    var isNsModule = false;\n';
-			imports += "    try { isNsModule = obj[Symbol.toStringTag] === 'Module'; } catch (e) {}\n";
-			imports += '    if (proto !== null && !isNsModule) return obj;\n';
-			imports += '    if (__nsShapeCache.has(obj)) return __nsShapeCache.get(obj);\n';
-			imports += '    var out = {};\n';
-			imports += '    __nsShapeCache.set(obj, out);\n';
-			imports += '    try {\n';
-			imports += '      var keys = Object.keys(obj);\n';
-			imports += '      for (var i = 0; i < keys.length; i++) {\n';
-			imports += '        var k = keys[i];\n';
-			imports += '        try { out[k] = __nsShape(obj[k]); } catch (e) {}\n';
-			imports += '      }\n';
-			imports += '    } catch (e) {}\n';
-			imports += '    return out;\n';
-			imports += '  });\n';
-			imports += '  var _nsReq = function (id) {\n';
-			imports += '    try {\n';
-			imports += "      var n = String(id || '');\n";
-			// Kept-external builtins must reach the runtime before the stub table.
-			imports += "      if (__nsOrigRequire && (n.indexOf('ns:') === 0 || n.indexOf('node:') === 0)) {\n";
-			imports += '        try { return __nsOrigRequire(n); } catch (e) {}\n';
-			imports += '      }\n';
-			imports += "      var stripped = n.indexOf('node:') === 0 ? n.slice(5) : n;\n";
-			imports += '      if (__nsNodeBuiltins[stripped]) return {};\n';
-			if (opts.hmrActive) {
-				imports += "      if (n === '@nativescript/core' || n.indexOf('@nativescript/core/') === 0) {\n";
-				imports += '        var table = __nsDev.coreModules;\n';
-				imports += '        if (table) {\n';
-				// The served core's footer can register namespaces before this
-				// shim installs `cjsShape`, so entries may be unshaped; shape on read.
-				imports += '          if (table[n]) return __nsShapeCjs(table[n]);\n';
-				imports += "          var rawSub = n === '@nativescript/core' ? '' : n.slice('@nativescript/core/'.length);\n";
-				imports += '          var normSub = __nsNormSub(rawSub);\n';
-				imports += "          var bareKey = normSub ? '@nativescript/core/' + normSub : '@nativescript/core';\n";
-				imports += '          if (table[bareKey]) return __nsShapeCjs(table[bareKey]);\n';
-				imports += '          if (table[normSub]) return __nsShapeCjs(table[normSub]);\n';
-				imports += '        }\n';
-				imports += '      }\n';
-			}
-			// The native loader may return a raw (null-proto) ESM namespace.
-			imports += '      if (__nsOrigRequire) return __nsShapeCjs(__nsOrigRequire(id));\n';
-			imports += '    } catch (e) {}\n';
-			imports += '    return {};\n';
-			imports += '  };\n';
-			imports += '  _nsReq.context = function () { var _c = { keys: function () { return []; } }; _c.__esModule = true; return _c; };\n';
-			imports += '  if (__nsOrigRequire) { try { _nsReq.resolve = __nsOrigRequire.resolve ? __nsOrigRequire.resolve.bind(__nsOrigRequire) : function (id) { return id; }; } catch (e) {} }\n';
-			imports += '  globalThis.require = _nsReq;\n';
-			imports += '} } catch {}\n';
+			imports += createRequireShimCode({ hmrActive: opts.hmrActive });
 
 			// Banner diagnostics for visibility at runtime
 			if (opts.verbose) {

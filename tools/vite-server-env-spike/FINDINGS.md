@@ -910,6 +910,154 @@ Both pass with 0 failures, 0 duplicates and 0 duplicate instances. The toolbox c
    - Edit `spike.worker.ts`: a restart is requested.
 7. **Angular fixture:** a `src/app.css` edit applies in place (no reboot), component `styleUrl` and template edits still update in place, and cold-boot global styling is right.
 
+## Round 18: phase 4b, Vue, Solid, React
+
+DESIGN.md has the model: "Frameworks" → "Vue" and the "HMR by flavor" table.
+
+### Vue
+
+**Fixture** (`apps/vue`, from `@nativescript/template-blank-vue-ts` 9.1.2).
+- The stock entry `createApp(Home).start()`, under `appPath: 'app'` (`main: app/app.ts`), plus `import './setup'`, an entry-only module.
+- `Home.vue` is the root (`<Frame><Page>`, a `<style module>`). `Counter.vue` is a child, with a `ref` counter, a `<style scoped>` and a `<style module>`, and it imports `utils/format.ts`. `app.css` has two rules.
+- nativescript-vue 3.1.3; @vue/* 3.5.45, one copy; plugin-vue 6.0.11; plugin-vue-jsx 5.1.6; vue-tsc 3.3.14; typescript 6.0.3.
+- `overrides` pins nativescript-vue's `@nativescript/core` peer to the local tarball. Without it npm fails with ERESOLVE, because the prerelease `9.1.5-next.1` doesn't satisfy `>=8.9.0`.
+- Tailwind and `@nativescript/types` are dropped. vue-tsc is clean.
+
+**What changed.**
+- **Vue entry boundary.** The vue strategy names `@nativescript/vite/hmr/frameworks/vue/client/reboot.js`.
+  - Its dispose remembers the app of the current root view (`getRootView()[ELEMENT_REF].parentNode.__vue_app__`) and runs the core module's dispose.
+  - Its settle runs the core settle, then unmounts the remembered app once the root view belongs to another one.
+  - `nativescript-vue` is typed through a 3-line ambient declaration, because the workspace doesn't install it.
+- **Deleted:** the `ns-vue-named-imports-interop` plugin in `configuration/vue.ts` (−130 lines).
+  - It was `apply: 'build'` and active only with HMR, and the HMR `bundle.mjs` contains no app code and no nativescript-vue, so it transformed nothing. Release never added it.
+  - Deleted with it: its babel/`getCliFlags` imports, the `@babel/generator`, `@babel/parser`, `@babel/traverse` and `@babel/types` dependencies (it was their only user in `packages/vite`), and a stale `// Vue HMR plugins` comment in `base.ts`.
+  - The root lockfile's `packages/vite` entry is extraneous and stale (`1.0.6-rc.7`), so it needs nothing.
+- **Kept:**
+  - the `vue` → `nativescript-vue` alias, now with a constraint comment;
+  - `dedupe`;
+  - the `set-value` shim (nativescript-vue's `dom/index.js` imports it);
+  - the strategy's `importMapSpecifiers` (see Open).
+- **Size:** +20/−140 in tracked `packages/vite` files, plus 171 lines in new files (specs: 112). Probe and crawl scripts: +65/−7. Fixture: 10 files, 139 lines.
+
+**What the device is served** (from installed sources):
+- The resolve conditions give `@vue/runtime-core/dist/runtime-core.esm-bundler.js` in dev and release alike. nativescript-vue imports and re-exports it rather than bundling a copy.
+- Vite's `vite:client-inject` substitutes `process.env.NODE_ENV` in every served module (`vite/dist/node/chunks/node.js:17204`), so the dev branch registers `__VUE_HMR_RUNTIME__`. The crawl asserts it on the served text.
+- `nativescript-vue` `app.start()`:
+  - `setRootApp`;
+  - `mount(createAppRoot())`;
+  - `Application.run({ create })`;
+  - `keepPlaceOnRootReload` in dev, which wraps Vue's `appContext.reload`.
+- **`createAppRoot`** (`dist/index.js:24-43`) wraps an NSVRoot:
+  - its `removeChild` only sets `shouldResetRoot`;
+  - its `appendChild` calls `resetRoot` (`Application.resetRootView`) when that flag is set.
+  - A root `reload` (unmount then mount) therefore replaces the root view.
+  - `app.unmount()` alone (`render(null)` → `unmount(root, …, doRemove = true)`; element children with `doRemove = false`) calls `nodeOps.remove` on the root element only. That is `NSVRoot.removeChild`, i.e. bookkeeping, and the native views are untouched.
+- **Vite's CSS modules** are not self-accepting (`modulesCode || "import.meta.hot.accept()"`, `node.js:30053`).
+
+**`payload-probe.mjs` additions.**
+- **Vue case table** (`--flavor vue --app apps/vue`).
+- **New facts:**
+  - `fileChangedFirst`: plugin-vue's `custom file-changed` reaches the wire before `ns:rerun` and before the `update`.
+  - `inPlaceLacks`.
+  - `selfUpdateLike`.
+- **The crawl follows the app directory of the entry** (`/app/`, not only `/src/`). The worker seed is toolbox-only.
+- **In-place re-imports now match the device client:**
+  - the URL is `path?[import&]t=…&<query>` (the probe used to append `?t=` after an existing query);
+  - the imports of the re-imported module are crawled, so an SFC's style modules count as served.
+
+**Probe, Vue: 13/13.**
+| case | edit | result |
+|---|---|---|
+| t1 | `Counter.vue` template | `file-changed`, `ns:rerun [Counter.vue]`, `js-update Counter.vue`; re-import exports `_rerender_only` (rerender) |
+| t2 | `Home.vue` template | same, on `Home.vue` |
+| s1, s2 | `Counter.vue` / `Home.vue` `<script setup>` | `js-update` of the SFC, no `_rerender_only` (reload) |
+| y1 | `Counter.vue` `<style scoped>` | `js-update Counter.vue?vue&type=style&index=0&scoped=…&lang.css`, in place, new color in the re-import |
+| m1, m2 | `<style module>` in `Counter.vue` / `Home.vue` | `js-update` of the SFC (reload); `rerun` = SFC + its `.module.css` |
+| u1 | `utils/format.ts` (imported by `Counter.vue`) | `js-update Counter.vue`, `rerun [Counter.vue, format.ts]`: a component reload, **not a reboot** |
+| x1 | `setup.ts` (entry-only) | reboot: `js-update /app/app.ts`, `rerun [app.ts, Home.vue, setup.ts]` |
+| a1 | `app.ts` | reboot, `rerun [app.ts]` |
+| g1 | `app.css` | `js-update /app/app.css` in place |
+| e1a, e1b | `<script setup>` syntax error, fix | `error` (`[vue/compiler-sfc] Unexpected token`), nothing applied; the fix gives `js-update Counter.vue` |
+
+- `file-changed` leads on every SFC edit (t1-m2, e1b).
+- `x1`'s `rerun` includes `Home.vue`: the earlier Counter edits re-stamped `Home.vue` as an importer above the boundary (Vite's soft invalidation), so the re-imported entry loads a new `Home.vue` instance too. That is correct.
+- Before this round there was no entry boundary, so `x1` and `a1` were `full-reload`, i.e. an app restart.
+
+**Crawl, Vue** (`--bundle` with a fresh HMR bundle baked for `http://localhost:5173`, `NS_HMR_PREFER_LAN_HOST=0 NS_HMR_PORT=5173`): PASS.
+- 457 device requests (`/node_modules` 442, `/app` 9, `/@vite` 2, `/@id` 2, `/__ns_dev__` 2), and 463 with every import-map target.
+- 0 failures, 0 duplicates, 0 duplicate instances, 0 CommonJS served raw.
+- One `runtime-core.esm-bundler.js` URL, whose `__VUE_HMR_RUNTIME__` guard is `if (!!("development" !== "production"))`. The reboot module is loaded.
+
+**Builds:**
+- **Release:** `bundle.mjs` 3,925 B + `vendor.mjs` 1,231,138 B, no errors. It contains no reboot module and no `__VUE_HMR_RUNTIME__`.
+- **HMR `bundle.mjs`:** 138,913 B. It contains no app code and no nativescript-vue.
+- **Type errors in the HMR build** (one in a `.ts`, one in a `.vue`): vue-tsc prints both, then `[ns-vite] vue-tsc reported type errors; continuing build …`, and `bundle.mjs` is emitted. Uses the type-check default of `warn` from the parallel fix.
+
+**Regression** (the final dist synced into ng; toolbox links `dist/`):
+- payload-probe ng 18/18, TS (toolbox) 17/17.
+- **ng crawl:** 680 device requests, PASS (0 failures, 0 duplicates, 0 duplicate instances).
+- **toolbox crawl:** 541 device requests, PASS.
+  - It shows 2 cross-realm groups: the same `env.mjs` pair, once under the duplicate-modules check and once under the same-file check.
+
+**Checked** (every run sequential):
+- vitest 896/896 in 84 files.
+- `tsc -p tsconfig.lib.json`: 261 errors, all under `../core`.
+- nx build passes, and prettier is clean on the changed files.
+
+**Not checked:**
+- anything on a device;
+- Android;
+- `@vue/devtools`;
+- `$navigateTo` / `$showModal` pages across a soft reboot;
+- JSX/TSX SFCs.
+
+**Open:**
+- A new app that mounted but whose root reset failed stays mounted, unreachable, until a restart.
+- **Release CSS modules:** `font-size: 20` came out as `20px`, and `#333333` as `#333`. In NativeScript `px` means device pixels. This is a note only.
+- `css-tree` reaches `mdn-data` JSON through `createRequire` at runtime (5 calls, as in the toolbox).
+
+**Device checklist** (iOS simulator):
+1. **Run:** `cd tools/vite-server-env-spike/apps/vue && npx ns run ios`. Use the fixture's local CLI, which starts `vite serve` and the HMR `vite build --watch`. Add `--device <simulator id>` to choose a simulator.
+   - Boot shows "Blank {N}-Vue app", a "Tapped 0 times" label and a "Tap" button with the module style; `ActionBar` is blue.
+   - The log has `[spike-vue] setup v1`.
+2. **Child template:** tap 3 times, then edit `Counter.vue`'s `<Label … :text="label + '!'">`. It updates in place and the count stays 3.
+3. **Root template:** edit `Home.vue`'s `<Label text="Home" />`. In place, and the count is kept.
+4. **Child script:** `ref(0)` → `ref(5)`. Counter remounts at 5; Home is untouched.
+5. **Root script:** edit the `message` string. The root view is replaced and the count resets. There is no restart and no reboot overlay.
+6. **`<style scoped>` color in Counter:** it restyles in place and the count is kept. The `[data-v-…]` selector must match.
+7. **`<style module>` in Counter:** Counter reloads with the new class. In Home: the root reloads.
+8. **`utils/format.ts`:** Counter reloads (count resets), with no soft reboot.
+9. **`setup.ts` or `app.ts`:** a soft reboot.
+   - The log shows `setup v2`, and the app is rebuilt on the root page.
+   - A later `Home.vue` script edit replaces the root once, with no flash back to an old tree. That shows the old app was unmounted.
+   - Then a child template edit still works.
+10. **`app.css` rule:** in place, and deleting it removes it.
+11. **Syntax error in `Counter.vue` `<script setup>`:** the overlay error, and the app keeps working. The fix reloads Counter.
+12. **Broken entry** (`throw` in `setup.ts`): the overlay error and the old app still usable (it isn't unmounted). The fix reboots cleanly.
+
+### Queued fixes
+- **The `bundle.mjs` require shim throws on a miss under HMR** (DESIGN "Dependencies"). The generator moved to `helpers/require-shim.ts` (`createRequireShimCode({ hmrActive })`) so it can be specced in a `vm` sandbox (`require-shim.spec.ts`, 14 cases). The release shim string is byte-identical (2201 bytes) to HEAD's. Device-bundled `require(` callers (`core-aliases-early`, `root-placeholder` incl. `require('dominative')`, `dev-overlay-shared`, `browser-runtime-contract`, `ui-registration`) all sit in their own `try`; in `resolveModule` a miss now continues to `__nativeRequire` instead of returning `{}` early, with the same aliasing result. Core's `System.import` now rejects on a miss. css-tree's `createRequire` goes through the `module` polyfill, not the shim.
+- **The dev type check defaults to `warn` under HMR** (DESIGN "Failures"). Precedence: `typeCheck` option → `NS_VITE_TYPECHECK` → `--env.typecheck` → HMR dev `warn` → tsconfig `noEmitOnError`. Detected in `configResolved` (`mode === 'development'` and the CLI `hmr` flag), so `getTypeCheckPlugins` keeps its signature. 7 specs. Checked on the Vue fixture: an HMR build with a type error in a `.ts` and a `.vue` printed both, logged `continuing build`, and emitted `bundle.mjs`. The toolbox (in-process TypeScript check, its 2 known TS2352 errors in `nested-tab-frame-shared.ts`, no `NS_VITE_TYPECHECK`): an HMR build prints both, logs `TypeScript found 2 errors; continuing build …`, and emits `bundle.mjs` (142,584 B).
+
+### Solid
+
+Not changed in this round (scope: fixes to the redesign and Angular/Vue/TS only). Investigated with a throwaway fixture from `template-blank-solid-ts` 9.1.2 (solid-js 2.0.3, `@solidjs/universal` 2.0.3, `@nativescript-community/solid-js` 2.0.1, dominative 0.1.3; solid-navigation dropped), since removed.
+- **Compiler mismatch.** `vite-plugin-solid` 2.11.17 → `babel-preset-solid` 1.9.19 → `effect(p => setProp(el, 'text', v, p))`. Run in node against `@solidjs/universal` 2.0.3 with a fake node tree: `node._effectFn is not a function` (`@solidjs/signals/dist/dev.js:1654`), then `REACTIVITY_HALTED`. The `@solidjs/babel-plugin` 2.0.2 shape renders, updates and disposes. The release `bundle.mjs` (exit 0) carries the broken shape. npm also needs `overrides` (vite-plugin-solid peers `solid-js ^1.7.2`).
+- **`@solidjs/vite-plugin` 3.0.1** (2026-11-17): peers `solid-js ^2`; `hot` was removed (passing it throws), refresh is on by default (`refresh: false` disables it); per module `$$registry()` + `$$component(...)` + `import.meta.hot.accept(); $$refresh('vite', import.meta.hot, registry)`; runtime `solid-js/dist/refresh.dev.js` uses `hot.data`, `hot.accept(cb)` and `hot.invalidate()`; the only browser API is a `window.location.reload` fallback for a missing `invalidate`. In `export const Route = make({ component: App }); export function App() {}` the wrapped `App` is hoisted above `Route` (the TDZ case). `solid-refresh` 0.6.3 peers Solid 1; `@next` excludes 2.0.3. The `@nativescript-community/solid-js` README points at `@solidjs/vite-plugin`. Risks noted: it wraps `hot.send` and drops `update`/`full-reload` within 200 ms of an `error`; a failed component import invalidates (→ entry).
+- **Ownership boundary** (node-verified): `create()` run inside our own `createRoot`, then disposing that root, runs the render's `onCleanup` and stops its effects; the nodes stay, so `document.body` must be cleared too.
+- **Second dominative instance:** in the HMR `bundle.mjs`, `root-placeholder.ts:596`'s `require('dominative')` is inlined (`init_dominative(), __toCommonJS(dominative_exports)`); in the ng fixture it stays `__require("dominative")`. DESIGN's "reached only through the runtime's on-disk `require`" is therefore wrong for apps that depend on dominative.
+- Served graph: dominative, undom-ng, the renderer and solid-js 2 are all ESM; nothing needs `optimizeDeps.include`. The `solid.ts` Solid 1 subpath aliases (`solid-js/web|universal|store`) name files Solid 2 doesn't ship; `solid-runtime.ts`'s comment about missing `development` conditions is stale for serve (vite-plugin-solid adds `solid`/`development`).
+- `startSolidApp` (`solid-bootstrap`): no users in the repo or the three templates; its remount and nav-redirect branches are unreachable since `6e6fe1e96`.
+
+### React
+
+Not changed in this round. Investigated with a throwaway fixture of the stock `template-blank-react` 9.1.1 shape (react-nativescript 5.0.0, React 18.3.1, react-reconciler 0.29.2 via `overrides`), since removed. Details of the four react-nativescript failures are in DESIGN "Frameworks → React". Extra evidence:
+- release build of the stock shape: 428 modules, rolldown `CANNOT_CALL_NAMESPACE` at `HostConfig.js:375`; in Node, `typeof __toESM(fn)` from the emitted `rolldown-runtime-*.mjs` is `object`;
+- the template's tsconfig `include` glob (`./src/**/*.tsx?`) matches no file, so its type check checks nothing; with a real include the stock entry fails `TS2304: Cannot find name 'global'` against core 9.1.5;
+- the template's `Object.defineProperty(global, '__DEV__', { value: false })` is harmless with `/@vite/env` (plain assignment, writable).
+- Includes (static reading): `react` and `react-reconciler` pre-bundle in one optimizer run; the reconciler's `require('react')` shares react's chunk; `scheduler` is inlined into the reconciler. Not crawled.
+- `@nativescript-community/react` 19.0.0: `startReactApp` → `Application.run({ create: () => { mount(root); return doc; } })` (`src/renderer.js`); `dispose` stays in that closure; `reconciler` is exported, FiberRoots are not. Its tarball carries a nested `nativescript-community-react-0.1.0.tgz`.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

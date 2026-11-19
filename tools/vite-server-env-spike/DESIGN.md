@@ -45,7 +45,9 @@ The inventory behind this is the subagent map in `$CLAUDE_JOB_DIR/tmp/nsvite-map
 - **CommonJS dependencies** go through Vite's standard escape hatch: list them in `optimizeDeps.include`. The React flavor lists `react` and `react-reconciler`. The pre-bundles use NativeScript's builtin-module stubs, the platform resolver and the NativeClass transform.
   - **Version guard** (`hmr/server/version-query-guard.ts`): once an optimizer exists, a client-environment `enforce: 'pre'` resolver drops `v` from resolutions under the `@nativescript/core` and `@nativescript/vite` package directories, so served code, the import map, `bundle.mjs` externals and the bootstrap name one URL per file.
   - `NS_OPTIMIZE_DEPS_EXCLUDE`: `@nativescript/core`, `@nativescript/vite`, `@valor/nativescript-websockets` (one instance, shared with `bundle.mjs` and the dev client), plus `module`/`node:module`/`set-value` (aliased to local shims the optimizer doesn't apply).
-- **CommonJS `require` on device** is the `bundle.mjs` shim (`helpers/main-entry.ts`), the final `globalThis.require`: `ns:`/`node:` → the runtime's require; Node builtins → `{}`; under HMR, `@nativescript/core[/sub]` → `nsDev().coreModules` (only modules already evaluated); anything else → the runtime's require, which resolves on disk only. A served dependency can't `require()` another npm package over HTTP; a pre-bundle inlines its own CommonJS requires.
+- **CommonJS `require` on device** is the `bundle.mjs` shim (`createRequireShimCode` in `helpers/require-shim.ts`), the final `globalThis.require`: `ns:`/`node:` → the runtime's require; Node builtins → `{}`; `require.context` → a stub; under HMR, `@nativescript/core[/sub]` → `nsDev().coreModules` (only modules already evaluated); anything else → the runtime's require, which resolves on disk only. A served dependency can't `require()` another npm package over HTTP; a pre-bundle inlines its own CommonJS requires.
+  - **A miss throws under HMR**, with the runtime's error as `cause`: a bare package → `require('<n>') can't be resolved in a dev session: require() resolves on disk only. Add '<n>', or the CommonJS package that requires it, to optimizeDeps.include, or import it as ESM.`; a `@nativescript/core` module not yet evaluated → advice to import it as ESM first (core is never pre-bundled); a path → no hint. An `ns:` miss rethrows; a `node:` miss and a Node builtin outside the stub table stay `{}`.
+  - Release and non-HMR builds keep `{}` on a miss; their shim is byte-identical.
 - **Device-side core lookups** (`core-aliases-early`, `root-placeholder`, `dev-overlay-shared`) go through that `require`; the served `/@vite/client` (`thin-vite-client.ts`, `restyle.ts`) and the TS/JS reboot module import `@nativescript/core` as ESM.
 - **Android SBG:** nothing vendor-related is emitted at build time. The static binding generator walks every `.js`/`.mjs` under `assets/app` (`Main.java` `traverseDirectory`) and needs no file by name; the old `ns-vendor.mjs` stub was emitted only in HMR builds and was a no-op for it.
 
@@ -141,7 +143,7 @@ Behavior:
 - There is no registry-level `on`/`off` and no `__NS_HOT_REGISTRY__`. App-lifetime owners use `import.meta.hot` in their own module.
 
 ### Soft reboot: an HMR update with the app entry as its boundary
-- **Injection.** For a flavor whose `FrameworkServerStrategy.entryBoundary` names a teardown (Angular: `@nativescript/angular`'s `prepareHmrReboot`/`whenHmrRebootSettled`; TypeScript and JavaScript: the same pair from `@nativescript/vite/hmr/frameworks/core/client/reboot.js`, see "Frameworks"), `hmr/server/entry-boundary.ts` prepends this to the app entry. It runs after the framework's compile and before Vite's import analysis:
+- **Injection.** For a flavor whose `FrameworkServerStrategy.entryBoundary` names a teardown (Angular: `@nativescript/angular`'s `prepareHmrReboot`/`whenHmrRebootSettled`; TypeScript and JavaScript: the same pair from `@nativescript/vite/hmr/frameworks/core/client/reboot.js`; Vue: from `@nativescript/vite/hmr/frameworks/vue/client/reboot.js`; see "Frameworks"), `hmr/server/entry-boundary.ts` prepends this to the app entry. It runs after the framework's compile and before Vite's import analysis:
   ```js
   import { registerEntryBoundary } from '/@vite/client';
   import * as framework from '<module>';
@@ -155,7 +157,7 @@ Behavior:
   - The entry is self-accepting, so an edit anywhere below it propagates to `js-update { path: entry, acceptedPath: entry }`, unless a closer boundary accepts it first.
   - Vite stamps `?t=` on the changed module's importer chain, so the device's `import(entry?t=)` re-evaluates exactly that chain. Unchanged modules are cache hits and keep their instances.
   - Same idea as webpack's `module.hot.accept()` in `main`.
-- **Without an entry boundary**, which is the case for Solid, React and Vue today, an edit with no closer boundary reaches a dead end. Vite sends `full-reload`, which is an app restart.
+- **Without an entry boundary**, which is the case for Solid and React today, an edit with no closer boundary reaches a dead end. Vite sends `full-reload`, which is an app restart.
 - **Which modules re-run.** `ns:rerun { timestamp, changed, rerun, root }` precedes every `update` with a `js-update`.
   - `rerun` is each `acceptedPath` plus the imports reachable from it whose current `?t=` stamp the device has never been served (`ServedModules`, see "Failures"): exactly what the device's import re-evaluates. Templates are graph nodes but never device modules, so an in-place template update has an empty `rerun`.
   - Going by served stamps rather than the update's own timestamp covers every edit since the last update that went out, including those of saves whose update failed its check.
@@ -168,7 +170,7 @@ Behavior:
     - It is dispatched **only** to the listeners registered by the hot contexts of modules in `rerun`, keyed by owner path. It is never broadcast.
     - It fires once per module per payload, even with several boundaries, and before any boundary's `dispose`.
     - Vite disposes only the boundary, so this is how an intermediate module's old instance releases what it holds, e.g. `import.meta.hot?.on('nativescript:beforeRerun', () => off())` for root listeners.
-  - `nativescript:afterReboot`: the `beforeReboot` payload plus `error` when the entry import failed or the settle signal reported a failed boot (it rejected or resolved `{ error }`). It fires after the framework's settle signal (Angular: bootstrap plus `ApplicationRef.whenStable()`, capped at 5 s, and participant restore; TS/JS: the new root view loaded), waited for up to 15 s. It is skipped right away when the entry import failed.
+  - `nativescript:afterReboot`: the `beforeReboot` payload plus `error` when the entry import failed or the settle signal reported a failed boot (it rejected or resolved `{ error }`). It fires after the framework's settle signal (Angular: bootstrap plus `ApplicationRef.whenStable()`, capped at 5 s, and participant restore; TS/JS: the new root view loaded; Vue: the same, then the replaced app unmounted), waited for up to 15 s. It is skipped right away when the entry import failed.
   - `nativescript:beforeRestart` `{ reason }`: before the device asks for, or is told about, an app restart.
   - **Order:** `vite:beforeUpdate` → `nativescript:beforeReboot` → `nativescript:beforeRerun` → entry `dispose` (framework teardown) → `import(entry?t=)` → framework bootstrap and restore → `nativescript:afterReboot` → `vite:afterUpdate`.
 - **Payload lookups.** `isRerun(id)`, `isChanged(id)` and `modules` (`'changed'` for an edited file, `'rerun'` for one re-evaluated only because of the chain) accept a module's own `import.meta.url` (`<origin>/src/x.ts?t=…`), its Vite URL or owner path, or its absolute file path.
@@ -209,7 +211,7 @@ Behavior:
   - From then on, the device drops `update`, `full-reload` and `prune`; custom events still reach listeners.
 
 ### Failures
-A broken save shows an error on the device and leaves the running app as it is. The next good save applies everything since the last update that went out. A restart is the fallback only where the app can't be trusted any more.
+A broken save shows an error on the device and leaves the running app as it is. **Type errors don't fail an HMR build:** with HMR active the type check (`helpers/typescript-check.ts`: TypeScript, `vue-tsc`, `tsrx-tsc`) defaults to `warn`, prints the same diagnostics and lets `vite build --watch` emit `bundle.mjs`, as vite-plugin-checker does. Other builds, release included, keep the tsconfig `noEmitOnError` default. The `typeCheck` option, `NS_VITE_TYPECHECK` and `--env.typecheck` override both. The next good save applies everything since the last update that went out. A restart is the fallback only where the app can't be trusted any more.
 
 - **Compile check (the update gate, `hmr/server/update-gate.ts`).** `nsRerunPlugin` wraps `server.ws.send`. Every payload to the device passes through a queue, so payloads leave in the order they were sent.
   - An `update` with a `js-update` is checked first. The checked set is the re-run set plus, for an accepted template, the component modules that import it (an in-place template update re-runs nothing on the device, yet a broken template must not apply).
@@ -331,15 +333,59 @@ No NS server strategies for updates. Each framework's Vite plugin produces stock
   - Page stylesheets are `?raw` context imports, so editing one reboots rather than restyling in place.
 - **The old page's handlers.** A root reset fires no `navigatingFrom`/`navigatedFrom`. `unloaded` fires: synchronously on Android, and on iOS when UIKit's `viewDidDisappear` runs.
 
-**Other flavors:**
-- **Vue:** plugin-vue's `js-update` → `__VUE_HMR_RUNTIME__` (needs nativescript-vue 3 checked). No entry boundary.
-- **Solid, React:** no entry boundary yet, so an edit without a closer boundary restarts the app. They get an entry boundary later (remount via `resetRootView`).
+**Vue** (nativescript-vue 3.1, plugin-vue 6). Component HMR is plugin-vue's, unchanged; the strategy adds the entry boundary `@nativescript/vite/hmr/frameworks/vue/client/reboot.js` (package export `./hmr/frameworks/vue/client/reboot[.js]`, source `hmr/frameworks/vue/client/reboot.ts`).
+- **One runtime.** `vue` is aliased to `nativescript-vue`, which imports and re-exports `@vue/runtime-core` (not bundled). Compiled SFCs import from `vue`, so SFCs, the renderer and `__VUE_HMR_RUNTIME__` share one runtime-core; the real `vue` package (runtime-dom) is never loaded. The resolve conditions pick `runtime-core.esm-bundler.js` in dev and release alike.
+- **Dev build of the runtime.** Vite's `vite:client-inject` substitutes `process.env.NODE_ENV` in every served module (the one define a served module gets), so runtime-core takes its dev branch and registers `__VUE_HMR_RUNTIME__` on `globalThis`. nativescript-vue's bare `__DEV__`/`__TEST__` come from `/@vite/env`.
+- **Component updates.** Every SFC's main module is self-accepting. plugin-vue sends `custom file-changed` before the update (the update gate's queue keeps that order), which sets `__VUE_HMR_RUNTIME__.CHANGED_FILE`; the re-imported SFC exports `_rerender_only` when only its template changed.
+  - template edit: `js-update` of the SFC → `rerender`, state kept;
+  - script edit: `js-update` of the SFC → `reload`: a child remounts in its parent; the root runs `appContext.reload`, which nativescript-vue turns into a root remount and `Application.resetRootView` (all state lost; while away from the root page it only re-renders the template and warns);
+  - `<style scoped>`: a self-accepting CSS module (`X.vue?vue&type=style&index=N&scoped=…&lang.css`), restyled in place through `updateStyle`;
+  - `<style module>`: Vite's CSS modules don't self-accept, so the edit propagates to the SFC → `reload`;
+  - a util imported by an SFC stops at that SFC, Vite's first self-accepting importer: a component reload, not a soft reboot.
+- **Entry boundary.** An edit that reaches the entry (the entry itself, or a module only the entry imports) soft-reboots. `createApp(Root).start()` calls `Application.run({ create })` on every evaluation.
+  - `prepareHmrReboot()` remembers the app of the current root view, `Application.getRootView()[ELEMENT_REF].parentNode.__vue_app__` (the NSVRoot `app.start()` mounts into, tagged by Vue's `mount`), then runs the core module's `prepareHmrReboot` (close modals, arm the `run` → `resetRootView` redirect). Idempotent.
+  - `whenHmrRebootSettled()` awaits the core settle, then unmounts the remembered app once the root view belongs to another one. It resolves `{ error }` when the root wasn't replaced or the unmount threw, and never rejects.
+  - **Why unmount, and why after.** Until unmounted, the old app's instances stay in Vue's HMR records: a later `reload` of the root re-renders the replaced tree, whose `createAppRoot` resets the root view to it. Unmount only detaches the root element from its NSVRoot (Vue removes just the top element; `NSVRoot.removeChild` is bookkeeping, and `createAppRoot` resets the root only on the `appendChild` that follows a remove), so the order doesn't touch the screen. Unmounting after the new root is up keeps the old app running through a failed reboot.
+  - Gap: a new app that mounted but whose root reset failed is unreachable and stays mounted until a restart.
+  - The module reads nativescript-vue internals that are not public API (`__vue_app__`, `parentNode`). An upstream `prepareHmrReboot`/`whenHmrRebootSettled` in nativescript-vue, as `@nativescript/angular` has, would replace it (REVIEW-DECISIONS).
+- **Release** is unchanged: the boundary is serve-only.
+
+**Solid.** Unchanged in 4b: no entry boundary, so every edit but `app.css` is an app restart. Known problems, deferred (FINDINGS round 18):
+- **The compiler is Solid 1's.** `vite-plugin-solid` 2.11.17 compiles with `babel-preset-solid` 1.9.19, which emits the one-argument `effect(fn)`. Solid 2's universal renderer (`@solidjs/universal` 2.x, used by `@nativescript-community/solid-js` 2 and the official `template-blank-solid-ts` 9.1.2) expects `effect(compute, apply)` and halts reactivity on the first reactive prop (`node._effectFn is not a function`). Release builds exit 0 with that shape.
+- **The Solid 2 path is `@solidjs/vite-plugin` 3** (peers `solid-js ^2`, `vite ^8 || ^9`, `@solidjs/web ^2`). Its component HMR is `solid-js/refresh`: standard `import.meta.hot` (`accept`, `data`, `invalidate`), no DOM, and the TDZ problem that kept `hot: false` is fixed there (wrapped components are hoisted).
+- **Entry boundary idea:** the stock entry discards `render`'s disposer and returns dominative's `document` singleton, so the core reboot module doesn't fit (`resetRootView` with the same view pops the live Frame; the settle reports "did not replace the root view"). A boundary can own the root through Solid's public ownership API instead: run the first `entry.create()` inside a `createRoot`, dispose that root and clear `document.body` on dispose, and re-run `create()` without `resetRootView` when it returns the current root.
+- **A second `dominative` instance under HMR:** rolldown inlines `root-placeholder.ts`'s `require('dominative')` into the HMR `bundle.mjs`, so the two-phase boot does run under HMR, with a document other than the one the served renderer mounts into. Expected: a blank screen on cold HMR boot (unverified on device). It affects `@nativescript-community/react` too.
+- `@nativescript/vite/solid-bootstrap` (`hmr/frameworks/solid/client/app-runtime.ts`) has no users; its remount branch is unreachable since nothing calls `mount` twice.
+
+**React.** The supported renderer is `@nativescript-community/react` (React 19, `react-reconciler` ^0.32, dominative). Unchanged in 4b: no entry boundary, so every edit but `app.css` is an app restart; `optimizeDeps.include` keeps `react` and `react-reconciler`.
+- **An entry boundary needs the renderer's own hooks** (as `@nativescript/angular` exports them). `startReactApp` keeps its root and disposer in a closure and returns dominative's `document` singleton, so nothing outside the renderer can tear the app down. Proposed upstream API:
+  - a module-scope registry of rendered roots (`render()` records `{ root, container, dispose }`; the module isn't re-evaluated on a reboot);
+  - `prepareHmrReboot()`: unmount every recorded root (`updateContainerSync(null, …)` + `flushSyncWork()`, so effect cleanups run), clear `document.body`, close modals, and arm a one-shot flag. Idempotent; a no-op outside Vite dev;
+  - a re-entrant `startReactApp`: with the flag armed it mounts into the same `document.body` and skips `Application.run`/`resetRootView`;
+  - `whenHmrRebootSettled(): Promise<void | { error }>`: resolves once the new tree committed, `{ error }` when the mount threw or the entry never called `startReactApp`; never rejects.
+  - The flavor then declares `entryBoundary: { module: '@nativescript-community/react', dispose: 'prepareHmrReboot', settled: 'whenHmrRebootSettled' }`.
+- **Fast Refresh** (`@vitejs/plugin-react` 6.3.0) has a no-HTML preamble (`@vitejs/plugin-react/preamble`), but the refresh runtime assigns `window.*` when it evaluates, and the iOS main realm has no `window` (dominative's `globalRegister` defines one once it evaluates). Not used.
+- **`react-nativescript` is unsupported on Vite.** It is what `@nativescript/template-blank-react` 9.1.1 still uses (with webpack). Four independent reasons:
+  1. install fails with ERESOLVE: it depends on `react-reconciler ^0.29` and peers `@nativescript/core ^8.3.5`; `@nativescript/vite` peers `react-reconciler ^0.32` (observed);
+  2. the release build succeeds but evaluation throws: `import * as ReactReconciler from 'react-reconciler'; ReactReconciler(hostConfig)` (`dist/client/HostConfig.js:375`, rolldown `CANNOT_CALL_NAMESPACE`) calls a `__toESM` namespace object (the warning and the non-callable helper observed; the device crash inferred);
+  3. under HMR it never mounts: `start()` returns early when `Application.hasLaunched() || getRootView()`, and the boot placeholder has already set the root (inferred from code);
+  4. it can't be served as its own files: a top-level `require('../package.json')` and a CommonJS `react-reconciler/constants` imported as ESM named exports (inferred from code).
+- Flavor detection (`helpers/flavor.ts`, and webpack's) recognizes only `react-nativescript`. `reactConfig` declares its flavor to `baseConfig`, so a Vite React app is unaffected; detection matters only for tooling that guesses the flavor from `package.json`.
+
+**HMR by flavor** (what a save does on the device):
+| flavor | component edit | style edit | script/logic edit | util edit | entry edit | `app.css` |
+|---|---|---|---|---|---|---|
+| Angular | template/style-only `.html`/`.ts`: in place (`angular:component-update`) | `styleUrl`: in place (`css-update`) | component class: soft reboot; root component: soft reboot | soft reboot | soft reboot | in place |
+| TS/JS | page XML: soft reboot | page stylesheet (`?raw` context import): soft reboot | code-behind: soft reboot | soft reboot | soft reboot | in place |
+| Vue | template: `rerender`, state kept | `<style scoped>`: in place; `<style module>`: component `reload` | child: component `reload`; root: root remount (`resetRootView`) | imported by an SFC: that component's `reload`; only by the entry: soft reboot | soft reboot | in place |
+| Solid | no entry boundary: every edit but `app.css` restarts (unchanged; see "Solid"/"React" above) | | | | | in place |
+| React | no entry boundary: every edit but `app.css` restarts (unchanged; see "Solid"/"React" above) | | | | | in place |
 
 ## Phases
 1. **Thin is the only mode; delete what thin never reaches.** Done (FINDINGS round 10).
 2. **Transport, client port and `?t` identity.** Done (FINDINGS round 11). 2b: app restarts (FINDINGS round 11). 2c: the entry-boundary soft reboot, the event bus and the Angular reboot API (FINDINGS round 12). 2d: errors without restarting, i.e. the compile check, recoverable reboot failures, the overlay's restart action and the boot catch-up (FINDINGS round 13).
 3. **Defines and globals; `/ns/v`; vendor bundle.** 3a: defines and globals, done (FINDINGS round 14). 3b: plain Vite URLs, `/ns/v` and every `/ns/*` route gone, done (FINDINGS round 15). 3c: deps bundle and vendor layer out, dep optimizer off by default, minimal import map, done (FINDINGS round 16).
-4. **Flavors.** 4a: the TS/JS soft reboot, `app.css` as a Vite module and workers, done. Remaining: an entry boundary for Solid and React (remount via `resetRootView`); Vue (plugin-vue `js-update`).
+4. **Flavors.** 4a: the TS/JS soft reboot, `app.css` as a Vite module and workers, done. 4b: Vue, plugin-vue component HMR checked and an entry boundary, done (FINDINGS round 18). Solid and React: unchanged, findings recorded as notes ("Frameworks" → "Solid", "React"; FINDINGS round 18).
 5. **Android.**
 
 ## Open
@@ -363,5 +409,7 @@ No NS server strategies for updates. Each framework's Vite plugin produces stock
 - **`?v=` beyond core with an include list.** Once an app lists `optimizeDeps.include`, raw `node_modules` files other than core and `@nativescript/vite` carry `?v=`. That is consistent as long as every importer resolves them through Vite's resolver; a file some importers reach through an NS resolver (no `?v=`) would load twice. Stripping `v` from every resolution outside `.vite/deps` would close it.
 - **Includes from a dependency's `nativescript.vite.mjs`** are dropped by the optimizer policy, because `externalConfigsPlugin`'s `config` hook runs after the capture.
 - **Deep imports of an included package** (`pkg/lib/x.js`) next to its pre-bundle load the file twice: inlined and served raw.
-- **Vue, Solid and React are uncrawled** under the new dependency policy; Vue moved from discovery to none, React from the vendor bundle to `include`.
-- **`dominative`** (Solid/React DOM boot in `root-placeholder.ts`) is reached only through the runtime's on-disk `require`, so its two-phase boot never runs under HMR.
+- **Solid and React are uncrawled** under the new dependency policy (no fixtures; 4b left both flavors unchanged); React moved from the vendor bundle to `include`. The Vue fixture crawls clean with no `include` (FINDINGS round 18).
+- **Vue import-map keys.** The strategy's `importMapSpecifiers()` adds `nativescript-vue` (already a key through the app's `dependencies`) and `vue`; only a runtime `import(expr)` evaluating to one of them would use them, and none exists. Kept for now.
+- **Vue component state across a soft reboot** is not kept: the app is recreated. Only plugin-vue's template `rerender` keeps state.
+- **`dominative`** (Solid/React DOM boot in `root-placeholder.ts`): for an app that depends on dominative, rolldown inlines that `require('dominative')` into the HMR `bundle.mjs`, so the two-phase boot runs with a second dominative instance whose `document` the served renderer never mounts into (see "Frameworks" → "Solid").

@@ -23,11 +23,17 @@ describe('built-in server strategies', () => {
 		expect(getBuiltInServerStrategy('react')?.entryBoundary).toBeUndefined();
 	});
 
-	it('names an entry boundary module the package exports', () => {
+	it('gives Vue its own reboot module as the entry boundary', () => {
+		expect(getBuiltInServerStrategy('vue')?.entryBoundary).toEqual({ module: '@nativescript/vite/hmr/frameworks/vue/client/reboot.js', dispose: 'prepareHmrReboot', settled: 'whenHmrRebootSettled' });
+	});
+
+	it('names entry boundary modules the package exports', () => {
 		const exportsMap = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).exports;
-		const subpath = getBuiltInServerStrategy('typescript')!.entryBoundary!.module.replace('@nativescript/vite/', './');
-		expect(exportsMap[subpath]).toBe(subpath);
-		expect(fs.existsSync(new URL(subpath.replace(/\.js$/, '.ts'), new URL('../../', import.meta.url)))).toBe(true);
+		for (const flavor of ['typescript', 'vue']) {
+			const subpath = getBuiltInServerStrategy(flavor)!.entryBoundary!.module.replace('@nativescript/vite/', './');
+			expect(exportsMap[subpath]).toBe(subpath);
+			expect(fs.existsSync(new URL(subpath.replace(/\.js$/, '.ts'), new URL('../../', import.meta.url)))).toBe(true);
+		}
 	});
 
 	it("keeps Angular's /@ng/component query as identity and re-fetches it on every import", () => {
