@@ -36,8 +36,14 @@ describe('describeServerError', () => {
 describe('describeRuntimeError', () => {
 	it('lists the stack frames with device URLs shortened to their Vite URL', () => {
 		const err = new Error('boom');
-		err.stack = `Error: boom\n    at f (${ORIGIN}/ns/v/src/a.ts?t=1:2:3)\n    at ${ORIGIN}/ns/v/src/main.ts?t=1:9:1`;
+		err.stack = `Error: boom\n    at f (${ORIGIN}/src/a.ts?t=1:2:3)\n    at ${ORIGIN}/src/main.ts?t=1:9:1`;
 		expect(describeRuntimeError(err, ORIGIN)).toEqual({ detail: 'boom', code: 'at f (/src/a.ts?t=1:2:3)\nat /src/main.ts?t=1:9:1' });
+	});
+
+	it('keeps URLs of other origins whole', () => {
+		const err = new Error('boom');
+		err.stack = `Error: boom\n    at f (http://other:1/src/a.ts:2:3)\n    at g (${ORIGIN}0/src/b.ts:4:5)`;
+		expect(describeRuntimeError(err, ORIGIN).code).toBe(`at f (http://other:1/src/a.ts:2:3)\nat g (${ORIGIN}0/src/b.ts:4:5)`);
 	});
 
 	it('handles a thrown non-Error', () => {
@@ -47,8 +53,13 @@ describe('describeRuntimeError', () => {
 
 describe('deviceModuleUrlsInStack', () => {
 	it('collects each device module URL once, without its line and column, keeping the query', () => {
-		const stack = [`Error: x`, `    at f (${ORIGIN}/ns/v/src/a.ts?t=1:2:3)`, `    at ${ORIGIN}/ns/v/src/a.ts?t=1:8:1`, `    at g (${ORIGIN}/ns/v/src/b.vue?vue&type=script:4)`, `    at h (http://other:1/ns/v/src/c.ts:1:1)`, `    at native`].join('\n');
-		expect(deviceModuleUrlsInStack(stack, ORIGIN)).toEqual([`${ORIGIN}/ns/v/src/a.ts?t=1`, `${ORIGIN}/ns/v/src/b.vue?vue&type=script`]);
+		const stack = [`Error: x`, `    at f (${ORIGIN}/src/a.ts?t=1:2:3)`, `    at ${ORIGIN}/src/a.ts?t=1:8:1`, `    at g (${ORIGIN}/src/b.vue?vue&type=script:4)`, `    at h (http://other:1/src/c.ts:1:1)`, `    at i (${ORIGIN}0/src/d.ts:1:1)`, `    at native`].join('\n');
+		expect(deviceModuleUrlsInStack(stack, ORIGIN)).toEqual([`${ORIGIN}/src/a.ts?t=1`, `${ORIGIN}/src/b.vue?vue&type=script`]);
+	});
+
+	it('leaves out NativeScript dev endpoints', () => {
+		const stack = [`Error: x`, `    at v (${ORIGIN}/__ns_dev__/vendor.mjs:10:2)`, `    at c (${ORIGIN}/__ns_dev__/client:3:1)`, `    at f (${ORIGIN}/src/a.ts?t=1:2:3)`].join('\n');
+		expect(deviceModuleUrlsInStack(stack, ORIGIN)).toEqual([`${ORIGIN}/src/a.ts?t=1`]);
 	});
 
 	it('is empty for a missing stack', () => {

@@ -7,7 +7,7 @@ import { NS_AFTER_REBOOT_EVENT, NS_BEFORE_REBOOT_EVENT, NS_BEFORE_RERUN_EVENT, N
 
 const ORIGIN = 'http://192.168.1.5:5173';
 const ENTRY_PATH = '/src/main.ts';
-const ENTRY = `${ORIGIN}/ns/v${ENTRY_PATH}`;
+const ENTRY = `${ORIGIN}${ENTRY_PATH}`;
 const WS_URL = 'ws://192.168.1.5:5173/vite-hmr?token=tok-1';
 const LIB = '/node_modules/@nativescript/angular/fesm2022/nativescript-angular.mjs';
 
@@ -156,11 +156,13 @@ function quiet() {
 	vi.spyOn(console, 'info').mockImplementation(() => {});
 }
 
-describe('js-update import URL', () => {
+describe("js-update import URL: absolute, in the order of Vite's client", () => {
 	it.each([
-		['plain', jsUpdate('/src/a.ts'), `${ORIGIN}/ns/v/src/a.ts?t=123`],
-		['explicitImportRequired', jsUpdate('/src/a.ts', '/src/a.ts', { explicitImportRequired: true }), `${ORIGIN}/ns/v/src/a.ts?import&t=123`],
-		['existing query', jsUpdate('/src/a.vue?vue&type=style&index=0&lang.css'), `${ORIGIN}/ns/v/src/a.vue?t=123&vue&type=style&index=0&lang.css`],
+		['plain', jsUpdate('/src/a.ts'), `${ORIGIN}/src/a.ts?t=123`],
+		['explicitImportRequired', jsUpdate('/src/a.ts', '/src/a.ts', { explicitImportRequired: true }), `${ORIGIN}/src/a.ts?import&t=123`],
+		['existing query', jsUpdate('/src/a.vue?vue&type=style&index=0&lang.css'), `${ORIGIN}/src/a.vue?t=123&vue&type=style&index=0&lang.css`],
+		['explicitImportRequired with an existing query', jsUpdate('/src/a.vue?vue&type=style&index=0&lang.css', '/src/a.vue?vue&type=style&index=0&lang.css', { explicitImportRequired: true }), `${ORIGIN}/src/a.vue?import&t=123&vue&type=style&index=0&lang.css`],
+		['/@fs path', jsUpdate('/@fs/repo/libs/x.ts'), `${ORIGIN}/@fs/repo/libs/x.ts?t=123`],
 	])('%s', async (_name, entry, url) => {
 		const t = setup();
 		new HMRContext(t.client, entry.path).accept();
@@ -186,7 +188,7 @@ describe('update', () => {
 		await send(t.runtime, update(jsUpdate('/src/a.ts'), { type: 'css-update', path: '/src/b.css', acceptedPath: '/src/b.css', timestamp: 1 }));
 
 		expect(order).toEqual(['before', 'accept', 'after']);
-		expect(t.imports).toEqual([`${ORIGIN}/ns/v/src/a.ts?t=123`]);
+		expect(t.imports).toEqual([`${ORIGIN}/src/a.ts?t=123`]);
 		expect(t.stages()).toEqual(['received', 'reimporting', 'complete']);
 	});
 
@@ -260,8 +262,8 @@ describe('soft reboot (an update whose boundary is the app entry)', () => {
 		await send(t.runtime, update(jsUpdate(ENTRY_PATH)));
 
 		for (const data of [events.before[0], events.after[0]]) {
-			expect(data.isRerun(`${ORIGIN}/ns/v/src/main.ts?t=123`)).toBe(true);
-			expect(data.isRerun(`${ORIGIN}/ns/v/src/a.vue?import&vue&t=9&type=style&index=0&lang.css`)).toBe(true);
+			expect(data.isRerun(`${ORIGIN}/src/main.ts?t=123`)).toBe(true);
+			expect(data.isRerun(`${ORIGIN}/src/a.vue?import&vue&t=9&type=style&index=0&lang.css`)).toBe(true);
 			expect(data.isRerun('/src/a.vue')).toBe(false);
 			expect(data.isRerun('/src/other.ts')).toBe(false);
 			expect(data.isChanged('/src/edited.ts')).toBe(true);
@@ -487,7 +489,7 @@ describe('soft reboot: the new app fails to evaluate', () => {
 
 	function evaluationError(message: string, ...viteUrls: string[]) {
 		const err = new Error(message);
-		err.stack = [`Error: ${message}`, `    at helper (${ORIGIN}/ns/v/node_modules/lib/x.js:1:2)`, ...viteUrls.map((url) => `    at ${ORIGIN}/ns/v${url}:4:5`)].join('\n');
+		err.stack = [`Error: ${message}`, `    at helper (${ORIGIN}/node_modules/lib/x.js:1:2)`, ...viteUrls.map((url) => `    at ${ORIGIN}${url}:4:5`)].join('\n');
 		return err;
 	}
 
@@ -520,7 +522,7 @@ describe('soft reboot: the new app fails to evaluate', () => {
 
 		await reboot(123, [APP]);
 
-		expect(t.devHost.invalidateModules).toHaveBeenCalledWith([`${ORIGIN}/ns/v${APP}?t=123`]);
+		expect(t.devHost.invalidateModules).toHaveBeenCalledWith([`${ORIGIN}${APP}?t=123`]);
 		expect(afterReboot).toEqual(['boom']);
 		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('failed', { detail: 'boom', code: `at helper (/node_modules/lib/x.js:1:2)\nat ${APP}?t=123:4:5`, action: RESTART_ACTION });
 		expect(restartsSent(socket)).toEqual([]);
@@ -544,7 +546,7 @@ describe('soft reboot: the new app fails to evaluate', () => {
 		await reboot(123, [APP]);
 		await reboot(124, [APP]);
 
-		expect(t.devHost.invalidateModules).toHaveBeenLastCalledWith([`${ORIGIN}/ns/v${APP}?t=124`]);
+		expect(t.devHost.invalidateModules).toHaveBeenLastCalledWith([`${ORIGIN}${APP}?t=124`]);
 		expect(t.stages().at(-1)).toBe('failed');
 		expect(restartsSent(socket)).toEqual([]);
 	});
@@ -636,7 +638,7 @@ describe(NS_BEFORE_RERUN_EVENT, () => {
 			[PATHS.child2, 'changed'],
 			[PATHS.child1, 'rerun'],
 		]);
-		expect(payloads[0].isRerun(`${ORIGIN}/ns/v${PATHS.child1}?t=123`)).toBe(true);
+		expect(payloads[0].isRerun(`${ORIGIN}${PATHS.child1}?t=123`)).toBe(true);
 	});
 
 	it('runs after vite:beforeUpdate and nativescript:beforeReboot', async () => {

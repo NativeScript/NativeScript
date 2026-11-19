@@ -5,9 +5,9 @@ vi.mock('./import-map.js', () => ({
 	buildRuntimeConfig: (...args: unknown[]) => mockBuildRuntimeConfig(...args),
 }));
 
-const mockBuildThinImportMap = vi.fn();
-vi.mock('./thin/thin-route.js', () => ({
-	buildThinImportMap: (...args: unknown[]) => mockBuildThinImportMap(...args),
+vi.mock('node:fs', async (importOriginal) => ({
+	...(await importOriginal<typeof import('node:fs')>()),
+	statSync: (p: string) => ({ isFile: () => !String(p).endsWith('/node_modules/css-only') }),
 }));
 
 // The route derives the origin from the trusted, https-aware
@@ -19,7 +19,7 @@ vi.mock('./server-origin.js', () => ({
 	getServerOrigin: (...args: unknown[]) => mockGetServerOrigin(...(args as [])),
 }));
 
-import { registerImportMapRoute, type RegisterImportMapRouteOptions } from './websocket-import-map-route.js';
+import { buildImportMap, IMPORT_MAP_PATH, registerImportMapRoute, type RegisterImportMapRouteOptions } from './import-map-route.js';
 
 type FakeRes = {
 	statusCode: number;
@@ -52,7 +52,8 @@ type Handler = (req: any, res: any, next: any) => unknown;
 
 function mount(overrides: Partial<RegisterImportMapRouteOptions> = {}) {
 	const handlers: Handler[] = [];
-	const server = { middlewares: { use: (fn: Handler) => handlers.push(fn) } } as any;
+	const resolveId = vi.fn(async (spec: string) => (spec === '@nativescript/core' ? { id: '/app/node_modules/@nativescript/core/index.js' } : null));
+	const server = { config: { root: '/app' }, environments: { client: { pluginContainer: { resolveId } } }, middlewares: { use: (fn: Handler) => handlers.push(fn) } } as any;
 	const getStrategy = vi.fn(() => ({ flavor: 'vue' }) as any);
 	registerImportMapRoute(server, { getStrategy, ...overrides });
 	expect(handlers).toHaveLength(1);
@@ -65,10 +66,8 @@ describe('registerImportMapRoute', () => {
 		mockBuildRuntimeConfig.mockReturnValue({
 			specifiers: ['@nativescript/core'],
 			volatilePatterns: ['?v=', '&v='],
-			canonicalization: { stripParams: ['t', 'v', 'import'], forPathPrefixes: ['/ns/'], preserveQueryFor: [] },
+			canonicalization: { stripParams: [], forPathPrefixes: [], preserveQueryFor: [] },
 		});
-		mockBuildThinImportMap.mockReset();
-		mockBuildThinImportMap.mockResolvedValue({ '@nativescript/core': 'http://trusted-host:5173/ns/v/node_modules/@nativescript/core/index.js' });
 		mockGetServerOrigin.mockClear();
 		mockGetServerOrigin.mockReturnValue(TRUSTED_ORIGIN);
 	});
@@ -81,7 +80,7 @@ describe('registerImportMapRoute', () => {
 		const { handler } = mount();
 		const next = vi.fn();
 		const res = makeRes();
-		await handler({ url: '/ns/v/src/main.ts', method: 'GET', headers: {} }, res, next);
+		await handler({ url: '/src/main.ts', method: 'GET', headers: {} }, res, next);
 		expect(next).toHaveBeenCalledTimes(1);
 		expect(res.ended).toBe(false);
 		expect(mockBuildRuntimeConfig).not.toHaveBeenCalled();
@@ -91,7 +90,7 @@ describe('registerImportMapRoute', () => {
 		const { handler } = mount();
 		const next = vi.fn();
 		const res = makeRes();
-		await handler({ url: '/ns/import-map.json', method: 'OPTIONS', headers: {} }, res, next);
+		await handler({ url: IMPORT_MAP_PATH, method: 'OPTIONS', headers: {} }, res, next);
 		expect(next).not.toHaveBeenCalled();
 		expect(res.statusCode).toBe(204);
 		expect(res.headers['Access-Control-Allow-Origin']).toBe('*');
@@ -101,20 +100,19 @@ describe('registerImportMapRoute', () => {
 	});
 
 	it('serves the runtime config as JSON on GET', async () => {
-		const { handler, server } = mount();
+		const { handler } = mount();
 		const next = vi.fn();
 		const res = makeRes();
-		await handler({ url: '/ns/import-map.json', method: 'GET', headers: { host: 'localhost:5173' } }, res, next);
+		await handler({ url: IMPORT_MAP_PATH, method: 'GET', headers: { host: 'localhost:5173' } }, res, next);
 		expect(next).not.toHaveBeenCalled();
 		expect(res.statusCode).toBe(200);
 		expect(res.headers['Access-Control-Allow-Origin']).toBe('*');
 		expect(String(res.headers['Content-Type'])).toContain('application/json');
 		expect(mockBuildRuntimeConfig).toHaveBeenCalledTimes(1);
 		const parsed = JSON.parse(res.body || '{}');
-		expect(mockBuildThinImportMap).toHaveBeenCalledWith(server, ['@nativescript/core'], TRUSTED_ORIGIN);
-		expect(parsed.importMap).toEqual({ imports: { '@nativescript/core': 'http://trusted-host:5173/ns/v/node_modules/@nativescript/core/index.js' } });
+		expect(parsed.importMap).toEqual({ imports: { '@nativescript/core': `${TRUSTED_ORIGIN}/node_modules/@nativescript/core/index.js` } });
 		expect(parsed.volatilePatterns).toEqual(['?v=', '&v=']);
-		expect(parsed.canonicalization).toEqual({ stripParams: ['t', 'v', 'import'], forPathPrefixes: ['/ns/'], preserveQueryFor: [] });
+		expect(parsed.canonicalization).toEqual({ stripParams: [], forPathPrefixes: [], preserveQueryFor: [] });
 	});
 
 	it('uses the trusted server origin and IGNORES the client Host header', async () => {
@@ -123,7 +121,7 @@ describe('registerImportMapRoute', () => {
 		// trusted getServerOrigin(server) resolver, called with the server.
 		const { handler, server } = mount();
 		const res = makeRes();
-		await handler({ url: '/ns/import-map.json', method: 'GET', headers: { host: 'attacker.example:9000' } }, res, vi.fn());
+		await handler({ url: IMPORT_MAP_PATH, method: 'GET', headers: { host: 'attacker.example:9000' } }, res, vi.fn());
 		expect(mockGetServerOrigin).toHaveBeenCalledWith(server);
 		expect(mockBuildRuntimeConfig).toHaveBeenCalledWith(expect.objectContaining({ origin: TRUSTED_ORIGIN }));
 	});
@@ -131,7 +129,7 @@ describe('registerImportMapRoute', () => {
 	it('uses the trusted origin even when the Host header is absent', async () => {
 		const { handler } = mount();
 		const res = makeRes();
-		await handler({ url: '/ns/import-map.json', method: 'GET', headers: {} }, res, vi.fn());
+		await handler({ url: IMPORT_MAP_PATH, method: 'GET', headers: {} }, res, vi.fn());
 		expect(mockBuildRuntimeConfig).toHaveBeenCalledWith(expect.objectContaining({ origin: TRUSTED_ORIGIN }));
 	});
 
@@ -140,12 +138,37 @@ describe('registerImportMapRoute', () => {
 		// `strategy.volatilePatterns`, so the route must thread the whole strategy
 		// (not just the flavor string).
 		const ng = mount({ getStrategy: () => ({ flavor: 'angular' }) as any });
-		await ng.handler({ url: '/ns/import-map.json', method: 'GET', headers: {} }, makeRes(), vi.fn());
+		await ng.handler({ url: IMPORT_MAP_PATH, method: 'GET', headers: {} }, makeRes(), vi.fn());
 		expect(mockBuildRuntimeConfig).toHaveBeenLastCalledWith(expect.objectContaining({ flavor: 'angular', strategy: expect.objectContaining({ flavor: 'angular' }) }));
 
 		const none = mount({ getStrategy: () => undefined });
-		await none.handler({ url: '/ns/import-map.json', method: 'GET', headers: {} }, makeRes(), vi.fn());
+		await none.handler({ url: IMPORT_MAP_PATH, method: 'GET', headers: {} }, makeRes(), vi.fn());
 		expect(mockBuildRuntimeConfig).toHaveBeenLastCalledWith(expect.objectContaining({ flavor: 'typescript', strategy: undefined }));
+	});
+
+	it('keys the extra specifiers alongside the collected ones, through the same resolver, dropping unresolvable ones', async () => {
+		const ids: Record<string, string> = {
+			'@nativescript/core': '/app/node_modules/@nativescript/core/index.js',
+			'@nativescript/core/http': '/app/node_modules/@nativescript/core/http/index.js',
+		};
+		const { handler, server } = mount({ getExtraSpecifiers: async () => ['@nativescript/core', '@nativescript/core/http', '@nativescript/core/missing'] });
+		server.environments.client.pluginContainer.resolveId.mockImplementation(async (spec: string) => (ids[spec] ? { id: ids[spec] } : null));
+		const res = makeRes();
+		await handler({ url: IMPORT_MAP_PATH, method: 'GET', headers: {} }, res, vi.fn());
+		expect(JSON.parse(res.body || '{}').importMap).toEqual({
+			imports: {
+				'@nativescript/core': `${TRUSTED_ORIGIN}/node_modules/@nativescript/core/index.js`,
+				'@nativescript/core/http': `${TRUSTED_ORIGIN}/node_modules/@nativescript/core/http/index.js`,
+			},
+		});
+		expect(server.environments.client.pluginContainer.resolveId).toHaveBeenCalledTimes(3);
+	});
+
+	it('serves the collected map unchanged when there are no extra specifiers', async () => {
+		const { handler } = mount({ getExtraSpecifiers: async () => [] });
+		const res = makeRes();
+		await handler({ url: IMPORT_MAP_PATH, method: 'GET', headers: {} }, res, vi.fn());
+		expect(JSON.parse(res.body || '{}').importMap).toEqual({ imports: { '@nativescript/core': `${TRUSTED_ORIGIN}/node_modules/@nativescript/core/index.js` } });
 	});
 
 	it('responds 500 when config generation throws', async () => {
@@ -155,9 +178,33 @@ describe('registerImportMapRoute', () => {
 		});
 		const { handler } = mount();
 		const res = makeRes();
-		await handler({ url: '/ns/import-map.json', method: 'GET', headers: {} }, res, vi.fn());
+		await handler({ url: IMPORT_MAP_PATH, method: 'GET', headers: {} }, res, vi.fn());
 		expect(res.statusCode).toBe(500);
 		expect(JSON.parse(res.body || '{}')).toEqual({ error: 'Failed to generate import map' });
 		errSpy.mockRestore();
+	});
+});
+
+describe('buildImportMap', () => {
+	it("maps each bare specifier to its resolved file's Vite URL on the origin, /@fs outside the root", async () => {
+		const ids: Record<string, string> = { '@nativescript/core': '/app/node_modules/@nativescript/core/index.js', linked: '/repo/packages/linked/index.js' };
+		const server = { config: { root: '/app' }, environments: { client: { pluginContainer: { resolveId: async (spec: string) => (ids[spec] ? { id: `${ids[spec]}?v=1` } : null) } } } } as any;
+		expect(await buildImportMap(server, ['@nativescript/core', 'linked', 'missing', 'pkg/'], `${TRUSTED_ORIGIN}/`)).toEqual({
+			'@nativescript/core': `${TRUSTED_ORIGIN}/node_modules/@nativescript/core/index.js`,
+			linked: `${TRUSTED_ORIGIN}/@fs/repo/packages/linked/index.js`,
+		});
+	});
+
+	it('leaves out a specifier that resolves to a directory', async () => {
+		const server = { config: { root: '/app' }, environments: { client: { pluginContainer: { resolveId: async () => ({ id: '/repo/node_modules/css-only' }) } } } } as any;
+		expect(await buildImportMap(server, ['css-only'], TRUSTED_ORIGIN)).toEqual({});
+	});
+
+	it('lets Vite serve every mapped file outside fs.allow, as it does files its import analysis resolved', async () => {
+		const ids: Record<string, string> = { hoisted: '/repo/node_modules/hoisted/index.js', 'css-only': '/repo/node_modules/css-only' };
+		const safeModulePaths = new Set<string>();
+		const server = { config: { root: '/app', safeModulePaths }, environments: { client: { pluginContainer: { resolveId: async (spec: string) => ({ id: ids[spec] }) } } } } as any;
+		await buildImportMap(server, ['hoisted', 'css-only'], TRUSTED_ORIGIN);
+		expect([...safeModulePaths]).toEqual(['/repo/node_modules/hoisted/index.js']);
 	});
 });

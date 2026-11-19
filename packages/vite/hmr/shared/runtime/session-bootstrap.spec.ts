@@ -23,7 +23,7 @@ const SESSION_DESCRIPTOR = {
 	origin: 'http://localhost:5173',
 	clientUrl: 'http://localhost:5173/__ns_dev__/client',
 	// The dev-server descriptor emits the CANONICAL (untagged) entry URL.
-	entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
+	entryUrl: 'http://localhost:5173/src/main.ts',
 	wsUrl: 'ws://localhost:5173/vite-hmr?token=abc',
 	wsProtocol: 'vite-hmr',
 	platform: 'ios',
@@ -53,7 +53,7 @@ async function bootWithImportMap(sessionId: string) {
 		'fetch',
 		vi
 			.fn()
-			.mockResolvedValueOnce(sessionResponse({ sessionId, runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }))
+			.mockResolvedValueOnce(sessionResponse({ sessionId, runtimeConfigUrl: 'http://localhost:5173/__ns_dev__/import-map.json' }))
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ importMap: { imports: {} }, volatilePatterns: [] }),
@@ -127,13 +127,13 @@ describe('browser runtime session bootstrap', () => {
 		const importMock = vi.fn().mockResolvedValue({});
 		const fetchMock = vi
 			.fn()
-			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-2', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }))
+			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-2', runtimeConfigUrl: 'http://localhost:5173/__ns_dev__/import-map.json' }))
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({
 					importMap: {
 						imports: {
-							stacktrace: 'http://localhost:5173/ns/m/node_modules/stacktrace-js',
+							stacktrace: 'http://localhost:5173/node_modules/stacktrace-js/stacktrace.js',
 						},
 					},
 					volatilePatterns: ['?v='],
@@ -147,16 +147,32 @@ describe('browser runtime session bootstrap', () => {
 		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
 
 		expect(fetchMock).toHaveBeenNthCalledWith(1, 'http://localhost:5173/__ns_dev__/session');
-		expect(fetchMock).toHaveBeenNthCalledWith(2, 'http://localhost:5173/ns/import-map.json');
+		expect(fetchMock).toHaveBeenNthCalledWith(2, 'http://localhost:5173/__ns_dev__/import-map.json');
 		expect(configureLoader).toHaveBeenCalledWith({
 			importMap: {
 				imports: {
-					stacktrace: 'http://localhost:5173/ns/m/node_modules/stacktrace-js',
+					stacktrace: 'http://localhost:5173/node_modules/stacktrace-js/stacktrace.js',
 				},
 			},
 			volatilePatterns: ['?v='],
 		});
 		expect(configureLoader.mock.invocationCallOrder[0]).toBeLessThan(importMock.mock.invocationCallOrder[0]);
+	});
+
+	it('fetches the import map from the session origin when the descriptor names no runtime config URL', async () => {
+		const configureLoader = vi.fn();
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-default-imap', origin: 'http://localhost:5173/' }))
+			.mockResolvedValueOnce({ ok: true, json: async () => ({ importMap: { imports: {} } }) });
+
+		stubNsRuntime({ configureLoader });
+		vi.stubGlobal('__NS_HMR_IMPORT__', vi.fn().mockResolvedValue({}));
+		vi.stubGlobal('fetch', fetchMock);
+
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
+
+		expect(fetchMock).toHaveBeenNthCalledWith(2, 'http://localhost:5173/__ns_dev__/import-map.json');
 	});
 
 	it('performs no prewarm/closure/archive fetches — the runtime async graph walk owns module fetching', async () => {
@@ -177,12 +193,12 @@ describe('browser runtime session bootstrap', () => {
 		const importMock = vi.fn().mockResolvedValue({});
 		const canonicalization = {
 			stripParams: ['t', 'v', 'import'],
-			forPathPrefixes: ['/ns/', '/node_modules/.vite/', '/@id/', '/@fs/'],
+			forPathPrefixes: ['/node_modules/.vite/', '/@id/', '/@fs/'],
 			preserveQueryFor: ['/@ng/component'],
 		};
 		const fetchMock = vi
 			.fn()
-			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-canon', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }))
+			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-canon', runtimeConfigUrl: 'http://localhost:5173/__ns_dev__/import-map.json' }))
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ importMap: { imports: {} }, volatilePatterns: ['?v='], canonicalization }),
@@ -208,7 +224,7 @@ describe('browser runtime session bootstrap', () => {
 		vi.stubGlobal('__NS_HMR_IMPORT__', importMock);
 		await bootWithImportMap('session-4a');
 
-		const fetchMock = vi.fn().mockResolvedValue(sessionResponse({ sessionId: 'session-4b', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }));
+		const fetchMock = vi.fn().mockResolvedValue(sessionResponse({ sessionId: 'session-4b', runtimeConfigUrl: 'http://localhost:5173/__ns_dev__/import-map.json' }));
 		vi.stubGlobal('fetch', fetchMock);
 		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
 
@@ -224,7 +240,7 @@ describe('browser runtime session bootstrap', () => {
 		const importMock = vi.fn().mockResolvedValue({});
 		const fetchMock = vi
 			.fn()
-			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-trace-ok', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }))
+			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-trace-ok', runtimeConfigUrl: 'http://localhost:5173/__ns_dev__/import-map.json' }))
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ importMap: { imports: {} }, volatilePatterns: [] }),
@@ -248,7 +264,7 @@ describe('browser runtime session bootstrap', () => {
 		const importMock = vi.fn().mockResolvedValue({});
 		const fetchMock = vi
 			.fn()
-			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-trace-quiet', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' }))
+			.mockResolvedValueOnce(sessionResponse({ sessionId: 'session-trace-quiet', runtimeConfigUrl: 'http://localhost:5173/__ns_dev__/import-map.json' }))
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ importMap: { imports: {} }, volatilePatterns: [] }),
@@ -284,7 +300,7 @@ describe('browser runtime session bootstrap', () => {
 		vi.stubGlobal('__NS_HMR_IMPORT__', vi.fn().mockResolvedValue({}));
 		await bootWithImportMap('session-dedup-first');
 
-		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sessionResponse({ sessionId: 'session-dedup', runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json' })));
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sessionResponse({ sessionId: 'session-dedup', runtimeConfigUrl: 'http://localhost:5173/__ns_dev__/import-map.json' })));
 		const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
 
 		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);

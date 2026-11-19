@@ -4,7 +4,6 @@ import { nsConfigToJson, resolveNativeScriptPlatformModule } from './utils.js';
 import { createTsConfigPathsResolver, getTsConfigData } from './ts-config-paths.js';
 import { packagePlatformResolverPlugin } from './package-platform-aliases.js';
 import { nativescriptPackageResolver } from './nativescript-package-resolver.js';
-import { findMonorepoWorkspaceRoot, getProjectRootPath } from './project.js';
 import { normalizeModuleId } from './normalize-id.js';
 import { sbgClassNamesPlugin } from './sbg-class-names.js';
 import { nativescriptBuiltinModules } from './builtin-modules.js';
@@ -177,16 +176,13 @@ export function getWorkerPlugins(platformOrOpts: string | WorkerPluginsOptions) 
 // `new Worker(new URL(/* @vite-ignore */"/src/.../foo.worker.ts?worker_file&type=classic", '' + import.meta.url))`.
 // That output breaks under NativeScript for two independent reasons:
 //
-//   1. TypeError on `new URL(spec, '' + import.meta.url)`: the iOS V8
-//      runtime's `InitializeImportMetaObject` (Runtime.mm) blindly prefixes
-//      the module registry key with `file://`, so HTTP-served modules get
-//      `import.meta.url = "file://http://localhost:5173/ns/m/..."` — a
-//      malformed base URL. The worker creation site (unlike other served
-//      `new URL` sites) has no try/catch.
-//   2. Even with a valid base, the URL points at Vite's `?worker_file`
-//      middleware, whose bundle's internal `/src/...` and `/@fs/...` imports
-//      bypass the `/ns/m/` pipeline — the worker crashes on its first
-//      transitive import.
+//   1. Some device runtimes have reported an HTTP-served module's
+//      `import.meta.url` as `file://http://…`, a malformed base for
+//      `new URL(spec, '' + import.meta.url)`, and the worker creation site
+//      has no try/catch.
+//   2. Vite serves a `?worker_file&type=classic` module with an
+//      `importScripts('/@vite/env')` prelude, a browser classic-worker API.
+//      The file's plain Vite URL serves it as an ordinary module.
 //
 // The rewrite prefixes the dev globals' `httpOrigin` (set by
 // `hmr/shared/runtime/session-bootstrap.ts`) so non-localhost origins work. Production counterpart: `workerUrlPlugin()`.
@@ -205,61 +201,24 @@ export interface WorkerHmrUrlPluginOptions {
 	verbose?: boolean;
 }
 
-// Strip Vite's `?worker_file&type=classic` query suffix (and any extension) so
-// the resulting URL matches the canonical `/ns/m/<rel-without-ext>` shape that
-// the NS HMR pipeline serves. Exported for unit testing.
-export function viteWorkerAssetPathToNsMUrl(assetPath: string, projectRoot: string, workspaceRoot: string | null): string | null {
+/**
+ * The plain Vite URL (root-relative, or `/@fs/…` outside the root, extension
+ * kept) of a worker asset path Vite emitted with a `worker_file` query, or
+ * `null` for any other URL.
+ */
+export function viteWorkerAssetPathToViteUrl(assetPath: string): string | null {
 	if (typeof assetPath !== 'string' || !assetPath) {
 		return null;
 	}
-	// Vite emits asset paths in two shapes during dev/HMR:
-	//   1. Project-relative: "/src/.../foo.worker.ts?worker_file&type=classic"
-	//   2. Absolute fs:      "/@fs/Users/.../src/.../foo.worker.ts?worker_file&type=classic"
-	// We only need to match #1 here — the project-relative form Vite uses for
-	// project-local files. Absolute-fs paths come from outside the project root
-	// (e.g. workspace libs in a monorepo), and we hand those off to Vite's
-	// default behavior rather than try to map them into `/ns/m/`.
 	const queryIdx = assetPath.indexOf('?');
 	const cleanPath = queryIdx === -1 ? assetPath : assetPath.slice(0, queryIdx);
 	const query = queryIdx === -1 ? '' : assetPath.slice(queryIdx);
 
-	// Confirm this is the worker_file query Vite emits — leaves non-worker URLs
-	// (e.g. asset URLs from `assetImportMetaUrlPlugin`) alone.
+	// Leaves non-worker URLs (e.g. asset URLs from `assetImportMetaUrlPlugin`) alone.
 	if (!/[?&]worker_file(?:&|=|$)/.test(query)) {
 		return null;
 	}
-
-	// Project-relative: "/src/..." → "/ns/m/src/..."
-	if (cleanPath.startsWith('/') && !cleanPath.startsWith('/@fs/')) {
-		// Strip the rewritable extension so the URL matches the canonical
-		// `/ns/m/<rel-without-ext>` shape served by the HMR middleware.
-		const noExt = cleanPath.replace(/\.(?:ts|tsx|mjs|cjs|js|jsx)$/, '');
-		return `/ns/m${noExt}`;
-	}
-
-	// Absolute-fs: "/@fs/abs/path/..." — try to map into project or workspace roots.
-	if (cleanPath.startsWith('/@fs/')) {
-		const absPath = cleanPath.slice('/@fs'.length); // keep leading '/'
-		const toPosix = (value: string) => value.replace(/\\/g, '/');
-		const stripTrailing = (value: string) => value.replace(/\/+$/, '');
-		const target = toPosix(absPath);
-		const projectPosix = stripTrailing(toPosix(path.resolve(projectRoot)));
-		const workspacePosix = workspaceRoot ? stripTrailing(toPosix(path.resolve(workspaceRoot))) : null;
-
-		const tryRoot = (root: string | null): string | null => {
-			if (!root) return null;
-			if (target === root) return '/ns/m';
-			if (target.startsWith(`${root}/`)) {
-				const rel = target.slice(root.length); // includes leading '/'
-				const noExt = rel.replace(/\.(?:ts|tsx|mjs|cjs|js|jsx)$/, '');
-				return `/ns/m${noExt}`;
-			}
-			return null;
-		};
-		return tryRoot(projectPosix) ?? tryRoot(workspacePosix);
-	}
-
-	return null;
+	return cleanPath.startsWith('/') ? cleanPath : null;
 }
 
 // Runtime helper injected (only) into HMR-transformed modules that
@@ -311,27 +270,15 @@ const HMR_WORKER_DISPOSE_HELPER = [
 
 export function workerHmrUrlPlugin(opts?: WorkerHmrUrlPluginOptions): Plugin {
 	const { verbose } = opts || {};
-	let projectRoot = '';
-	let workspaceRoot: string | null = null;
 
 	return {
 		name: 'nativescript-worker-hmr-url-transform',
 		// Run AFTER Vite's built-in `workerImportMetaUrlPlugin` (and AFTER
 		// the Angular plugin, which discards upstream `code` by re-compiling
-		// from disk). At this point Vite has already rewritten the user's
-		// `new Worker(new URL('./foo', import.meta.url))` into its dev shape
-		// `new Worker(new URL(/* @vite-ignore */"/src/.../foo.worker.ts?worker_file&type=classic", '' + import.meta.url))`.
-		// We match that shape and replace it with a plain string URL that
-		// routes through `/ns/m/` so the worker's internal imports get the
-		// same HMR treatment as the main thread.
+		// from disk), so the dev shape above is what this sees.
 		enforce: 'post',
 		// Dev/HMR only — `workerUrlPlugin()` below handles the production build.
 		apply: 'serve',
-
-		configResolved(config) {
-			projectRoot = path.resolve(config.root || getProjectRootPath());
-			workspaceRoot = findMonorepoWorkspaceRoot(projectRoot);
-		},
 
 		transform(code, id) {
 			if (!code || code.indexOf('new Worker') === -1 || code.indexOf('import.meta.url') === -1) {
@@ -348,11 +295,11 @@ export function workerHmrUrlPlugin(opts?: WorkerHmrUrlPluginOptions): Plugin {
 			let modified = false;
 			let workerWraps = 0;
 			let newCode = code.replace(WORKER_VITE_DEV_RE, (match, _quote, assetPath: string, options: string | undefined) => {
-				const nsmUrl = viteWorkerAssetPathToNsMUrl(assetPath, projectRoot, workspaceRoot);
-				if (!nsmUrl) {
+				const viteUrl = viteWorkerAssetPathToViteUrl(assetPath);
+				if (!viteUrl) {
 					if (verbose) {
 						// eslint-disable-next-line no-console
-						console.warn(`[ns-worker-hmr] worker asset path ${JSON.stringify(assetPath)} in ${cleanId} can't be mapped to /ns/m/; leaving Vite's default behavior in place`);
+						console.warn(`[ns-worker-hmr] worker asset path ${JSON.stringify(assetPath)} in ${cleanId} has no Vite URL; leaving Vite's default behavior in place`);
 					}
 					return match;
 				}
@@ -362,7 +309,7 @@ export function workerHmrUrlPlugin(opts?: WorkerHmrUrlPluginOptions): Plugin {
 				const optionsTail = options ? options : '';
 				// `__nsHmrTrackWorker` registers the worker for HMR cleanup and
 				// returns the instance unchanged, so the wrap is transparent.
-				return `__nsHmrTrackWorker(new Worker((${NS_DEV_EXPR}.httpOrigin || "") + ${JSON.stringify(nsmUrl)}${optionsTail}))`;
+				return `__nsHmrTrackWorker(new Worker((${NS_DEV_EXPR}.httpOrigin || "").replace(/\\/+$/, "") + ${JSON.stringify(viteUrl)}${optionsTail}))`;
 			});
 
 			if (!modified) {
@@ -378,7 +325,7 @@ export function workerHmrUrlPlugin(opts?: WorkerHmrUrlPluginOptions): Plugin {
 
 			if (verbose) {
 				// eslint-disable-next-line no-console
-				console.log(`[ns-worker-hmr] rewrote ${workerWraps} Vite worker URL${workerWraps === 1 ? '' : 's'} → /ns/m/ in ${cleanId} (with per-module HMR auto-dispose)`);
+				console.log(`[ns-worker-hmr] rewrote ${workerWraps} Vite worker URL${workerWraps === 1 ? '' : 's'} → plain Vite URL in ${cleanId} (with per-module HMR auto-dispose)`);
 			}
 
 			// Returning null for the source map keeps Vite's downstream sourcemap

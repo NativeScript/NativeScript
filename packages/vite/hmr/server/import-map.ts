@@ -2,11 +2,12 @@
  * Import-map key enumeration for NativeScript HMR.
  *
  * The device import map handed to ns:module `configureLoader()` maps each of
- * these bare specifiers to the `/ns/v` URL of the file Vite's client resolver
- * picks for it (see `buildThinImportMap` in `thin/thin-route.ts`). This module
- * only decides WHICH specifiers get an entry: vendor roots and their aliases,
+ * these bare specifiers to the device URL of the file Vite's client resolver
+ * picks for it (`buildImportMap` in `import-map-route.ts`). This module
+ * collects the base key set: vendor roots and their aliases,
  * `@nativescript/core`, `node:` builtins, framework entries, and every
- * installed package root. Subpath imports have no entry.
+ * installed package root. The only subpath keys are the `@nativescript/core`
+ * subpaths the deps bundle imports, which the route adds.
  */
 
 import type { FrameworkServerStrategy } from './framework-strategy.js';
@@ -59,7 +60,7 @@ export interface ImportMapOptions {
  * The bare specifiers the device import map carries, in map order: vendor
  * roots, vendor aliases whose canonical package is mapped, `@nativescript/core`,
  * `node:` builtins, framework entries, then every installed package root.
- * Core subpaths never get an entry, even when the vendor manifest lists them.
+ * Core subpaths are left out, even when the vendor manifest lists them.
  */
 export function collectImportMapSpecifiers(options: ImportMapOptions): string[] {
 	const { strategy } = options;
@@ -122,24 +123,14 @@ export function getVolatilePatterns(strategy?: FrameworkServerStrategy): string[
 
 /**
  * The URL canonicalization vocabulary handed to the runtime via
- * `configureLoader({ canonicalization })`. Every device module URL is
- * `/ns/v<vite-url>`, keyed exactly as a browser keys it: `t` and `import` are
- * part of the identity, so a `?t=` re-import is a fresh module. No path is a
- * query-normalizing dev endpoint, which leaves `stripParams` with nothing to
- * apply. `preserveQueryFor` carries the strategy's query-is-identity paths
- * (Angular's `/@ng/component?c=…&t=…`); the runtime checks it before any
- * prefix, so it holds even if a normalizing prefix is added back.
+ * `configureLoader({ canonicalization })`. Device module URLs are Vite's own,
+ * keyed exactly as a browser keys them (`t` and `import` are identity), so
+ * there is no query-normalizing prefix. `preserveQueryFor` carries the
+ * strategy's query-is-identity paths (Angular's `…/@ng/component?c=…&t=…`);
+ * the runtime matches them as path substrings, ahead of any prefix.
  */
-export function getCanonicalization(strategy?: FrameworkServerStrategy): {
-	stripParams: string[];
-	forPathPrefixes: string[];
-	preserveQueryFor: string[];
-} {
-	return {
-		stripParams: [],
-		forPathPrefixes: [],
-		preserveQueryFor: strategy?.preserveQueryPaths?.() ?? [],
-	};
+export function getCanonicalization(strategy?: FrameworkServerStrategy): { preserveQueryFor: string[] } {
+	return { preserveQueryFor: strategy?.preserveQueryPaths?.() ?? [] };
 }
 
 /**
@@ -169,7 +160,7 @@ function discoverInstalledPackages(): string[] {
 	const nodeModulesDir = resolve(projectRoot, 'node_modules');
 	if (!existsSync(nodeModulesDir)) return [];
 	// The names come from a per-session cache so the directory sweep runs once
-	// per dev server, not on every `/ns/import-map.json` request.
+	// per dev server, not on every import-map request.
 	return getInstalledPackageNames(nodeModulesDir).filter((name) => getDeviceImportMapExposure(name) === 'full');
 }
 

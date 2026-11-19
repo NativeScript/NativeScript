@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
-import { applyComponentUpdateRules, ComponentUpdateLedger, componentUpdateIdToFiles, decodeComponentUpdateId, hasOnlyHmrMetadataChanges, isRootComponentUpdate, normalizeWsSendArgs, parseNgComponentRequest } from './hmr-payload-rules.js';
+import { applyComponentUpdateRules, ComponentUpdateLedger, componentResourceFiles, componentUpdateIdToFiles, decodeComponentUpdateId, hasOnlyHmrMetadataChanges, isRootComponentUpdate, normalizeWsSendArgs, parseNgComponentRequest } from './hmr-payload-rules.js';
 
 const COMPONENT = `import { Component, signal } from '@angular/core';
 
@@ -121,7 +121,7 @@ describe('applyComponentUpdateRules', () => {
 describe('parseNgComponentRequest', () => {
 	it('reads the decoded id and the raw timestamp of a metadata fetch under any prefix', () => {
 		const c = encodeURIComponent('src/app/home/home.component.ts@HomeComponent');
-		expect(parseNgComponentRequest(`/ns/v/src/app/home/@ng/component?c=${c}&t=12`)).toEqual({ id: 'src/app/home/home.component.ts@HomeComponent', timestamp: '12' });
+		expect(parseNgComponentRequest(`/src/app/home/@ng/component?c=${c}&t=12`)).toEqual({ id: 'src/app/home/home.component.ts@HomeComponent', timestamp: '12' });
 		expect(parseNgComponentRequest('/src/app/home/home.component.ts')).toBeNull();
 	});
 });
@@ -135,5 +135,17 @@ describe('ComponentUpdateLedger', () => {
 		expect(ledger.isLive({ id: 'src/app/a.ts@A', timestamp: '1' })).toBe(false);
 		expect(ledger.isLive({ id: 'src/app/b.ts@B', timestamp: '2' })).toBe(false);
 		expect(ledger.isLive({ id: 'src/app/a.ts@A', timestamp: '' })).toBe(false);
+	});
+});
+
+describe('componentResourceFiles', () => {
+	it('resolves templateUrl, styleUrl and styleUrls against the component file', () => {
+		const source = `@Component({ templateUrl: './a.html', styleUrl: \`../shared/b.scss\`, styleUrls: ['./c.css', './d.css'] })\nexport class A {}`;
+		expect(componentResourceFiles(ts, source, '/app/src/a/a.component.ts')).toEqual(['/app/src/a/a.html', '/app/src/shared/b.scss', '/app/src/a/c.css', '/app/src/a/d.css']);
+	});
+
+	it('ignores inline metadata and other decorators', () => {
+		const source = `@Component({ template: '<Label></Label>', styles: ['a {}'] })\nexport class A {}\n@Directive({ templateUrl: './x.html' })\nexport class B {}`;
+		expect(componentResourceFiles(ts, source, '/app/src/a.ts')).toEqual([]);
 	});
 });

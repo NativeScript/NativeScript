@@ -5,10 +5,10 @@ const ROOT = '/Users/dev/app';
 
 describe('viteUrlCandidates', () => {
 	it.each([
-		['http://192.168.1.5:5173/ns/v/src/app/home.ts?t=1795055998219', ['/src/app/home.ts']],
-		['http://192.168.1.5:5173/ns/v/src/app/home.ts?import&t=1795055998219', ['/src/app/home.ts']],
-		['http://192.168.1.5:5173/ns/v/src/App.vue?vue&type=style&index=0&t=1&lang.css', ['/src/App.vue?vue&type=style&index=0&lang.css']],
-		['http://10.0.2.2:5173/ns/v/@fs/repo/libs/x.ts?t=2', ['/@fs/repo/libs/x.ts']],
+		['http://192.168.1.5:5173/src/app/home.ts?t=1795055998219', ['/src/app/home.ts']],
+		['http://192.168.1.5:5173/src/app/home.ts?import&t=1795055998219', ['/src/app/home.ts']],
+		['http://192.168.1.5:5173/src/App.vue?vue&type=style&index=0&t=1&lang.css', ['/src/App.vue?vue&type=style&index=0&lang.css']],
+		['http://10.0.2.2:5173/@fs/repo/libs/x.ts?t=2', ['/@fs/repo/libs/x.ts']],
 		['/src/app/home.ts', ['/src/app/home.ts', '/@fs/src/app/home.ts']],
 		['/@fs/repo/libs/x.ts', ['/@fs/repo/libs/x.ts']],
 		[`${ROOT}/src/app/home.ts`, ['/src/app/home.ts']],
@@ -34,12 +34,12 @@ describe('createUpdateModules', () => {
 	});
 
 	it("answers for a module's own import.meta.url, its Vite URL, or its file path", () => {
-		expect(modules.isRerun('http://192.168.1.5:5173/ns/v/src/app/one.ts?t=1795055998219')).toBe(true);
-		expect(modules.isChanged('http://192.168.1.5:5173/ns/v/src/app/one.ts?t=1795055998219')).toBe(false);
+		expect(modules.isRerun('http://192.168.1.5:5173/src/app/one.ts?t=1795055998219')).toBe(true);
+		expect(modules.isChanged('http://192.168.1.5:5173/src/app/one.ts?t=1795055998219')).toBe(false);
 		expect(modules.isChanged('/src/app/child1.ts')).toBe(true);
 		expect(modules.isChanged(`${ROOT}/src/app/child1.ts`)).toBe(true);
 		expect(modules.isRerun('/repo/libs/util.ts')).toBe(true);
-		expect(modules.isRerun('http://192.168.1.5:5173/ns/v/src/app/three.ts')).toBe(false);
+		expect(modules.isRerun('http://192.168.1.5:5173/src/app/three.ts')).toBe(false);
 		expect(modules.isRerun(`${ROOT}/src/app/four.ts`)).toBe(false);
 	});
 

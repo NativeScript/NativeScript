@@ -110,9 +110,9 @@ export const solidConfig = ({ mode }, options: TypeCheckControlOptions = {}): Us
 			// duplicating these here is harmless.
 			//
 			// Also exclude our own Solid HMR runtime helper. If the depscanner
-			// pre-bundles `@nativescript/vite/solid-bootstrap`, the device's /ns/m
-			// loader serves the bare specifier (which the package `exports`
-			// subpath map doesn't resolve there) and 404s. Excluding it routes
+			// pre-bundles `@nativescript/vite/solid-bootstrap`, the device is
+			// served the bare specifier (which the package `exports` subpath
+			// map doesn't resolve there) and 404s. Excluding it routes
 			// the import through normal resolution → the real file is served.
 			exclude: ['module', 'node:module', '@nativescript/vite/solid-bootstrap', ...solidJsxPackages],
 		},

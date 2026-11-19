@@ -18,7 +18,7 @@ export interface UpdateModules {
 	readonly modules: ReadonlyMap<string, HmrModuleChange>;
 	/**
 	 * True when the module re-evaluates in this update. `id` may be the
-	 * module's own `import.meta.url` (`<origin>/ns/v/src/x.ts?t=…`), its Vite
+	 * module's own `import.meta.url` (`<origin>/src/x.ts?t=…`), its Vite
 	 * URL or hot-context owner path (`/src/x.ts`, `/@fs/…`), or its absolute
 	 * file path.
 	 */
@@ -26,8 +26,6 @@ export interface UpdateModules {
 	/** True when the module's own file was edited; same `id` forms as {@link isRerun}. */
 	isChanged(id: string): boolean;
 }
-
-const THIN_PREFIX = '/ns/v';
 
 // Vite's `t` stamp and `import` marker never identify a module; any other
 // param does (`?vue&type=style`), so it is kept in its original order.
@@ -44,7 +42,7 @@ function stripVolatileParams(url: string): string {
 }
 
 /**
- * The Vite URLs `id` may stand for. A device URL drops its origin and `/ns/v`;
+ * The Vite URLs `id` may stand for. A device URL drops its origin;
  * an absolute file path becomes root-relative inside `root` and `/@fs/…`
  * outside it. A root-relative path is already a Vite URL, so a path that
  * isn't under `root` is tried both as is and as `/@fs/…`.
@@ -55,7 +53,6 @@ export function viteUrlCandidates(id: string, root: string | undefined): string[
 	const remote = /^[a-z][a-z0-9+.-]*:\/\/[^/]*/i.exec(path);
 	if (remote) {
 		path = path.slice(remote[0].length) || '/';
-		if (path === THIN_PREFIX || path.startsWith(`${THIN_PREFIX}/`)) path = path.slice(THIN_PREFIX.length) || '/';
 		return [stripVolatileParams(path)];
 	}
 	if (path.startsWith('file://')) path = path.slice('file://'.length);

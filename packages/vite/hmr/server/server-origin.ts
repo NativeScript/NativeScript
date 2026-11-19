@@ -3,9 +3,8 @@ import { resolveDeviceReachableOrigin, type DevHostPlatform } from '../../helper
 import { getCliFlags } from '../../helpers/cli-flags.js';
 
 /**
- * Dev-server origin baked into every module URL served to the device
- * (`/ns/v/...`). MUST match the origin `dev-host.ts` bakes
- * into `bundle.mjs`; if they disagree V8 keys them as different modules and
+ * Dev-server origin baked into every URL handed to the device. MUST match
+ * the origin `dev-host.ts` bakes into `bundle.mjs`; if they disagree V8 keys them as different modules and
  * the app ends up with two `@nativescript/core` realms (a singleton-state
  * split). `resolveDeviceReachableOrigin` keeps every platform in lock-step:
  * Android wildcard/loopback -> `127.0.0.1`-via-adb-reverse / `10.0.2.2`,

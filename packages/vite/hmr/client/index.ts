@@ -32,7 +32,7 @@ export interface NsHmrStartOptions {
 	wsProtocol: string;
 	/** Session entry; a `js-update` of it is a soft reboot. */
 	entryUrl: string;
-	/** Dev-server origin every `/ns/v` module URL starts with. */
+	/** Dev-server origin. A module's device URL is this origin followed by its Vite URL. */
 	origin: string;
 	/** Vite's project root; error locations under it are shown root-relative. */
 	root?: string;
@@ -62,9 +62,6 @@ export interface NsHmrRuntime {
 	/** Asks the dev server to restart the app; from then on the client applies nothing. */
 	requestRestart(reason: string): Promise<void>;
 }
-
-/** Device route prefix of Vite URLs (`hmr/server/thin/thin-mode.ts`). */
-const THIN_PREFIX = '/ns/v';
 
 const MAX_ANNOUNCED_RERUNS = 16;
 
@@ -179,7 +176,8 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 	client.attach(transport, async function importUpdatedModule({ acceptedPath, timestamp, explicitImportRequired, isWithinCircularImport }: Update): Promise<ModuleNamespace> {
 		const [acceptedPathWithoutQuery, query] = acceptedPath.split('?');
 		if (acceptedPath === entryPath) entryImportStarted = true;
-		const importPromise = importModule(`${origin}${THIN_PREFIX}${acceptedPathWithoutQuery}?${explicitImportRequired ? 'import&' : ''}t=${timestamp}${query ? `&${query}` : ''}`);
+		// The runtime resolves a non-`http(s)://` dynamic specifier on the filesystem and drops its query.
+		const importPromise = importModule(`${origin}${acceptedPathWithoutQuery}?${explicitImportRequired ? 'import&' : ''}t=${timestamp}${query ? `&${query}` : ''}`);
 		if (isWithinCircularImport) {
 			importPromise.catch(() => {
 				console.info(`[hmr] ${acceptedPath} failed to apply HMR as it's within a circular import. Restarting the app to reset the execution order.`);

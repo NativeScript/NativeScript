@@ -14,21 +14,34 @@ The before → after table is in FINDINGS.md round 14.
 
 The inventory behind this is the subagent map in `$CLAUDE_JOB_DIR/tmp/nsvite-map/inventory.tsv` (227 files, 51k LOC). The summary is in FINDINGS.md.
 
-## Architecture (as built after phase 3a)
+## Architecture (as built after phase 3b)
 
-### Serving: `/ns/v<vite-url>`
-- Every device module is `environments.client.transformRequest(<vite-url>)`. Root-relative specifiers are rewritten to `<origin>/ns/v…`. Core files carry a footer that registers them in the dev globals' `coreModules`, and `/@vite/client` is `hmr/client/thin-vite-client.ts`.
-- `thin-route.ts` normalizes the URL the way Vite's transform middleware does before calling `transformRequest`:
-  - it drops `t` and `import` (Vite's own `removeTimestampQuery`/`removeImportQuery` regexes), so a `?t=` request returns the same module code and one file has one graph node;
-  - it drops the runtime's transport-only `__ns_dev_nonce`.
-- CSS requested as a stylesheet (`Accept: text/css` or `?direct`) is handed to Vite's own middleware with the plain Vite URL. Vite adds `direct` and answers `text/css`.
-- **One origin source:** `getServerOrigin(server)` for the session, the client bootstrap, the import map, `bundle.mjs` core URLs and the thin route. The `Host` header is never used.
+### Serving: plain Vite URLs
+- **The device fetches `<origin><vite-url>`, exactly as a browser would.** Vite's own middleware answers every module request: transform, `?t=`/`?import` handling, `?direct` CSS, ETag/304, `/@fs`, `/@id`, `/node_modules/.vite/deps`. There is no NS module route and no URL prefix. Static specifiers stay as Vite's import analysis writes them, root-relative, and the runtime resolves them against the importer's HTTP URL.
+- **`/@vite/client` is our device client.** `nsViteClientPlugin` (`enforce: 'pre'`, client environment only) resolves `/@vite/client`, and the alias Vite installs for it, to `hmr/client/thin-vite-client.ts`. The device URL stays `/@vite/client`; the module's graph URL is `/@vite/client.js`, because Vite appends the resolved file's extension.
+- **One device-request middleware runs ahead of all others** (`hmr/server/device-requests.ts`, placed with `useFirst`, i.e. before Vite's own middlewares and before `enforce: 'pre'` plugins' ones). It:
+  - strips the runtime's transport-only `__ns_dev_nonce` from `req.url` and `originalUrl`, so it never reaches Vite's graph or any route;
+  - records a module response as served once it finishes (2xx JavaScript, or a 304 that isn't a stylesheet), under its client-graph URL, for the boot-race catch-up (see "Failures");
+  - rewrites dynamic imports in JavaScript responses (next bullet);
+  - waits, on the first request, until the `@nativescript/core` directory is resolved and added to `fs.allow`.
+- **Dynamic `import('/…')` is made absolute at response time — an interim.** The iOS runtime resolves a dynamic `import()` with a non-`http(s)` specifier on the filesystem and strips its query (`ModuleInternalCallbacks.mm`, `ImportModuleDynamicallyCallback`), so `import('/src/app/home/home.component.ts')` from a lazy route fails. `absolute-dynamic-imports.ts` prefixes the origin to every root-relative string-literal dynamic import in a 2xx JavaScript body (`es-module-lexer`), query untouched; static imports are left alone.
+  - **Why at response time, not in a `post` transform:** Vite's soft invalidation (`vite:import-analysis` → `transformRequest` reuse with re-stamped imports) rewrites `?t=` only on specifiers equal to the imported module's root-relative URL. A transform-time absolute URL would keep a stale `?t=` after an edit further down the chain, and the device would re-import the old instance. Rewriting the response leaves Vite's cached transform and its re-stamping intact. The ETag stays Vite's: for one origin the rewrite is a pure function of the body.
+  - Non-literal dynamic imports go through Vite's `__vite__injectQuery`, which our client's `injectQuery` serves: it prefixes the origin to a root-relative result.
+  - Goes away once the iOS (and Android, to check) runtimes keep the URL `ResolveSpecifierToPath` already computes against an HTTP referrer, with its query (REVIEW-DECISIONS, phase 3b).
+- **NS endpoints live under `/__ns_dev__/`:** `session`, `client` (the bootstrap), `import-map.json`, `vendor.mjs`, `vendor-manifest.json`, `deps-bundle.mjs`. No `/ns/*` route remains. These are not module responses, so they are never recorded as served.
+- **`server.fs.allow`:** Vite's middleware enforces it, as `transformRequest`'s load fallback does. `baseConfig` keeps `searchForWorkspaceRoot(projectRoot)` first, because setting `fs.allow` replaces Vite's default, then adds the workspace roots of linked dependency checkouts. The HMR plugin adds the `@nativescript/vite` package directory in `configResolved` and the `@nativescript/core` directory once the client resolver can resolve it, each as given and as a real path (`allowServedDirs`). Vite reads the list on every check, so late entries count. Files the device requests directly (bootstrap modules, `bundle.mjs` externals, import-map targets) are checked before any import analysis could mark them safe.
+- **Import map** (`/__ns_dev__/import-map.json`, `buildImportMap` in `import-map-route.ts`): each bare specifier → origin + the Vite URL of the file Vite's client resolver picks (`viteUrlForFile`, so one file has one URL). Exact keys only, no prefix entries. A target must be a regular file: a resolved directory (an alias to a CSS-only package such as `nativescript-theme-core`) gets no entry. Each target file is added to Vite's internal `config.safeModulePaths`, the set Vite's own import analysis fills, so a target outside `fs.allow` (an aliased out-of-tree checkout, a global pnpm store) is served without widening `fs.allow` on a LAN-bound server. `safeModulePaths` is not public API; if Vite renames it, the registration silently does nothing and such targets get 403.
+  - The deps bundle keeps `@nativescript/core[/*]` imports bare (plugins import subpaths such as `@nativescript/core/http`). The route adds each one as an exact key: `depsBundleCoreSpecifiers` lexes them out of the bundle code, cached or fresh, after `ensureBuilt()`. A missing or failed bundle adds none. Goes with the deps bundle in phase 3c.
+- **Host check:** Vite's `allowedHosts` rejects unknown `Host` headers. Loopback and IP literals pass by default; `allowDeviceHost` adds the `NS_HMR_HOST` hostname, when it is one, to the resolved config before the server is created.
+- **Core registration footer:** a serve-only, client-environment `transform` (`nsCoreRegistrationPlugin`, `core-registration.ts`) appends to every `@nativescript/core` script file a self-import by its own Vite URL plus the registration in the dev globals' `coreModules`. Import analysis then stamps the self-import with the module's own `?t=`, so the registered instance is the one the device evaluated. A timestamped (HMR) instance replaces the registered one; otherwise the first claimant keeps its key.
+- **Base:** only `base: '/'` is supported on device. The device URLs, the import map and `bundle.mjs` externals are origin + Vite URL with no base.
+- **One origin source:** `getServerOrigin(server)` for the session, the client bootstrap, the import map, `bundle.mjs` core URLs and the dynamic-import rewrite. The `Host` header is never used.
 - Still to do (phase 3c): no vendor bundle in dev. Drop `vendor.mjs`, the deps bundle and `vendor-bootstrap`. Import-map keys come from resolving the app's dependencies through the client plugin container. Android SBG keeps only its build-time stub.
 
 ### Defines
 - `config.define` is the single source: `getGlobalDefines` (`helpers/global-defines.ts`) plus the app's own entries.
 - **Build.** Vite substitutes it in `bundle.mjs`, bare identifiers and member chains (`global.isIOS`, `process.env.NODE_ENV`) alike. Bundled device code reads defines as bare identifiers (`__ANDROID__`, not `g.__ANDROID__`), so substitution covers them.
-- **Dev.** Vite's client environment does no define substitution in served modules. The first import of `bundle.mjs` is `<origin>/ns/v/@vite/env`, Vite's own module. It assigns every define on `globalThis`, user defines and dotted keys included, before the externalized core graph evaluates.
+- **Dev.** Vite's client environment does no define substitution in served modules. The first import of `bundle.mjs` is `<origin>/@vite/env`, Vite's own module. It assigns every define on `globalThis`, user defines and dotted keys included, before the externalized core graph evaluates.
   - It must stay an external import placed first: a bundled module's body runs after the externalized core.
   - It is the only installer, so building `bundle.mjs` with HMR active fails when no device-reachable origin resolves (`helpers/main-entry.ts`).
 - **esbuild builds.** The deps bundle (`hmr/server/deps-bundle.ts`) passes `getGlobalDefines`, `module.hot: undefined` and the app's bare `__FOO__` defines (captured in `configResolved` by `setUserDefineEntries`) as esbuild `define`. The vendor manifest build (`hmr/shared/vendor/manifest.ts`) passes `getGlobalDefines` without user defines.
@@ -48,9 +61,9 @@ The inventory behind this is the subagent map in `$CLAUDE_JOB_DIR/tmp/nsvite-map
   - `cjsShape`: ESM namespace → plain object for CommonJS callers. Installed by `bundle.mjs`, used by the core footer and the deps bundle.
 
 ### Module identity: Vite's `?t=` stamps
-- The loader keeps every query param of `/ns/v` URLs, `t` and `import` included, exactly as a browser does.
-  - `getCanonicalization` sends empty `stripParams`/`forPathPrefixes`; the runtime only strips under a listed prefix.
-  - `preserveQueryFor` (`/@ng/component`) is still sent.
+- The loader keeps every query param of a module URL, `t` and `import` included, exactly as a browser does. The module key is the device URL, i.e. origin + Vite URL.
+  - `getCanonicalization` sends only `preserveQueryFor` (`/@ng/component`) plus the strategy's volatile patterns; with no `forPathPrefixes`, the runtime strips nothing.
+  - Only `__ns_dev_nonce` is transport-only; the device-request middleware strips it before Vite sees the request.
 - A re-imported module therefore has a fresh URL. There are no server-computed eviction sets and no hot-key canonicalization.
 - The cost is the browser's: replaced instances stay in memory until the app restarts.
 
@@ -90,7 +103,7 @@ Behavior:
   3. `nativescript:beforeRerun`, targeted to the re-running modules (see "Soft reboot").
   4. Each `js-update` runs through `queueUpdate(fetchUpdate)` exactly as Vite does:
      - a no-op without a hot entry;
-     - otherwise await `dispose(data)` of the accepted module only, then `import(origin + '/ns/v' + path + '?' + (explicitImportRequired ? 'import&' : '') + 't=' + ts + (query ? '&' + query : ''))`;
+     - otherwise await `dispose(data)` of the accepted module only, then `import(origin + path + '?' + (explicitImportRequired ? 'import&' : '') + 't=' + ts + (query ? '&' + query : ''))`;
      - accept callbacks get the deps-positional array;
      - a failure inside a circular import → app restart.
   5. `css-update` runs listeners only. Stylesheet owners such as the Angular renderer react on `vite:beforeUpdate`.
@@ -149,8 +162,8 @@ Behavior:
   - `nativescript:afterReboot`: the `beforeReboot` payload plus `error` when the entry import failed or the settle signal reported a failed boot (it rejected or resolved `{ error }`). It fires after the framework's settle signal (Angular: bootstrap plus `ApplicationRef.whenStable()`, capped at 5 s, and participant restore), waited for up to 15 s. It is skipped right away when the entry import failed.
   - `nativescript:beforeRestart` `{ reason }`: before the device asks for, or is told about, an app restart.
   - **Order:** `vite:beforeUpdate` → `nativescript:beforeReboot` → `nativescript:beforeRerun` → entry `dispose` (framework teardown) → `import(entry?t=)` → framework bootstrap and restore → `nativescript:afterReboot` → `vite:afterUpdate`.
-- **Payload lookups.** `isRerun(id)`, `isChanged(id)` and `modules` (`'changed'` for an edited file, `'rerun'` for one re-evaluated only because of the chain) accept a module's own `import.meta.url` (`<origin>/ns/v/src/x.ts?t=…`), its Vite URL or owner path, or its absolute file path.
-  - They strip the origin, `/ns/v`, `t` and `import`, and keep identity queries (`hmr/shared/update-modules.ts`). Typical:
+- **Payload lookups.** `isRerun(id)`, `isChanged(id)` and `modules` (`'changed'` for an edited file, `'rerun'` for one re-evaluated only because of the chain) accept a module's own `import.meta.url` (`<origin>/src/x.ts?t=…`), its Vite URL or owner path, or its absolute file path.
+  - They strip the origin, `t` and `import`, and keep identity queries (`hmr/shared/update-modules.ts`). Typical:
     ```ts
     import.meta.hot?.on('nativescript:beforeReboot', (e) => { if (e.isRerun(import.meta.url)) cleanup(); });
     ```
@@ -191,7 +204,7 @@ A broken save shows an error on the device and leaves the running app as it is. 
 
 - **Compile check (the update gate, `hmr/server/update-gate.ts`).** `nsRerunPlugin` wraps `server.ws.send`. Every payload to the device passes through a queue, so payloads leave in the order they were sent.
   - An `update` with a `js-update` is checked first. The checked set is the re-run set plus, for an accepted template, the component modules that import it (an in-place template update re-runs nothing on the device, yet a broken template must not apply).
-  - Each checked module goes through `environments.client.transformRequest` with the thin route's normalized URL, then through the flavor's `verifyTransform`. The results stay in Vite's transform cache for the device's fetches.
+  - Each checked module goes through `environments.client.transformRequest` with its graph URL (`transformIdForViteUrl` for `/@id/` URLs), then through the flavor's `verifyTransform`. The results stay in Vite's transform cache for the device's fetches.
   - **Angular's `verifyTransform`** (`hmr/frameworks/angular/server/compile-check.ts`) rejects output that lacks `ɵcmp`/`ɵɵdefineComponent` for a source with `@Component`. Analog with type checking disabled doesn't throw for a broken template: it emits the uncompiled decorator. The message is recovered by parsing the template with the app's own `@angular/compiler` (`parseTemplate`).
   - **On failure** the device gets Vite's standard `error` payload, `{ type: 'error', err: { message, stack, id, frame, loc, plugin } }`, instead of `ns:rerun` + `update`. Nothing is disposed.
   - **On success** `ns:rerun` goes out right before the `update`.
@@ -208,12 +221,15 @@ A broken save shows an error on the device and leaves the running app as it is. 
 - **Bootstrap failure.** A settle signal that rejects or resolves `{ error }` counts as a failed boot: the overlay shows it, and the next update retries. It doesn't count toward the escalation rule.
 - **"Restart app".** Every `failed` overlay stage carries this action; a tap sends `ns:restart`. iOS draws it in the overlay's own `UIWindow`, a subclass that, in toast mode, passes touches outside the button through to the app; Android uses a native `Button`; the in-tree fallback a core `Button`.
 - **Boot race and catch-up.**
-  - The thin route records, per module URL, when it was served and under which `?t=` stamps (`ServedModules` in `hmr/server/served-modules.ts`). There is one per dev server, shared by all devices.
+  - The device-request middleware records, per client-graph URL, when it was served and under which `?t=` stamps (`ServedModules` in `hmr/server/served-modules.ts`). The served time is when the request arrived, so an edit that lands while Vite transforms the module counts as after the fetch. There is one record per dev server, shared by all devices.
+  - Every client `hotUpdate` (order `post`, after the framework hooks) records, per graph URL in `ctx.modules`, the timestamp of the last save that edited it (`getModuleEdits`). These are the modules whose own code changed, not the importers Vite re-stamps on the way to a boundary.
   - A save whose update reached a connected client, as an update or an `error`, is "delivered".
-  - On `vite:client:connect`: the device opens its HMR socket only after `bootComplete`, so the connect is the boot-complete signal, and it covers reconnects too. A served module whose `lastHMRTimestamp` is newer than when it was served, from a save that wasn't delivered, triggers exactly one catch-up:
+  - On `vite:client:connect`: the device opens its HMR socket only after `bootComplete`, so the connect is the boot-complete signal, and it covers reconnects too.
+  - **Missed modules** (`findMissedModules`): a served module is missed when something compiled into it was edited, by a save that wasn't delivered, after the module was served. "Compiled into it" is the module itself plus, transitively, the non-script modules it imports that the device never fetched (a component's template and stylesheets). A script module the device hasn't fetched yet will be served fresh, so it doesn't count, and neither does an importer Vite only re-stamped.
+  - Any missed module triggers exactly one catch-up:
     - with an entry boundary, a synthetic entry `js-update` preceded by `ns:rerun` (`rerun` from served stamps; compile-checked first, `error` instead if the check fails);
     - without one, `requestAppRestart`.
-  - A normal boot has no stamp newer than its fetches, so it gets no catch-up.
+  - A normal boot has no edit newer than its fetches, so it gets no catch-up.
   - **Limitation:** tracking is per server, not per device connection. HTTP module fetches can't be attributed to a WebSocket connection, and simulators share `localhost`. With two devices, one booting while the other is connected can miss an update.
 
 ### CLI contract for app restarts (to implement in nativescript-cli)
@@ -240,7 +256,7 @@ No NS server strategies for updates. Each framework's Vite plugin produces stock
 - **`angular:invalidate` → `full-reload`**, i.e. an app restart, as Angular CLI full-reloads; Analog lacks it.
 - **`/@ng/component` boot gate.** Every compiled component fetches `/@ng/component?c=<id>&t=<now>` when its module evaluates. Analog answers with a real `_UpdateMetadata` payload whenever that module was invalidated at any point in the server's lifetime.
   - Without the gate, a re-evaluated component would replace its own metadata at boot, which for the root tears down `page-router-outlet` and leaves a blank screen.
-  - The rules plugin records the latest `angular:component-update` timestamp it sent per id. A middleware ahead of Analog's and the thin route lets through only a fetch echoing that exact `(c, t)`; anything else gets `export default undefined;`.
+  - The rules plugin records the latest `angular:component-update` timestamp it sent per id. A middleware ahead of Analog's (`enforce: 'pre'`) lets through only a fetch echoing that exact `(c, t)`; anything else gets `export default undefined;`.
 - **`@nativescript/angular`** (literal `import.meta.hot`, which Vite injects into served `node_modules` files too; no globals):
   - `prepareHmrReboot()`, called from the entry's `dispose`:
     1. saves HMR participants from the root injector;
@@ -264,7 +280,7 @@ No NS server strategies for updates. Each framework's Vite plugin produces stock
 ## Phases
 1. **Thin is the only mode; delete what thin never reaches.** Done (FINDINGS round 10).
 2. **Transport, client port and `?t` identity.** Done (FINDINGS round 11). 2b: app restarts (FINDINGS round 11). 2c: the entry-boundary soft reboot, the event bus and the Angular reboot API (FINDINGS round 12). 2d: errors without restarting, i.e. the compile check, recoverable reboot failures, the overlay's restart action and the boot catch-up (FINDINGS round 13).
-3. **Defines and globals; `/ns/v`; vendor bundle.** 3a: defines and globals, done (FINDINGS round 14). 3b: drop `/ns/v`. 3c: vendor bundle out; new import-map key source. Measure duplicates before and after.
+3. **Defines and globals; `/ns/v`; vendor bundle.** 3a: defines and globals, done (FINDINGS round 14). 3b: plain Vite URLs, `/ns/v` and every `/ns/*` route gone, done (FINDINGS round 15). 3c: vendor bundle out; new import-map key source. Measure duplicates before and after.
 4. **Flavors.** An entry boundary for TS, Solid and React (remount via `resetRootView`); Vue (plugin-vue `js-update`); `app.css` as a Vite module; worker HMR.
 5. **Android.**
 
@@ -272,7 +288,7 @@ No NS server strategies for updates. Each framework's Vite plugin produces stock
 - **A static side-effect gate:** restart when a re-run module has top-level side effects that nothing disposes. Deferred.
 - **Angular participants:** router stack replay, dialogs, NgRx (`provideNgrxHmr`).
 - **Worker ownership:** workers spawned by a rebooted app instance leak unless the framework terminates them.
-- **Workers:** `workerHmrUrlPlugin` is `/ns/m`-only, so workers need a thin equivalent. `__NS_HMR_WORKERS__` (`worker-tracking.ts`; its sweeper has no caller) moves to the dev object with worker HMR.
+- **Workers:** `workerHmrUrlPlugin` now points `new Worker(...)` at the worker's plain Vite URL on the dev origin; no fixture or crawl exercises a worker, so this is unverified. Worker HMR is phase 4. `__NS_HMR_WORKERS__` (`worker-tracking.ts`; its sweeper has no caller) moves to the dev object with worker HMR.
 - **`__NS_HTTP_ORIGIN__` was readable by app code.** It is now the dev object's `httpOrigin`; code outside `@nativescript/vite` that read the global gets `undefined`.
 - **Monorepo Angular ids.** Analog builds `angular:component-update` ids relative to `process.cwd()`, while the NS config comment assumes `workspaceRoot`. The NS rules resolve both, but in-place updates in an Nx workspace are unverified.
 - **Per-device catch-up.** Served modules and delivered saves are tracked per dev server, not per device connection, so with two devices, one booting while the other is connected can miss an update (see "Failures").

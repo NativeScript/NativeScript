@@ -1,61 +1,35 @@
 /**
- * THE single node_modules payload for dev-session device serving.
+ * Single-eval node_modules payload for a dev session, served at
+ * `DEPS_BUNDLE_PATH`. Its entries are the vendor collection (NativeScript
+ * plugin/framework deps from package.json); every bundled file's namespace
+ * is registered in `globalThis.__NS_DEPS_MODULES__`, keyed by
+ * node_modules-relative path.
  *
- * DEFAULT MODE
- * ------------
- * All node_modules code a session needs evaluates from ONE ESM payload served
- * at `GET /ns/deps-bundle.mjs`. Its entry set is the union of:
- *  - the vendor collection (direct NativeScript-plugin/framework deps from
- *    package.json — available on the very first boot, no recording needed),
- *  - the persisted boot recording (every deep `/ns/m/node_modules/...` file a
- *    previous cold boot actually fetched — rxjs internals, Angular fesm
- *    files, community plugin subpaths).
+ * The dev-session vendor module (`SERVER_VENDOR_PATH`) is a view over this
+ * bundle (see `buildDepsVendorRuntimeModule`), so `__nsVendorRegistry` and the
+ * require shim resolve package roots into this bundle's realm.
  *
- * The canonical `/ns/m/node_modules/...` URL space is preserved — those
- * routes serve THIN SHIMS that statically import the bundle and re-export the
- * requested module's namespace from the `globalThis.__NS_DEPS_MODULES__`
- * registry the bundle populates. Because every shim's only dependency is the
- * one bundle URL, V8 evaluates the dependency closure exactly once — module
- * identity stays keyed by canonical URL, with ONE big prefetchable payload
- * instead of a deep serial fetch chain.
+ * Import routing inside the bundle:
+ *  - `@nativescript/core[/*]` stays an external bare specifier, resolved by
+ *    the device import map (see `depsBundleCoreSpecifiers`).
+ *  - `@nativescript/vite` modules stay external at their Vite URL: dev
+ *    tooling loads independently of the app dependency closure.
+ *  - Dynamic `import()` targets stay external at their Vite URL, so they
+ *    evaluate lazily.
+ *  - Everything else resolvable is internalized; platform-suffix resolution
+ *    (`index.ios.js`) backs up esbuild's resolver. Bare externals are emitted
+ *    only for specs with no on-disk resolution at all.
  *
- * The vendor registry is a VIEW over this bundle: the session bootstrap's
- * `/@nativescript/vendor.mjs` import serves a thin module (see
- * `buildDepsVendorRuntimeModule`) that imports this bundle and exposes
- * package-root namespaces from the deps registry, so the JS-side sync
- * resolution chain (`__nsVendorRegistry` → require shim) resolves into the
- * SAME realm as every shim. No second node_modules payload ever evaluates.
- *
- * REALM RULES
- * -----------
- *  - `@nativescript/core[/*]` stays EXTERNAL as a bare specifier: the device
- *    import map routes it to the `/ns/core` bridge, so bundled dep code joins
- *    the live core realm.
- *  - Dynamic `import()` targets inside dep code are externalized back to
- *    their canonical `/ns/m/node_modules/...` URL, preserving lazy evaluation
- *    and per-URL identity. Their closures are still bundled (best effort),
- *    so that URL serves a shim instead of a per-module fetch chain.
- *  - `@nativescript/vite` client modules stay per-module (dev tooling loads
- *    independently of the app dependency closure).
- *  - Everything else resolvable is internalized — platform-suffix resolution
- *    (`index.ios.js`) backs up esbuild's resolver — and EVERY bundled input
- *    file is registered, so any `/ns/m` URL minted for a bundled file
- *    resolves to the single bundle instance. Bare externals are emitted only
- *    for specs with no on-disk resolution at all: anything resolvable would
- *    otherwise round-trip through a shim of this bundle mid-evaluation (ESM
- *    cycle: the shim body runs before the registry is populated and throws).
- *
- * FALLBACK
- * --------
- * A failed esbuild build logs once and falls back to per-module serving plus
- * the standalone vendor bundle for the session. Opt out entirely with
- * `NS_DEPS_PER_MODULE=1` (patch-package workflows editing node_modules).
+ * A failed esbuild build logs once and the session falls back to the
+ * standalone vendor module. `NS_DEPS_PER_MODULE=1` opts out entirely
+ * (patch-package workflows editing node_modules).
  */
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 import * as esbuild from 'esbuild';
+import { initSync as initModuleLexer, parse as parseModule } from 'es-module-lexer';
 import type { ViteDevServer } from 'vite';
 
 import { resolvePlatform } from '../../helpers/cli-flags.js';
@@ -72,19 +46,19 @@ import { getVendorManifest, setVendorRuntimeModuleProvider } from '../shared/ven
 import { collectVendorModules } from '../shared/vendor/manifest-collect.js';
 import { generatePlatformPolyfills } from '../shared/runtime/platform-polyfills.js';
 import { getAngularLinkerFactory, runAngularLinker } from '../frameworks/angular/build/shared-linker.js';
-import { getBlockedDeviceNodeModulesReason, resolveCandidateFilePath } from './websocket-module-specifiers.js';
-import { extractDirectExportedNames, JS_IDENTIFIER_RE, maskJsComments, parseExportSpecList } from './websocket-core-bridge.js';
-import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
-import { loadPersistedBootRecording } from './boot-recording.js';
+import { getBlockedDeviceNodeModulesReason, resolveCandidateFilePath } from './deps-bundle-specifiers.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
+import { viteUrlForFile } from './vite-url.js';
 import { builtinModulesEsbuildPlugin } from '../../helpers/builtin-modules.js';
 
-export const DEPS_BUNDLE_PATH = '/ns/deps-bundle.mjs';
+export const DEPS_BUNDLE_PATH = '/__ns_dev__/deps-bundle.mjs';
+
+const NS_CORE_SPEC_RE = /^@nativescript\/core(?:\/|$)/;
 
 /**
- * Per-module node_modules serving mode (vs the default single-eval deps
- * bundle). `NS_DEPS_PER_MODULE=1|true` forces per-module serving — the right
- * mode when hand-editing files inside node_modules (patch-package workflows).
+ * Whether the deps bundle is disabled. `NS_DEPS_PER_MODULE=1|true` turns it
+ * off — the right mode when hand-editing files inside node_modules
+ * (patch-package workflows).
  */
 export function isDepsPerModuleServingEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
 	const v = env.NS_DEPS_PER_MODULE;
@@ -92,15 +66,15 @@ export function isDepsPerModuleServingEnabled(env: NodeJS.ProcessEnv = process.e
 }
 
 // ============================================================================
-// Entry resolution — recorded `/ns/m/node_modules/...` paths → physical files
+// Entry resolution — `/node_modules/<pkg>` specs → physical files
 // ============================================================================
 
 const SCRIPT_EXT_RE = /\.(ts|tsx|js|jsx|mjs|mts|cts)$/i;
 const NON_BUNDLEABLE_EXT_RE = /\.(css|scss|sass|less|json|html|vue|svelte)$/i;
 
-/** One bundle entry: the served spec, its registry key, and the source file. */
+/** One bundle entry: its spec, registry key, and source file. */
 export interface DepsBundleEntry {
-	/** Served spec form, e.g. `/node_modules/rxjs/dist/esm/internal/Observable`. */
+	/** Vendor-collected spec, e.g. `/node_modules/rxjs` or `/node_modules/rxjs/operators`. */
 	spec: string;
 	/** Registry key: node_modules-relative file path, e.g. `node_modules/rxjs/dist/esm/internal/Observable.js`. */
 	key: string;
@@ -123,10 +97,9 @@ function platformResolveExtensions(platform: string): string[] {
 }
 
 /**
- * Same extension/index fan-out the /ns/m route uses for a served spec,
- * platform-suffixed variants first (`canvas` → `canvas.ios.js` before
- * `canvas.js`, `Paywall` → `Paywall/index.ios.js`) so shim lookup lands on
- * the same file the per-module pipeline would serve.
+ * Extension/index fan-out for a spec, platform-suffixed variants first
+ * (`canvas` → `canvas.ios.js` before `canvas.js`, `Paywall` →
+ * `Paywall/index.ios.js`).
  */
 export function buildDepsCandidateSpecs(spec: string, platform: string): string[] {
 	const hasExt = SCRIPT_EXT_RE.test(spec);
@@ -196,33 +169,6 @@ function resolvePackageRootEntry(spec: string, roots: readonly string[], platfor
 	return null;
 }
 
-function resolvePackageSubpathEntry(pkgDir: string, subpath: string, platform: string): string | null {
-	const candidates: string[] = [];
-	try {
-		const pkg = JSON.parse(readFileSync(path.join(pkgDir, 'package.json'), 'utf-8'));
-		const exportsMap = pkg.exports && typeof pkg.exports === 'object' && !Array.isArray(pkg.exports) ? (pkg.exports as Record<string, unknown>) : null;
-		if (exportsMap) {
-			const key = `./${subpath}`;
-			collectExportsMapTargets(exportsMap[key], candidates);
-			for (const [pattern, target] of Object.entries(exportsMap)) {
-				const star = pattern.indexOf('*');
-				if (star === -1) continue;
-				const prefix = pattern.slice(0, star);
-				const suffix = pattern.slice(star + 1);
-				if (key.length < prefix.length + suffix.length || !key.startsWith(prefix) || !key.endsWith(suffix)) continue;
-				const captured = key.slice(prefix.length, key.length - suffix.length);
-				const targets: string[] = [];
-				collectExportsMapTargets(target, targets);
-				for (const t of targets) candidates.push(t.split('*').join(captured));
-			}
-		}
-	} catch {
-		// Unreadable manifest: fall through to the on-disk lookup.
-	}
-	candidates.push(subpath);
-	return resolvePackageFileCandidates(pkgDir, candidates, platform);
-}
-
 /** `/node_modules/<pkg>` or `/node_modules/@scope/<pkg>` with no subpath. */
 function isPackageRootSpec(spec: string): boolean {
 	const pkgSub = spec.replace(/^\/node_modules\//, '');
@@ -265,48 +211,14 @@ function resolveDepsSpecToFile(spec: string, projectRoot: string, workspaceRoot:
 	return resolveSpecToFile(spec, projectRoot, workspaceRoot, platform);
 }
 
-// Never bundled: `@nativescript/core` belongs to the /ns/core bridge realm,
-// and `@nativescript/vite` IS the dev tooling — its device-served client
-// modules (hot registry, session bootstrap, framework strategies) must load
-// independently of the app dependency closure, not as consumers of it.
+// Never bundled: `@nativescript/core` must stay the one realm the device
+// import map resolves, and `@nativescript/vite` IS the dev tooling — its
+// device-served client modules (hot registry, session bootstrap, framework
+// strategies) must load independently of the app dependency closure.
 // Bundling them would make the HMR client's evaluation depend on the entire
 // deps payload (and deadlock the session bootstrap's client evict/re-import).
 const NEVER_BUNDLED_SPEC_RE = /^\/node_modules\/@nativescript\/(?:core|vite)(?:\/|$)/;
 const NEVER_BUNDLED_KEY_RE = /^node_modules\/@nativescript\/(?:core|vite)\//;
-
-/**
- * Map recorded boot paths to bundle entries. Skips: non-node_modules paths,
- * blocked packages, the never-bundled `@nativescript/core` + `@nativescript/vite`
- * realms, non-script assets, symlinked workspace-source packages, and files
- * that cannot be resolved on disk (they stay per-module).
- */
-export function resolveDepsEntriesFromRecording(recordedPaths: readonly string[], projectRoot: string, workspaceRoot: string | null, platform: string, flavor?: string): DepsBundleEntry[] {
-	const entries: DepsBundleEntry[] = [];
-	const seenKeys = new Set<string>();
-	for (const recorded of recordedPaths) {
-		if (typeof recorded !== 'string' || !recorded.startsWith('/ns/m/node_modules/')) continue;
-		const spec = recorded.slice('/ns/m'.length).replace(/[?#].*$/, '');
-		if (NON_BUNDLEABLE_EXT_RE.test(spec)) continue;
-		if (NEVER_BUNDLED_SPEC_RE.test(spec)) continue;
-		if (getBlockedDeviceNodeModulesReason(spec)) continue;
-		const absPath = resolveDepsSpecToFile(spec, projectRoot, workspaceRoot, platform, flavor);
-		if (!absPath || NON_BUNDLEABLE_EXT_RE.test(absPath)) continue;
-		// Symlinked node_modules entries pointing at workspace source are app
-		// code in disguise — leave them to the Vite pipeline (same policy as
-		// filterExistingNodeModulesTransformCandidates).
-		try {
-			const real = realpathSync(absPath);
-			if (real !== absPath && !real.split(path.sep).includes('node_modules')) continue;
-		} catch {
-			continue;
-		}
-		const key = depsRegistryKeyForFile(absPath);
-		if (!key || seenKeys.has(key)) continue;
-		seenKeys.add(key);
-		entries.push({ spec, key, absPath });
-	}
-	return entries;
-}
 
 export interface DepsVendorSeed {
 	entries: DepsBundleEntry[];
@@ -315,11 +227,11 @@ export interface DepsVendorSeed {
 }
 
 /**
- * Seed bundle entries from the vendor collection (direct NativeScript-plugin
- * and framework deps from package.json). This makes the bundle exist on the
- * very first boot — no recording needed — and produces the specifier→key map
- * that backs `__nsVendorRegistry` (see buildDepsVendorRuntimeModule), so the
- * JS-side sync resolution chain resolves into THIS bundle's realm.
+ * Bundle entries from the vendor collection (direct NativeScript-plugin and
+ * framework deps from package.json), plus the specifier→key map that backs
+ * `__nsVendorRegistry` (see buildDepsVendorRuntimeModule). Skips blocked and
+ * never-bundled packages, non-script entries, and symlinked workspace-source
+ * packages (app code in disguise, left to the Vite pipeline).
  */
 export function resolveDepsEntriesFromVendorCollection(projectRoot: string, workspaceRoot: string | null, platform: string, flavor: string | undefined): DepsVendorSeed {
 	const entries: DepsBundleEntry[] = [];
@@ -427,28 +339,21 @@ const NODE_EXTERNALS = [...NODE_BUILTINS, ...NODE_BUILTINS.map((b) => `node:${b}
 const NODE_BUILTIN_SET = new Set(NODE_EXTERNALS);
 
 /**
- * Import routing inside the deps bundle, mirroring per-module
- * `rewriteImports` topology. The single-realm rules:
- *  - `@nativescript/core[/*]` → external bare (device import map → /ns/core).
- *  - Dynamic `import()` targets → external `/ns/m/node_modules/...` URL:
- *    evaluation stays lazy and the target keeps its per-URL identity (a shim
- *    when the target is itself bundled; dynamic imports run after the bundle
- *    finishes evaluating, so the shim's registry read cannot race it).
- *  - `@nativescript/vite` client modules stay per-module (see
- *    NEVER_BUNDLED_SPEC_RE) → external canonical /ns/m URL.
+ * Import routing inside the deps bundle:
+ *  - `@nativescript/core[/*]` → external bare (device import map).
+ *  - Dynamic `import()` targets → external root-relative Vite URL, so they
+ *    evaluate lazily. The device-request middleware absolutizes string-literal
+ *    dynamic imports in served JavaScript; the device runtime would otherwise
+ *    resolve a root-relative dynamic specifier on the filesystem.
+ *  - `@nativescript/vite` modules (see NEVER_BUNDLED_SPEC_RE) → external
+ *    root-relative Vite URL.
  *  - Solid flavor: bare Solid runtime roots (`solid-js`, `@solidjs/signals`,
- *    …) pin to their dev builds INSIDE the bundle — the same files
- *    `rewriteImports` routes every importer to — so the bundle can never
- *    carry a second solid realm or pair solid-js dev with signals prod.
+ *    …) pin to their dev builds inside the bundle, so it can never pair
+ *    solid-js dev with signals prod.
  *  - Everything else internalizes. Bare specs esbuild cannot resolve get
  *    platform-aware resolution (`index.ios.js`-style entries esbuild's
  *    resolver misses); only specs with no on-disk resolution at all stay
- *    external bare. Anything resolvable MUST internalize: this bundle is the
- *    only node_modules realm, so an external bare spec would resolve
- *    on-device through the import map back into a shim of this bundle — an
- *    evaluation cycle (the shim's registry read runs before the bundle body
- *    finishes and throws). Pass 2 registers every internalized file, keeping
- *    per-URL identity for all of them.
+ *    external bare.
  */
 function createDepsImportRoutingPlugin(projectRoot: string, workspaceRoot: string | null, platform: string, flavor: string | undefined, onDynamicImport?: (absPath: string) => void): esbuild.Plugin {
 	return {
@@ -466,21 +371,23 @@ function createDepsImportRoutingPlugin(projectRoot: string, workspaceRoot: strin
 						pluginData: { nsDepsRoutingProbe: true },
 					});
 				if (args.kind === 'dynamic-import') {
-					if (spec.startsWith('/ns/') || /^https?:\/\//.test(spec)) return { path: spec, external: true };
+					if (/^https?:\/\//.test(spec)) return { path: spec, external: true };
 					const probe = await probeResolve(spec);
 					if (probe.errors.length > 0 || !probe.path || probe.external) return probe;
 					const key = depsRegistryKeyForFile(probe.path);
 					if (!key) return probe;
 					if (!NEVER_BUNDLED_KEY_RE.test(key)) onDynamicImport?.(probe.path);
-					return { path: `/ns/m/${key.replace(SCRIPT_EXT_RE, '')}`, external: true };
+					return { path: viteUrlForFile(probe.path, projectRoot), external: true };
 				}
 				if (spec.startsWith('.') || spec.startsWith('/') || /^[A-Za-z]:[\\/]/.test(spec)) return undefined;
 				if (NODE_BUILTIN_SET.has(spec)) return undefined;
-				if (/^@nativescript\/core(?:\/|$)/.test(spec)) {
+				if (NS_CORE_SPEC_RE.test(spec)) {
 					return { path: spec, external: true };
 				}
 				if (/^@nativescript\/vite(?:\/|$)/.test(spec)) {
-					return { path: `/ns/m/node_modules/${spec.replace(SCRIPT_EXT_RE, '')}`, external: true };
+					const probe = await probeResolve(spec);
+					if (probe.errors.length > 0 || !probe.path || probe.external) return { path: spec, external: true };
+					return { path: viteUrlForFile(probe.path, projectRoot), external: true };
 				}
 				if (flavor === 'solid' && isSolidRuntimePackage(spec)) {
 					const pinned = resolveSolidDevEntry(spec, args.resolveDir || projectRoot);
@@ -500,10 +407,9 @@ function createDepsImportRoutingPlugin(projectRoot: string, workspaceRoot: strin
 
 /**
  * Angular partial-declaration linker for the deps bundle. Broader than the
- * vendor build's `@angular/`-scoped pass: recorded closures include partial-
- * compiled LIBRARY fesm files (e.g. nativescript-fonticon/angular) that the
- * per-module pipeline links at serve time, so the bundle must link any
- * node_modules file carrying `ɵɵngDeclare`.
+ * vendor build's `@angular/`-scoped pass: the closure includes partial-
+ * compiled LIBRARY fesm files (e.g. nativescript-fonticon/angular), so the
+ * bundle must link any node_modules file carrying `ɵɵngDeclare`.
  */
 function createDepsAngularLinkerPlugin(projectRoot: string): esbuild.Plugin {
 	return {
@@ -531,19 +437,37 @@ function createDepsAngularLinkerPlugin(projectRoot: string): esbuild.Plugin {
 }
 
 export interface DepsBundleState {
-	/** Full ESM payload served at /ns/deps-bundle.mjs. */
+	/** Full ESM payload served at `DEPS_BUNDLE_PATH`. */
 	code: string;
 	/** Registry keys (node_modules-relative file paths) present in the bundle. */
 	keys: Set<string>;
-	/** Served-spec → registry key for every recorded entry. */
-	specToKey: Map<string, string>;
-	/** Registry key → source file (export-name discovery for shims). */
-	keyToFile: Map<string, string>;
 	/** Vendor-manifest specifier → registry key (backs __nsVendorRegistry). */
 	vendorSpecToKey: Map<string, string>;
 	hash: string;
 	builtAt: number;
 	buildMs: number;
+}
+
+const coreSpecifiersByState = new WeakMap<DepsBundleState, string[]>();
+
+/**
+ * The `@nativescript/core[/*]` specifiers the bundle imports bare, read from
+ * its code so a disk-cache hit yields the same set as a fresh build. Each one
+ * needs a device import-map entry.
+ */
+export function depsBundleCoreSpecifiers(state: DepsBundleState): string[] {
+	const cached = coreSpecifiersByState.get(state);
+	if (cached) return cached;
+	let specs: string[] = [];
+	try {
+		initModuleLexer();
+		const [imports] = parseModule(state.code);
+		specs = Array.from(new Set(imports.map((imp) => imp.n).filter((n): n is string => !!n && NS_CORE_SPEC_RE.test(n))));
+	} catch (error: any) {
+		console.warn(`[ns-deps-bundle] could not read the bundle's @nativescript/core imports; they get no import-map entry: ${error?.message || error}`);
+	}
+	coreSpecifiersByState.set(state, specs);
+	return specs;
 }
 
 export interface GenerateDepsBundleOptions {
@@ -552,17 +476,16 @@ export interface GenerateDepsBundleOptions {
 	mode: 'development' | 'production' | string;
 	flavor?: string;
 	verbose?: boolean;
-	recordedPaths: readonly string[];
 }
 
 // ============================================================================
-// Disk cache — same shape as the core bundle cache (node_modules/.ns-vite).
-// The key covers the lockfile (dependency identity), the full entry set
-// (recorded + vendor-seeded), defines, and the vite package version. Opt out
-// with `NS_DEPS_BUNDLE_NO_DISK_CACHE=1`.
+// Disk cache (node_modules/.ns-vite). The key covers the lockfile (dependency
+// identity), the entry set, defines, and the vite package version; bump the
+// schema whenever the emitted payload or the cached state shape changes. Opt
+// out with `NS_DEPS_BUNDLE_NO_DISK_CACHE=1`.
 // ============================================================================
 
-const DEPS_BUNDLE_DISK_CACHE_SCHEMA = 4;
+const DEPS_BUNDLE_DISK_CACHE_SCHEMA = 5;
 
 function isDepsBundleDiskCacheDisabled(env: NodeJS.ProcessEnv = process.env): boolean {
 	const v = env.NS_DEPS_BUNDLE_NO_DISK_CACHE;
@@ -611,15 +534,13 @@ export function tryLoadDepsBundleFromDisk(projectRoot: string, platform: string,
 		if (!existsSync(metaPath) || !existsSync(codePath)) return null;
 		const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
 		if (!meta || meta.schema !== DEPS_BUNDLE_DISK_CACHE_SCHEMA || meta.key !== key) return null;
-		if (!Array.isArray(meta.keys) || typeof meta.specToKey !== 'object' || typeof meta.keyToFile !== 'object' || typeof meta.vendorSpecToKey !== 'object') return null;
+		if (!Array.isArray(meta.keys) || typeof meta.vendorSpecToKey !== 'object') return null;
 		const code = readFileSync(codePath, 'utf-8');
 		const hash = createHash('sha1').update(code).digest('hex');
 		if (hash !== meta.hash) return null;
 		return {
 			code,
 			keys: new Set(meta.keys.filter((k: unknown): k is string => typeof k === 'string')),
-			specToKey: new Map(Object.entries(meta.specToKey as Record<string, string>)),
-			keyToFile: new Map(Object.entries(meta.keyToFile as Record<string, string>)),
 			vendorSpecToKey: new Map(Object.entries(meta.vendorSpecToKey as Record<string, string>)),
 			hash,
 			builtAt: typeof meta.builtAt === 'number' ? meta.builtAt : Date.now(),
@@ -652,8 +573,6 @@ export function saveDepsBundleToDisk(projectRoot: string, platform: string, key:
 				builtAt: state.builtAt,
 				buildMs: state.buildMs,
 				keys: Array.from(state.keys),
-				specToKey: Object.fromEntries(state.specToKey),
-				keyToFile: Object.fromEntries(state.keyToFile),
 				vendorSpecToKey: Object.fromEntries(state.vendorSpecToKey),
 			}),
 		);
@@ -681,18 +600,8 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	const { projectRoot, platform, mode, flavor, verbose } = options;
 	const t0 = Date.now();
 	const workspaceRoot = getMonorepoWorkspaceRoot(projectRoot);
-	const recordedEntries = resolveDepsEntriesFromRecording(options.recordedPaths, projectRoot, workspaceRoot, String(platform), flavor);
 	const vendorSeed = resolveDepsEntriesFromVendorCollection(projectRoot, workspaceRoot, String(platform), flavor);
-	// Union: recorded deep files + vendor-collected package roots. Recorded
-	// entries win on key collisions so their served-spec mapping is preserved;
-	// vendorSpecToKey still points every vendor specifier at its bundled key.
-	const entries = [...recordedEntries];
-	const mergedKeys = new Set(recordedEntries.map((e) => e.key));
-	for (const entry of vendorSeed.entries) {
-		if (mergedKeys.has(entry.key)) continue;
-		mergedKeys.add(entry.key);
-		entries.push(entry);
-	}
+	const entries = vendorSeed.entries;
 	if (!entries.length) return null;
 
 	const defines = (() => {
@@ -785,8 +694,7 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	};
 
 	// Pass 1: discover the full static input closure of the entries. Pass 2
-	// registers EVERY input, so any /ns/m URL that later resolves to a bundled
-	// file serves a shim into the single bundle realm.
+	// registers every input in the deps registry.
 	const entryKeySet = new Set(entries.map((e) => e.key));
 	const dynamicTargets = new Set<string>();
 	const discover = (absPaths: string[], metafile: boolean) =>
@@ -818,11 +726,10 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	const entryPaths = entries.map((e) => e.absPath);
 	register((await discover(entryPaths, true)).metafile);
 
-	// Dynamic import() targets and their closures are registered too, so a
-	// module loaded on demand after boot comes from the bundle rather than one
-	// request per file. A target whose closure fails to build stays per-module.
-	// Probe builds run without `metafile`: esbuild 0.27 throws outside the
-	// build promise when a build with `metafile` set fails.
+	// Dynamic import() targets and their closures are registered too; a target
+	// whose closure fails to build is left out. Probe builds run without
+	// `metafile`: esbuild 0.27 throws outside the build promise when a build
+	// with `metafile` set fails.
 	const discoverOptional = async (targets: string[]) => {
 		try {
 			await discover(targets, false);
@@ -859,20 +766,18 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 
 	// Platform polyfills (self, AbortController, ...) run before any dep module
 	// body — this bundle is the first node_modules code a session evaluates.
-	const code = ['/* /ns/deps-bundle.mjs — single-eval node_modules dep closure (dev bundle mode) */', generatePlatformPolyfills(), buildResult.outputFiles[0].text].join('\n');
+	const code = ['/* @nativescript/vite deps bundle — single-eval node_modules dep closure */', generatePlatformPolyfills(), buildResult.outputFiles[0].text].join('\n');
 	const hash = createHash('sha1').update(code).digest('hex');
 	const state: DepsBundleState = {
 		code,
 		keys: new Set(files.map((f) => f.key)),
-		specToKey: new Map(entries.map((e) => [e.spec, e.key])),
-		keyToFile: new Map(files.map((f) => [f.key, f.absPath])),
 		vendorSpecToKey: vendorSeed.vendorSpecToKey,
 		hash,
 		builtAt: Date.now(),
 		buildMs: Date.now() - t0,
 	};
 	if (verbose) {
-		console.log(`[ns-deps-bundle] built ${files.length} modules (${recordedEntries.length} recorded + ${vendorSeed.entries.length} vendor-seeded), ${(code.length / 1024).toFixed(0)}kb in ${state.buildMs}ms (hash ${hash.slice(0, 8)})`);
+		console.log(`[ns-deps-bundle] built ${files.length} modules (${entries.length} vendor-seeded entries), ${(code.length / 1024).toFixed(0)}kb in ${state.buildMs}ms (hash ${hash.slice(0, 8)})`);
 	}
 	if (!diskCacheDisabled && cacheKey) {
 		saveDepsBundleToDisk(projectRoot, String(platform), cacheKey, state, verbose);
@@ -880,206 +785,16 @@ export async function generateDepsBundle(options: GenerateDepsBundleOptions): Pr
 	return state;
 }
 
-// ============================================================================
-// Shim generation — export-name discovery + codegen
-// ============================================================================
-
-export interface DepsModuleExportInfo {
-	/** Null when the file's export surface is not statically enumerable. */
-	names: string[] | null;
-	hasDefault: boolean;
-	/**
-	 * True for CJS files with `names: null` — UMD factories and
-	 * `module.exports = require('./x')` re-export chains (moment-timezone's
-	 * index.js). ESM files with `names: null` (bare `export * from 'pkg'`)
-	 * must NOT get this flag: their bundled namespace has real named exports
-	 * the server cannot enumerate, so they keep per-module serving.
-	 */
-	opaqueCjs?: boolean;
-}
-
-// ESM markers can sit anywhere on a line — minified chunks emit
-// `...;export{mt as g};` after other statements, and a line-anchored check
-// misclassifies them as opaque CJS (the served shim then drops every named
-// export). The pattern runs against a copy with comments and string/template/
-// regex literal interiors blanked (positions preserved), so look-alike text
-// inside literals can never match. The lookbehind keeps `$export`-style
-// identifiers and `obj.import`/`obj.export` member access from matching.
-const ESM_PREFIX = '(?<![.$\\u200c\\u200d\\p{ID_Continue}])';
-const ESM_SYNTAX_RE = new RegExp(ESM_PREFIX + String.raw`(?:import[\s{"'*]|export[\s{*])`, 'u');
-
-function resolveLocalReExportTarget(spec: string, importerPath: string, platform: string): string | null {
-	const base = path.resolve(path.dirname(importerPath), spec);
-	if (existsSync(base) && statSync(base).isFile()) return base;
-	for (const ext of platformResolveExtensions(platform)) {
-		for (const candidate of [base + ext, base + '/index' + ext]) {
-			if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
-		}
-	}
-	return null;
-}
-
-// Node-style resolution from the importer: nearest node_modules ancestor wins.
-function resolveBareReExportTarget(spec: string, importerPath: string, platform: string): string | null {
-	const match = /^((?:@[^/]+\/)?[^/]+)(?:\/(.+))?$/.exec(spec);
-	if (!match) return null;
-	const [, pkgName, subpath] = match;
-	let dir = path.dirname(importerPath);
-	for (;;) {
-		const pkgDir = path.join(dir, 'node_modules', pkgName);
-		if (existsSync(path.join(pkgDir, 'package.json'))) {
-			return subpath ? resolvePackageSubpathEntry(pkgDir, subpath, platform) : resolvePackageRootEntry(`/node_modules/${pkgName}`, [dir], platform);
-		}
-		const parent = path.dirname(dir);
-		if (parent === dir) return null;
-		dir = parent;
-	}
-}
-
-// Static CJS export-name discovery: `exports.NAME = ...` and
-// `Object.defineProperty(exports, "NAME", ...)` assignments (transpiled-to-CJS
-// packages like downsample). UMD factories (`module.exports = fn()`) expose no
-// static names — those are flagged `opaqueCjs` so the shim path can still
-// serve them from the bundle instead of re-evaluating them per-module.
-const CJS_EXPORT_ASSIGN_RE = /\bexports\.([$_\p{ID_Start}][$\p{ID_Continue}]*)\s*=/gu;
-const CJS_DEFINE_PROPERTY_RE = /\bObject\.defineProperty\(\s*exports\s*,\s*["']([$_\p{ID_Start}][$\p{ID_Continue}]*)["']/gu;
-
-function collectCjsExportInfo(code: string): DepsModuleExportInfo {
-	const names = new Set<string>();
-	let match: RegExpExecArray | null;
-	while ((match = CJS_EXPORT_ASSIGN_RE.exec(code)) !== null) names.add(match[1]);
-	while ((match = CJS_DEFINE_PROPERTY_RE.exec(code)) !== null) names.add(match[1]);
-	names.delete('__esModule');
-	if (names.size === 0) return { names: null, hasDefault: false, opaqueCjs: true };
-	const hasDefault = names.delete('default');
-	return { names: Array.from(names).sort(), hasDefault };
-}
-
-// A file that never references `exports` has no CommonJS export surface, and
-// loading it only runs its side effects in the dev server process (zone.js
-// replaces the server's global Promise and timers).
-function loadedCjsExportNames(absPath: string): string[] {
-	try {
-		return /\bexports\b/.test(readFileSync(absPath, 'utf8')) ? getCjsNamedExports(absPath) : [];
-	} catch {
-		return [];
-	}
-}
-
 /**
- * Static export-name discovery for a node_modules file. ESM: direct exports
- * plus recursion through `export * from` chains — relative targets (the
- * shape deep package barrels like rxjs's index take) and bare package targets
- * resolved from the importer like Node would (nativescript-vue re-exporting
- * `@vue/runtime-core`). CJS: `exports.NAME` assignment scanning (esbuild's
- * interop exposes those names on the bundled namespace at runtime). Returns
- * `names: null` for files whose export surface is not statically enumerable —
- * with two DIFFERENT consequences downstream: CJS/UMD files additionally carry
- * `opaqueCjs: true` and still get a shim, with names enumerated by loading
- * the file on the dev server; ESM files with an `export *` target
- * that resolves nowhere on disk keep per-module serving, where the transform
- * pipeline resolves the star through the import map. A BUNDLED file served
- * per-module evaluates a second time, so any resolvable star must be followed.
- */
-export function collectDepsModuleExportInfo(absPath: string, platform: string, seen: Set<string> = new Set()): DepsModuleExportInfo {
-	if (seen.has(absPath)) return { names: [], hasDefault: false };
-	seen.add(absPath);
-	let code = '';
-	try {
-		code = readFileSync(absPath, 'utf8');
-	} catch {
-		return { names: null, hasDefault: false };
-	}
-	const maskedCode = maskJsComments(code, true);
-	if (!/\.mjs$/i.test(absPath) && !ESM_SYNTAX_RE.test(maskedCode)) return collectCjsExportInfo(code);
-	const names = new Set<string>(extractDirectExportedNames(maskedCode));
-	let match: RegExpExecArray | null;
-	// Minifiers drop the spaces `export * as ns from "x"` keeps — allow none.
-	const starAsRe = new RegExp(ESM_PREFIX + String.raw`export\s*\*\s*as\s+([$_\p{ID_Start}][$\p{ID_Continue}]*)\s+from\s*["'][^"']*["']`, 'gu');
-	while ((match = starAsRe.exec(maskedCode)) !== null) {
-		names.add(match[1]);
-	}
-	const braceRe = new RegExp(ESM_PREFIX + String.raw`export\s*\{([^}]+)\}`, 'gu');
-	while ((match = braceRe.exec(maskedCode)) !== null) {
-		for (const { exportedName } of parseExportSpecList(match[1])) {
-			names.add(exportedName);
-		}
-	}
-	// `export * from` carries the same mid-line minification hazard — find it
-	// on the masked copy, then read the specifier literal from the original
-	// code at the same offset (masked interiors are blanked).
-	const starRe = new RegExp(ESM_PREFIX + String.raw`export\s*\*\s*from\s*(["'])`, 'gu');
-	while ((match = starRe.exec(maskedCode)) !== null) {
-		const quoteIndex = match.index + match[0].length - 1;
-		const quote = match[1];
-		let specEnd = quoteIndex + 1;
-		while (specEnd < code.length && code[specEnd] !== quote) {
-			specEnd += code[specEnd] === '\\' ? 2 : 1;
-		}
-		if (specEnd >= code.length) return { names: null, hasDefault: false };
-		const spec = code.slice(quoteIndex + 1, specEnd);
-		const target = spec.startsWith('.') ? resolveLocalReExportTarget(spec, absPath, platform) : resolveBareReExportTarget(spec, absPath, platform);
-		if (!target) return { names: null, hasDefault: false };
-		const child = collectDepsModuleExportInfo(target, platform, seen);
-		if (child.names === null) return { names: null, hasDefault: false };
-		for (const name of child.names) names.add(name);
-	}
-	names.delete('default');
-	return { names: Array.from(names).sort(), hasDefault: hasExistingDefaultExport(code) };
-}
-
-/**
- * Whether a module body declares a default export: `export default …`,
- * `export { x as default }` or `export { default }`, re-exports included.
- * Regex-based, so a comment containing `export default` also counts.
- */
-export function hasExistingDefaultExport(code: string): boolean {
-	if (!code || typeof code !== 'string') return false;
-	if (/\bexport\s+default\b/.test(code)) return true;
-	if (/\bexport\s*\{[^}]*\bdefault\b[^}]*\}/.test(code)) return true;
-	return false;
-}
-
-const RESERVED_EXPORT_NAMES = new Set(['default', 'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'delete', 'do', 'else', 'enum', 'export', 'extends', 'false', 'finally', 'for', 'function', 'if', 'import', 'in', 'instanceof', 'new', 'null', 'return', 'super', 'switch', 'this', 'throw', 'true', 'try', 'typeof', 'var', 'void', 'while', 'with', 'let', 'static', 'yield', 'await', 'eval', 'arguments', 'implements', 'interface', 'package', 'private', 'protected', 'public', '__ns_dep_ns__']);
-
-/**
- * Shim served at `/ns/m/node_modules/...` for a bundled module. The static
- * bundle import guarantees the registry is populated before the body reads it
- * (ESM deps evaluate first). Modules without their own `export default` keep
- * the self-namespace default so "default import + destructure" consumers work
- * (same contract as the /ns/core bundle shims).
- */
-export function buildDepsShimCode(key: string, exportNames: readonly string[], hasOwnDefaultExport: boolean): string {
-	// JS_IDENTIFIER_RE (not ASCII \w): Angular exports `ɵɵdefineInjectable`-style
-	// names — dropping them here breaks every `import * as i0` consumer.
-	const names = Array.from(new Set(exportNames)).filter((n) => JS_IDENTIFIER_RE.test(n) && !RESERVED_EXPORT_NAMES.has(n));
-	const lines: string[] = [];
-	lines.push(`/* ns-deps bridge (bundle mode) — ${key} */`);
-	lines.push(`import ${JSON.stringify(DEPS_BUNDLE_PATH)};`);
-	lines.push(`const __ns_dep_ns__ = (globalThis.__NS_DEPS_MODULES__ || {})[${JSON.stringify(key)}];`);
-	lines.push(`if (!__ns_dep_ns__) { throw new Error(${JSON.stringify(`[ns-deps] deps bundle registry missing '${key}' — restart the dev server or set NS_DEPS_PER_MODULE=1`)}); }`);
-	for (const name of names) {
-		lines.push(`export const ${name} = __ns_dep_ns__.${name};`);
-	}
-	if (hasOwnDefaultExport) {
-		lines.push(`export default __ns_dep_ns__.default;`);
-	} else {
-		lines.push(`export default __ns_dep_ns__;`);
-	}
-	lines.push('');
-	return lines.join('\n');
-}
-
-/**
- * The dev-session `/@nativescript/vendor.mjs` module, backed by the deps
+ * The dev-session vendor module (`SERVER_VENDOR_PATH`), backed by the deps
  * bundle. The session bootstrap imports it and hands `__nsVendorModuleMap` +
  * `vendorManifest` to `installVendorBootstrap`, which populates
  * `__nsVendorRegistry` — the JS-side sync resolution chain (client HMR
  * helpers, the require shim for CJS interop) then resolves package roots
- * into the SAME realm as every `/ns/m` shim. Map entries are emitted for
- * both the collected specifier and its manifest-canonical alias so lookups
- * hit either form. `@nativescript/core` is the one non-deps entry: a bare
- * import the device import map routes to the `/ns/core` bridge realm.
+ * into this bundle's realm. Map entries are emitted for both the collected
+ * specifier and its manifest-canonical alias so lookups hit either form.
+ * `@nativescript/core` is the one non-deps entry: a bare import the device
+ * import map resolves.
  */
 export function buildDepsVendorRuntimeModule(vendorSpecToKey: ReadonlyMap<string, string>, manifest: { modules?: Record<string, unknown>; aliases?: Record<string, string> } | null): string {
 	const aliases = manifest?.aliases ?? {};
@@ -1091,7 +806,7 @@ export function buildDepsVendorRuntimeModule(vendorSpecToKey: ReadonlyMap<string
 	}
 	const includeCore = !!manifest?.modules?.['@nativescript/core'];
 	const lines: string[] = [];
-	lines.push('/* /@nativescript/vendor.mjs — deps-backed vendor view (dev bundle mode) */');
+	lines.push('/* @nativescript/vite vendor module — deps-bundle view */');
 	lines.push(`import ${JSON.stringify(DEPS_BUNDLE_PATH)};`);
 	if (includeCore) {
 		lines.push(`import * as __ns_core__ from "@nativescript/core";`);
@@ -1121,92 +836,48 @@ export interface DepsBundleService {
 	getState(): DepsBundleState | null;
 	hasFailed(): boolean;
 	/**
-	 * Shim body for a served `/node_modules/...` spec, or null when the spec
-	 * is not bundled (or the bundle is not ready) — caller falls through to
-	 * per-module serving.
-	 */
-	getShimForSpec(spec: string): string | null;
-	/**
-	 * Stop handing out NEW shims for the rest of the session (dependency set
-	 * changed mid-session). The bundle payload stays servable so shims already
-	 * delivered to devices keep resolving.
+	 * Stop backing the vendor module with this bundle for the rest of the
+	 * session (dependency set changed mid-session). The payload stays servable
+	 * for devices that already import it.
 	 */
 	disableServingForSession(reason: string): void;
 	isServingDisabled(): boolean;
 }
 
-export interface CreateDepsBundleServiceOptions extends Omit<GenerateDepsBundleOptions, 'recordedPaths'> {
-	getRecordedPaths(): readonly string[] | null;
-}
+export type CreateDepsBundleServiceOptions = GenerateDepsBundleOptions;
 
 export function createDepsBundleService(options: CreateDepsBundleServiceOptions): DepsBundleService {
 	let state: DepsBundleState | null = null;
 	let failed = false;
 	let servingDisabled = false;
 	let building: Promise<DepsBundleState | null> | null = null;
-	const workspaceRoot = getMonorepoWorkspaceRoot(options.projectRoot);
-	const shimCache = new Map<string, string | null>();
 
 	const ensureBuilt = async (): Promise<DepsBundleState | null> => {
 		if (state) return state;
 		if (failed) return null;
 		if (!building) {
-			// No recording is fine: the vendor collection seeds first-boot entries.
-			const recordedPaths = options.getRecordedPaths() ?? [];
-			building = generateDepsBundle({ ...options, recordedPaths })
+			building = generateDepsBundle(options)
 				.then((built) => {
 					state = built;
 					return built;
 				})
 				.catch((error: any) => {
 					failed = true;
-					console.warn(`[ns-deps-bundle] bundle build FAILED — falling back to per-module node_modules serving for this session. Set NS_DEPS_PER_MODULE=1 to silence. Error: ${error?.message || error}`);
+					console.warn(`[ns-deps-bundle] bundle build FAILED — the vendor module falls back to per-package imports for this session. Set NS_DEPS_PER_MODULE=1 to silence. Error: ${error?.message || error}`);
 					return null;
 				});
 		}
 		return building;
 	};
 
-	const keyForSpec = (spec: string): string | null => {
-		if (!state) return null;
-		const direct = state.specToKey.get(spec);
-		if (direct) return direct;
-		const absPath = resolveDepsSpecToFile(spec, options.projectRoot, workspaceRoot, String(options.platform), options.flavor);
-		if (!absPath) return null;
-		const key = depsRegistryKeyForFile(absPath);
-		return key && state.keys.has(key) ? key : null;
-	};
-
 	return {
 		ensureBuilt,
 		getState: () => state,
 		hasFailed: () => failed,
-		getShimForSpec(spec: string): string | null {
-			if (!state || servingDisabled) return null;
-			if (!spec.includes('/node_modules/')) return null;
-			const cached = shimCache.get(spec);
-			if (cached !== undefined) return cached;
-			let shim: string | null = null;
-			const key = keyForSpec(spec);
-			if (key) {
-				const file = state.keyToFile.get(key);
-				const info: DepsModuleExportInfo = file ? collectDepsModuleExportInfo(file, String(options.platform)) : { names: null, hasDefault: false };
-				if (info.names !== null) {
-					shim = buildDepsShimCode(key, info.names, info.hasDefault);
-				} else if (info.opaqueCjs && file) {
-					// Serving the shim (not the per-module transform) keeps the single
-					// bundle evaluation — patch-style packages that mutate another
-					// package at eval time break if evaluated a second time.
-					shim = buildDepsShimCode(key, loadedCjsExportNames(file), true);
-				}
-			}
-			shimCache.set(spec, shim);
-			return shim;
-		},
 		disableServingForSession(reason: string): void {
 			if (servingDisabled) return;
 			servingDisabled = true;
-			console.warn(`[ns-deps-bundle] shim serving disabled for this session (${reason}) — restart the dev server to rebuild the deps bundle.`);
+			console.warn(`[ns-deps-bundle] deps bundle disabled for this session (${reason}) — restart the dev server to rebuild it.`);
 		},
 		isServingDisabled: () => servingDisabled,
 	};
@@ -1217,33 +888,23 @@ let sharedServiceResolved = false;
 
 /**
  * Process-wide deps bundle service derived from the dev server's config + CLI
- * flags (one dev server per process, like the core bundle service). Returns
- * null when per-module serving is forced via `NS_DEPS_PER_MODULE=1`. The
- * recording source is the persisted boot recording — the in-session recorder
- * starts from the same file, and mid-session recordings apply on the next
- * dev-server start.
+ * flags (one dev server per process). Returns null when the bundle is turned
+ * off via `NS_DEPS_PER_MODULE=1`.
  */
 export function getSharedDepsBundleService(server: ViteDevServer): DepsBundleService | null {
 	if (sharedServiceResolved) return sharedService;
 	sharedServiceResolved = true;
 	if (isDepsPerModuleServingEnabled()) return null;
-	// Platform/flavor resolution matches createBootRecorderFromEnv exactly so
-	// the service reads the same recording file the recorder writes.
 	const platform: string = resolvePlatform() || 'ios';
-	const flavor = getProjectFlavor();
-	const projectRoot = server.config?.root || process.cwd();
 	sharedService = createDepsBundleService({
-		projectRoot,
+		projectRoot: server.config?.root || process.cwd(),
 		platform,
 		mode: server.config?.mode === 'development' ? 'development' : 'production',
-		flavor,
+		flavor: getProjectFlavor(),
 		verbose: resolveVerboseFlag(),
-		getRecordedPaths: () => loadPersistedBootRecording(projectRoot, platform, flavor),
 	});
-	// ONE node_modules payload: back /@nativescript/vendor.mjs with this bundle
-	// (see buildDepsVendorRuntimeModule). A null return — not built yet, build
-	// failed, or dependency set changed mid-session — falls back to the
-	// standalone vendor bundle build in vendorManifestPlugin.
+	// A null return — not built yet, build failed, or dependency set changed
+	// mid-session — falls back to vendorManifestPlugin's own vendor module.
 	setVendorRuntimeModuleProvider(() => {
 		const st = sharedService?.getState();
 		if (!st || sharedService!.isServingDisabled()) return null;
@@ -1259,7 +920,7 @@ export function resetSharedDepsBundleServiceForTests(): void {
 	setVendorRuntimeModuleProvider(null);
 }
 
-/** GET /ns/deps-bundle.mjs — the single-eval dep closure payload. */
+/** Serves the deps bundle payload at `DEPS_BUNDLE_PATH`. */
 export function registerDepsBundleRoute(server: ViteDevServer, service: DepsBundleService): void {
 	server.middlewares.use(async (req, res, next) => {
 		try {

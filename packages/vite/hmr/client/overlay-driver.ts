@@ -2,7 +2,7 @@
  * Client-side access to the HMR dev overlay. The overlay runtime and its state
  * are installed by `bundle.mjs` (`shared/runtime/dev-overlay.ts`) and reached
  * through the dev globals' `overlay`: a static import of the overlay module
- * here would load a second copy under a `/ns/v` URL with its own state. Every
+ * here would load a second copy under a dev-server URL with its own state. Every
  * call soft-fails when the overlay is absent or opted out.
  */
 import { nsDev } from '../shared/runtime/dev-globals.js';

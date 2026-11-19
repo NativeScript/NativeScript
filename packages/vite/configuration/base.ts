@@ -1,4 +1,4 @@
-import { type UserConfig } from 'vite';
+import { searchForWorkspaceRoot, type UserConfig } from 'vite';
 import path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { createRequire } from 'node:module';
@@ -115,8 +115,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 
 	flavor = flavor || (getProjectFlavor() as string);
 	// Seed the flavor singleton with the config-declared flavor so every later
-	// getProjectFlavor() consumer (deps-bundle linker gating, boot recorder,
-	// worker serving) sees the truth even when package.json detection can't —
+	// getProjectFlavor() consumer (deps-bundle linker gating, worker serving)
+	// sees the truth even when package.json detection can't —
 	// see setProjectFlavor for the hoisted-monorepo failure this prevents.
 	setProjectFlavor(flavor);
 	if (verbose) {
@@ -246,10 +246,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	// some flavor-specific adjustments for optimizing deps
 	switch (flavor) {
 		case 'angular':
-		// Solid joins Angular in disabling Vite's dep optimizer under HMR.
-		// Under HMR the device fetches every module through the `/ns/m/`
-		// transform pipeline, NEVER through Vite's `.vite/deps` prebundle — so
-		// discovery buys nothing on-device and actively HURTS: Vite discovers
+		// Solid joins Angular in disabling Vite's dep optimizer under HMR,
+		// where discovery actively hurts: Vite discovers
 		// `solid-js` (+ `solid-js/web`, `solid-js/jsx-runtime`) mid-boot, emits
 		// `optimized dependencies changed. reloading`, and that full reload
 		// re-evaluates the solid-js reactive core while `globalThis.Solid$$`
@@ -263,7 +261,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		case 'solid':
 		// React (rendering through dominative via @nativescript-community/react)
 		// has the same single-instance requirement as Solid: two copies of `react`
-		// — one pre-bundled by Vite's depscanner, one served through `/ns/m/` —
+		// — one pre-bundled by Vite's depscanner, one served per module —
 		// means two reconciler/dispatcher realms, so hooks/context silently break.
 		// Disable discovery under HMR so `react` resolves through one stable path.
 		case 'react':
@@ -273,21 +271,11 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 
 	// `module` / `node:module` are aliased to local polyfills (see
 	// `aliasCssTree` and the `node:module` entry in `resolveConfig.alias`).
-	// Vite's depscanner has no awareness of these aliases and, when discovery
-	// is enabled (every non-Angular flavor), happily pre-bundles them at
-	// `/node_modules/.vite/deps/module.js`. The HMR `/ns/m/` pipeline then
-	// runs `rewriteVitePrebundleImportsForDevice`, which maps pre-bundle URLs
-	// back to bare specifiers via the vendor manifest. Because `module` is
-	// NOT a real package (no manifest entry), the mapping returns `null` and
-	// the entire `import { createRequire } from 'module'` line is dropped —
-	// leaving `createRequire` undefined when `css-tree/lib/data-patch.js`
-	// executes on device:
-	//
-	//   ReferenceError: createRequire is not defined
-	//       at .../node_modules/css-tree/lib/data-patch.js
-	//
-	// Excluding both specifiers from optimizeDeps keeps the alias path
-	// intact end-to-end. Angular sets `noDiscovery: true` so it never hits
+	// With discovery enabled (every non-Angular flavor) Vite's depscanner
+	// pre-bundles them at `/node_modules/.vite/deps/module.js`, and
+	// `css-tree/lib/data-patch.js` has crashed on device with `createRequire`
+	// undefined. Excluding both specifiers from optimizeDeps keeps the alias
+	// path intact end-to-end. Angular sets `noDiscovery: true` so it never hits
 	// this in the first place, but adding it here is still safe because the
 	// Angular config rebuilds `optimizeDeps.exclude` from a different list.
 	const optimizeDepsExclude = [...NS_OPTIMIZE_DEPS_EXCLUDE];
@@ -350,8 +338,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// in an awaited `config` hook so ESM configs load correctly.
 			externalConfigsPlugin(),
 			// Under HMR, rewrite every bare `@nativescript/core*` specifier to
-			// its full `/ns/v` HTTP URL so bundle.mjs contains NO bundled copy
-			// of the core runtime (see helpers/ns-core-external-urls.ts).
+			// its dev-server URL so bundle.mjs contains NO bundled copy of the
+			// core runtime (see helpers/ns-core-external-urls.ts).
 			...(hmrActive ? [nsCoreExternalUrlsPlugin({ platform, projectRoot, nsCoreRoot: NS_CORE_ROOT, hmrPort, useHttps })] : []),
 			createPlatformCssPlugin(platform),
 			// TODO: move to per-project basis based on usage
@@ -405,7 +393,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			appComponentsPlugin({ platform, verbose }),
 			dynamicImportPlugin(),
 			// Dev/HMR only: rewrite `new Worker(new URL('./foo', import.meta.url))`
-			// to a `/ns/m/`-routed string URL before Vite's built-in worker plugin
+			// to a dev-server URL string before Vite's built-in worker plugin
 			// produces a `?worker_file&type=classic` URL that the NS runtime can't
 			// load (see `workerHmrUrlPlugin` for the full rationale).
 			...(hmrActive ? [workerHmrUrlPlugin({ verbose })] : []),
@@ -511,12 +499,14 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// Detect the real workspace root once at config time and
 					// add it to `fs.allow`, alongside the workspace roots of any
 					// linked dependency checkouts whose files the dev server must
-					// serve. `mergeConfig` concatenates arrays, so apps that pass
-					// their own `server.fs.allow` keep their entries on top of
-					// this baseline.
+					// serve. Setting `fs.allow` replaces Vite's default, so that
+					// default stays first. `mergeConfig` concatenates arrays, so
+					// apps that pass their own `server.fs.allow` keep their
+					// entries on top of this baseline. The HMR plugins add the
+					// `@nativescript/core` and `@nativescript/vite` directories.
 					...(() => {
 						const allow = getDevServerFsAllow(projectRoot);
-						return allow.length ? { fs: { allow } } : {};
+						return allow.length ? { fs: { allow: [searchForWorkspaceRoot(projectRoot), ...allow] } } : {};
 					})(),
 				}
 			: {},

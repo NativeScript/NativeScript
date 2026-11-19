@@ -680,7 +680,7 @@ function shouldSkipDependency(name: string): boolean {
 	// flexbox handlers, etc.) AND tags views with module-level Symbols
 	// (`isMasonView_`/`isMasonChild_`). If it lands in the vendor bundle while an app
 	// also imports a subpath that escapes to HTTP (e.g. `@triniwiz/nativescript-masonkit/web`,
-	// which has no manifest alias and is served via /ns/m), the two copies load
+	// which has no manifest alias and is served over HTTP), the two copies load
 	// `./symbols` separately → divergent Symbols → a view tagged by one copy isn't
 	// recognized by the other's CSS handlers → layout props never reach the native
 	// mason node (collapsed spacing, square corners) while core color/background still

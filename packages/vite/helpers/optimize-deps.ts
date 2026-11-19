@@ -5,8 +5,8 @@
  * The most load-bearing entries are `module` / `node:module`: they are aliased
  * to local polyfills/shims (see `helpers/css-tree.ts` and the `node:module`
  * alias in `configuration/base.ts`). Vite's depscanner has no awareness of those
- * aliases and, if allowed to pre-bundle them, the HMR `/ns/m/` pipeline can't map
- * the pre-bundle URL back to a real package — dropping the
+ * aliases and, if allowed to pre-bundle them, the pre-bundle URL can't be
+ * mapped back to a real package — dropping the
  * `import { createRequire } from 'module'` line and crashing on device with
  * `ReferenceError: createRequire is not defined` inside `css-tree`.
  *

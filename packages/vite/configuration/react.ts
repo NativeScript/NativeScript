@@ -10,7 +10,7 @@ const __dirname = dirname(__filename);
 
 // NativeScript-safe automatic-JSX runtime shim (see shims/react-jsx-runtime.ts).
 // react/jsx-runtime + react/jsx-dev-runtime are CJS modules whose named exports
-// the dev server's raw `/ns/m` serving can't statically detect, so the device
+// the device can't statically detect when they are served raw, so the device
 // fails with "does not provide an export named 'jsx'". The shim reimplements the
 // runtime on React.createElement and exposes explicit named exports.
 const jsxRuntimeShimPath = resolve(dirname(__dirname), 'shims', 'react-jsx-runtime.js');
@@ -48,7 +48,7 @@ export const reactConfig = ({ mode }, options: TypeCheckControlOptions = {}): Us
 		optimizeDeps: {
 			// `module` / `node:module` are aliased to local polyfills (see base.ts);
 			// keep them out of the depscanner. Also exclude the renderer entry so the
-			// device's `/ns/m` loader resolves it through normal resolution rather
+			// device resolves it through normal resolution rather
 			// than a pre-bundle URL that the package `exports` map can't serve there
 			// (mirrors Solid excluding `@nativescript/vite/solid-bootstrap`).
 			exclude: ['module', 'node:module', '@nativescript-community/react'],

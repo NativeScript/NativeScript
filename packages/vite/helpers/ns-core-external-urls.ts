@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite';
 import { existsSync } from 'node:fs';
-import { thinDeviceUrl, viteUrlForFile } from '../hmr/server/thin/thin-mode.js';
+import { viteUrlForFile } from '../hmr/server/vite-url.js';
 import { corePathToSub, specToCoreSub } from './ns-core-url.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
 import type { Platform } from './platform-types.js';
@@ -47,7 +47,7 @@ export function nsCoreExternalUrlsPlugin(opts: NsCoreExternalUrlsPluginOptions):
 			const file = resolved && !resolved.external ? resolved.id.split('?')[0] : null;
 			if (!file || !existsSync(file)) return null;
 			// Same resolver id the dev server's import analysis serves (no realpath).
-			return { id: thinDeviceUrl(origin, viteUrlForFile(file, projectRoot)), external: 'absolute' as const };
+			return { id: `${origin}${viteUrlForFile(file, projectRoot)}`, external: 'absolute' as const };
 		},
 	};
 }

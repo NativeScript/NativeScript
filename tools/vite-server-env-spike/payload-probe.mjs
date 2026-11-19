@@ -1,5 +1,6 @@
 // Spike: boot the Angular fixture's dev server in-process, warm Vite's module
-// graph the way the device does (crawl /ns/v from the session entry), apply a
+// graph the way the device does (crawl the session entry's plain Vite URLs,
+// resolving imports like the iOS runtime, see device-resolve.mjs), apply a
 // fixed set of edits, and print every HMR payload Vite would send to browsers:
 //   raw  = what plugins/Vite hand to `server.ws.send` / `environments.client.hot.send`
 //   wire = what a client on Vite's HMR WebSocket (`vite-hmr` + token) receives
@@ -12,11 +13,13 @@
 // --compilation-api   Analog `experimental.useAngularCompilationAPI: true` (default: Analog default mode)
 // --no-ipc            run without a parent IPC channel (default: a stubbed `process.send`, as under the CLI)
 // --keep-ns-strategy  keep the `nativescript-hmr-websocket` plugin if the installed package still has one
+// --fresh-plugins     the (r4)-(r7) restarts build new plugin instances, as reloading vite.config.mts does
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
+import { FAILURE_KINDS, isHttpUrl, loadableStatus, resolveDeviceImport } from './device-resolve.mjs';
 
 const spikeDir = import.meta.dirname;
 const args = process.argv.slice(2);
@@ -34,6 +37,7 @@ const compilationApi = flag('--compilation-api');
 const keepNsStrategy = flag('--keep-ns-strategy');
 const noIpc = flag('--no-ipc');
 const noNsRules = flag('--no-ns-rules');
+const freshPlugins = flag('--fresh-plugins');
 const only = take('--only', '')
 	.split(',')
 	.map((s) => s.trim())
@@ -77,14 +81,29 @@ function replaceIn(rel, from, to) {
 	if (!cur.includes(from)) throw new Error(`${rel}: '${from}' not found`);
 	write(rel, cur.replace(from, to));
 }
+// Best effort per file: something else may have removed a created file's directory meanwhile.
 function restore() {
-	for (const [rel, text] of originals) fs.writeFileSync(P(rel), text);
-	for (const rel of created.reverse()) fs.rmSync(P(rel), { recursive: true, force: true });
+	const files = [...originals];
+	originals.clear();
+	for (const [rel, text] of files) {
+		try {
+			fs.writeFileSync(P(rel), text);
+		} catch (e) {
+			if (!created.some((c) => rel === c || rel.startsWith(`${c}/`))) console.warn(`restore: could not rewrite ${rel}: ${e?.message || e}`);
+		}
+	}
+	for (const rel of created.splice(0).reverse()) fs.rmSync(P(rel), { recursive: true, force: true });
 }
-process.on('SIGINT', () => {
-	restore();
-	process.exit(130);
-});
+process.on('exit', restore);
+for (const [signal, code] of [
+	['SIGINT', 130],
+	['SIGTERM', 143],
+]) {
+	process.on(signal, () => {
+		restore();
+		process.exit(code);
+	});
+}
 
 const INLINE_DIR = 'src/app/probe-inline';
 const INLINE_TS = `${INLINE_DIR}/probe-inline.component.ts`;
@@ -140,16 +159,34 @@ const EDITS = [
 	{ key: 'r1', label: '(r1) edit inside node_modules/@nativescript/core', coreEdit: true },
 	{ key: 'r2', label: '(r2) server.restart(), then the device reconnects', serverRestart: true },
 	{ key: 'r3', label: '(r3) device sends ns:restart', send: { type: 'custom', event: 'ns:restart', data: { reason: 'probe: hot.decline() in /src/app/x.ts' } } },
+	// A config edit restarts Vite, the CLI restarts the app, and the template is saved while it boots.
+	// Passes when the last home.component.ts the device fetched (after the catch-up reboot, if one came) has the new template.
+	// In (r5) main.ts and app.routes.ts were served before the save, which re-stamps them, so a catch-up reboot is allowed.
+	{ key: 'r4', label: '(r4) server.restart(), template saved before the app boots', bootRace: 'before-crawl', expect: { fresh: true, reboot: 0 } },
+	{ key: 'r5', label: '(r5) server.restart(), template saved mid-boot before home.component.ts is fetched', bootRace: 'before-home', expect: { fresh: true } },
+	{ key: 'r6', label: '(r6) server.restart(), template saved mid-boot after home.component.ts is fetched', bootRace: 'after-home', expect: { fresh: true, reboot: 1 } },
+	// The component's styles count as fresh when inlined in it or served from the external stylesheet it names.
+	{ key: 'r7', label: '(r7) server.restart(), stylesheet saved mid-boot before home.component.ts is fetched', bootRace: 'before-home', stylesheet: true, expect: { fresh: true } },
+	// home.component.ts gains a static import of a helper, then the helper is edited. The device re-imports
+	// the entry, so the app.routes.ts it gets must lazy-load home.component.ts by an absolute URL carrying
+	// home.component.ts's new `?t=`; anything else re-runs a stale home.component.ts or fails to load it.
+	{ key: 'r8', label: '(r8) helper imported by the lazy home.component.ts edited: app.routes.ts lazy import re-stamped', stampProbe: true, expect: { stamped: true } },
 ].filter((e) => !only.length || only.includes(e.key) || only.includes(e.key[0]));
 
 // ---- server ----------------------------------------------------------------
 let server;
+// Set before a restart that should resolve new plugin instances.
+let rebuildPlugins = false;
 try {
 	const { angularConfig } = await import(pathToFileURL(path.join(nsViteDir, 'configuration/angular.js')).href);
 	const config = angularConfig({ mode: 'development' });
-	let plugins = config.plugins.flat(Infinity).filter(Boolean);
-	if (!keepNsStrategy) plugins = plugins.filter((p) => p.name !== 'nativescript-hmr-websocket');
-	if (noNsRules) plugins = plugins.filter((p) => !String(p.name).startsWith('ns-angular-hmr-rules'));
+	const nsPlugins = (cfg) => {
+		let list = cfg.plugins.flat(Infinity).filter(Boolean);
+		if (!keepNsStrategy) list = list.filter((p) => p.name !== 'nativescript-hmr-websocket');
+		if (noNsRules) list = list.filter((p) => !String(p.name).startsWith('ns-angular-hmr-rules'));
+		return list;
+	};
+	let plugins = nsPlugins(config);
 	if (compilationApi) {
 		const angular = (await import(pathToFileURL(appReq.resolve('@analogjs/vite-plugin-angular')).href)).default;
 		const analogNames = new Set(
@@ -172,7 +209,22 @@ try {
 		plugins = plugins.filter((p) => !analogNames.has(p.name));
 		plugins.splice(at, 0, ...replacement);
 	}
-	server = await vite.createServer({ ...config, plugins, root: appRoot, configFile: false, mode: 'development', logLevel: 'warn' });
+	const inline = { ...config, plugins, root: appRoot, configFile: false, mode: 'development', logLevel: 'warn' };
+	if (freshPlugins) {
+		if (compilationApi) throw new Error('--fresh-plugins supports the default Analog mode only');
+		// Vite's restart re-resolves `server.config.inlineConfig`, this object.
+		Object.defineProperty(inline, 'plugins', {
+			enumerable: true,
+			get() {
+				if (rebuildPlugins) {
+					rebuildPlugins = false;
+					plugins = nsPlugins(angularConfig({ mode: 'development' }));
+				}
+				return plugins;
+			},
+		});
+	}
+	server = await vite.createServer(inline);
 	await server.listen();
 } catch (e) {
 	restore();
@@ -221,7 +273,15 @@ if (server.environments?.client?.hot && server.environments.client.hot !== serve
 // Vite's HMR endpoint from the resolved config.
 const session = await (await fetch(`${local}/__ns_dev__/session`)).json();
 const deviceOrigin = new URL(session.entryUrl).origin;
+const ENTRY_PATH = new URL(session.entryUrl).pathname;
 const toLocal = (u) => u.replace(deviceOrigin, local);
+let mapUrl;
+let importMap = {};
+async function loadImportMap(current) {
+	mapUrl = current.runtimeConfigUrl;
+	importMap = (await (await fetch(toLocal(mapUrl))).json()).importMap ?? {};
+}
+await loadImportMap(session);
 // Opens the device-equivalent socket from the session descriptor; `reuseUrl`
 // reconnects with an earlier URL, as the device does after a disconnect.
 let socketUrl;
@@ -254,14 +314,24 @@ let ws = await openSocket();
 // ---- warm the graph like the device ------------------------------------------
 await init;
 const seen = new Set();
-async function crawl(url) {
+// Imports the device could not load: non-2xx, dynamic literals that are not absolute, unmapped bare specifiers.
+const crawlFailures = new Set();
+function crawlFailure(text) {
+	if (crawlFailures.has(text)) return;
+	crawlFailures.add(text);
+	console.warn(`  crawl FAIL ${text}`);
+}
+// `bodies` collects what was served per Vite URL pathname; `beforeFetch` runs before each module request.
+async function crawl(url, opts = {}) {
 	const key = new URL(url).pathname + new URL(url).search;
 	if (seen.has(key)) return;
 	seen.add(key);
+	await opts.beforeFetch?.(url);
 	const res = await fetch(toLocal(url));
 	const body = await res.text();
-	if (res.status !== 200) {
-		console.warn(`  crawl ${res.status} ${key}`);
+	opts.bodies?.set(new URL(url).pathname, body);
+	if (!loadableStatus(res.status)) {
+		crawlFailure(`${res.status} ${key}`);
 		return;
 	}
 	let imports = [];
@@ -271,18 +341,21 @@ async function crawl(url) {
 		return;
 	}
 	for (const imp of imports) {
-		const spec = imp.n;
-		if (!spec || !/^https?:\/\//.test(spec)) continue;
-		const p = new URL(spec).pathname;
+		const r = resolveDeviceImport(imp, url, importMap, mapUrl);
+		if (!r) continue;
+		if (FAILURE_KINDS.has(r.kind)) crawlFailure(`${r.kind} '${r.spec}' in ${key}`);
+		if (!r.url) continue;
+		const target = new URL(r.url);
+		if (target.origin !== deviceOrigin) crawlFailure(`foreign origin '${r.url}' in ${key}`);
 		// App modules only: node_modules never import app code, so they add no importer edges.
-		if (p.startsWith('/ns/v/src/')) await crawl(spec);
+		else if (target.pathname.startsWith('/src/')) await crawl(r.url, opts);
 	}
 }
 await crawl(session.entryUrl);
 {
-	const home = await (await fetch(`${local}/ns/v/src/app/home/home.component.ts`)).text();
+	const home = await (await fetch(`${local}/src/app/home/home.component.ts`)).text();
 	console.log(`home.component.ts compiled with HMR listener: ${home.includes('angular:component-update')}`);
-	const lib = await (await fetch(`${local}/ns/v/node_modules/@nativescript/angular/fesm2022/nativescript-angular.mjs`)).text();
+	const lib = await (await fetch(`${local}/node_modules/@nativescript/angular/fesm2022/nativescript-angular.mjs`)).text();
 	console.log(`@nativescript/angular prelude: ${lib.slice(0, 200).replace(/\n/g, ' ')}`);
 }
 // The renderer fetches each component's external styles once Angular hands them out (round 8/9).
@@ -291,7 +364,7 @@ async function emulateComponentUpdate(data) {
 	try {
 		const id = decodeURIComponent(data.id);
 		const file = id.split('@')[0];
-		const ownerUrl = `${deviceOrigin}/ns/v/${file.replace(/^\/+/, '')}`;
+		const ownerUrl = `${deviceOrigin}/${file.replace(/^\/+/, '')}`;
 		const metaUrl = new URL(`./@ng/component?c=${encodeURIComponent(data.id)}&t=${encodeURIComponent(data.timestamp)}`, ownerUrl).href;
 		const res = await fetch(toLocal(metaUrl));
 		const code = await res.text();
@@ -309,6 +382,18 @@ async function emulateComponentUpdate(data) {
 	}
 }
 
+async function servesMarker(componentCode, marker) {
+	if (!componentCode) return false;
+	if (componentCode.includes(marker)) return true;
+	for (const m of componentCode.matchAll(STYLE_FEATURE_RE)) {
+		for (const s of m[1].matchAll(/["'`]([^"'`]+)["'`]/g)) {
+			const r = await fetch(`${local}/${s[1].replace(/^\/+/, '')}?ngcomp=ng-cprobe&e=0`, { headers: { Accept: 'text/css' } });
+			if ((await r.text()).includes(marker)) return true;
+		}
+	}
+	return false;
+}
+
 // Every compiled component runs `<Class>_HmrLoad(Date.now())` when its module
 // evaluates, so a reloaded app fetches `/@ng/component` for each component at boot.
 const BOOT_COMPONENTS = [
@@ -318,7 +403,7 @@ const BOOT_COMPONENTS = [
 async function bootMetadataFetches() {
 	const out = [];
 	for (const [file, cls] of BOOT_COMPONENTS) {
-		const ownerUrl = `${deviceOrigin}/ns/v/${file}`;
+		const ownerUrl = `${deviceOrigin}/${file}`;
 		const url = new URL(`./@ng/component?c=${encodeURIComponent(`${file}@${cls}`)}&t=${Date.now()}`, ownerUrl).href;
 		const res = await fetch(toLocal(url));
 		const body = await res.text();
@@ -327,11 +412,39 @@ async function bootMetadataFetches() {
 	return out;
 }
 
+const HOME_TS = 'src/app/home/home.component.ts';
+const STAMP_TS = 'src/app/home/probe-stamp.ts';
+const ROUTES_PATH = '/src/app/app.routes.ts';
+// Follows the entry the device re-imports to app.routes.ts and checks its lazy import of home.component.ts.
+async function checkLazyStamp(rebootTs, stampBefore) {
+	const mainUrl = rebootTs ? `${session.entryUrl}?t=${rebootTs}` : session.entryUrl;
+	const mainRes = await fetch(toLocal(mainUrl));
+	const mainBody = await mainRes.text();
+	if (!loadableStatus(mainRes.status)) return { ok: false, text: `${mainUrl} -> ${mainRes.status}` };
+	const routes = parse(mainBody)[0]
+		.map((imp) => resolveDeviceImport(imp, mainUrl, importMap, mapUrl))
+		.find((r) => r?.kind === 'static' && new URL(r.url).pathname === ROUTES_PATH);
+	if (!routes) return { ok: false, text: `${new URL(mainUrl).pathname}${new URL(mainUrl).search} has no static import of ${ROUTES_PATH}` };
+	const routesRes = await fetch(toLocal(routes.url));
+	const routesBody = await routesRes.text();
+	if (!loadableStatus(routesRes.status)) return { ok: false, text: `${routes.url} -> ${routesRes.status}` };
+	const lazy = parse(routesBody)[0].find((imp) => imp.d > -1 && imp.n && new URL(imp.n, routes.url).pathname === `/${HOME_TS}`);
+	if (!lazy) return { ok: false, text: `${routes.spec} has no literal dynamic import of /${HOME_TS}` };
+	const stamp = server.environments.client.moduleGraph.getModuleById(P(HOME_TS))?.lastHMRTimestamp ?? 0;
+	const absolute = isHttpUrl(lazy.n) && new URL(lazy.n).origin === deviceOrigin;
+	const t = new URL(lazy.n, routes.url).searchParams.get('t');
+	const ok = absolute && stamp > stampBefore && t === String(stamp);
+	return {
+		ok,
+		text: `entry ${rebootTs ? `?t=${rebootTs}` : '(no reboot)'} imports ${routes.spec}, which lazy-loads ${JSON.stringify(lazy.n)}: ${absolute ? 'absolute' : 'NOT absolute'}, t=${t}; ${HOME_TS} lastHMRTimestamp=${stamp} (before the edit ${stampBefore})`,
+	};
+}
+
 // Vite never watches `node_modules`, so the probe reports the edit the way a
 // watched path (a workspace-linked package under `/@fs/`) would reach Vite.
 async function editCoreFile() {
 	const coreFile = 'node_modules/@nativescript/core/index.js';
-	await fetch(`${local}/ns/v/${coreFile}`);
+	await fetch(`${local}/${coreFile}`);
 	write(coreFile, fs.readFileSync(P(coreFile), 'utf8') + '\n// probe edit\n');
 	server.watcher.emit('change', P(coreFile));
 }
@@ -374,6 +487,67 @@ try {
 			const tokenOf = (u) => new URL(u).searchParams.get('token');
 			log.push({ via: 'device', text: `token after restart ${tokenOf(after.wsUrl) === tokenOf(socketUrl) ? 'unchanged' : 'CHANGED'}; reconnecting with the URL from before` });
 			ws = await openSocket(socketUrl);
+		} else if (edit.bootRace) {
+			ws.close();
+			rebuildPlugins = freshPlugins;
+			await server.restart();
+			if (freshPlugins) log.push({ via: 'device', text: `restart resolved ${rebuildPlugins ? 'the SAME' : 'new'} plugin instances`, at: Date.now() });
+			hook(server.ws, 'server.ws');
+			const homeUrl = '/src/app/home/home.component.ts';
+			const marker = edit.stylesheet ? `probe-${edit.key}` : `taps ${edit.key}`;
+			const templateFile = edit.stylesheet ? 'src/app/home/home.component.css' : 'src/app/home/home.component.html';
+			const graphState = () => {
+				const g = server.environments.client.moduleGraph;
+				const nodes = [...(g.getModulesByFile(P(templateFile)) ?? [])];
+				const home = g.getModuleById(P(homeUrl.slice(1)));
+				return `graph: ${templateFile} nodes=${nodes.length} importers=[${nodes.flatMap((n) => [...n.importers].map((i) => i.url)).join(',')}]; ${homeUrl} node=${home ? `yes transformed=${!!home.transformResult}` : 'no'}`;
+			};
+			const saveTemplate = async () => {
+				const seenByWatcher = new Promise((resolve) => {
+					const onChange = (file) => file === P(templateFile) && (server.watcher.off('change', onChange), resolve(true));
+					server.watcher.on('change', onChange);
+					setTimeout(() => (server.watcher.off('change', onChange), resolve(false)), 3000);
+				});
+				log.push({ via: 'device', text: `template saved ('${marker}'); ${graphState()}`, at: Date.now() });
+				if (edit.stylesheet) write(templateFile, fs.readFileSync(P(templateFile), 'utf8') + `\n.${marker} { color: red; }\n`);
+				else replaceIn(templateFile, 'taps', marker);
+				if (!(await seenByWatcher)) log.push({ via: 'device', text: 'WATCHER MISSED THE SAVE', at: Date.now() });
+				await settle();
+			};
+			// The new watcher needs its initial scan before it reports changes.
+			await settle();
+			if (edit.bootRace === 'before-crawl') await saveTemplate();
+			const boot = await (await fetch(`${local}/__ns_dev__/session`)).json();
+			await loadImportMap(boot);
+			const bodies = new Map();
+			seen.clear();
+			await crawl(boot.entryUrl, {
+				bodies,
+				beforeFetch: async (url) => {
+					if (edit.bootRace === 'before-home' && new URL(url).pathname === homeUrl) await saveTemplate();
+				},
+			});
+			if (edit.bootRace === 'after-home') await saveTemplate();
+			edit.homeUrl = homeUrl;
+			edit.marker = marker;
+			edit.fresh = await servesMarker(bodies.get(homeUrl), marker);
+			log.push({ via: 'device', text: `booted (${bodies.size} app modules): ${homeUrl} ${!bodies.has(homeUrl) ? 'never fetched' : edit.fresh ? 'has the new template' : 'has the OLD template'}`, at: Date.now() });
+			ws = await openSocket();
+		} else if (edit.stampProbe) {
+			created.push(STAMP_TS);
+			fs.writeFileSync(P(STAMP_TS), `export const PROBE_STAMP = 'a';\n`);
+			write(HOME_TS, `import './probe-stamp';\n${fs.readFileSync(P(HOME_TS), 'utf8')}`);
+			await settle();
+			log.length = 0;
+			ipcMessages.length = 0;
+			// The device picks up the new import the next time it loads home.component.ts.
+			seen.clear();
+			await crawl(session.entryUrl);
+			const g = server.environments.client.moduleGraph;
+			const helper = g.getModuleById(P(STAMP_TS));
+			edit.stampBefore = g.getModuleById(P(HOME_TS))?.lastHMRTimestamp ?? 0;
+			log.push({ via: 'device', text: `${STAMP_TS} in graph: ${helper ? `importers=[${[...helper.importers].map((i) => i.url).join(',')}]` : 'NO'}; ${HOME_TS} lastHMRTimestamp=${edit.stampBefore}`, at: Date.now() });
+			replaceIn(STAMP_TS, `'a'`, `'b'`);
 		} else if (edit.append) write(edit.file, fs.readFileSync(P(edit.file), 'utf8') + edit.append);
 		else replaceIn(edit.file, edit.from, edit.to);
 		const editedAt = Date.now();
@@ -393,14 +567,24 @@ try {
 		}
 		const entries = log.splice(0);
 		// A device re-imports the entry on a soft reboot, which re-transforms the changed chain.
-		const reboot = entries.find((e) => e.via === 'wire' && e.payload?.type === 'update' && e.payload.updates.some((u) => u.type === 'js-update' && u.path === new URL(session.entryUrl).pathname.slice('/ns/v'.length)));
+		const reboot = entries.find((e) => e.via === 'wire' && e.payload?.type === 'update' && e.payload.updates.some((u) => u.type === 'js-update' && u.path === ENTRY_PATH));
 		if (reboot) {
 			const ts = reboot.payload.updates[0].timestamp;
 			seen.clear();
-			await crawl(`${session.entryUrl}?t=${ts}`);
+			const bodies = new Map();
+			await crawl(`${session.entryUrl}?t=${ts}`, { bodies });
+			if (edit.bootRace && bodies.has(edit.homeUrl)) {
+				edit.fresh = await servesMarker(bodies.get(edit.homeUrl), edit.marker);
+				entries.push({ via: 'device', text: `catch-up re-fetched ${edit.homeUrl}: ${edit.fresh ? 'has the new template' : 'has the OLD template'}` });
+			}
 			await settle();
 			log.length = 0;
 			entries.push(...(await bootMetadataFetches()));
+		}
+		if (edit.stampProbe) {
+			const check = await checkLazyStamp(reboot?.payload.updates[0].timestamp, edit.stampBefore).catch((e) => ({ ok: false, text: `stamp check failed: ${e?.message || e}` }));
+			edit.stamped = check.ok;
+			entries.push({ via: 'device', text: check.text });
 		}
 		entries.push(...ipcMessages.splice(0).map((message) => ({ via: 'ipc', text: short(message), payload: message })));
 		results.push({ edit, entries });
@@ -413,8 +597,7 @@ try {
 		if (gated) console.log(`    gate             ${gated.at - rawUpdate.at}ms from server.ws.send to the wire`);
 		if (edit.expect) {
 			const wire = entries.filter((e) => e.via === 'wire').map((e) => e.payload);
-			const entryPath = new URL(session.entryUrl).pathname.slice('/ns/v'.length);
-			const reboots = wire.filter((p) => p?.type === 'update' && p.updates.some((u) => u.path === entryPath));
+			const reboots = wire.filter((p) => p?.type === 'update' && p.updates.some((u) => u.path === ENTRY_PATH));
 			const rerun = wire.find((p) => p?.type === 'custom' && p.event === 'ns:rerun');
 			const facts = {
 				error: wire.some((p) => p?.type === 'error'),
@@ -423,11 +606,14 @@ try {
 				reboot: reboots.length,
 				inPlace: wire.some((p) => p?.type === 'custom' && p.event === 'angular:component-update'),
 				rerunIncludes: rerun?.data?.rerun ?? [],
+				fresh: edit.fresh,
+				stamped: edit.stamped,
 			};
 			const failures = Object.entries(edit.expect).filter(([k, v]) => (k === 'rerunIncludes' ? !facts.rerunIncludes.includes(v) : facts[k] !== v));
 			const verdict = failures.length ? `FAIL ${failures.map(([k, v]) => `${k}: expected ${JSON.stringify(v)}, got ${JSON.stringify(facts[k])}`).join('; ')}` : 'ok';
 			checks.push({ key: edit.key, verdict });
 			console.log(`    expect           ${verdict}`);
+			if (edit.bootRace) console.log(`    verdict          ${verdict === 'ok' ? 'PASS' : 'FAIL'}: last served home.component.ts ${edit.fresh ? 'has the new template' : 'has the OLD template'}, ${reboots.length} catch-up reboot(s)${rerun ? ` (rerun ${JSON.stringify(facts.rerunIncludes)})` : ''}`);
 		}
 	}
 } finally {
@@ -452,4 +638,5 @@ if (checks.length) {
 	const failed = checks.filter((c) => c.verdict !== 'ok').map((c) => c.key);
 	console.log(`expectations: ${checks.length - failed.length}/${checks.length} ok${failed.length ? ` (failed: ${failed.join(', ')})` : ''}`);
 }
+console.log(`crawl: ${crawlFailures.size} imports the device could not load${crawlFailures.size ? `\n${[...crawlFailures].map((f) => `    ${f}`).join('\n')}` : ''}`);
 process.exit(0);

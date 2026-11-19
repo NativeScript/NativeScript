@@ -615,6 +615,90 @@ Also deleted: `hmr/server/ns-core-cjs-shape.ts`. Only `hasExistingDefaultExport`
 - `getGlobalDefines`'s `flavor` parameter is unused.
 - The deps-bundle disk cache key hashes the defines, not the generated shim text.
 
+## Round 15: phase 3b, plain Vite URLs
+
+The design is in DESIGN.md ("Serving: plain Vite URLs", "Module identity", "Failures" → boot race).
+
+**What changed.**
+- **Device URLs:** the device fetches `<origin><vite-url>`, and Vite's own middleware answers every module request.
+  - Gone: the `/ns/v` prefix, the thin route (`hmr/server/thin/`) and every `/ns/*` route.
+  - NS endpoints are under `/__ns_dev__/`: `session`, `client`, `import-map.json`, `vendor.mjs`, `vendor-manifest.json`, `deps-bundle.mjs`.
+- **`/@vite/client`** is our device client, through `nsViteClientPlugin`, a `pre` `resolveId`. Its graph URL is `/@vite/client.js`.
+- **One middleware ahead of all others** (`device-requests.ts`, `useFirst`):
+  - strips `__ns_dev_nonce`;
+  - records served modules for the catch-up;
+  - absolutizes literal dynamic `import('/…')` in JavaScript responses (`absolute-dynamic-imports.ts`). This is the interim for the iOS runtime's filesystem resolution of non-HTTP dynamic specifiers, and it runs at response time so Vite's soft-invalidation `?t=` re-stamping keeps working.
+- **Core registration footer:** a serve-only, client-environment `transform` (`core-registration.ts`).
+- **`fs.allow`:** keeps `searchForWorkspaceRoot` first and adds the core and `@nativescript/vite` package directories.
+- **`allowedHosts`:** gets the `NS_HMR_HOST` hostname.
+- **Import map** (`buildImportMap`):
+  - targets must be regular files;
+  - every target is registered in Vite's `safeModulePaths`;
+  - the deps bundle's bare `@nativescript/core[/*]` imports get exact keys.
+  The last three items fixed failures that pre-date this phase (below).
+- **Canonicalization:** down to `preserveQueryFor: ['/@ng/component']` plus volatile patterns.
+- **Deleted:**
+  - `websocket-module-specifiers.ts` and `websocket-core-bridge.ts` (the live helpers moved to `deps-bundle-specifiers.ts`);
+  - `boot-recording.ts`;
+  - `cjs-named-exports.ts`;
+  - the empty-body guard. By the code at runtime `main`, the runtime accepts empty bodies; this is unverified on a device.
+- **Boot race:**
+  - **Restart-time race:** a `pre` `hotUpdate` rule links an edited `templateUrl`/`styleUrl` to its component (`hmr-payload-rules{,-plugin}.ts`).
+  - **Catch-up rule:** a served module is missed only when something compiled into it was edited after it was served and not delivered (`update-gate.ts`). Vite's re-stamping of importers no longer counts.
+- **The client's `injectQuery`** prefixes the origin to root-relative results.
+- **Spike tools:**
+  - `thin-crawl.mjs` was rewritten on top of `device-resolve.mjs`, which resolves imports the way the iOS runtime does: static root-relative specifiers by URL; dynamic ones must be absolute.
+  - Probe case r8 is new: the helper of a lazy route edited, and the lazy import must be re-stamped.
+  - Deleted: `crawl.mjs`, `dupes.mjs`, `fetch-nsm.mjs` and `compare.mjs`, which drove `/ns/*`. Rounds 1–5 above refer to them; they are in git history.
+
+**Crawl failures found while verifying.** All three pre-date 3b.
+1. **Toolbox, 403 on an import-map target outside `fs.allow`** (`@valor/nativescript-websockets`). Vite serves a file outside `fs.allow` only once its own import analysis has resolved it (`config.safeModulePaths`). Import-map targets are resolved for the device, not by import analysis, so they were never registered. Here the trigger was this nested worktree, whose `node_modules` links dangle into the main checkout. Real layouts that hit it: an aliased out-of-tree checkout, or a global pnpm store. Fix: register each target file in `safeModulePaths`.
+2. **Both apps, 404 on `nativescript-theme-core`.** `base.ts` aliases it to its package directory, it is CSS-only, and `existsSync` accepted the directory. Fix: only regular files become map targets.
+3. **Toolbox, bare `@nativescript/core/http` in `deps-bundle.mjs` with no map entry** (from `@nativescript/imagepicker`). The bundle keeps core imports bare for the map, but the map has had no core subpath keys since `ed72bef83` dropped the `/ns/core/` prefix. Fix: `depsBundleCoreSpecifiers` lexes the bundle's bare core imports, from cached or fresh code, and the route adds them as exact keys.
+
+**Checked** (final build, synced into the fixture; every run sequential):
+- **vitest:** 1039/1039 in 92 files. The suite dropped from 1196 because the specs of deleted code went with it.
+- **`tsc -p tsconfig.lib.json`:** 261 errors, all under `../core`, the same as before. `tsconfig.spec.json` has 3 errors in `packages/vite`, on lines unchanged from HEAD.
+- **Prettier:** clean on every changed file.
+- **`thin-crawl.mjs`, Angular** (`apps/ng`): PASS, 0 failures, 0 duplicates, 0 `/ns/` URLs.
+  - **Modules:** 669, the same as round 14. 1478 with every import-map target.
+  - **Import map:** 504 entries, one fewer than before because `nativescript-theme-core` is gone.
+  - **Device requests by prefix:** `/node_modules` 660, `/src` 4, `/__ns_dev__` 3, `/@vite` 1, `/@id` 1.
+  - **All requests by prefix:** `/node_modules` 1442, `/@id` 27, `/src` 4, `/__ns_dev__` 3, `/@vite` 1, `/@fs` 1.
+  - **Also:** 0 empty 200 bodies, 0 bare specifiers missing from the map, 0 non-absolute dynamic imports, and 4 non-literal dynamic imports (listed, not followed).
+  - **Nonce:** a `?__ns_dev_nonce` request returns the same body and adds no graph node.
+- **`thin-crawl.mjs`, TypeScript** (`apps/toolbox`): PASS, 0 failures, 0 duplicates, 0 `/ns/` URLs.
+  - **Modules:** 281; 296 with every import-map target.
+  - **Import map:** 11 entries, `@nativescript/core/http` included.
+  - **Device requests by prefix:** `/@fs` 264, `/node_modules/.vite` 9, `/__ns_dev__` 3, `/@id` 3, `/src` 1, `/@vite` 1.
+  - **All requests by prefix:** `/@fs` 270, `/node_modules/.vite` 16, `/__ns_dev__` 3, `/@id` 3, `/node_modules` 2, `/src` 1, `/@vite` 1.
+- **`payload-probe.mjs`, full run:** 17/17 ok, and the device could load every import.
+  - **Boot race:** r4 0 catch-ups, r5 0, r6 1, r7 0, all fresh. r6 is the only case where the device had already loaded the stale component.
+  - **r8:** `app.routes.ts`'s lazy import of `home.component.ts` carries the new `?t=`.
+- **`payload-probe.mjs --only r4,r5,r6,r7,r8 --fresh-plugins`:** 5/5 ok, with the same catch-up counts.
+- **`boot-bundle-hash.mjs`** (Angular): the `bundle.mjs` hash is stable across two builds.
+  - The core URLs baked into `bundle.mjs` were not crawled (`thin-crawl --bundle`), so a mismatch with Vite's graph URLs, which would mean a second core, is unchecked.
+- **Static scan:** no `/ns/(v|m|core|import-map|deps|vendor)` in `packages/vite` sources or `dist/packages/vite`. The only hits are CHANGELOG history.
+
+**Not verified on a device.** Device checklist:
+- boot Angular through the lazy home route, which exercises the dynamic-import rewrite;
+- an empty module body;
+- template and style edits in place;
+- class edits that reboot;
+- the boot race after touching `vite.config.mts`;
+- the toolbox with imagepicker, i.e. `core/http` through the map;
+- one `@nativescript/core` instance: `bundle.mjs` externals and served core share URLs;
+- a physical device on `NS_HMR_HOST`.
+
+**Open questions.**
+- **Runtime fix** for dynamic `import()` of root-relative specifiers, on iOS and on Android (unchecked). After it ships, the response-time rewrite can go.
+- **`safeModulePaths`** is Vite-internal.
+- **Deps-bundle dynamic-import externals** outside `fs.allow` are not registered.
+- **The fallback vendor module** imports every manifest key bare.
+- **imagepicker in toolbox:** its root maps to a served file, its subpaths map to `.vite/deps`, and it is also inside the deps bundle.
+- **Base:** only `base: '/'` works on device.
+All of the deps-bundle and vendor items go in phase 3c.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

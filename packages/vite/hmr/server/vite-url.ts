@@ -1,12 +1,5 @@
 import path from 'node:path';
 
-/**
- * Device module path: the device loads Vite's own client-environment output
- * under `/ns/v`, with one URL rule for every module — `<origin>/ns/v<vite-url>`
- * — so each file has exactly one device URL.
- */
-export const THIN_PREFIX = '/ns/v';
-
 const toPosix = (value: string) => value.replace(/\\/g, '/');
 
 /**
@@ -21,10 +14,6 @@ export function viteUrlForFile(fileAbs: string, root: string): string {
 		return file.slice(rootPosix.length);
 	}
 	return `/@fs${file.startsWith('/') ? '' : '/'}${file}`;
-}
-
-export function thinDeviceUrl(origin: string, viteUrl: string): string {
-	return `${origin.replace(/\/+$/, '')}${THIN_PREFIX}${viteUrl.startsWith('/') ? '' : '/'}${viteUrl}`;
 }
 
 /** The id `transformRequest` expects for a Vite URL (virtual modules are served as `/@id/__x00__<id>`). */

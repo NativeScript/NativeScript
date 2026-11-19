@@ -1,15 +1,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import type { Connect, EnvironmentModuleNode, HotUpdateOptions, Plugin } from 'vite';
+import type { Connect, DevEnvironment, EnvironmentModuleGraph, EnvironmentModuleNode, HotUpdateOptions, Plugin } from 'vite';
 import type * as TS from 'typescript';
 import { getPackageJson } from '../../../../helpers/project.js';
 import { getProjectAppPath, getProjectAppRelativePath } from '../../../../helpers/utils.js';
 import { resolveBootstrapRootComponent } from './angular-root-component.js';
 import { resolveProjectMainEntryPath } from '../../../server/vite-plugin.js';
-import { ANGULAR_INVALIDATE_EVENT, applyComponentUpdateRules, ComponentUpdateLedger, hasOnlyHmrMetadataChanges, isComponentUpdatePayload, NG_COMPONENT_NO_UPDATE_MODULE, normalizeWsSendArgs, parseNgComponentRequest, toPosixPath, type FullReloadPayload, type RootComponentFile } from './hmr-payload-rules.js';
+import { viteUrlForFile } from '../../../server/vite-url.js';
+import { ANGULAR_INVALIDATE_EVENT, applyComponentUpdateRules, ComponentUpdateLedger, componentResourceFiles, hasOnlyHmrMetadataChanges, isComponentUpdatePayload, NG_COMPONENT_NO_UPDATE_MODULE, normalizeWsSendArgs, parseNgComponentRequest, toPosixPath, type FullReloadPayload, type RootComponentFile } from './hmr-payload-rules.js';
 
 const COMPONENT_DECORATOR_RE = /@Component\b/;
+const COMPONENT_RESOURCE_RE = /\.(?:html?|css|scss|sass|less)$/;
 
 export interface HotChannelLike {
 	send(...args: any[]): void;
@@ -86,9 +88,8 @@ export function installAngularHmrRules(channel: HotChannelLike, state: AngularHm
 
 /**
  * Answers `/@ng/component` metadata fetches that don't echo a sent
- * `angular:component-update` with a no-op module, so neither Analog's
- * middleware nor the `/ns/v` fall-through serves a real payload
- * (see {@link ComponentUpdateLedger}).
+ * `angular:component-update` with a no-op module, so Analog's middleware
+ * never serves a real payload for them (see {@link ComponentUpdateLedger}).
  */
 export function createNgComponentGate(sentUpdates: ComponentUpdateLedger): Connect.NextHandleFunction {
 	return (req, res, next) => {
@@ -141,12 +142,62 @@ function toAppTsFile(id: string): string | null {
 	return file;
 }
 
+function listTsFiles(dir: string, recursive: boolean, out: string[] = []): string[] {
+	let entries: fs.Dirent[];
+	try {
+		entries = fs.readdirSync(dir, { withFileTypes: true });
+	} catch {
+		return out;
+	}
+	for (const entry of entries) {
+		const full = path.join(dir, entry.name);
+		if (entry.isDirectory()) {
+			if (recursive && entry.name !== 'node_modules' && !entry.name.startsWith('.')) listTsFiles(full, true, out);
+			continue;
+		}
+		const file = entry.isFile() ? toAppTsFile(full) : null;
+		if (file) out.push(file);
+	}
+	return out;
+}
+
+/**
+ * Component `.ts` files whose `@Component` names `resourceFile` as its
+ * template or a stylesheet, searched under `appDir` and beside the resource.
+ */
+export function findResourceOwners(ts: typeof TS, resourceFile: string, appDir: string): string[] {
+	const target = toPosixPath(path.resolve(resourceFile));
+	const base = path.posix.basename(target);
+	const candidates = new Set([...listTsFiles(appDir, true), ...listTsFiles(path.dirname(target), false)]);
+	const owners: string[] = [];
+	for (const file of candidates) {
+		try {
+			const source = fs.readFileSync(file, 'utf-8');
+			if (source.includes(base) && COMPONENT_DECORATOR_RE.test(source) && componentResourceFiles(ts, source, file).includes(target)) owners.push(file);
+		} catch {}
+	}
+	return owners;
+}
+
+// Analog's `addWatchFile` edges; unanalyzed nodes stop Vite's propagation there.
+async function linkResourceToOwners(graph: Pick<EnvironmentModuleGraph, 'ensureEntryFromUrl'>, root: string, resourceFile: string, owners: readonly string[]): Promise<EnvironmentModuleNode> {
+	const resource = await graph.ensureEntryFromUrl(viteUrlForFile(resourceFile, root), false);
+	for (const owner of owners) {
+		const node = await graph.ensureEntryFromUrl(viteUrlForFile(owner, root), false);
+		node.importedModules.add(resource);
+		resource.importers.add(node);
+	}
+	return resource;
+}
+
 export interface AngularHmrPayloadRulesOptions {
 	/** The `workspaceRoot` given to Analog. */
 	workspaceRoot: string;
 	projectRoot?: string;
 	resolveRoot?: () => RootComponentFile | null;
 	loadTypeScript?: () => typeof TS | null;
+	/** Searched for the components of an edited template or stylesheet; defaults to the project's app directory. */
+	appDir?: string;
 }
 
 /**
@@ -158,7 +209,9 @@ export interface AngularHmrPayloadRulesOptions {
  *   `page-router-outlet`, which doesn't survive it. Their
  *   `angular:component-update` is dropped and Analog's self-accept marking is
  *   undone, so Vite propagates the edit to the entry;
- * - `angular:invalidate` from the device restarts the app.
+ * - `angular:invalidate` from the device restarts the app;
+ * - a template or stylesheet of a component Vite hasn't transformed yet is
+ *   linked to that component in the module graph, so Analog recompiles it.
  *
  * A `.ts` save is classified in a `pre` `hotUpdate` hook, which Vite runs
  * before Analog's `handleHotUpdate`; the marking is undone in a `post` one.
@@ -200,6 +253,16 @@ export function angularHmrPayloadRulesPlugins(options: AngularHmrPayloadRulesOpt
 		return ts;
 	};
 
+	// Analog recompiles for a resource edit only via its graph importers.
+	const linkUntransformedOwners = async (environment: DevEnvironment, file: string): Promise<EnvironmentModuleNode | null> => {
+		if (!COMPONENT_RESOURCE_RE.test(file) || file.includes('/node_modules/')) return null;
+		const ts = getTypeScript();
+		if (!ts) return null;
+		const owners = findResourceOwners(ts, file, options.appDir ?? path.resolve(projectRoot, getProjectAppPath()));
+		if (!owners.length) return null;
+		return linkResourceToOwners(environment.moduleGraph, environment.config.root, file, owners);
+	};
+
 	const rememberSnapshot = (file: string, source: string) => {
 		if (COMPONENT_DECORATOR_RE.test(source)) snapshots.set(file, source);
 		else snapshots.delete(file);
@@ -215,7 +278,7 @@ export function angularHmrPayloadRulesPlugins(options: AngularHmrPayloadRulesOpt
 			},
 			configureServer(server) {
 				installAngularHmrRules(server.ws, { idBases, getRoot, stale, sentUpdates, entryUrl, warn: (message) => server.config.logger.warn(message) });
-				// `enforce: 'pre'` registers this ahead of Analog's middleware and the thin route.
+				// `enforce: 'pre'` registers this ahead of Analog's middleware.
 				server.middlewares.use(createNgComponentGate(sentUpdates));
 			},
 			// First sight only: later versions are recorded by the hot update
@@ -232,10 +295,13 @@ export function angularHmrPayloadRulesPlugins(options: AngularHmrPayloadRulesOpt
 				order: 'pre',
 				async handler(ctx: HotUpdateOptions) {
 					if (this.environment.name !== 'client') return;
+					const linked = ctx.type === 'update' && !ctx.modules.length ? await linkUntransformedOwners(this.environment, ctx.file) : null;
+					const modules = linked ? [linked] : ctx.modules;
 					selfAcceptingBefore.set(
 						ctx,
-						ctx.modules.map((mod) => [mod, mod.isSelfAccepting]),
+						modules.map((mod) => [mod, mod.isSelfAccepting]),
 					);
+					if (linked) return modules;
 					const file = toAppTsFile(ctx.file);
 					if (!file) return;
 					if (ctx.type === 'delete') {

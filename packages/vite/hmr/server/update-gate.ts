@@ -4,7 +4,7 @@ import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { NS_UPDATE_RERUN_EVENT, type UpdateRerunEventData } from '../shared/protocol.js';
 import { requestAppRestart } from './app-restart.js';
 import { getServedModules, type ServedModules } from './served-modules.js';
-import { transformIdForViteUrl, viteUrlForFile } from './thin/thin-mode.js';
+import { transformIdForViteUrl, viteUrlForFile } from './vite-url.js';
 import { resolveProjectMainEntryPath } from './vite-plugin.js';
 
 interface GraphNodeLike {
@@ -123,6 +123,25 @@ export async function checkModules(server: Pick<ViteDevServer, 'environments'>, 
 	);
 	const failed = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
 	return failed ? toErrorPayloadErr(failed.reason) : undefined;
+}
+
+/**
+ * Per graph URL, the timestamp of the last save that edited its file: the
+ * modules a save leaves in `ctx.modules` once every framework hook ran (a
+ * template edit marks the template, or the component Analog swapped in).
+ */
+export type ModuleEdits = Map<string, number>;
+
+// Keyed by the resolved config, like the served modules it is compared with.
+const editsByConfig = new WeakMap<object, ModuleEdits>();
+
+export function getModuleEdits(server: Pick<ViteDevServer, 'config'>): ModuleEdits {
+	let edits = editsByConfig.get(server.config);
+	if (!edits) {
+		edits = new Map();
+		editsByConfig.set(server.config, edits);
+	}
+	return edits;
 }
 
 type SendArgs = [payload: unknown, data?: unknown];
@@ -248,41 +267,79 @@ export function nsRerunPlugin(opts: { flavor?: string } = {}): Plugin {
 				};
 			}
 
+			const edits = getModuleEdits(server);
 			server.ws.on('vite:client:connect', (_data: unknown, client: WebSocketClient) => {
-				void sendCatchUp(server, client, { graph: graph(), served, delivered, strategy }).catch((error) => server.config.logger.error(`[ns-hmr] catch-up failed: ${error?.message ?? error}`));
+				void sendCatchUp(server, client, { graph: graph(), served, delivered, edits, strategy }).catch((error) => server.config.logger.error(`[ns-hmr] catch-up failed: ${error?.message ?? error}`));
 			});
 		},
-		hotUpdate(ctx) {
-			if (this.environment.name !== 'client' || ctx.type !== 'update') return;
-			let files = changedBySave.get(ctx.timestamp);
-			if (!files) {
-				files = new Set();
-				changedBySave.set(ctx.timestamp, files);
-				// Saves that never produced a `js-update` (in-place CSS, restarts) are dropped.
-				for (const timestamp of [...changedBySave.keys()].slice(0, -32)) changedBySave.delete(timestamp);
-			}
-			files.add(viteUrlForFile(ctx.file, ctx.server.config.root));
+		hotUpdate: {
+			// After the framework hooks, which may swap the edited file's modules.
+			order: 'post',
+			handler(ctx) {
+				if (this.environment.name !== 'client' || ctx.type !== 'update') return;
+				let files = changedBySave.get(ctx.timestamp);
+				if (!files) {
+					files = new Set();
+					changedBySave.set(ctx.timestamp, files);
+					// Saves that never produced a `js-update` (in-place CSS, restarts) are dropped.
+					for (const timestamp of [...changedBySave.keys()].slice(0, -32)) changedBySave.delete(timestamp);
+				}
+				files.add(viteUrlForFile(ctx.file, ctx.server.config.root));
+				const edits = getModuleEdits(ctx.server);
+				for (const mod of ctx.modules) edits.set(mod.url, ctx.timestamp);
+			},
 		},
 	};
 }
 
+// A script module is a device module of its own: one the device hasn't
+// fetched yet (an unvisited lazy route) will be served fresh.
+const SCRIPT_FILE_RE = /\.(?:[cm]?[jt]sx?|vue|svelte)$/i;
+
 /**
- * Served modules the device holds an outdated instance of: Vite stamped them
- * after they were served, and the update for that save never reached a
- * connected device (it was booting or offline).
+ * The modules compiled into served module `node`: itself and the non-script
+ * modules it imports that the device never fetched (templates and
+ * stylesheets a component compiles in), transitively.
  */
-export function findMissedModules(graph: GraphLike, served: Pick<ServedModules, 'servedAt'>, delivered: ReadonlySet<number>): string[] {
+function compiledInto(node: GraphNodeLike, served: Pick<ServedModules, 'isServed'>): GraphNodeLike[] {
+	const out: GraphNodeLike[] = [];
+	const seen = new Set<GraphNodeLike>();
+	const pending = [node];
+	while (pending.length) {
+		const current = pending.pop()!;
+		if (seen.has(current)) continue;
+		seen.add(current);
+		out.push(current);
+		for (const imported of current.importedModules) {
+			if (!served.isServed(imported.url) && !SCRIPT_FILE_RE.test(imported.file ?? imported.url.split('?')[0])) pending.push(imported);
+		}
+	}
+	return out;
+}
+
+/**
+ * Served modules the device holds an outdated instance of: a file compiled
+ * into one was edited after it was served, and that save never reached a
+ * connected device (it was booting or offline). Importers Vite re-stamped on
+ * the way to a boundary don't count: their own code didn't change.
+ */
+export function findMissedModules(graph: GraphLike, served: Pick<ServedModules, 'servedAt' | 'isServed'>, delivered: ReadonlySet<number>, edits: ReadonlyMap<string, number>): string[] {
 	const missed: string[] = [];
 	for (const [url, at] of served.servedAt()) {
-		const stamp = graph.urlToModuleMap.get(url)?.lastHMRTimestamp ?? 0;
-		if (stamp > at && !delivered.has(stamp)) missed.push(url);
+		const node = graph.urlToModuleMap.get(url);
+		if (!node) continue;
+		const stale = compiledInto(node, served).some((mod) => {
+			const editedAt = edits.get(mod.url);
+			return editedAt !== undefined && editedAt > at && !delivered.has(editedAt);
+		});
+		if (stale) missed.push(url);
 	}
 	return missed;
 }
 
 /** One soft reboot (or a restart without an entry boundary) for a device that connects having missed updates. */
-export async function sendCatchUp(server: Pick<ViteDevServer, 'config' | 'environments'>, client: Pick<WebSocketClient, 'send'>, state: { graph: GraphLike; served: ServedModules; delivered: Set<number>; strategy?: FrameworkServerStrategy }): Promise<'none' | 'reboot' | 'restart' | 'error'> {
-	const missed = findMissedModules(state.graph, state.served, state.delivered);
+export async function sendCatchUp(server: Pick<ViteDevServer, 'config' | 'environments'>, client: Pick<WebSocketClient, 'send'>, state: { graph: GraphLike; served: ServedModules; delivered: Set<number>; edits: ReadonlyMap<string, number>; strategy?: FrameworkServerStrategy }): Promise<'none' | 'reboot' | 'restart' | 'error'> {
+	const missed = findMissedModules(state.graph, state.served, state.delivered, state.edits);
 	if (!missed.length) return 'none';
 	if (!state.strategy?.entryBoundary) {
 		requestAppRestart(`${missed.length} module(s) changed while the app was starting`);

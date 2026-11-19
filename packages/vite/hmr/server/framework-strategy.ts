@@ -16,7 +16,7 @@ export interface FrameworkEntryBoundary {
 
 /**
  * What a framework flavor contributes to the dev server: device loader
- * configuration (`/ns/import-map.json`) and the entry boundary that turns an
+ * configuration (the import map) and the entry boundary that turns an
  * edit below the app entry into a soft reboot. Updates themselves are the
  * framework's own Vite plugin's business.
  */

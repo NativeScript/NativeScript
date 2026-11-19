@@ -1,4 +1,6 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { ViteDevServer } from 'vite';
+import { transformIdForViteUrl } from './vite-url.js';
 
 /**
  * Which module instances the device has loaded: each Vite URL with the `?t=`
@@ -25,6 +27,11 @@ export class ServedModules {
 
 	has(viteUrl: string, timestamp: number): boolean {
 		return this.stamps.get(viteUrl)?.has(timestamp) ?? false;
+	}
+
+	/** True once the device fetched `viteUrl` under any stamp. */
+	isServed(viteUrl: string): boolean {
+		return this.stamps.has(viteUrl);
 	}
 
 	/**
@@ -55,4 +62,42 @@ export function getServedModules(server: Pick<ViteDevServer, 'config'>): ServedM
 		servedByConfig.set(server.config, served);
 	}
 	return served;
+}
+
+const jsContentTypeRE = /\bjavascript\b/i;
+const directRequestRE = /[?&]direct(?:[=&]|$)/;
+
+function isModuleResponse(req: IncomingMessage, res: ServerResponse, url: string): boolean {
+	if (res.statusCode >= 200 && res.statusCode < 300) return jsContentTypeRE.test(String(res.getHeader('content-type') ?? ''));
+	// A 304 carries no content type: a stylesheet is told apart by its request.
+	return res.statusCode === 304 && !directRequestRE.test(url) && !req.headers.accept?.includes('text/css');
+}
+
+/**
+ * Records the module a device request loads once its response finishes: a
+ * 2xx JavaScript body, or a 304 for one the device has cached. The served
+ * time is when the request arrived, so an edit that lands while Vite
+ * transforms it counts as after the fetch. Only URLs naming a node of the
+ * client module graph are recorded, under that node's URL (Vite drops `t` and
+ * `import` and may append the resolved file's extension).
+ */
+export function recordServedModuleOnFinish(server: Pick<ViteDevServer, 'config' | 'environments'>, req: IncomingMessage, res: ServerResponse): void {
+	const url = req.url;
+	if (!url || req.method !== 'GET') return;
+	const requestedAt = Date.now();
+	res.once('finish', () => {
+		if (!isModuleResponse(req, res, url)) return;
+		let id: string;
+		try {
+			id = transformIdForViteUrl(decodeURI(url));
+		} catch {
+			return;
+		}
+		void server.environments.client.moduleGraph
+			.getModuleByUrl(id)
+			.then((mod) => {
+				if (mod) getServedModules(server).record(mod.url, servedTimestamp(url), requestedAt);
+			})
+			.catch(() => {});
+	});
 }

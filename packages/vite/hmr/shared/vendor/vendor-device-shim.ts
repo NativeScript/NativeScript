@@ -104,9 +104,9 @@ function normalizeCoreSubLocal(s) {
 // Invariant D: shape ESM namespaces before returning to CJS callers.
 //
 // The main-entry require shim (see helpers/main-entry.ts) installs the shape
-// function as the dev globals' cjsShape. The /ns/v core registration footer
-// (see hmr/server/thin/thin-route.ts) can run before it, so registered core
-// namespaces may be unshaped; shape them on read.
+// function as the dev globals' cjsShape. Served core modules can register
+// their namespace before it is installed, so registered core namespaces may
+// be unshaped; shape them on read.
 function shapeForCjs(value) {
   if (!value || typeof value !== "object") return value;
   const shape = nsDev.cjsShape;
@@ -143,7 +143,7 @@ export function createRequire(_url) {
   if (!nsRequire) {
     return function (id) {
       // Even without nsRequire, the @nativescript/core registry populated by
-      // the /ns/core bridge may already have the module — return it so
+      // served core modules may already have the module — return it so
       // vendor install() hooks that run against the HMR-served core don't
       // crash at module-instantiation time.
       const fromRegistry = resolveCoreFromRegistry(normalizeSpecifier(id));
@@ -153,8 +153,8 @@ export function createRequire(_url) {
   }
   const req = function (id) {
     const normalizedId = normalizeSpecifier(id);
-    // Invariant C: @nativescript/core and its subpaths are served ONCE under
-    // /ns/v, and each module registers its ESM namespace in the dev globals'
+    // Invariant C: @nativescript/core and its subpaths are served ONCE, and
+    // each module registers its ESM namespace in the dev globals'
     // coreModules. CommonJS require() from
     // vendor packages (e.g. \`require('@nativescript/core/ui/core/view').View\`
     // in @nativescript-community/gesturehandler, or \`require('@nativescript/core').View\`
@@ -186,8 +186,8 @@ export function createRequire(_url) {
       return {};
     }
     // Shape the native require result too. The NativeScript CJS loader
-    // may serve an @nativescript/core subpath over HTTP before the
-    // /ns/core footer has run (e.g., during initial boot). In that
+    // may serve an @nativescript/core subpath over HTTP before its
+    // namespace is registered (e.g., during initial boot). In that
     // window, the result is a raw ESM namespace with null [[Prototype]]
     // and zone.js/vendor install() hooks crash on hasOwnProperty.
     return shapeForCjs(nsRequire(normalizedId));

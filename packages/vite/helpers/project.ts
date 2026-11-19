@@ -117,10 +117,9 @@ const monorepoWorkspaceRootCache = new Map<string, string | null>();
 /**
  * Memoized variant of {@link findMonorepoWorkspaceRoot}.
  *
- * The dev server resolves hoisted `node_modules/<pkg>/...` candidates on
- * every `/ns/m/` request, and each lookup walks the directory tree once
- * doing `existsSync` calls. Since the workspace layout doesn't change at
- * runtime, the result is safe to cache per `start` directory for the
+ * Each lookup walks the directory tree doing `existsSync` calls, and the
+ * dev server repeats it for many files. The workspace layout doesn't change
+ * at runtime, so the result is cached per `start` directory for the
  * lifetime of the dev server process.
  */
 export function getMonorepoWorkspaceRoot(start: string = getProjectRootPath()): string | null {

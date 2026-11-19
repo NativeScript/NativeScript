@@ -3,7 +3,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createVendorBundleRuntimeModule } from './manifest.js';
+import { createHttpVendorRuntimeModule, createVendorBundleRuntimeModule } from './manifest.js';
 import { collectVendorModules } from './manifest-collect.js';
 import { registerFrameworkFlavor } from '../../framework-flavors.js';
 
@@ -96,8 +96,8 @@ describe('collectVendorModules', () => {
 		//     external in the esbuild step, so vendor.mjs's
 		//     `import 'solid-js'` survives as a literal bare specifier.
 		//   - `addFrameworkEntries` in `import-map.ts` pins
-		//     `imports['solid-js']` to the same `/ns/m/node_modules/.../dev.js`
-		//     URL Vite's alias produces for user code. V8 dedupes the
+		//     `imports['solid-js']` to the same `.../dev.js` Vite URL
+		//     Vite's alias produces for user code. V8 dedupes the
 		//     two import sites by URL.
 		//   - This test pins the third leg: `solid-js` must NOT
 		//     appear in the vendor manifest's `modules` map for the
@@ -215,6 +215,26 @@ describe('collectVendorModules', () => {
 		expect(code).toContain('export const __nsVendorModuleMap = { "pinia": {} };');
 		expect(code).toContain('export const vendorManifest = {"version":1,"createdAt":"2026-04-18T00:00:00.000Z","hash":"hash-123"');
 		expect(code).toContain('export default vendorManifest;');
+	});
+
+	it('serves the no-deps-bundle vendor module as bare imports the device import map resolves', () => {
+		const code = createHttpVendorRuntimeModule({
+			version: 1,
+			createdAt: '2026-04-18T00:00:00.000Z',
+			hash: 'hash-123',
+			modules: {
+				'@nativescript/core': { id: '@nativescript/core', exports: { '*': true } },
+				pinia: { id: 'pinia', exports: { '*': true } },
+				'@scope/pkg/sub': { id: '@scope/pkg/sub', exports: { '*': true } },
+			},
+			aliases: {},
+		});
+
+		expect(code).toContain('import * as __ns_core__ from "@nativescript/core";');
+		expect(code).toContain('import * as __nsVendor_0 from "pinia";');
+		expect(code).toContain('import * as __nsVendor_1 from "@scope/pkg/sub";');
+		expect(code).toContain('"pinia": __nsVendor_0,');
+		expect(code).not.toContain('/ns/');
 	});
 });
 

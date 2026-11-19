@@ -3,11 +3,11 @@
 //
 // `react/jsx-runtime` and `react/jsx-dev-runtime` are CJS modules that re-export
 // their implementation through a conditional `module.exports = require('./cjs/…')`.
-// The dev server serves node_modules over `/ns/m` as raw transformed CJS, and
-// static named-export detection can't see through that conditional require — so on
-// device `import { jsx } from 'react/jsx-runtime'` fails with "does not provide an
-// export named 'jsx'". (The non-HMR rolldown build bundles them fine; this is the
-// HMR/dev path.)
+// Under HMR the dev server serves node_modules per module, without Vite's dep
+// optimizer, and static named-export detection can't see through that
+// conditional require — so on device `import { jsx } from 'react/jsx-runtime'`
+// fails with "does not provide an export named 'jsx'". (The non-HMR rolldown
+// build bundles them fine; this is the HMR/dev path.)
 //
 // This shim reimplements the runtime on top of `React.createElement` — `react` is
 // vendored (esbuild → working named exports), and createElement produces the exact

@@ -21,11 +21,11 @@ export function clearVendorManifest() {
 }
 
 /**
- * Dev-session vendor payload provider. When the deps bundle is active it
- * registers a provider here that serves `/@nativescript/vendor.mjs` as a thin
- * module backed by `/ns/deps-bundle.mjs` — ONE evaluated node_modules payload,
- * with `__nsVendorRegistry` populated from the deps registry. A `null` return
- * (not built / disabled) falls back to the standalone vendor bundle build.
+ * Dev-session vendor module provider. When the deps bundle is active it
+ * registers a provider here that serves the vendor module as a view over the
+ * deps bundle, with `__nsVendorRegistry` populated from the deps registry. A
+ * `null` return (not built / disabled) falls back to vendorManifestPlugin's
+ * own vendor module.
  */
 let vendorRuntimeModuleProvider: (() => string | null) | null = null;
 

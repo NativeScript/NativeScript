@@ -23,7 +23,7 @@ describe('HMR dev overlay snapshots', () => {
 
 	it('builds a phase-based boot snapshot with attempt detail', () => {
 		const snapshot = createBootOverlaySnapshot('importing-main', {
-			detail: 'http://localhost:5173/ns/m/src/main.ts?v=1',
+			detail: 'http://localhost:5173/src/main.ts?v=1',
 			attempt: 2,
 			attempts: 6,
 		});
@@ -79,7 +79,7 @@ describe('HMR dev overlay runtime API', () => {
 		expect(nsDev().overlay).toBe(api);
 
 		api.setBootStage('loading-core-bridge', {
-			detail: 'http://localhost:5173/ns/core/7',
+			detail: 'http://localhost:5173/node_modules/@nativescript/core/index.js',
 		});
 
 		expect(api.getSnapshot()).toMatchObject({

@@ -55,8 +55,8 @@ export const VENDOR_MANIFEST_ID = '@nativescript/vendor-manifest';
 export const VENDOR_MANIFEST_VIRTUAL_ID = '\0' + VENDOR_MANIFEST_ID;
 export const VENDOR_BUNDLE_ID = '@nativescript/vendor';
 export const VENDOR_BUNDLE_VIRTUAL_ID = '\0' + VENDOR_BUNDLE_ID;
-export const SERVER_VENDOR_PATH = '/@nativescript/vendor.mjs';
-export const SERVER_MANIFEST_PATH = '/@nativescript/vendor-manifest.json';
+export const SERVER_VENDOR_PATH = '/__ns_dev__/vendor.mjs';
+export const SERVER_MANIFEST_PATH = '/__ns_dev__/vendor-manifest.json';
 export const DEFAULT_VENDOR_FILENAME = 'ns-vendor.mjs';
 export const DEFAULT_MANIFEST_FILENAME = 'ns-vendor-manifest.json';
 
@@ -109,9 +109,9 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 
 	// Manifest registration without the esbuild payload build. The dev serve
 	// process only needs the manifest (module ids + aliases) for the import
-	// map and vendor-routing decisions — the payload itself is deps-backed
-	// (see getVendorRuntimeModule). The full build stays lazy, reached only
-	// through the fallback serving path or the build-process virtual modules.
+	// map and the vendor module views (see getVendorRuntimeModule and
+	// createHttpVendorRuntimeModule). The full build stays lazy, reached only
+	// through the server manifest route or the build-process virtual modules.
 	const ensureManifestRegistered = () => {
 		if (getVendorManifest()) return;
 		const collected = collectVendorModules(options.projectRoot, options.platform, options.flavor);
@@ -122,19 +122,15 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 	const respondWithVendor = async (_server: ViteDevServer, req: any, res: any) => {
 		try {
 			if (req.url === SERVER_VENDOR_PATH) {
-				// ONE node_modules payload: when the deps bundle is active, the
-				// vendor module is a thin view over /ns/deps-bundle.mjs.
+				// When the deps bundle is active, the vendor module is a view over it.
 				const depsBacked = getVendorRuntimeModule();
 				if (depsBacked !== null) {
 					res.setHeader('Content-Type', 'application/javascript');
 					res.end(depsBacked);
 					return true;
 				}
-				// No deps bundle (build failed or NS_DEPS_PER_MODULE=1): serve a
-				// view over the SAME `/ns/m/node_modules/<pkg>` URLs the import
-				// map targets, so the registry and import-side resolution share
-				// one realm. Never a second standalone payload — that realm
-				// split is exactly what the deps bundle design forbids.
+				// No deps bundle (build failed or NS_DEPS_PER_MODULE=1): a view
+				// over the device import map, never a second standalone payload.
 				ensureManifestRegistered();
 				res.setHeader('Content-Type', 'application/javascript');
 				res.end(createHttpVendorRuntimeModule(getVendorManifest()));
@@ -268,11 +264,9 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 
 	// Externalize @nativescript/core and its subpaths in the vendor bundle so
 	// vendored packages (e.g. @nativescript-community/ui-material-bottomsheet)
-	// do NOT bring their own copy of core with them. The iOS import map maps
-	// `@nativescript/core` → `/ns/core` (the core bridge) at runtime, and the
-	// bridge delegates to the canonical Application/View/etc. already set up
-	// by bundle.mjs via installCoreAliasesEarly + the globalThis.Application
-	// seed. Without this externalization, vendor.mjs bundles a second copy of
+	// do NOT bring their own copy of core with them: the device import map
+	// resolves `@nativescript/core` to the one core realm bundle.mjs set up.
+	// Without this externalization, vendor.mjs bundles a second copy of
 	// iOSApplication/View/LayoutBase — the second iosApp never receives the
 	// iOS launch event (bundle.mjs's iosApp registered first as
 	// UIApplication.delegate), so Application.getRootView() on it returns
@@ -293,8 +287,8 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	// `solid-navigation`, transitively `solid-js/universal` and
 	// `solid-js/store`) don't bake their own copy of solid-js into
 	// vendor.mjs. The dev server's import map (see `import-map.ts`)
-	// redirects bare `solid-js` to the same `/ns/m/node_modules/solid-js/...`
-	// URL that Vite's alias produces for user code and `@solid-refresh`,
+	// resolves bare `solid-js` to the same Vite URL that Vite's alias
+	// produces for user code and `@solid-refresh`,
 	// so V8 dedupes the three import paths down to a single module
 	// instance — one `Owner` module-local, one reactive graph, one
 	// `$DEVCOMP`/`$PROXY` symbol identity across the whole app.
@@ -596,25 +590,22 @@ export default vendorManifest;
 }
 
 /**
- * Dev-session `/@nativescript/vendor.mjs` for sessions WITHOUT a deps bundle
- * (esbuild failure or `NS_DEPS_PER_MODULE=1`): a thin view whose namespace
- * imports go through the same `/ns/m/node_modules/<pkg>` URLs the device
- * import map targets. Per-module serving keys module identity by URL, so the
- * registry entries `installVendorBootstrap` creates from this map are the
- * SAME instances import-side resolution produces — one realm, no standalone
- * vendor payload. `@nativescript/core` stays a bare import (import map →
- * `/ns/core` bridge realm).
+ * Dev-session vendor module (`SERVER_VENDOR_PATH`) for sessions WITHOUT a
+ * deps bundle (esbuild failure or `NS_DEPS_PER_MODULE=1`): bare namespace
+ * imports the device import map resolves, so the registry entries
+ * `installVendorBootstrap` creates from this map are the same instances app
+ * code imports. Every emitted specifier must have an import-map entry.
  */
 export function createHttpVendorRuntimeModule(manifest: VendorManifest | null): string {
 	const specs = Object.keys(manifest?.modules ?? {}).filter((spec) => spec !== '@nativescript/core' && !spec.startsWith('@nativescript/core/'));
 	const includeCore = !!manifest?.modules?.['@nativescript/core'];
 	const lines: string[] = [];
-	lines.push('/* /@nativescript/vendor.mjs — HTTP-backed vendor view (per-module mode) */');
+	lines.push('/* @nativescript/vite vendor module — import-map view */');
 	if (includeCore) {
 		lines.push(`import * as __ns_core__ from "@nativescript/core";`);
 	}
 	specs.forEach((spec, index) => {
-		lines.push(`import * as __nsVendor_${index} from ${JSON.stringify(`/ns/m/node_modules/${spec}`)};`);
+		lines.push(`import * as __nsVendor_${index} from ${JSON.stringify(spec)};`);
 	});
 	lines.push('export const __nsVendorModuleMap = {');
 	if (includeCore) {

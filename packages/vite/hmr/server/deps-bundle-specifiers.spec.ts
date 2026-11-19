@@ -3,60 +3,26 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { filterExistingNodeModulesTransformCandidates, resolveCandidateFilePath, resolveInternalRuntimePluginBareSpecifier } from './websocket-module-specifiers.js';
+import { getBlockedDeviceNodeModulesReason, resolveCandidateFilePath } from './deps-bundle-specifiers.js';
 import { clearLinkedDependencyRootsCache, clearMonorepoWorkspaceRootCache } from '../../helpers/project.js';
 
-const CORE_PEER = { peerDependencies: { '@nativescript/core': '>=9.0.0' } };
-
-function writePackage(root: string, name: string, pkg: Record<string, unknown>): void {
-	const dir = join(root, 'node_modules', ...name.split('/'));
-	mkdirSync(dir, { recursive: true });
-	writeFileSync(join(dir, 'package.json'), JSON.stringify({ name, version: '1.0.0', ...pkg }));
-}
-
-// Package names are unique per case: the exports reverse map is cached by name alone.
-describe('resolveInternalRuntimePluginBareSpecifier', () => {
-	let root: string;
-
-	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'ns-vite-plugin-specifier-'));
+describe('device build-time package guards', () => {
+	it('blocks NativeScript Vite build-time roots and configuration modules', () => {
+		expect(getBlockedDeviceNodeModulesReason('@nativescript/vite')).toBe('build-time NativeScript Vite package root is not device-loadable');
+		expect(getBlockedDeviceNodeModulesReason('/node_modules/@nativescript/vite/configuration/base.js')).toBe('build-time NativeScript Vite module is not device-loadable: @nativescript/vite/configuration/base.js');
 	});
 
-	afterEach(() => {
-		rmSync(root, { recursive: true, force: true });
+	it('allows NativeScript Vite runtime subpaths that are served over HTTP', () => {
+		expect(getBlockedDeviceNodeModulesReason('/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js')).toBeNull();
+		expect(getBlockedDeviceNodeModulesReason('/node_modules/@nativescript/vite/hmr/frameworks/angular/client/index.js')).toBeNull();
+		expect(getBlockedDeviceNodeModulesReason('/node_modules/@nativescript/vite/hmr/frameworks/vue/client/index.js')).toBeNull();
+		expect(getBlockedDeviceNodeModulesReason('@nativescript/vite/runtime/core-aliases-early.js')).toBeNull();
+		expect(getBlockedDeviceNodeModulesReason('/node_modules/@nativescript/vite/shims/angular-animations-stub.js')).toBeNull();
 	});
 
-	it('folds the root export of an exports-map plugin onto its bare package id', () => {
-		writePackage(root, '@nativescript-community/exports-root-fixture', {
-			...CORE_PEER,
-			exports: {
-				'./package.json': './package.json',
-				'.': { types: './dist/index.d.ts', import: './dist/index.js', default: './dist/index.js' },
-				'./config': './dist/config.js',
-			},
-		});
-		expect(resolveInternalRuntimePluginBareSpecifier('/node_modules/@nativescript-community/exports-root-fixture/dist/index.js', root)).toBe('@nativescript-community/exports-root-fixture');
-	});
-
-	it('leaves a subpath export to the vendor resolver', () => {
-		writePackage(root, '@nativescript-community/exports-subpath-fixture', {
-			...CORE_PEER,
-			exports: { '.': './dist/index.js', './config': './dist/config.js' },
-		});
-		expect(resolveInternalRuntimePluginBareSpecifier('/node_modules/@nativescript-community/exports-subpath-fixture/dist/config.js', root)).toBeNull();
-	});
-
-	it('keeps a package-internal file of an exports-map plugin as the concrete specifier', () => {
-		writePackage(root, '@nativescript-community/exports-internal-fixture', {
-			...CORE_PEER,
-			exports: { '.': './dist/index.js' },
-		});
-		expect(resolveInternalRuntimePluginBareSpecifier('/node_modules/@nativescript-community/exports-internal-fixture/dist/driver.js', root)).toBe('@nativescript-community/exports-internal-fixture/dist/driver.js');
-	});
-
-	it('folds a main-field plugin entry resolved to a platform file onto its bare package id', () => {
-		writePackage(root, '@nativescript-community/main-field-fixture', { ...CORE_PEER, main: 'dist/index' });
-		expect(resolveInternalRuntimePluginBareSpecifier('/node_modules/@nativescript-community/main-field-fixture/dist/index.ios.js', root)).toBe('@nativescript-community/main-field-fixture');
+	it('blocks other known build-time packages from device loading', () => {
+		expect(getBlockedDeviceNodeModulesReason('vite')).toBe('build-time package is not device-loadable: vite');
+		expect(getBlockedDeviceNodeModulesReason('/node_modules/@vitejs/plugin-vue/dist/index.js')).toBe('build-time package is not device-loadable: @vitejs/plugin-vue');
 	});
 });
 
@@ -222,73 +188,5 @@ describe('resolveCandidateFilePath — linked dependency roots', () => {
 		writeSandboxFile(tree.sandbox, 'outside.js');
 
 		expect(resolveCandidateFilePath('/node_modules/../../outside.js', tree.app, null)).toBeNull();
-	});
-});
-
-describe('filterExistingNodeModulesTransformCandidates — anchors to the found file', () => {
-	let sandbox: string | null = null;
-
-	beforeEach(() => {
-		clearLinkedDependencyRootsCache();
-		clearMonorepoWorkspaceRootCache();
-	});
-
-	afterEach(() => {
-		if (sandbox) {
-			rmSync(sandbox, { recursive: true, force: true });
-			sandbox = null;
-		}
-	});
-
-	it('rewrites a linked-checkout hit to its /@fs/<abs-path> form', () => {
-		const tree = createLinkedDepSandbox();
-		sandbox = tree.sandbox;
-		const pluginFile = writeSandboxFile(tree.checkout, 'packages/auth/node_modules/@scope/sign-in/index.android.js');
-		const spec = '/node_modules/@scope/sign-in/index.android.js';
-
-		expect(filterExistingNodeModulesTransformCandidates(spec, [`${spec}?v=1`, `${spec}?v=1`], tree.app, tree.app)).toEqual([`/@fs${pluginFile.replace(/\\/g, '/')}?v=1`]);
-	});
-
-	it('anchors a nested in-project link: hit the URL does not address', () => {
-		const sandbox4 = realpathSync(mkdtempSync(join(tmpdir(), 'ns-vite-linked-deps-')));
-		sandbox = sandbox4;
-		const app = join(sandbox4, 'app');
-		mkdirSync(app, { recursive: true });
-		writeFileSync(join(app, 'package.json'), JSON.stringify({ name: 'app', version: '1.0.0', dependencies: { auth: 'link:./framework/packages/auth' } }));
-		const pluginFile = writeSandboxFile(app, 'framework/packages/auth/node_modules/@scope/sign-in/common.js');
-		const spec = '/node_modules/@scope/sign-in/common.js';
-
-		expect(filterExistingNodeModulesTransformCandidates(spec, [spec], app, app)).toEqual([`/@fs${pluginFile.replace(/\\/g, '/')}`]);
-	});
-
-	it('never mixes in a linked checkout copy of a package the app installs', () => {
-		const tree = createLinkedDepSandbox();
-		sandbox = tree.sandbox;
-		writeSandboxFile(tree.checkout, 'packages/auth/node_modules/shared/index.android.js');
-		writeSandboxFile(tree.app, 'node_modules/shared/index.js');
-		const spec = '/node_modules/shared/index';
-
-		expect(filterExistingNodeModulesTransformCandidates(spec, [`${spec}.android.js`, `${spec}.js`], tree.app, tree.app)).toEqual([`${spec}.js`]);
-	});
-
-	it('keeps an app-local candidate unchanged', () => {
-		const tree = createLinkedDepSandbox({});
-		sandbox = tree.sandbox;
-		writeSandboxFile(tree.app, 'node_modules/@scope/plain/index.js');
-		const spec = '/node_modules/@scope/plain/index.js';
-
-		expect(filterExistingNodeModulesTransformCandidates(spec, [spec], tree.app, tree.app)).toEqual([spec]);
-	});
-
-	it('keeps rewriting hoisted workspace candidates to /@fs/<abs-path>', () => {
-		const ws = realpathSync(mkdtempSync(join(tmpdir(), 'ns-vite-linked-deps-')));
-		sandbox = ws;
-		const app = join(ws, 'apps/demo');
-		mkdirSync(app, { recursive: true });
-		writeFileSync(join(app, 'package.json'), JSON.stringify({ name: 'app', version: '1.0.0' }));
-		const hoistedFile = writeSandboxFile(ws, 'node_modules/@scope/hoisted/index.js');
-		const spec = '/node_modules/@scope/hoisted/index.js';
-
-		expect(filterExistingNodeModulesTransformCandidates(spec, [`${spec}?v=1`], app, ws)).toEqual([`/@fs${hoistedFile.replace(/\\/g, '/')}?v=1`]);
 	});
 });

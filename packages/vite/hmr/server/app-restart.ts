@@ -1,7 +1,7 @@
 import type { EnvironmentModuleNode, HotUpdateOptions, Plugin, ViteDevServer } from 'vite';
 import * as path from 'path';
 import { NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT, type RestartEventData } from '../shared/protocol.js';
-import { viteUrlForFile } from './thin/thin-mode.js';
+import { viteUrlForFile } from './vite-url.js';
 import { resolveNonEvictableViteUrlPrefixes } from './vite-plugin.js';
 
 /**

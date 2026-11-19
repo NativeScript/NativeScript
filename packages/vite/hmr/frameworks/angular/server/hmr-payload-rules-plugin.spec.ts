@@ -4,7 +4,7 @@ import path from 'node:path';
 import * as ts from 'typescript';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { angularHmrPayloadRulesPlugins, installAngularHmrRules, StaleComponentClasses } from './hmr-payload-rules-plugin.js';
+import { angularHmrPayloadRulesPlugins, findResourceOwners, installAngularHmrRules, StaleComponentClasses } from './hmr-payload-rules-plugin.js';
 import { ComponentUpdateLedger, NG_COMPONENT_NO_UPDATE_MODULE } from './hmr-payload-rules.js';
 
 const HOME_SOURCE = `import { Component, signal } from '@angular/core';
@@ -57,7 +57,7 @@ describe('angularHmrPayloadRulesPlugins', () => {
 		middlewares[0]({ url }, res, () => (passed = true));
 		return passed ? 'next' : res.body;
 	};
-	const homeMetadataUrl = (timestamp: number | string) => `/ns/v/src/app/home/@ng/component?c=${homeId()}&t=${timestamp}`;
+	const homeMetadataUrl = (timestamp: number | string) => `/src/app/home/@ng/component?c=${homeId()}&t=${timestamp}`;
 
 	const homeId = () => encodeURIComponent(`${path.relative(workspace, homeFile).split(path.sep).join('/')}@HomeComponent`);
 	const rootId = () => encodeURIComponent(`${path.relative(workspace, rootFile).split(path.sep).join('/')}@AppComponent`);
@@ -92,6 +92,7 @@ describe('angularHmrPayloadRulesPlugins', () => {
 			projectRoot: workspace,
 			resolveRoot: () => ({ file: rootFile.replace(/\.ts$/, '').split(path.sep).join('/'), className: 'AppComponent' }),
 			loadTypeScript: () => ts,
+			appDir: path.join(workspace, 'src'),
 		});
 		middlewares = [];
 		plugins[0].configResolved({ root: workspace });
@@ -224,6 +225,69 @@ describe('angularHmrPayloadRulesPlugins', () => {
 		expect(channel.listeners.get('angular:invalidate')).toHaveLength(1);
 	});
 
+	describe('a template or stylesheet of a component Vite has not transformed', () => {
+		const LAZY_SOURCE = `import { Component } from '@angular/core';\n\n@Component({ selector: 'ns-lazy', templateUrl: './lazy.component.html', styleUrls: ['./lazy.component.css'] })\nexport class LazyComponent {}\n`;
+		let lazyFile: string;
+
+		// Mirrors Vite's graph: a node created without `setIsSelfAccepting` stays unanalyzed.
+		const createGraph = () => {
+			const nodes = new Map<string, any>();
+			const ensureEntryFromUrl = vi.fn(async (url: string, setIsSelfAccepting = true) => {
+				let node = nodes.get(url);
+				if (!node) {
+					node = { url, importers: new Set(), importedModules: new Set(), isSelfAccepting: setIsSelfAccepting ? false : undefined };
+					nodes.set(url, node);
+				}
+				return node;
+			});
+			return { nodes, ensureEntryFromUrl };
+		};
+		const runResourceHook = (graph: ReturnType<typeof createGraph>, file: string, modules: unknown[] = []) => plugins[0].hotUpdate.handler.call({ environment: { name: 'client', moduleGraph: graph, config: { root: workspace } } }, { ...saveContext(file, ''), modules });
+
+		beforeEach(() => {
+			lazyFile = path.join(workspace, 'src/app/lazy/lazy.component.ts');
+			fs.mkdirSync(path.dirname(lazyFile), { recursive: true });
+			fs.writeFileSync(lazyFile, LAZY_SOURCE);
+		});
+
+		it('links it to its component in the graph, so Analog recompiles that component', async () => {
+			const graph = createGraph();
+			const result = await runResourceHook(graph, lazyFile.replace(/\.ts$/, '.html'));
+			const template = graph.nodes.get('/src/app/lazy/lazy.component.html');
+			const component = graph.nodes.get('/src/app/lazy/lazy.component.ts');
+			expect(result).toEqual([template]);
+			expect([...template.importers]).toEqual([component]);
+			expect([...component.importedModules]).toEqual([template]);
+		});
+
+		it('leaves the new nodes unanalyzed, so Vite never propagates past the component', async () => {
+			const graph = createGraph();
+			await runResourceHook(graph, lazyFile.replace(/\.ts$/, '.css'));
+			expect(graph.ensureEntryFromUrl.mock.calls.every((call) => call[1] === false)).toBe(true);
+			expect([...graph.nodes.values()].map((node) => node.isSelfAccepting)).toEqual([undefined, undefined]);
+		});
+
+		it('leaves a resource with graph modules to Analog', async () => {
+			const graph = createGraph();
+			const existing = { isSelfAccepting: undefined, importers: new Set([{ file: lazyFile }]) };
+			expect(await runResourceHook(graph, lazyFile.replace(/\.ts$/, '.html'), [existing])).toBeUndefined();
+			expect(graph.ensureEntryFromUrl).not.toHaveBeenCalled();
+		});
+
+		it('leaves a file no component names alone', async () => {
+			const graph = createGraph();
+			expect(await runResourceHook(graph, path.join(workspace, 'src/app/lazy/other.html'))).toBeUndefined();
+			expect(graph.ensureEntryFromUrl).not.toHaveBeenCalled();
+		});
+
+		it('finds components outside the app directory beside the resource', () => {
+			const libFile = path.join(workspace, 'libs/ui/card.component.ts');
+			fs.mkdirSync(path.dirname(libFile), { recursive: true });
+			fs.writeFileSync(libFile, LAZY_SOURCE.replace(/lazy\.component/g, 'card.component'));
+			expect(findResourceOwners(ts, libFile.replace(/\.ts$/, '.html'), path.join(workspace, 'src'))).toEqual([libFile.split(path.sep).join('/')]);
+		});
+	});
+
 	describe('/@ng/component boot gate', () => {
 		it('answers a boot-time metadata fetch with a no-op module', () => {
 			expect(requestMetadata(homeMetadataUrl(Date.now()))).toBe(NG_COMPONENT_NO_UPDATE_MODULE);
@@ -244,11 +308,11 @@ describe('angularHmrPayloadRulesPlugins', () => {
 
 		it('never lets the root component through: its updates go out as full reloads', () => {
 			channel.channel.send('angular:component-update', { id: rootId(), timestamp: 7 });
-			expect(requestMetadata(`/ns/v/src/app/@ng/component?c=${rootId()}&t=7`)).toBe(NG_COMPONENT_NO_UPDATE_MODULE);
+			expect(requestMetadata(`/src/app/@ng/component?c=${rootId()}&t=7`)).toBe(NG_COMPONENT_NO_UPDATE_MODULE);
 		});
 
 		it('leaves other requests alone', () => {
-			expect(requestMetadata('/ns/v/src/app/home/home.component.ts')).toBe('next');
+			expect(requestMetadata('/src/app/home/home.component.ts')).toBe('next');
 		});
 	});
 });

@@ -155,6 +155,40 @@ export function hasOnlyHmrMetadataChanges(ts: typeof TS | null | undefined, prev
 	}
 }
 
+function stringLiteralText(ts: typeof TS, node: TS.Expression): string | null {
+	return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) ? node.text : null;
+}
+
+/**
+ * Absolute POSIX paths of the `templateUrl`, `styleUrl` and `styleUrls` files
+ * named by the `@Component` decorators in `source`, resolved against `fileName`.
+ */
+export function componentResourceFiles(ts: typeof TS, source: string, fileName: string): string[] {
+	const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+	const urls: string[] = [];
+	const visit = (node: TS.Node): void => {
+		if (ts.isDecorator(node) && ts.isClassDeclaration(node.parent)) {
+			const call = node.expression;
+			if (ts.isCallExpression(call) && isComponentDecoratorCallee(ts, call.expression) && call.arguments.length === 1 && ts.isObjectLiteralExpression(call.arguments[0])) {
+				for (const property of call.arguments[0].properties) {
+					if (!ts.isPropertyAssignment(property)) continue;
+					const name = propertyNameText(ts, property.name);
+					const values = name === 'styleUrls' && ts.isArrayLiteralExpression(property.initializer) ? [...property.initializer.elements] : name === 'templateUrl' || name === 'styleUrl' ? [property.initializer] : [];
+					for (const value of values) {
+						const url = stringLiteralText(ts, value);
+						if (url) urls.push(url);
+					}
+				}
+				return;
+			}
+		}
+		ts.forEachChild(node, visit);
+	};
+	visit(sourceFile);
+	const dir = path.dirname(fileName);
+	return urls.map((url) => toPosixPath(path.resolve(dir, url)));
+}
+
 export interface ComponentUpdateRuleContext {
 	/** Id bases Analog may have used (see `componentUpdateIdToFiles`). */
 	idBases: readonly string[];

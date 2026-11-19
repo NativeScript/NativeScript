@@ -83,7 +83,7 @@ function getRuntimeConfigUrl(session: NsDevSessionDescriptor) {
 		return session.runtimeConfigUrl;
 	}
 
-	return `${session.origin.replace(/\/$/, '')}/ns/import-map.json`;
+	return `${session.origin.replace(/\/$/, '')}/__ns_dev__/import-map.json`;
 }
 
 async function configureLoaderImportMap(runtimeConfigUrl: string, runtimeApi: NsRuntimeDevHostApi, verbose?: boolean) {

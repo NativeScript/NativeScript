@@ -17,7 +17,7 @@
  * The `\/* @vite-ignore *\/` annotation tells Vite "do not try to
  * statically analyze this dynamic import" — the URL is computed at
  * runtime by `ɵɵgetReplaceMetadataURL`, which produces something like
- * `http://host/ns/v/<componentDir>/@ng/component?c=<id>&t=<ts>` to be
+ * `http://host/<componentDir>/@ng/component?c=<id>&t=<ts>` to be
  * resolved by Analog's `liveReloadPlugin` middleware on the dev server.
  *
  * Somewhere along the post-Angular transform chain — empirically the

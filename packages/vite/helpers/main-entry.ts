@@ -321,7 +321,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				// It must stay an external import placed first, so it evaluates
 				// before the externalized core graph (a bundled module's body would
 				// run after it).
-				imports += `import '${bootOrigin}/ns/v/@vite/env';\n`;
+				imports += `import '${bootOrigin}/@vite/env';\n`;
 			}
 			// consistent verbose flag to easily reference below
 			imports += "const __nsVerboseLog = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;\n";

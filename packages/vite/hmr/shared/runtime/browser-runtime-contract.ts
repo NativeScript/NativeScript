@@ -50,7 +50,7 @@ export interface NsRuntimeImportMap {
  * next to the server code that defines the routes it names.
  */
 export interface NsRuntimeCanonicalizationConfig {
-	/** Query param names dropped for URLs under {@link forPathPrefixes}. `/ns/v` URLs keep every param: Vite's `t`/`import` are module identity, as in a browser. */
+	/** Query param names dropped for URLs under {@link forPathPrefixes}. Vite module URLs keep every param: `t`/`import` are module identity, as in a browser. */
 	stripParams?: string[];
 	/** Path prefixes (StartsWith) whose query {@link stripParams} applies to. */
 	forPathPrefixes?: string[];

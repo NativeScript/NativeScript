@@ -14,12 +14,7 @@
  *      non-Angular flavor: Vue, React, Solid, JS, TS), it sees those imports
  *      and pre-bundles the polyfill at `/node_modules/.vite/deps/module.js`,
  *      rewriting the original import to point there.
- *   5. The HMR `/ns/m/` pipeline's `rewriteVitePrebundleImportsForDevice`
- *      then tries to map `node_modules/.vite/deps/module.js` back to a bare
- *      specifier via the vendor manifest. Because `module` is NOT a real npm
- *      package (no manifest entry), the lookup returns `null` and the entire
- *      import statement is silently dropped from the device-side output.
- *   6. On device, `createRequire` is therefore undefined and `data-patch.js`
+ *   5. On device, `createRequire` is then undefined and `data-patch.js`
  *      throws `ReferenceError: createRequire is not defined` at boot.
  *
  * The fix is to surface both `module` and `node:module` in the base

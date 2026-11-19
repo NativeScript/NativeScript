@@ -4,9 +4,6 @@
  */
 import type { ErrorPayload } from 'vite';
 
-/** Device route prefix of Vite URLs (`hmr/server/thin/thin-mode.ts`). */
-const THIN_PREFIX = '/ns/v';
-
 const MAX_MESSAGE_LINES = 6;
 const MAX_CODE_LINES = 12;
 
@@ -65,7 +62,7 @@ export function describeRuntimeError(err: unknown, origin: string): ErrorOverlay
 	const frames = stack
 		.split('\n')
 		.filter((line) => /^\s*at\s/.test(line))
-		.map((line) => line.trim().split(`${origin}${THIN_PREFIX}`).join(''));
+		.map((line) => line.trim().split(`${origin}/`).join('/'));
 	return {
 		detail: message,
 		...(frames.length ? { code: clampLines(frames.join('\n'), MAX_CODE_LINES) } : {}),
@@ -73,17 +70,19 @@ export function describeRuntimeError(err: unknown, origin: string): ErrorOverlay
 }
 
 /**
- * Device module URLs (`<origin>/ns/v/…`) in `stack`, without the
- * `:line:column` suffix, in order of first appearance.
+ * Device module URLs (`<origin>/…`) in `stack`, without the
+ * `:line:column` suffix, in order of first appearance. NativeScript dev
+ * endpoints (`<origin>/__ns_dev__/…`) are not app modules and are left out.
  */
 export function deviceModuleUrlsInStack(stack: unknown, origin: string): string[] {
 	if (typeof stack !== 'string' || !stack) return [];
-	const prefix = `${origin}${THIN_PREFIX}/`;
+	const prefix = `${origin}/`;
+	const devEndpoints = `${origin}/__ns_dev__/`;
 	const found = new Set<string>();
 	for (let at = stack.indexOf(prefix); at >= 0; at = stack.indexOf(prefix, at + prefix.length)) {
 		const end = stack.slice(at).search(/[\s()'"<>]/);
 		const url = (end < 0 ? stack.slice(at) : stack.slice(at, at + end)).replace(/(?::\d+){1,2}$/, '');
-		found.add(url);
+		if (!url.startsWith(devEndpoints)) found.add(url);
 	}
 	return [...found];
 }

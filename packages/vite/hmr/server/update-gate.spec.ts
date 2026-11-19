@@ -11,7 +11,7 @@ import { NS_UPDATE_RERUN_EVENT } from '../shared/protocol.js';
 import { requestAppRestart } from './app-restart.js';
 import { nsEntryBoundaryPlugin } from './entry-boundary.js';
 import { ServedModules, servedTimestamp } from './served-modules.js';
-import { collectCheckedUrls, collectRerunUrls, findMissedModules, nsRerunPlugin, sendCatchUp } from './update-gate.js';
+import { collectCheckedUrls, collectRerunUrls, findMissedModules, getModuleEdits, nsRerunPlugin, sendCatchUp } from './update-gate.js';
 
 describe('ServedModules', () => {
 	it('records the stamps and the time each module was served', () => {
@@ -53,21 +53,54 @@ describe('collectCheckedUrls', () => {
 });
 
 describe('findMissedModules', () => {
-	it('finds modules stamped after they were served whose save never reached a device', () => {
+	it('finds served modules whose file was edited after they were served, by a save that never reached a device', () => {
 		const served = new ServedModules();
-		served.record('/src/main.ts', 0, 1000);
-		served.record('/src/a.ts', 0, 1000);
-		served.record('/src/b.ts', 0, 1000);
+		for (const url of ['/src/main.ts', '/src/a.ts', '/src/b.ts']) served.record(url, 0, 1000);
 		served.record('/src/c.ts', 0, 3000);
-		const graph = graphOf(node('/src/main.ts', { lastHMRTimestamp: 2000 }), node('/src/a.ts', { lastHMRTimestamp: 2000 }), node('/src/b.ts', { lastHMRTimestamp: 1500 }), node('/src/c.ts', { lastHMRTimestamp: 2000 }));
+		const graph = graphOf(node('/src/main.ts'), node('/src/a.ts'), node('/src/b.ts'), node('/src/c.ts'));
+		const edits = new Map([
+			['/src/a.ts', 2000],
+			['/src/b.ts', 1500],
+			['/src/c.ts', 2000],
+		]);
 		// 1500 reached a connected device; 2000 didn't; c was fetched after the 2000 edit.
-		expect(findMissedModules(graph, served, new Set([1500])).sort()).toEqual(['/src/a.ts', '/src/main.ts']);
+		expect(findMissedModules(graph, served, new Set([1500]), edits)).toEqual(['/src/a.ts']);
+	});
+
+	it('ignores importers Vite re-stamped for an edit below them', () => {
+		const served = new ServedModules();
+		const home = node('/src/home.component.ts', { lastHMRTimestamp: 2000 });
+		const routes = node('/src/app.routes.ts', { lastHMRTimestamp: 2000, importedModules: new Set([home]) });
+		const main = node('/src/main.ts', { lastHMRTimestamp: 2000, importedModules: new Set([routes]) });
+		served.record('/src/main.ts', 0, 1000);
+		served.record('/src/app.routes.ts', 0, 1000);
+		// Saved mid-boot, before the component was fetched: the device already has the new code.
+		served.record('/src/home.component.ts', 0, 2500);
+		expect(findMissedModules(graphOf(main, routes, home), served, new Set(), new Map([['/src/home.component.ts', 2000]]))).toEqual([]);
+	});
+
+	it('counts an edit of a template compiled into a served component, also through a self-import', () => {
+		const served = new ServedModules();
+		const template = node('/src/home.component.html');
+		const home = node('/src/home.component.ts', { importedModules: new Set([template]) });
+		home.importedModules.add(home);
+		served.record('/src/home.component.ts', 0, 1000);
+		expect(findMissedModules(graphOf(home, template), served, new Set(), new Map([['/src/home.component.html', 2000]]))).toEqual(['/src/home.component.ts']);
+		expect(findMissedModules(graphOf(home, template), served, new Set([2000]), new Map([['/src/home.component.html', 2000]]))).toEqual([]);
+	});
+
+	it('ignores an edit of a lazy module the device has not fetched yet', () => {
+		const served = new ServedModules();
+		const lazy = node('/src/lazy.component.ts');
+		const routes = node('/src/app.routes.ts', { importedModules: new Set([lazy]) });
+		served.record('/src/app.routes.ts', 0, 1000);
+		expect(findMissedModules(graphOf(routes, lazy), served, new Set(), new Map([['/src/lazy.component.ts', 2000]]))).toEqual([]);
 	});
 
 	it('finds nothing on a normal boot', () => {
 		const served = new ServedModules();
 		served.record('/src/main.ts', 0, 1000);
-		expect(findMissedModules(graphOf(node('/src/main.ts')), served, new Set())).toEqual([]);
+		expect(findMissedModules(graphOf(node('/src/main.ts')), served, new Set(), new Map())).toEqual([]);
 	});
 });
 
@@ -204,16 +237,17 @@ describe('compile gate and catch-up on a real Vite server', () => {
 		const client = { send: vi.fn() };
 		const graph = server.environments.client.moduleGraph as any;
 		const strategy = (await import('../framework-flavors.js')).getFrameworkServerStrategy('update-gate-spec');
-		expect(await sendCatchUp(server, client, { graph, served, delivered: new Set(), strategy })).toBe('reboot');
+		const edits = getModuleEdits(server);
+		expect(await sendCatchUp(server, client, { graph, served, delivered: new Set(), edits, strategy })).toBe('reboot');
 		const [rerunEvent, rerunData] = client.send.mock.calls[0];
 		expect(rerunEvent).toBe(NS_UPDATE_RERUN_EVENT);
-		expect(rerunData.changed.sort()).toEqual(['/child1.js', '/main.js', '/one.js']);
+		expect(rerunData.changed).toEqual(['/child1.js']);
 		expect([...rerunData.rerun].sort()).toEqual(['/child1.js', '/main.js', '/one.js']);
 		expect(client.send.mock.calls[1][0]).toEqual({ type: 'update', updates: [expect.objectContaining({ type: 'js-update', path: '/main.js', acceptedPath: '/main.js' })] });
 
 		// Once the device has loaded the new instances, nothing is missed.
 		for (const url of rerunData.rerun) served.record(url, graph.urlToModuleMap.get(url).lastHMRTimestamp);
-		expect(await sendCatchUp(server, { send: vi.fn() }, { graph, served, delivered: new Set(), strategy })).toBe('none');
+		expect(await sendCatchUp(server, { send: vi.fn() }, { graph, served, delivered: new Set(), edits, strategy })).toBe('none');
 	});
 
 	it('requests a restart instead when the flavor has no entry boundary', async () => {
@@ -225,7 +259,7 @@ describe('compile gate and catch-up on a real Vite server', () => {
 		server.watcher.emit('change', file);
 		await expect.poll(() => (server.environments.client.moduleGraph.getModuleById(file)?.lastHMRTimestamp ?? 0) > 0).toBe(true);
 		const strategy = (await import('../framework-flavors.js')).getFrameworkServerStrategy('update-gate-spec');
-		expect(await sendCatchUp(server, { send: vi.fn() }, { graph: server.environments.client.moduleGraph as any, served, delivered: new Set(), strategy })).toBe('restart');
+		expect(await sendCatchUp(server, { send: vi.fn() }, { graph: server.environments.client.moduleGraph as any, served, delivered: new Set(), edits: getModuleEdits(server), strategy })).toBe('restart');
 		expect(requestAppRestart).toHaveBeenCalledOnce();
 	});
 });

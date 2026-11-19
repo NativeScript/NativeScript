@@ -145,45 +145,17 @@ describe('vendor specifiers', () => {
 	});
 });
 
-/**
- * The query decision of the iOS runtime's `CanonicalizeHttpUrlKey`
- * (HttpLoader.mm): a `preserveQueryFor` substring keeps the query verbatim,
- * a `forPathPrefixes` prefix drops `stripParams` and sorts the rest, any
- * other path keeps the query verbatim.
- */
-function runtimeKey(url: string, canon: ReturnType<typeof getCanonicalization>): string {
-	const u = new URL(url);
-	const base = `${u.origin}${u.pathname}`;
-	const query = u.search.slice(1);
-	if (canon.preserveQueryFor.some((p) => p && u.pathname.includes(p))) return url;
-	if (!canon.forPathPrefixes.some((p) => p && u.pathname.startsWith(p))) return url;
-	const kept = query
-		.split('&')
-		.filter(Boolean)
-		.filter((pair) => !canon.stripParams.includes(pair.split('=')[0]))
-		.sort();
-	return kept.length ? `${base}?${kept.join('&')}` : base;
-}
-
 describe('getCanonicalization', () => {
 	const angular = { flavor: 'angular', preserveQueryPaths: () => ['/@ng/component'] } as FrameworkServerStrategy;
 
-	it('keys /ns/v module URLs like a browser: t and import stay part of the identity', () => {
-		const canon = getCanonicalization(angular);
-		expect(runtimeKey(`${ORIGIN}/ns/v/src/app/home.component.ts?t=1700000000000`, canon)).toBe(`${ORIGIN}/ns/v/src/app/home.component.ts?t=1700000000000`);
-		expect(runtimeKey(`${ORIGIN}/ns/v/src/data.json?import&t=1700000000000`, canon)).toBe(`${ORIGIN}/ns/v/src/data.json?import&t=1700000000000`);
-		expect(runtimeKey(`${ORIGIN}/ns/v/src/main.ts`, canon)).not.toBe(runtimeKey(`${ORIGIN}/ns/v/src/main.ts?t=1700000000000`, canon));
-	});
-
-	it("preserves Angular's /@ng/component query under /ns/v", () => {
+	it("preserves the query of Angular's component-relative /@ng/component URLs (the runtime matches by path substring)", () => {
 		const canon = getCanonicalization(angular);
 		expect(canon.preserveQueryFor).toEqual(['/@ng/component']);
-		const url = `${ORIGIN}/ns/v/src/app/@ng/component?c=src%2Fapp%2Fhome.component.ts%40HomeComponent&t=1700000000000`;
+		const url = `${ORIGIN}/src/app/home/@ng/component?c=src%2Fapp%2Fhome%2Fhome.component.ts%40HomeComponent&t=1700000000000`;
 		expect(canon.preserveQueryFor.some((p) => new URL(url).pathname.includes(p))).toBe(true);
-		expect(runtimeKey(url, canon)).toBe(url);
 	});
 
-	it('declares no query-normalizing dev prefix', () => {
-		expect(getCanonicalization()).toEqual({ stripParams: [], forPathPrefixes: [], preserveQueryFor: [] });
+	it('declares no query-normalizing dev prefix, so the runtime keeps every query as identity', () => {
+		expect(getCanonicalization()).toEqual({ preserveQueryFor: [] });
 	});
 });
