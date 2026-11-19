@@ -8,6 +8,7 @@ import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath,
 import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
+import { readOrCreateDevWsToken } from './dev-ws-token.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
 import { BUNDLE_CSS_AST_SENTINEL, inlineBundleCss } from './bundle-css.js';
 import { deviceUrlForGraphUrl } from '../hmr/server/vite-url.js';
@@ -353,7 +354,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 	// session-bootstrap's `configureLoader` installs the import map, so it
 	// names absolute URLs only.
 	const generateHmrBundleEntry = (bootOrigin: string): string => {
-		const loaderOptions = { origin: bootOrigin, bootUrl: bootOrigin + DEV_BOOT_DEVICE_PATH, verbose: opts.verbose };
+		const loaderOptions = { origin: bootOrigin, bootUrl: bootOrigin + DEV_BOOT_DEVICE_PATH, token: readOrCreateDevWsToken(resolvedConfig.root), verbose: opts.verbose };
 		return `import { bootFromDevServer } from '@nativescript/vite/runtime/dev-boot-loader.js';\nawait bootFromDevServer(${JSON.stringify(loaderOptions)});\n` + appComponentImports(opts);
 	};
 

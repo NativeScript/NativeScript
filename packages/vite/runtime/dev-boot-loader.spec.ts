@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { bootFromDevServer } from './dev-boot-loader.js';
 
-const OPTIONS = { origin: 'http://192.168.1.5:5173', bootUrl: 'http://192.168.1.5:5173/@id/__x00__virtual:ns-dev-boot' };
+const OPTIONS = { origin: 'http://192.168.1.5:5173', bootUrl: 'http://192.168.1.5:5173/@id/__x00__virtual:ns-dev-boot', token: 'a+b' };
 
 afterEach(() => {
 	vi.unstubAllGlobals();
@@ -29,6 +29,7 @@ describe('bootFromDevServer', () => {
 		const UIApplicationMain = vi.fn();
 		const extend = vi.fn(() => ({}));
 		const taskResume = vi.fn();
+		const requested: string[] = [];
 		vi.stubGlobal('UIApplicationMain', UIApplicationMain);
 		vi.stubGlobal(
 			'UIResponder',
@@ -38,7 +39,7 @@ describe('bootFromDevServer', () => {
 		vi.stubGlobal('UIApplicationDelegate', {});
 		vi.stubGlobal('NSBundle', { mainBundle: { objectForInfoDictionaryKey: () => null } });
 		vi.stubGlobal('NSURLSessionConfiguration', { ephemeralSessionConfiguration: {} });
-		vi.stubGlobal('NSURLSession', { sessionWithConfigurationDelegateDelegateQueue: () => ({ dataTaskWithURLCompletionHandler: () => ({ resume: taskResume }) }) });
+		vi.stubGlobal('NSURLSession', { sessionWithConfigurationDelegateDelegateQueue: () => ({ dataTaskWithURLCompletionHandler: (url: string) => (requested.push(url), { resume: taskResume }) }) });
 		vi.stubGlobal('NSOperationQueue', { mainQueue: {} });
 		vi.stubGlobal('NSURL', { URLWithString: (url: string) => url });
 
@@ -48,5 +49,31 @@ describe('bootFromDevServer', () => {
 		expect(extend.mock.calls.map((c: any[]) => c[1].name)).toEqual(['NSDevBootFallbackSceneDelegate', 'NSDevBootFallbackAppDelegate']);
 		// The failure is reported, so the dev server restarts the app on the fixing edit.
 		expect(taskResume).toHaveBeenCalledOnce();
+		expect(requested).toEqual([`${OPTIONS.origin}/__ns_dev__/boot-failed?reason=entry%20threw&token=a%2Bb`]);
+	});
+
+	it("polls the restart route with the loader's age and the token while the dev server is unreachable", async () => {
+		vi.useFakeTimers({ now: 10_000 });
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		const requested: string[] = [];
+		vi.stubGlobal('UIApplicationMain', vi.fn());
+		vi.stubGlobal(
+			'UIResponder',
+			Object.assign(function UIResponder() {}, { extend: vi.fn(() => ({})) }),
+		);
+		vi.stubGlobal('UIWindowSceneDelegate', {});
+		vi.stubGlobal('UIApplicationDelegate', {});
+		vi.stubGlobal('NSBundle', { mainBundle: { objectForInfoDictionaryKey: () => null } });
+		vi.stubGlobal('NSURLSessionConfiguration', { ephemeralSessionConfiguration: {} });
+		vi.stubGlobal('NSURLSession', { sessionWithConfigurationDelegateDelegateQueue: () => ({ dataTaskWithURLCompletionHandler: (url: string) => (requested.push(url), { resume: () => {} }) }) });
+		vi.stubGlobal('NSOperationQueue', { mainQueue: {} });
+		vi.stubGlobal('NSURL', { URLWithString: (url: string) => url });
+
+		const boot = bootFromDevServer(OPTIONS, () => new Promise(() => {}));
+		await vi.advanceTimersByTimeAsync(6000);
+		await boot;
+		await vi.advanceTimersByTimeAsync(2000);
+
+		expect(requested).toEqual([`${OPTIONS.origin}/__ns_dev__/restart?reason=the%20dev%20server%20is%20reachable%20again&age=8000&token=a%2Bb`]);
 	});
 });

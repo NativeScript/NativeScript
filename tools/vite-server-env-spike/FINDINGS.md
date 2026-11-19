@@ -1428,6 +1428,55 @@ The boot module graph (core) dominates. The timestamps print unconditionally und
 - the toolbox (TS flavor);
 - visionOS / embedded hosts (`NS_SWIFTUI_BOOT`), where the old placeholder skipped `run` when a host `UIApplication` already existed. The fallback calls `UIApplicationMain`, which would assert there.
 
+## Round 22: phase 5c, double boot, iPhone, route token, pre-bundled core by default
+
+**Double boot after the dev server comes back.**
+- **Cause.** A process relaunched while the server was down shows the unreachable fallback and polls `GET /__ns_dev__/restart` every 2 s. When `ns run` starts, the server answered the first poll with an IPC restart, and the CLI also launches the app after its first build: two boots. Gating on the warm answer doesn't work: the server is warm about 0.5 s after listening, and the poll interval is 2 s. Gating on "a device booted from this server" would strand a CLI-launched process that met the Local Network prompt (it never reaches the server before the user allows it).
+- **Fix** (no CLI change). The loader sends `age` (ms since it started) with each poll. The server answers 409 and requests nothing when the CLI spawned it, this is the process's first server start (`cliLaunchesAppAfterServerStart()` in `app-restart.ts`), and `age` exceeds the time since `listening`. The CLI spawns `vite serve` only with its build watcher (`compileWithWatch`) and stops them together, so that first start is always followed by a CLI launch, which replaces the old process. Anything else (a younger process, no `age`, no CLI, a later in-process start) requests a restart, so a wrong guess costs an extra restart, never a stuck screen.
+- **Same family:** after an in-process `server.restart()`, a poll-triggered restart was followed by the "the Vite dev server restarted" restart on the new app's first connection. `restartOnConnect` is now process state, cleared by any restart request while a CLI parent exists (without one, a later connection must still be told).
+- **Simulator** (Vue, final build): server down, relaunch, fallback; `ns run` cold: the poll arrived 33 ms after the warm answer and got `409 …&age=22267&token=…`; one CLI launch, one `/@vite/env`, one launch event. `curl` with the token and `age=1`: exactly one restart. Without the token: 403, no restart. With a huge `age`: 409. Angular syntax error in `src/main.ts`: card with Analog's message; restoring the file gave one restart and one boot.
+- **Limitation:** a fallback the CLI never replaces (a device outside the CLI session) keeps polling and getting 409. A restart request would not reach it either.
+
+**iPhone 11 Pro (iOS 26.0.1), Wi-Fi** (build: the double-boot fix, before the token and the pre-bundle default; the "core pre-bundled" rows are what the default now gives). The CLI doesn't list the phone (network-paired only), so: the app built and installed by hand (`device-hmr-install.sh`, team `U56623MFCT`), `vite serve` started as the CLI spawns it but standalone (so no simulator boots first), the phone launched after the boot-graph warm-up (the CLI's launch hold), with `devicectl device process launch --console`. Times are seconds from the host's `devicectl` call, an upper bound: the first device log line comes 1.06–1.36 s after it. Device stamps are aligned to host time through the `session.mjs` request. Requests are the phone's only (192.168.1.29). 
+
+| | first request | session start | entry evaluated | launch event | requests / KiB |
+|---|---|---|---|---|---|
+| vue cold | 1.07 | 2.18 | 2.46 | 2.48 | 322 / 8,893 |
+| vue warm (2 runs) | 1.02–1.11 | 2.08–2.16 | 2.31–2.46 | 2.34–2.49 | 322 / 8,893 |
+| vue warm, CLI-started server, simulator app alive (1) | 1.33 | 2.46 | 2.75 | 2.78 | 322 / 8,893 |
+| vue, core pre-bundled, cold | 1.28 | 1.73 | 2.00 | 2.03 | 77 / 10,103 |
+| vue, core pre-bundled, warm (2) | 1.07–1.17 | 1.53–1.61 | 1.78–1.87 | 1.80–1.89 | 77 / 10,103 |
+| ng cold | 0.99 | 2.09 | 2.37 | 2.39 | 329 / 9,001 |
+| ng warm (2) | 0.98–1.06 | 2.08–2.16 | 2.38–2.41 | 2.40–2.43 | 329 / 9,001 |
+| ng, core pre-bundled, cold | 1.01 | 1.37 | 1.63 | 1.65 | 85 / 5,928 |
+| ng, core pre-bundled, warm (2) | 0.98–0.99 | 1.34–1.35 | 1.60–1.63 | 1.62–1.65 | 85 / 5,928 |
+
+- **Budget** (20–30 s for `UIApplicationMain`): the launch event lands 2.3–2.8 s after the launch command with core served as files (about 7–13× headroom) and 1.6–2.0 s with core pre-bundled, the new default (10–19×).
+- **The core graph dominates:** first request → `session start` is 1.1 s with core served as files and 0.36–0.45 s pre-bundled. The entry adds 0.25–0.3 s. Pre-bundling saves 0.5 s (vue) and 0.75 s (ng) per boot on the phone.
+- **Device-bound, not network-bound:** 3–5 requests in flight at most (the simulator reaches 16), average concurrency 0.3–0.7. The runtime compiles each module on the JS thread before its imports are known, so the walk is serial on the device.
+- **Cold ≈ warm** because the warm-up (0.15–0.5 s after listen) finishes before the device's first request. A device launched before the warm-up ends would pay cold transforms; the CLI's hold prevents that.
+- **Not covered on the phone:** the CLI restart paths (it can't deploy to the phone without USB), Android.
+
+**Action routes need the WebSocket token.**
+- The socket half of the request isn't possible as asked: the HMR socket opens only after launch (`createNsDevClientModuleCode` waits for `bootComplete`, and a failed boot cancels it), so no socket is connected when a boot fails. A short-lived socket opened just to report would fire `vite:client:connect` (feeding `restartOnConnect`), consume what Vite buffers for the next connection, and flip the no-client checks. `boot-failed` stays HTTP.
+- `restart` and `boot-failed` answer 403 without `?token=<webSocketToken>`. `bundle.mjs` comes from a separate process (`vite build --watch`), so the token is per project: `node_modules/.ns-vite/dev-ws-token`, created atomically by whichever process reads it first, pinned into every server config, baked into the loader options. `bundle.mjs` stays stable across sessions.
+- **The token doesn't stop a page that reads it first:** `session.mjs` answers with `Access-Control-Allow-Origin: *`, and the server runs with `cors: true`, so `/@vite/client` and the dev client module (both carry it) are readable cross-origin too.
+
+**Pre-bundling an installed core is the default** (`NS_VITE_PREBUNDLE_CORE=0` opts out; a linked core stays files).
+- Crawls (`out/phase5c-prebundle-default/`, cold, `--bundle`): vue 74 device requests / 10,091 KiB, ng 81 / 18,915 KiB (Vite 8.3.8, see below); both PASS (duplicates 0, same file two URLs 0, duplicate instances 0, optimizer stable, map vs analysis 0); no raw `/node_modules/@nativescript/core/` URL served. The simulator request logs (ng on 8.0.2, vue on 8.3.8) have none either.
+- Simulator, cold: vue 77 requests, template edit, `setup.ts` soft reboot, syntax error + fix, all in one process. ng 85 requests, template edit, class edit (soft reboot through `main.ts`), syntax error + fix, all in one process; the boot-error card path above.
+
+**Inline source maps** (the boot requests re-fetched from the server, core pre-bundled, cold):
+
+| | requests | served KiB | inline maps KiB | without maps KiB |
+|---|---|---|---|---|
+| vue (Vite 8.3.8) | 77 | 10,104 | 7,268 (72%) | 2,835 |
+| ng (Vite 8.0.2) | 86 | 5,929 | 415 (7%) | 5,514 |
+
+- vue: pre-bundles 9,667 KiB, of which 7,041 KiB are maps; served `node_modules` 390 / 200 KiB; app and virtual modules 47 / 28 KiB.
+- ng: Vite 8.0.2 writes pre-bundle maps as separate `.map` files (`//# sourceMappingURL=<name>.js.map`), which the device never requests; only served files carry inline maps (369 KiB served `node_modules` with 190 KiB of maps, 48 KiB app with 29 KiB). The ng crawl runs Vite 8.3.8 (`thin-crawl.mjs` resolves the copy nested under `apps/ng/node_modules/@nativescript/vite/node_modules`, while `ns run` uses the repo root's 8.0.2), which inlines the pre-bundle maps: hence its 18,915 KiB against the 5,929 KiB the phone and simulator load.
+- Serving maps by URL would cut vue's boot payload from 10.1 MB to 2.8 MB. On the phone over this Wi-Fi the boot is compile-bound, so the time saved is small; it matters on slower networks.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

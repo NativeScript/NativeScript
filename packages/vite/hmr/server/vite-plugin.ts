@@ -9,6 +9,7 @@ import { IMPORT_MAP_PATH, NS_DEV_SESSION_PATH } from './dev-routes.js';
 import { registerDevBootRoutes } from './dev-boot-routes.js';
 import { createDeviceRequestMiddleware, useFirst } from './device-requests.js';
 import { getServerOrigin } from './server-origin.js';
+import { readOrCreateDevWsToken } from '../../helpers/dev-ws-token.js';
 import { fileURLToPath } from 'node:url';
 
 const runtimeFile = (relToHmrServer: string) => fileURLToPath(new URL(relToHmrServer, import.meta.url));
@@ -155,9 +156,12 @@ function sendCorsPreflight(req: import('node:http').IncomingMessage, res: import
 // module stays loaded across restarts, so it pins one token per process.
 let processWebSocketToken: string | undefined;
 
-/** Gives every config resolved in this process the first one's `webSocketToken`. */
-export function pinWebSocketToken(config: { webSocketToken: string }): void {
-	processWebSocketToken ??= config.webSocketToken;
+/**
+ * Gives every config resolved in this process the project's shared token
+ * (`sharedToken`, read once), which `bundle.mjs` also carries.
+ */
+export function pinWebSocketToken(config: { webSocketToken: string }, sharedToken: () => string): void {
+	processWebSocketToken ??= sharedToken();
 	config.webSocketToken = processWebSocketToken;
 }
 
@@ -286,7 +290,7 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 			if (c.command === 'serve') {
 				// Vite checks upgrades against `config.webSocketToken` of the config
 				// it hands to `configResolved`, so pinning it here is what it uses.
-				pinWebSocketToken(c as { webSocketToken: string });
+				pinWebSocketToken(c as { webSocketToken: string }, () => readOrCreateDevWsToken(c.root));
 				allowServedDirs(c, [nsVitePackageDir()]);
 				// Vite freezes a copy of `allowedHosts` when it creates the server.
 				allowDeviceHost(c);

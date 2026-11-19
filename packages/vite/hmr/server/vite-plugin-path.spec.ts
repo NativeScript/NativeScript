@@ -29,12 +29,14 @@ describe('resolveViteHmrWsUrl', () => {
 });
 
 describe('pinWebSocketToken', () => {
-	it('keeps the first resolved token for every later config of the process', () => {
-		const first = { webSocketToken: 'first' };
+	it("gives every config of the process the project's shared token, read once", () => {
+		const first = { webSocketToken: 'random-1' };
 		const restarted = { webSocketToken: 'minted-on-restart' };
-		pinWebSocketToken(first);
-		pinWebSocketToken(restarted);
-		expect(restarted.webSocketToken).toBe('first');
+		const shared = vi.fn(() => 'shared');
+		pinWebSocketToken(first, shared);
+		pinWebSocketToken(restarted, shared);
+		expect([first.webSocketToken, restarted.webSocketToken]).toEqual(['shared', 'shared']);
+		expect(shared).toHaveBeenCalledOnce();
 	});
 });
 

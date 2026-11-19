@@ -6,7 +6,8 @@ import type { Rolldown } from 'vite';
  * source, one instance shared by the dev boot module, the dev client and
  * every pre-bundle that imports them.
  *
- * - `@nativescript/core`, `@nativescript/vite`: one instance per app.
+ * - `@nativescript/core`, `@nativescript/vite`: one instance per app
+ *   ({@link getNsOptimizeDepsExclude} pre-bundles an installed core).
  * - `module` / `node:module` / `set-value`: aliased to shims inside this
  *   package (`helpers/css-tree.ts`, `resolveConfig.alias` in
  *   `configuration/base.ts`). The optimizer applies aliases too, so it would
@@ -15,13 +16,14 @@ import type { Rolldown } from 'vite';
 export const NS_OPTIMIZE_DEPS_EXCLUDE = ['@nativescript/core', '@nativescript/vite', 'set-value', 'module', 'node:module'] as const;
 
 /**
- * {@link NS_OPTIMIZE_DEPS_EXCLUDE} without `@nativescript/core` when
- * `NS_VITE_PREBUNDLE_CORE=1` (experimental) and core is installed: `coreDir`'s
- * realpath under `node_modules`. A linked or source checkout of core stays
- * served, so edits to it keep reaching the module graph.
+ * {@link NS_OPTIMIZE_DEPS_EXCLUDE} without `@nativescript/core` when core is
+ * installed (`coreDir`'s realpath under `node_modules`): a device boot then
+ * takes about 80 requests instead of about 320. A linked or source checkout of
+ * core stays served, so edits to it keep reaching the module graph.
+ * `NS_VITE_PREBUNDLE_CORE=0` serves an installed core too.
  */
 export function getNsOptimizeDepsExclude(coreDir: string | undefined): readonly string[] {
-	const prebundleCore = process.env.NS_VITE_PREBUNDLE_CORE === '1' && !!coreDir && /[\\/]node_modules[\\/]/.test(realpathOrSelf(coreDir));
+	const prebundleCore = process.env.NS_VITE_PREBUNDLE_CORE !== '0' && !!coreDir && /[\\/]node_modules[\\/]/.test(realpathOrSelf(coreDir));
 	return prebundleCore ? NS_OPTIMIZE_DEPS_EXCLUDE.filter((name) => name !== '@nativescript/core') : NS_OPTIMIZE_DEPS_EXCLUDE;
 }
 

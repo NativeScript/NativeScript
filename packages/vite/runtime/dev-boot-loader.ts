@@ -12,6 +12,8 @@ export interface DevBootLoaderOptions {
 	origin: string;
 	/** The served dev boot module. */
 	bootUrl: string;
+	/** The dev server's WebSocket token, which its action routes require. */
+	token: string;
 	verbose?: boolean;
 }
 
@@ -55,6 +57,7 @@ function describe(error: unknown): DevBootFailure {
 
 /** Loads `/@vite/env` and the dev boot module; never rejects on iOS. */
 export async function bootFromDevServer(options: DevBootLoaderOptions, importModule: (url: string) => Promise<any> = (url) => import(/* @vite-ignore */ url)): Promise<void> {
+	const startedAt = Date.now();
 	try {
 		// `/@vite/env` installs `config.define` on globalThis (Vite's client
 		// environment does no define substitution in served modules), so it
@@ -62,7 +65,7 @@ export async function bootFromDevServer(options: DevBootLoaderOptions, importMod
 		await withTimeout(importModule(`${options.origin}/@vite/env`), REACHABILITY_TIMEOUT_MS, `no answer within ${REACHABILITY_TIMEOUT_MS / 1000} s`);
 	} catch (error) {
 		if (!canLaunchFallback()) throw error;
-		showDevServerUnreachable(options, describe(error));
+		showDevServerUnreachable(options, describe(error), startedAt);
 		return;
 	}
 	let failure: DevBootFailure | undefined;
@@ -77,14 +80,15 @@ export async function bootFromDevServer(options: DevBootLoaderOptions, importMod
 	showBootFailure(options, failure);
 }
 
-function showDevServerUnreachable(options: DevBootLoaderOptions, failure: DevBootFailure): void {
+function showDevServerUnreachable(options: DevBootLoaderOptions, failure: DevBootFailure, startedAt: number): void {
 	console.error(`[ns-entry] the dev server at ${options.origin} is unreachable: ${failure.message}`);
 	const text = `The app can't reach the dev server at ${options.origin} (${failure.message}).\n\nStart it with \`ns run\`, or check that this device is on the same network. The app restarts once the server answers.`;
 	launchFallback({ title: 'Dev server unreachable', text, alert: true });
 	// The fallback owns `UIApplicationMain` now, so the app can't boot in this
-	// process: the dev server restarts it.
+	// process: the dev server restarts it. It compares `age` with its own uptime.
 	const reconnect = () => {
-		httpGet(`${options.origin}${NS_DEV_RESTART_PATH}?reason=${encodeURIComponent('the dev server is reachable again')}`, 3, (ok) => {
+		const query = `reason=${encodeURIComponent('the dev server is reachable again')}&age=${Date.now() - startedAt}&token=${encodeURIComponent(options.token)}`;
+		httpGet(`${options.origin}${NS_DEV_RESTART_PATH}?${query}`, 3, (ok) => {
 			if (!ok) setTimeout(reconnect, RECONNECT_INTERVAL_MS);
 			else console.info('[ns-entry] the dev server is reachable again; it restarts the app');
 		});
@@ -95,7 +99,7 @@ function showDevServerUnreachable(options: DevBootLoaderOptions, failure: DevBoo
 function showBootFailure(options: DevBootLoaderOptions, failure: DevBootFailure): void {
 	const details = failure.stack && failure.stack.indexOf(failure.message) === -1 ? `${failure.message}\n\n${failure.stack}` : failure.stack || failure.message;
 	const screen = launchFallback({ title: 'The app failed to boot', text: `${details}\n\nFix the error and save: the app restarts.` });
-	httpGet(`${options.origin}${NS_DEV_BOOT_FAILED_PATH}?reason=${encodeURIComponent(failure.message)}`, 5, (ok, body) => {
+	httpGet(`${options.origin}${NS_DEV_BOOT_FAILED_PATH}?reason=${encodeURIComponent(failure.message)}&token=${encodeURIComponent(options.token)}`, 5, (ok, body) => {
 		if (!ok || !body) return;
 		try {
 			const serverError = JSON.parse(body).serverError;

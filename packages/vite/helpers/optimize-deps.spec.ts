@@ -33,11 +33,12 @@ describe('getNsOptimizeDepsExclude', () => {
 		else process.env.NS_VITE_PREBUNDLE_CORE = previous;
 	});
 
-	it('excludes core unless NS_VITE_PREBUNDLE_CORE=1 and core is installed', () => {
+	it('pre-bundles an installed core unless NS_VITE_PREBUNDLE_CORE=0', () => {
 		delete process.env.NS_VITE_PREBUNDLE_CORE;
-		expect(getNsOptimizeDepsExclude('/app/node_modules/@nativescript/core')).toContain('@nativescript/core');
-		process.env.NS_VITE_PREBUNDLE_CORE = '1';
 		expect(getNsOptimizeDepsExclude('/app/node_modules/@nativescript/core')).not.toContain('@nativescript/core');
+		process.env.NS_VITE_PREBUNDLE_CORE = '0';
+		expect(getNsOptimizeDepsExclude('/app/node_modules/@nativescript/core')).toContain('@nativescript/core');
+		delete process.env.NS_VITE_PREBUNDLE_CORE;
 		expect(getNsOptimizeDepsExclude('/repo/packages/core')).toContain('@nativescript/core');
 		expect(getNsOptimizeDepsExclude(undefined)).toContain('@nativescript/core');
 	});
@@ -48,7 +49,6 @@ describe('getNsOptimizeDepsExclude', () => {
 			fs.mkdirSync(path.join(tmp, 'checkout'));
 			fs.mkdirSync(path.join(tmp, 'node_modules/@nativescript'), { recursive: true });
 			fs.symlinkSync(path.join(tmp, 'checkout'), path.join(tmp, 'node_modules/@nativescript/core'));
-			process.env.NS_VITE_PREBUNDLE_CORE = '1';
 			expect(getNsOptimizeDepsExclude(path.join(tmp, 'node_modules/@nativescript/core'))).toContain('@nativescript/core');
 		} finally {
 			fs.rmSync(tmp, { recursive: true, force: true });

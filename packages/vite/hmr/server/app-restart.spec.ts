@@ -131,6 +131,67 @@ describe('needsAppRestartForEdit', () => {
 	});
 });
 
+describe('cliLaunchesAppAfterServerStart', () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		vi.resetModules();
+	});
+
+	it("holds for a CLI-spawned process's first server start only", async () => {
+		vi.stubGlobal('process', Object.assign(Object.create(process), { send: vi.fn() }));
+		vi.resetModules();
+		const mod = await import('./app-restart.js');
+		const server = { config: { root: '/app', logger: { warn: vi.fn() } }, ws: { on: vi.fn(), send: vi.fn() } };
+		expect(mod.cliLaunchesAppAfterServerStart()).toBe(true);
+		(mod.nsAppRestartPlugin() as any).configureServer(server);
+		expect(mod.cliLaunchesAppAfterServerStart()).toBe(true);
+		(mod.nsAppRestartPlugin() as any).configureServer(server);
+		expect(mod.cliLaunchesAppAfterServerStart()).toBe(false);
+	});
+
+	it("drops the restarted server's first-connection restart once any app restart request goes out", async () => {
+		vi.useFakeTimers();
+		const send = vi.fn();
+		vi.stubGlobal('process', Object.assign(Object.create(process), { send }));
+		vi.resetModules();
+		const mod = await import('./app-restart.js');
+		const listeners = new Map<string, () => void>();
+		const server = () => ({ config: { root: '/app', logger: { warn: vi.fn() } }, ws: { on: (event: string, fn: () => void) => listeners.set(event, fn), send: vi.fn() } });
+		(mod.nsAppRestartPlugin() as any).configureServer(server());
+		(mod.nsAppRestartPlugin() as any).configureServer(server());
+		mod.requestAppRestart('the dev server is reachable again');
+		listeners.get('vite:client:connect')!();
+		vi.runAllTimers();
+		vi.useRealTimers();
+		expect(send.mock.calls).toEqual([[{ type: 'nativescript:restart', reason: 'the dev server is reachable again' }]]);
+	});
+
+	it('still tells the first device connection when no CLI restarts the app', async () => {
+		vi.useFakeTimers();
+		vi.stubGlobal('process', Object.assign(Object.create(process), { send: undefined }));
+		vi.resetModules();
+		const mod = await import('./app-restart.js');
+		const listeners = new Map<string, () => void>();
+		const warn = vi.fn();
+		const server = () => ({ config: { root: '/app', logger: { warn } }, ws: { on: (event: string, fn: () => void) => listeners.set(event, fn), send: vi.fn() } });
+		(mod.nsAppRestartPlugin() as any).configureServer(server());
+		(mod.nsAppRestartPlugin() as any).configureServer(server());
+		mod.requestAppRestart('the dev server is reachable again');
+		vi.runAllTimers();
+		listeners.get('vite:client:connect')!();
+		vi.runAllTimers();
+		vi.useRealTimers();
+		expect(warn.mock.calls.map((c) => c[0])).toEqual(['[NativeScript] restart the app to apply: the dev server is reachable again', '[NativeScript] restart the app to apply: the Vite dev server restarted']);
+	});
+
+	it('never holds without an IPC channel to the CLI', async () => {
+		vi.stubGlobal('process', Object.assign(Object.create(process), { send: undefined }));
+		vi.resetModules();
+		const mod = await import('./app-restart.js');
+		expect(mod.cliLaunchesAppAfterServerStart()).toBe(false);
+	});
+});
+
 describe('nsAppRestartPlugin', () => {
 	function fakeServer() {
 		const listeners = new Map<string, ((...args: any[]) => void)[]>();

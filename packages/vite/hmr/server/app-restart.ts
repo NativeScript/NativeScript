@@ -146,6 +146,8 @@ interface AppRestartState {
 	serverStarts: number;
 	/** The next server start is followed by an app restart request of its own. */
 	nextStartRequestsRestart?: boolean;
+	/** The first device connection to this server start requests an app restart. */
+	restartOnConnect?: boolean;
 }
 
 // Module state, not plugin state: `server.restart()` (and a config edit)
@@ -161,7 +163,20 @@ const requester = createAppRestartRequester({
 
 /** Asks for an app restart (see {@link NativeScriptRestartMessage}). */
 export function requestAppRestart(reason: string): void {
+	// The CLI restarts every device, so each loads everything from this server;
+	// without it, a device connecting later must still be told.
+	if (sendToCli) processState.restartOnConnect = false;
 	requester.request(reason);
+}
+
+/**
+ * True when the CLI launches the app after the current server start: it
+ * spawns `vite serve` with its build watcher and launches the app after that
+ * watcher's first build, so only a process's first server start is followed
+ * by a launch.
+ */
+export function cliLaunchesAppAfterServerStart(): boolean {
+	return !!sendToCli && processState.serverStarts <= 1;
 }
 
 /**
@@ -196,14 +211,14 @@ export function nsAppRestartPlugin(options: { request?: (reason: string) => void
 		configureServer(server) {
 			currentServer = server;
 			state.serverStarts++;
-			let restartPending = state.serverStarts > 1 && !state.nextStartRequestsRestart;
+			state.restartOnConnect = state.serverStarts > 1 && !state.nextStartRequestsRestart;
 			state.nextStartRequestsRestart = false;
 			server.ws.on(NS_RESTART_EVENT, (data?: Partial<RestartEventData>) => {
 				request(typeof data?.reason === 'string' && data.reason ? data.reason : 'the device requested a restart');
 			});
 			server.ws.on('vite:client:connect', () => {
-				if (!restartPending) return;
-				restartPending = false;
+				if (!state.restartOnConnect) return;
+				state.restartOnConnect = false;
 				request('the Vite dev server restarted');
 			});
 		},
