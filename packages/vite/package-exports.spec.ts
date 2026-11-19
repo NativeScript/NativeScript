@@ -14,4 +14,8 @@ describe('@nativescript/vite package exports', () => {
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/root-placeholder');
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/root-placeholder.js');
 	});
+
+	it('exports the opt-in HMR compat entry', () => {
+		expect(packageJson.exports?.['./hmr-compat']).toEqual({ types: './hmr-compat.d.ts', import: './hmr-compat.js', default: './hmr-compat.js' });
+	});
 });

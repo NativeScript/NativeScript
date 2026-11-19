@@ -10,7 +10,10 @@
  * `import { createRequire } from 'module'` line and crashing on device with
  * `ReferenceError: createRequire is not defined` inside `css-tree`.
  *
+ * `@nativescript/vite/hmr-compat` must be served as its own module: a pre-bundle
+ * gets no `import.meta.hot`, so its shims would never install.
+ *
  * Centralized here so base/angular configs share one source of truth instead of
  * hand-maintaining divergent copies.
  */
-export const NS_OPTIMIZE_DEPS_EXCLUDE = ['@nativescript/core', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript', 'module', 'node:module'] as const;
+export const NS_OPTIMIZE_DEPS_EXCLUDE = ['@nativescript/core', '@nativescript/vite/hmr-compat', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript', 'module', 'node:module'] as const;
