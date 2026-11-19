@@ -262,3 +262,65 @@ describe('HMRClient.dropContexts', () => {
 		expect(client.dataMap.get('/src/a.ts')).toEqual({ kept: 1 });
 	});
 });
+
+describe('hot.decline()', () => {
+	it('is tracked per owner path until the module is re-evaluated', () => {
+		const { client } = createClient();
+		new HMRContext(client, '/src/a.ts').decline();
+		new HMRContext(client, '/src/b.ts');
+
+		expect(client.isDeclined('/src/a.ts')).toBe(true);
+		expect(client.isDeclined('/src/b.ts')).toBe(false);
+		expect(client.declinedOwnerPaths()).toEqual(['/src/a.ts']);
+
+		new HMRContext(client, '/src/a.ts');
+		expect(client.isDeclined('/src/a.ts')).toBe(false);
+	});
+
+	it('is forgotten by dropContexts and prunePaths', async () => {
+		const { client } = createClient();
+		new HMRContext(client, '/src/a.ts').decline();
+		new HMRContext(client, '/src/b.ts').decline();
+
+		client.dropContexts(['/src/a.ts']);
+		await client.prunePaths(['/src/b.ts']);
+
+		expect(client.declinedOwnerPaths()).toEqual([]);
+	});
+});
+
+describe('HMRClient.notifyListenersSettled', () => {
+	it('reports rejecting and synchronously throwing listeners without skipping the others', async () => {
+		const { client } = createClient();
+		const hot = new HMRContext(client, '/src/a.ts');
+		const ran = vi.fn();
+		hot.on('e', () => {
+			throw new Error('sync');
+		});
+		hot.on('e', async () => {
+			throw new Error('async');
+		});
+		hot.on('e', ran);
+
+		const results = await client.notifyListenersSettled('e', 1);
+
+		expect(results.map((r) => (r.status === 'rejected' ? (r.reason as Error).message : r.status))).toEqual(['sync', 'async', 'fulfilled']);
+		expect(ran).toHaveBeenCalledWith(1);
+	});
+});
+
+describe('HMRClient.disposePaths', () => {
+	it('runs every dispose callback and returns the ones that failed', async () => {
+		const { client } = createClient();
+		const ran = vi.fn();
+		new HMRContext(client, '/src/a.ts').dispose(() => {
+			throw new Error('dispose a');
+		});
+		new HMRContext(client, '/src/b.ts').dispose(ran);
+
+		const failures = await client.disposePaths(['/src/a.ts', '/src/b.ts']);
+
+		expect(failures.map(({ path, reason }) => [path, (reason as Error).message])).toEqual([['/src/a.ts', 'dispose a']]);
+		expect(ran).toHaveBeenCalled();
+	});
+});

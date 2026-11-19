@@ -10,6 +10,7 @@
 // Usage (from anywhere):
 //   node --preserve-symlinks tools/vite-server-env-spike/payload-probe.mjs [--compilation-api] [--keep-ns-strategy] [--only a,b,c]
 // --compilation-api   Analog `experimental.useAngularCompilationAPI: true` (default: Analog default mode)
+// --no-ipc            run without a parent IPC channel (default: a stubbed `process.send`, as under the CLI)
 // --keep-ns-strategy  keep the `nativescript-hmr-websocket` plugin if the installed package still has one
 
 import fs from 'node:fs';
@@ -31,6 +32,7 @@ const take = (name, dflt) => {
 };
 const compilationApi = flag('--compilation-api');
 const keepNsStrategy = flag('--keep-ns-strategy');
+const noIpc = flag('--no-ipc');
 const only = take('--only', '')
 	.split(',')
 	.map((s) => s.trim())
@@ -41,6 +43,16 @@ process.chdir(appRoot);
 process.argv.splice(2);
 process.argv.push('--', '--env.ios', '--env.hmr');
 process.env.NS_HMR_PORT = process.env.NS_HMR_PORT || '5196';
+
+// What the CLI would receive over IPC. Installed before the config loads:
+// `@nativescript/vite` captures `process.send` when its modules evaluate.
+const ipcMessages = [];
+if (!noIpc) {
+	process.send = (message) => {
+		ipcMessages.push(message);
+		return true;
+	};
+}
 
 const appReq = createRequire(path.join(appRoot, 'package.json'));
 const nsViteDir = path.join(appRoot, 'node_modules/@nativescript/vite');
@@ -106,6 +118,9 @@ const EDITS = [
 	{ key: 'f', label: '(f) root app.component.html', file: 'src/app/app.component.html', from: '<GridLayout>', to: '<GridLayout class="probe">' },
 	{ key: 'g', label: '(g) global app.css', file: 'src/app.css', append: '\n.probe-global { color: red; }\n' },
 	{ key: 'i', label: '(i) device sends angular:invalidate', send: { type: 'custom', event: 'angular:invalidate', data: { id: 'probe', message: 'probe: replaceMetadata threw' } } },
+	{ key: 'r1', label: '(r1) edit inside node_modules/@nativescript/core', coreEdit: true },
+	{ key: 'r2', label: '(r2) server.restart(), then the device reconnects', serverRestart: true },
+	{ key: 'r3', label: '(r3) device sends ns:restart', send: { type: 'custom', event: 'ns:restart', data: { reason: 'probe: hot.decline() in /src/app/x.ts' } } },
 ].filter((e) => !only.length || only.includes(e.key) || only.includes(e.key[0]));
 
 // ---- server ----------------------------------------------------------------
@@ -187,25 +202,34 @@ if (server.environments?.client?.hot && server.environments.client.hot !== serve
 const session = await (await fetch(`${local}/__ns_dev__/session`)).json();
 const deviceOrigin = new URL(session.entryUrl).origin;
 const toLocal = (u) => u.replace(deviceOrigin, local);
-const hmrPath = path.posix.join(server.config.base || '/', typeof server.config.server.ws === 'object' && server.config.server.ws?.path ? server.config.server.ws.path : '');
-const fromSession = typeof session.wsProtocol === 'string';
-const wsUrl = fromSession ? session.wsUrl.replace(/^wss?:\/\/[^/]+/, `ws://localhost:${port}`) : `ws://localhost:${port}${hmrPath}?token=${encodeURIComponent(server.config.webSocketToken)}`;
-console.log(`socket: ${fromSession ? `session.wsUrl=${session.wsUrl.replace(/token=[^&]+/, 'token=…')} protocol=${session.wsProtocol}` : 'built from config'}`);
-const ws = new WebSocket(wsUrl, fromSession ? session.wsProtocol : 'vite-hmr');
-ws.addEventListener('message', (ev) => {
-	let payload;
-	try {
-		payload = JSON.parse(String(ev.data));
-	} catch {
-		payload = String(ev.data);
-	}
-	log.push({ via: 'wire', text: summarize(payload), payload });
-	if (payload?.type === 'custom' && payload.event === 'angular:component-update') void emulateComponentUpdate(payload.data);
-});
-await new Promise((resolve, reject) => {
-	ws.addEventListener('open', resolve, { once: true });
-	ws.addEventListener('error', () => reject(new Error(`could not open ${wsUrl}`)), { once: true });
-});
+// Opens the device-equivalent socket from the session descriptor; `reuseUrl`
+// reconnects with an earlier URL, as the device does after a disconnect.
+let socketUrl;
+async function openSocket(reuseUrl) {
+	const current = await (await fetch(`${local}/__ns_dev__/session`)).json();
+	const hmrPath = path.posix.join(server.config.base || '/', typeof server.config.server.ws === 'object' && server.config.server.ws?.path ? server.config.server.ws.path : '');
+	const fromSession = typeof current.wsProtocol === 'string';
+	const url = reuseUrl ?? (fromSession ? current.wsUrl.replace(/^wss?:\/\/[^/]+/, `ws://localhost:${port}`) : `ws://localhost:${port}${hmrPath}?token=${encodeURIComponent(server.config.webSocketToken)}`);
+	socketUrl = url;
+	console.log(`socket: ${reuseUrl ? `reusing ${url.replace(/token=[^&]+/, 'token=…')} from before; ` : ''}${fromSession ? `session.wsUrl=${current.wsUrl.replace(/token=[^&]+/, 'token=…')} protocol=${current.wsProtocol}` : 'built from config'}`);
+	const socket = new WebSocket(url, fromSession ? current.wsProtocol : 'vite-hmr');
+	socket.addEventListener('message', (ev) => {
+		let payload;
+		try {
+			payload = JSON.parse(String(ev.data));
+		} catch {
+			payload = String(ev.data);
+		}
+		log.push({ via: 'wire', text: summarize(payload), payload });
+		if (payload?.type === 'custom' && payload.event === 'angular:component-update') void emulateComponentUpdate(payload.data);
+	});
+	await new Promise((resolve, reject) => {
+		socket.addEventListener('open', resolve, { once: true });
+		socket.addEventListener('error', () => reject(new Error(`could not open ${url}`)), { once: true });
+	});
+	return socket;
+}
+let ws = await openSocket();
 
 // ---- warm the graph like the device ------------------------------------------
 await init;
@@ -283,6 +307,15 @@ async function bootMetadataFetches() {
 	return out;
 }
 
+// Vite never watches `node_modules`, so the probe reports the edit the way a
+// watched path (a workspace-linked package under `/@fs/`) would reach Vite.
+async function editCoreFile() {
+	const coreFile = 'node_modules/@nativescript/core/index.js';
+	await fetch(`${local}/ns/v/${coreFile}`);
+	write(coreFile, fs.readFileSync(P(coreFile), 'utf8') + '\n// probe edit\n');
+	server.watcher.emit('change', P(coreFile));
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function settle() {
 	await sleep(1500);
@@ -299,7 +332,16 @@ const results = [];
 try {
 	for (const edit of EDITS) {
 		if (edit.send) ws.send(JSON.stringify(edit.send));
-		else if (edit.append) write(edit.file, fs.readFileSync(P(edit.file), 'utf8') + edit.append);
+		else if (edit.coreEdit) await editCoreFile();
+		else if (edit.serverRestart) {
+			await server.restart();
+			hook(server.ws, 'server.ws');
+			ws.close();
+			const after = await (await fetch(`${local}/__ns_dev__/session`)).json();
+			const tokenOf = (u) => new URL(u).searchParams.get('token');
+			log.push({ via: 'device', text: `token after restart ${tokenOf(after.wsUrl) === tokenOf(socketUrl) ? 'unchanged' : 'CHANGED'}; reconnecting with the URL from before` });
+			ws = await openSocket(socketUrl);
+		} else if (edit.append) write(edit.file, fs.readFileSync(P(edit.file), 'utf8') + edit.append);
 		else replaceIn(edit.file, edit.from, edit.to);
 		await settle();
 		const entries = log.splice(0);
@@ -311,6 +353,7 @@ try {
 			log.length = 0;
 			entries.push(...(await bootMetadataFetches()));
 		}
+		entries.push(...ipcMessages.splice(0).map((message) => ({ via: 'ipc', text: short(message), payload: message })));
 		results.push({ edit, entries });
 		console.log(`\n--- ${edit.label}`);
 		if (!entries.length) console.log('    (nothing sent)');

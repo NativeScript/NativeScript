@@ -77,6 +77,7 @@ export class HMRContext {
 		}
 		this.newListeners = new Map();
 		hmrClient.ctxToListenersMap.set(ownerPath, this.newListeners);
+		hmrClient.declinedPaths.delete(ownerPath);
 	}
 
 	get data(): any {
@@ -107,7 +108,10 @@ export class HMRContext {
 		this.hmrClient.pruneMap.set(this.ownerPath, cb);
 	}
 
-	decline(): void {}
+	/** Vite treats this as a no-op; NativeScript restarts the app instead of applying a change to a declined module. */
+	decline(): void {
+		this.hmrClient.declinedPaths.add(this.ownerPath);
+	}
 
 	invalidate(message?: string): void {
 		const firstInvalidatedBy = this.hmrClient.currentFirstInvalidatedBy ?? this.ownerPath;
@@ -172,6 +176,8 @@ export class HMRClient {
 	dataMap = new Map<string, any>();
 	customListenersMap = new Map<string, CustomListener[]>();
 	ctxToListenersMap = new Map<string, Map<string, CustomListener[]>>();
+	/** Owner paths whose current evaluation called `hot.decline()`. */
+	declinedPaths = new Set<string>();
 	currentFirstInvalidatedBy: string | undefined;
 
 	private updateQueue: Array<Promise<(() => void) | undefined>> = [];
@@ -200,6 +206,21 @@ export class HMRClient {
 		}
 	}
 
+	/** Like {@link notifyListeners}, but a listener that throws synchronously is reported as rejected instead of escaping. */
+	async notifyListenersSettled(event: string, data: unknown): Promise<PromiseSettledResult<unknown>[]> {
+		const cbs = this.customListenersMap.get(event);
+		if (!cbs) return [];
+		return Promise.allSettled(cbs.map(async (cb) => cb(data)));
+	}
+
+	isDeclined(path: string): boolean {
+		return this.declinedPaths.has(path);
+	}
+
+	declinedOwnerPaths(): string[] {
+		return Array.from(this.declinedPaths);
+	}
+
 	send(payload: unknown): void {
 		this.transport.send(payload).catch((err) => {
 			this.logger.error(err);
@@ -213,6 +234,7 @@ export class HMRClient {
 		this.dataMap.clear();
 		this.customListenersMap.clear();
 		this.ctxToListenersMap.clear();
+		this.declinedPaths.clear();
 	}
 
 	async prunePaths(paths: string[]): Promise<void> {
@@ -230,7 +252,10 @@ export class HMRClient {
 				}),
 			);
 		} finally {
-			paths.forEach((path) => this.dataMap.delete(path));
+			paths.forEach((path) => {
+				this.dataMap.delete(path);
+				this.declinedPaths.delete(path);
+			});
 		}
 	}
 
@@ -243,19 +268,25 @@ export class HMRClient {
 		return Array.from(paths);
 	}
 
-	/** Runs the dispose callbacks of `paths` with their `data`; a throwing callback doesn't stop the others. */
-	async disposePaths(paths: string[]): Promise<void> {
+	/**
+	 * Runs the dispose callbacks of `paths` with their `data`; a throwing
+	 * callback doesn't stop the others. Returns the callbacks that failed.
+	 */
+	async disposePaths(paths: string[]): Promise<Array<{ path: string; reason: unknown }>> {
 		const results = await Promise.allSettled(
 			paths.map(async (path) => {
 				const disposer = this.disposeMap.get(path);
 				if (disposer) await disposer(this.dataMap.get(path));
 			}),
 		);
+		const failures: Array<{ path: string; reason: unknown }> = [];
 		results.forEach((result, i) => {
 			if (result.status === 'rejected') {
 				this.logger.error(`dispose of ${paths[i]} failed: ${(result.reason as any)?.message ?? result.reason}`);
+				failures.push({ path: paths[i], reason: result.reason });
 			}
 		});
+		return failures;
 	}
 
 	/**
@@ -268,6 +299,7 @@ export class HMRClient {
 			this.hotModulesMap.delete(path);
 			this.disposeMap.delete(path);
 			this.pruneMap.delete(path);
+			this.declinedPaths.delete(path);
 			const listeners = this.ctxToListenersMap.get(path);
 			if (listeners) {
 				for (const [event, fns] of listeners) {

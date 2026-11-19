@@ -563,6 +563,11 @@ describe('HMR apply overlay snapshots', () => {
 		expect(snapshot.detail).toBe('Transform failed');
 	});
 
+	it("emits a 'restart-required' frame with its own tone and the reason as detail", () => {
+		const snapshot = createUpdateOverlaySnapshot('restart-required', { detail: 'hot.decline() in /src/a.ts' });
+		expect(snapshot).toMatchObject({ visible: true, mode: 'update', title: 'Restart required', tone: 'warn', busy: false, progress: null, detail: 'hot.decline() in /src/a.ts' });
+	});
+
 	// Progress must monotonically increase across stages so the bar
 	// never visually rewinds during a normal HMR cycle. If the
 	// scheduler ever re-orders stages we want the test to fail loudly.
@@ -696,6 +701,24 @@ describe('HMR apply overlay runtime API', () => {
 				visible: false,
 				mode: 'hidden',
 			});
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it("keeps 'restart-required' on screen over later update, connection and hide calls", () => {
+		vi.useFakeTimers();
+		try {
+			const api = ensureHmrDevOverlayRuntimeInstalled(true);
+			api.setUpdateStage('complete', { detail: 'previous cycle' });
+			api.setUpdateStage('restart-required', { detail: 'hot.decline() in /src/a.ts' });
+			api.setUpdateStage('received', { detail: 'next cycle' });
+			api.setUpdateStage('complete', { detail: 'next cycle' });
+			api.setConnectionStage('reconnecting');
+			api.setConnectionStage('healthy');
+			api.hide('healthy');
+			vi.advanceTimersByTime(5000);
+			expect(api.getSnapshot()).toMatchObject({ visible: true, mode: 'update', title: 'Restart required', detail: 'hot.decline() in /src/a.ts' });
 		} finally {
 			vi.useRealTimers();
 		}

@@ -6,8 +6,8 @@ describe('createAppCssRefresher', () => {
 	it('reports changed on the first successful generation and unchanged when output is stable', async () => {
 		const refresh = createAppCssRefresher({ generate: vi.fn(async () => '.a{}') });
 
-		expect(await refresh()).toEqual({ changed: true, changedSinceStartup: false });
-		expect(await refresh()).toEqual({ changed: false, changedSinceStartup: false });
+		expect(await refresh()).toMatchObject({ changed: true, changedSinceStartup: false });
+		expect(await refresh()).toMatchObject({ changed: false, changedSinceStartup: false });
 	});
 
 	it('detects drift from the startup baseline and its reversal', async () => {
@@ -17,11 +17,11 @@ describe('createAppCssRefresher', () => {
 		await refresh(); // baseline = .a{}
 
 		css = '.a{}.b{}';
-		expect(await refresh()).toEqual({ changed: true, changedSinceStartup: true });
+		expect(await refresh()).toMatchObject({ changed: true, changedSinceStartup: true });
 
 		// Reverting the edit returns the output to the startup baseline.
 		css = '.a{}';
-		expect(await refresh()).toEqual({ changed: true, changedSinceStartup: false });
+		expect(await refresh()).toMatchObject({ changed: true, changedSinceStartup: false });
 	});
 
 	it('never rejects: generation failure reports conservative changed flags', async () => {
@@ -31,7 +31,7 @@ describe('createAppCssRefresher', () => {
 			},
 		});
 
-		await expect(refresh()).resolves.toEqual({ changed: true, changedSinceStartup: true });
+		await expect(refresh()).resolves.toMatchObject({ changed: true, changedSinceStartup: true });
 	});
 
 	it('captures the baseline from the first SUCCESSFUL generation, not a failed one', async () => {
@@ -43,12 +43,12 @@ describe('createAppCssRefresher', () => {
 			},
 		});
 
-		expect(await refresh()).toEqual({ changed: true, changedSinceStartup: true });
+		expect(await refresh()).toMatchObject({ changed: true, changedSinceStartup: true });
 
 		fail = false;
 		// First success establishes the baseline — no drift reported against it.
-		expect(await refresh()).toEqual({ changed: true, changedSinceStartup: false });
-		expect(await refresh()).toEqual({ changed: false, changedSinceStartup: false });
+		expect(await refresh()).toMatchObject({ changed: true, changedSinceStartup: false });
+		expect(await refresh()).toMatchObject({ changed: false, changedSinceStartup: false });
 	});
 
 	it('serializes concurrent refreshes through the queue (no overlapping generations)', async () => {
@@ -83,6 +83,6 @@ describe('createAppCssRefresher', () => {
 
 		await refresh();
 		fail = false;
-		expect(await refresh()).toEqual({ changed: true, changedSinceStartup: false });
+		expect(await refresh()).toMatchObject({ changed: true, changedSinceStartup: false });
 	});
 });

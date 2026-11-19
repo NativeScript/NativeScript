@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { appCssRootRelPath, handleAppCssHotUpdate, nsCssUpdatesPlugin, sendConnectCssSync } from './css-updates.js';
-import * as serverOriginModule from './server-origin.js';
 import { setAppCssState, type AppCssState } from '../../helpers/app-css-state.js';
 import { NS_CSS_UPDATES_EVENT } from '../shared/protocol.js';
 
@@ -10,7 +9,6 @@ const PARTIAL = '/proj/src/theme.css';
 const TEMPLATE = '/proj/src/home.component.html';
 const COMPONENT = '/proj/src/home.component.ts';
 
-let originSpy: ReturnType<typeof vi.spyOn>;
 let infoSpy: ReturnType<typeof vi.spyOn>;
 
 type Node = { id: string | null; file: string; importers: Set<Node> };
@@ -20,7 +18,9 @@ function makeServer() {
 	return { config: { root: '/proj', server: {} }, ws: { send: vi.fn(), on: vi.fn() } } as any;
 }
 
-function registerState(server: any, refreshResult = { changed: true, changedSinceStartup: true }): AppCssState {
+const GENERATED = '.title { color: red; }';
+
+function registerState(server: any, refreshResult: { changed: boolean; changedSinceStartup: boolean; css?: string } = { changed: true, changedSinceStartup: true, css: GENERATED }): AppCssState {
 	const state: AppCssState = {
 		path: APP_CSS,
 		deps: new Set([APP_CSS, PARTIAL, TEMPLATE]),
@@ -33,11 +33,9 @@ function registerState(server: any, refreshResult = { changed: true, changedSinc
 const update = (server: any, file: string, modules: Node[] = []) => handleAppCssHotUpdate({ type: 'update', file, modules: modules as any, server });
 
 beforeEach(() => {
-	originSpy = vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
 	infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
 });
 afterEach(() => {
-	originSpy.mockRestore();
 	infoSpy.mockRestore();
 });
 
@@ -49,11 +47,11 @@ describe('handleAppCssHotUpdate', () => {
 
 		await expect(update(server, APP_CSS, [fetched])).resolves.toEqual([]);
 
-		expect(state.refresh).not.toHaveBeenCalled();
+		expect(state.refresh).toHaveBeenCalledOnce();
 		expect(server.ws.send).toHaveBeenCalledOnce();
 		const [event, data] = server.ws.send.mock.calls[0];
 		expect(event).toBe(NS_CSS_UPDATES_EVENT);
-		expect(data).toEqual({ origin: 'http://test:5173', updates: [{ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: expect.any(Number) }] });
+		expect(data).toEqual({ updates: [{ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: expect.any(Number), css: GENERATED }] });
 	});
 
 	it('returns [] for an app.css edit with no module in the graph', async () => {
@@ -62,20 +60,30 @@ describe('handleAppCssHotUpdate', () => {
 		await expect(update(server, APP_CSS)).resolves.toEqual([]);
 	});
 
-	it('sends the app stylesheet for an @import partial without re-running the pipeline', async () => {
+	it('sends the regenerated app stylesheet for an @import partial', async () => {
 		const server = makeServer();
-		const state = registerState(server);
+		registerState(server);
 		const appCss = node(APP_CSS, `${APP_CSS}?direct`);
 		const partialEntry = node(PARTIAL, null, [appCss]);
 
 		await expect(update(server, PARTIAL, [partialEntry])).resolves.toEqual([]);
-		expect(state.refresh).not.toHaveBeenCalled();
-		expect(server.ws.send.mock.calls[0][1].updates[0].path).toBe('/src/app.css');
+		expect(server.ws.send.mock.calls[0][1].updates[0]).toMatchObject({ path: '/src/app.css', css: GENERATED });
+	});
+
+	it('sends nothing when the stylesheet failed to compile, still keeping Vite off it', async () => {
+		const server = makeServer();
+		registerState(server, { changed: true, changedSinceStartup: true });
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+		await expect(update(server, APP_CSS)).resolves.toEqual([]);
+		expect(server.ws.send).not.toHaveBeenCalled();
+		expect(warn).toHaveBeenCalledOnce();
+		warn.mockRestore();
 	});
 
 	it('sends for a content file whose edit changed the generated CSS, leaving its modules to Vite and the framework', async () => {
 		const server = makeServer();
-		const state = registerState(server, { changed: true, changedSinceStartup: true });
+		const state = registerState(server, { changed: true, changedSinceStartup: true, css: GENERATED });
 		const appCss = node(APP_CSS, `${APP_CSS}?direct`);
 		const tailwindOnly = node(TEMPLATE, null, [appCss]);
 
@@ -87,7 +95,7 @@ describe('handleAppCssHotUpdate', () => {
 
 	it('sends nothing and leaves the modules alone when the content edit did not change the CSS', async () => {
 		const server = makeServer();
-		registerState(server, { changed: false, changedSinceStartup: true });
+		registerState(server, { changed: false, changedSinceStartup: true, css: GENERATED });
 		const own = node(TEMPLATE, TEMPLATE);
 
 		await expect(update(server, TEMPLATE, [own])).resolves.toBeUndefined();
@@ -125,11 +133,11 @@ describe('sendConnectCssSync', () => {
 
 	it('sends a connect-sync ns:css-updates to the connecting client when app.css drifted since startup', async () => {
 		const server = makeServer();
-		registerState(server, { changed: false, changedSinceStartup: true });
+		registerState(server, { changed: false, changedSinceStartup: true, css: GENERATED });
 		const c = client();
 
 		await expect(sendConnectCssSync(server, c)).resolves.toBe(true);
-		expect(c.send).toHaveBeenCalledWith(NS_CSS_UPDATES_EVENT, { origin: 'http://test:5173', updates: [expect.objectContaining({ path: '/src/app.css' })], reason: 'connect-sync' });
+		expect(c.send).toHaveBeenCalledWith(NS_CSS_UPDATES_EVENT, { updates: [expect.objectContaining({ path: '/src/app.css', css: GENERATED })], reason: 'connect-sync' });
 		expect(server.ws.send).not.toHaveBeenCalled();
 	});
 
@@ -153,7 +161,7 @@ describe('sendConnectCssSync', () => {
 describe('nsCssUpdatesPlugin', () => {
 	it("syncs on Vite's vite:client:connect", async () => {
 		const server = makeServer();
-		registerState(server, { changed: false, changedSinceStartup: true });
+		registerState(server, { changed: false, changedSinceStartup: true, css: GENERATED });
 		const plugin = nsCssUpdatesPlugin({});
 		(plugin.configureServer as (s: unknown) => void)(server);
 

@@ -1,6 +1,7 @@
 import { getCore } from './utils.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 import { restyleRootAndModals } from '../shared/runtime/restyle-roots.js';
+import type { CssUpdateItem } from '../shared/protocol.js';
 
 const VERBOSE = !!getGlobalScope().__NS_ENV_VERBOSE__;
 
@@ -90,47 +91,16 @@ export function applyCssText(cssText: string, tag: string = APP_CSS_TAG): void {
 	}
 }
 
-// Vite answers a `.css` URL with its CSS-as-JS module unless the request asks
-// for a stylesheet, as a browser `<link>` does.
-async function fetchCssText(url: string): Promise<string> {
-	try {
-		const g = getGlobalScope();
-		if (typeof g.fetch === 'function') {
-			const res = await g.fetch(url, { headers: { Accept: 'text/css' } });
-			return await res.text();
-		}
-		const Http = g.Http;
-		if (Http && Http.getString) {
-			return await Http.getString({ url, method: 'GET', headers: { Accept: 'text/css' } });
-		}
-		if (VERBOSE) console.warn('[ns-hmr] No fetch method available');
-		return '';
-	} catch (e) {
-		console.warn('[ns-hmr] Fetch failed:', e?.message || String(e));
-		return '';
-	}
-}
-
-/** Fetches each stylesheet from `httpOrigin` (`t` busts caches) and replaces it under its tag, `app.css` when it has none. */
-export async function handleCssUpdates(cssUpdates: any[], httpOrigin: string): Promise<void> {
-	if (VERBOSE) console.info('[ns-hmr] handleCssUpdates called, updates:', cssUpdates?.length, 'origin:', httpOrigin);
+/** Replaces each stylesheet the event carries under its tag, `app.css` when it has none. */
+export async function handleCssUpdates(cssUpdates: CssUpdateItem[]): Promise<void> {
 	for (const update of cssUpdates) {
 		try {
-			const cssPath = update.path || update.acceptedPath || '';
-			if (!cssPath || !httpOrigin) continue;
-
-			const timestamp = update.timestamp || Date.now();
-			const sep = cssPath.includes('?') ? '&' : '?';
-			const url = `${httpOrigin.replace(/\/$/, '')}${cssPath}${sep}t=${timestamp}`;
-
-			if (VERBOSE) console.info('[ns-hmr] Fetching CSS:', url);
-			const cssText = await fetchCssText(url);
-			if (cssText) {
-				const tag = typeof update.tag === 'string' && update.tag ? update.tag : undefined;
-				applyCssText(cssText, tag);
-			}
+			if (typeof update.css !== 'string') continue;
+			if (VERBOSE) console.info('[ns-hmr] applying CSS for', update.path);
+			const tag = typeof update.tag === 'string' && update.tag ? update.tag : undefined;
+			applyCssText(update.css, tag);
 		} catch (e) {
-			console.warn('[ns-hmr] CSS update fetch/apply failed:', e?.message || String(e));
+			console.warn('[ns-hmr] CSS update apply failed:', e?.message || String(e));
 		}
 	}
 }

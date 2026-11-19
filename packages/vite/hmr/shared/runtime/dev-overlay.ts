@@ -218,12 +218,18 @@ function createOverlayApi(): HmrOverlayApi {
 		},
 		setConnectionStage(stage: HmrConnectionStage, info?: HmrOverlayStageInfo) {
 			const state = getRuntimeState();
+			if (state.restartRequired) return state.snapshot;
 			clearUpdateAutoHideTimer(state);
 			state.updateCycleStartedAt = 0;
 			return applyRuntimeSnapshot(createConnectionOverlaySnapshot(stage, info));
 		},
 		setUpdateStage(stage: HmrUpdateStage, info?: HmrOverlayStageInfo) {
 			const state = getRuntimeState();
+			if (stage === 'restart-required') {
+				state.restartRequired = true;
+			} else if (state.restartRequired) {
+				return state.snapshot;
+			}
 			// Each new in-progress stage cancels any pending auto-hide
 			// from a previous cycle. Without this, two saves in quick
 			// succession could see cycle-2's progress overlay yanked
@@ -264,6 +270,7 @@ function createOverlayApi(): HmrOverlayApi {
 		},
 		hide() {
 			const state = getRuntimeState();
+			if (state.restartRequired) return;
 			clearUpdateAutoHideTimer(state);
 			state.updateCycleStartedAt = 0;
 			applyRuntimeSnapshot({ ...DEFAULT_SNAPSHOT });

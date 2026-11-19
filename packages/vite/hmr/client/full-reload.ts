@@ -5,26 +5,12 @@
  * root view instead of launching a second app.
  */
 import type { HMRClient } from './hmr-client.js';
+import { isAppOwnedViteUrl } from '../shared/app-owned.js';
+
+export { isAppOwnedViteUrl };
 
 /** Device route prefix of Vite URLs (`hmr/server/thin/thin-mode.ts`). */
 export const THIN_PREFIX = '/ns/v';
-
-/**
- * A full reload replaces what the app owns and nothing else. `@nativescript/core`
- * and other `node_modules` packages evaluate once per process: core
- * re-evaluated in place would mint a second `View` hierarchy the live native
- * views fail `instanceof` against. The dev client keeps its identity because
- * it is the code running the reload. `keepPrefixes` are Vite URL prefixes of
- * packages served from outside `node_modules` (`/@fs/…`), such as the dev client
- * and a workspace-linked core.
- */
-export function isAppOwnedViteUrl(viteUrl: string, keepPrefixes: readonly string[]): boolean {
-	const path = viteUrl.replace(/[?#].*$/, '');
-	if (!path.startsWith('/') || path.includes('/node_modules/') || path.startsWith('/@vite/')) {
-		return false;
-	}
-	return !keepPrefixes.some((prefix) => path.startsWith(prefix));
-}
 
 /** The Vite URL a device module URL serves, or null when it isn't a `/ns/v` URL on `origin`. */
 export function viteUrlFromDeviceUrl(url: string, origin: string): string | null {
@@ -54,12 +40,22 @@ export interface FullReloadDeps {
 
 export interface FullReloadResult {
 	evicted: string[];
+	/** The entry re-import failed; recoverable by the next reload. */
 	error?: unknown;
+	/** Teardown failed part-way, so only a new process gets the app back to a known state. */
+	restartReason?: string;
+}
+
+function reasonMessage(reason: unknown): string {
+	return String((reason as any)?.message ?? reason);
 }
 
 export async function performFullReload(payload: unknown, deps: FullReloadDeps): Promise<FullReloadResult> {
 	const { client } = deps;
-	await client.notifyListeners('vite:beforeFullReload', payload);
+	const listenerFailure = (await client.notifyListenersSettled('vite:beforeFullReload', payload)).find((result): result is PromiseRejectedResult => result.status === 'rejected');
+	if (listenerFailure) {
+		return { evicted: [], restartReason: `vite:beforeFullReload listener failed: ${reasonMessage(listenerFailure.reason)}` };
+	}
 
 	const isAppOwned = (viteUrl: string) => isAppOwnedViteUrl(viteUrl, deps.keepPrefixes);
 	const loaded = (() => {
@@ -83,7 +79,11 @@ export async function performFullReload(payload: unknown, deps: FullReloadDeps):
 	// deletes it. Non-evicted modules (node_modules, the dev client) keep
 	// their contexts and listeners.
 	const ownerPaths = client.ownerPaths().filter(isAppOwned);
-	await client.disposePaths(ownerPaths);
+	const disposeFailures = await client.disposePaths(ownerPaths);
+	if (disposeFailures.length) {
+		const [{ path, reason }] = disposeFailures;
+		return { evicted: [], restartReason: `dispose of ${path} failed: ${reasonMessage(reason)}` };
+	}
 	try {
 		deps.beforeEvict?.();
 	} catch (err) {

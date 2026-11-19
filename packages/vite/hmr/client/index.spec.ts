@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Update } from 'vite';
 import { HMRClient, HMRContext } from './hmr-client.js';
 import { createNsHmrRuntime, type DeviceHotPayload } from './index.js';
-import { NS_CSS_UPDATES_EVENT } from '../shared/protocol.js';
+import { NS_CSS_UPDATES_EVENT, NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT } from '../shared/protocol.js';
 
 const ORIGIN = 'http://192.168.1.5:5173';
 const ENTRY = `${ORIGIN}/ns/v/src/main.ts`;
@@ -125,6 +125,10 @@ function setup(options: SetupOptions = {}) {
 	};
 	const stages = () => overlay.setUpdateStage.mock.calls.map(([stage]) => stage);
 	return { runtime, client, logger, sockets, hmrSockets, connect, imports, importModule, devHost, overlay, applyCssUpdates, sweepWorkers, stages };
+}
+
+function restartsSent(socket: FakeSocket): unknown[] {
+	return socket.sent.map((s) => JSON.parse(s)).filter((m) => m.type === 'custom' && m.event === NS_RESTART_EVENT);
 }
 
 const send = (runtime: { onMessage(p: DeviceHotPayload): Promise<unknown> }, payload: DeviceHotPayload) => runtime.onMessage(payload);
@@ -358,19 +362,19 @@ describe('error', () => {
 });
 
 describe(NS_CSS_UPDATES_EVENT, () => {
-	const item = { type: 'css-update' as const, path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: 7 };
+	const item = { type: 'css-update' as const, path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: 7, css: '.a { color: red; }' };
 
-	it('applies the stylesheets from the event origin and drives the overlay', async () => {
+	it('applies the stylesheets the event carries and drives the overlay', async () => {
 		const t = setup();
-		await send(t.runtime, { type: 'custom', event: NS_CSS_UPDATES_EVENT, data: { origin: 'http://10.0.2.2:5173', updates: [item] } });
-		expect(t.applyCssUpdates).toHaveBeenCalledWith([item], 'http://10.0.2.2:5173');
+		await send(t.runtime, { type: 'custom', event: NS_CSS_UPDATES_EVENT, data: { updates: [item] } });
+		expect(t.applyCssUpdates).toHaveBeenCalledWith([item]);
 		expect(t.stages()).toEqual(['received', 'complete']);
 	});
 
 	it('applies connect-sync without the overlay', async () => {
 		const t = setup();
-		await send(t.runtime, { type: 'custom', event: NS_CSS_UPDATES_EVENT, data: { origin: ORIGIN, updates: [item], reason: 'connect-sync' } });
-		expect(t.applyCssUpdates).toHaveBeenCalledWith([item], ORIGIN);
+		await send(t.runtime, { type: 'custom', event: NS_CSS_UPDATES_EVENT, data: { updates: [item], reason: 'connect-sync' } });
+		expect(t.applyCssUpdates).toHaveBeenCalledWith([item]);
 		expect(t.overlay.setUpdateStage).not.toHaveBeenCalled();
 	});
 });
@@ -408,7 +412,7 @@ describe('transport', () => {
 		await vi.waitFor(() => expect(listener).toHaveBeenCalledWith('hi'));
 	});
 
-	it('on disconnect: notifies, pings the token-less URL until the server answers, reloads, then reconnects', async () => {
+	it('on disconnect: notifies, pings the token-less URL until the server answers, then reconnects with the same URL without reloading', async () => {
 		const t = setup({ pings: [false, true] });
 		vi.spyOn(console, 'log').mockImplementation(() => {});
 		const disconnected = vi.fn();
@@ -421,7 +425,9 @@ describe('transport', () => {
 		const pings = t.sockets.filter((s) => s.protocol === 'vite-ping');
 		expect(disconnected).toHaveBeenCalledWith({ webSocket: first });
 		expect(pings.map((s) => s.url)).toEqual(['ws://192.168.1.5:5173/vite-hmr', 'ws://192.168.1.5:5173/vite-hmr']);
-		expect(t.imports).toEqual([ENTRY]);
+		expect(t.hmrSockets()[1].url).toBe(WS_URL);
+		expect(t.imports).toEqual([]);
+		expect(t.devHost.invalidateModules).not.toHaveBeenCalled();
 		expect(t.overlay.setConnectionStage).toHaveBeenCalledWith('reconnecting', expect.anything());
 
 		const second = t.hmrSockets()[1];
@@ -440,5 +446,190 @@ describe('transport', () => {
 		await connecting;
 		expect(t.overlay.setConnectionStage).toHaveBeenCalledWith('offline', expect.anything());
 		expect(t.imports).toEqual([]);
+	});
+});
+
+describe('app restart', () => {
+	const APP_MODULE = `${ORIGIN}/ns/v/src/a.ts`;
+
+	function quiet() {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+	}
+
+	it('a full-reload with a declined app module asks the server for a restart instead of reloading', async () => {
+		const t = setup({ loaded: [ENTRY, APP_MODULE] });
+		quiet();
+		const socket = await t.connect();
+		const hot = new HMRContext(t.client, '/src/a.ts');
+		const dispose = vi.fn();
+		hot.dispose(dispose);
+		hot.decline();
+
+		await send(t.runtime, { type: 'full-reload', path: '*' });
+		await vi.waitFor(() => expect(restartsSent(socket)).toHaveLength(1));
+		await send(t.runtime, { type: 'full-reload', path: '*' });
+		await new Promise((r) => setTimeout(r, 20));
+
+		expect(restartsSent(socket)).toEqual([{ type: 'custom', event: NS_RESTART_EVENT, data: { reason: 'hot.decline() in /src/a.ts' } }]);
+		expect(dispose).not.toHaveBeenCalled();
+		expect(t.devHost.invalidateModules).not.toHaveBeenCalled();
+		expect(t.importModule).not.toHaveBeenCalled();
+		expect(t.overlay.setUpdateStage.mock.calls).toEqual([['restart-required', { detail: 'hot.decline() in /src/a.ts' }]]);
+	});
+
+	it('a declined module outside the app (node_modules, kept packages) does not prevent a soft reload', async () => {
+		const t = setup();
+		const socket = await t.connect();
+		new HMRContext(t.client, '/node_modules/lib/index.js').decline();
+		new HMRContext(t.client, '/@fs/repo/packages/core/ui/core/view/index.js').decline();
+
+		await send(t.runtime, { type: 'full-reload' });
+		await vi.waitFor(() => expect(t.imports).toEqual([ENTRY]));
+
+		expect(restartsSent(socket)).toEqual([]);
+	});
+
+	it.each([
+		['boundary', '/src/parent.ts'],
+		['accepted module', '/src/child.ts'],
+	])('a js-update whose %s declined restarts without applying the update', async (_name, declinedPath) => {
+		const t = setup();
+		quiet();
+		const socket = await t.connect();
+		const accept = vi.fn();
+		const parent = new HMRContext(t.client, '/src/parent.ts');
+		parent.accept('/src/child.ts', accept);
+		const child = new HMRContext(t.client, '/src/child.ts');
+		(declinedPath === '/src/parent.ts' ? parent : child).decline();
+
+		await send(t.runtime, update(jsUpdate('/src/parent.ts', '/src/child.ts')));
+		await vi.waitFor(() => expect(restartsSent(socket)).toEqual([{ type: 'custom', event: NS_RESTART_EVENT, data: { reason: `hot.decline() in ${declinedPath}` } }]));
+
+		expect(accept).not.toHaveBeenCalled();
+		expect(t.importModule).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		[
+			'a vite:beforeFullReload listener rejects',
+			(t: ReturnType<typeof setup>) =>
+				new HMRContext(t.client, '/node_modules/@nativescript/angular/index.mjs').on('vite:beforeFullReload', async () => {
+					throw new Error('teardown failed');
+				}),
+			'vite:beforeFullReload listener failed: teardown failed',
+		],
+		[
+			'a vite:beforeFullReload listener throws synchronously',
+			(t: ReturnType<typeof setup>) =>
+				new HMRContext(t.client, '/node_modules/@nativescript/angular/index.mjs').on('vite:beforeFullReload', () => {
+					throw new Error('teardown failed');
+				}),
+			'vite:beforeFullReload listener failed: teardown failed',
+		],
+		[
+			'a dispose callback throws',
+			(t: ReturnType<typeof setup>) =>
+				new HMRContext(t.client, '/src/a.ts').dispose(() => {
+					throw new Error('dispose failed');
+				}),
+			'dispose of /src/a.ts failed: dispose failed',
+		],
+	])('a soft reload where %s requests a restart and evicts nothing', async (_name, arrange, reason) => {
+		const t = setup({ loaded: [ENTRY, APP_MODULE] });
+		quiet();
+		const socket = await t.connect();
+		arrange(t);
+
+		await send(t.runtime, { type: 'full-reload' });
+		await vi.waitFor(() => expect(restartsSent(socket)).toEqual([{ type: 'custom', event: NS_RESTART_EVENT, data: { reason } }]));
+
+		expect(t.sweepWorkers).not.toHaveBeenCalled();
+		expect(t.devHost.invalidateModules).not.toHaveBeenCalled();
+		expect(t.importModule).not.toHaveBeenCalled();
+		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('restart-required', { detail: reason });
+	});
+
+	it('an entry re-import that throws stays the recoverable failed path', async () => {
+		const t = setup({
+			importModule: async () => {
+				throw new Error('SyntaxError');
+			},
+		});
+		quiet();
+		const socket = await t.connect();
+
+		await send(t.runtime, { type: 'full-reload' });
+		await vi.waitFor(() => expect(t.overlay.setUpdateStage).toHaveBeenCalledWith('failed', { detail: 'SyntaxError' }));
+
+		expect(restartsSent(socket)).toEqual([]);
+	});
+
+	it(`${NS_RESTART_REQUIRED_EVENT} from the server shows the overlay and stops applying changes`, async () => {
+		const t = setup();
+		quiet();
+		const socket = await t.connect();
+		const accept = vi.fn();
+		new HMRContext(t.client, '/src/a.ts').accept(accept);
+		const listener = vi.fn();
+		new HMRContext(t.client, '/node_modules/lib/x.js').on('server:hello', listener);
+
+		await send(t.runtime, { type: 'custom', event: NS_RESTART_REQUIRED_EVENT, data: { reason: 'no CLI attached' } });
+		await send(t.runtime, update(jsUpdate('/src/a.ts')));
+		await send(t.runtime, { type: 'full-reload' });
+		await send(t.runtime, { type: 'prune', paths: ['/src/a.ts'] });
+		await send(t.runtime, { type: 'custom', event: NS_CSS_UPDATES_EVENT, data: { updates: [{ type: 'css-update', path: '/app.css', acceptedPath: '/app.css', timestamp: 1, css: '' }] } });
+		await send(t.runtime, { type: 'custom', event: 'server:hello', data: 'hi' });
+		await new Promise((r) => setTimeout(r, 20));
+
+		expect(t.overlay.setUpdateStage.mock.calls).toEqual([['restart-required', { detail: 'no CLI attached' }]]);
+		expect(accept).not.toHaveBeenCalled();
+		expect(t.importModule).not.toHaveBeenCalled();
+		expect(t.applyCssUpdates).not.toHaveBeenCalled();
+		expect(t.client.hotModulesMap.has('/src/a.ts')).toBe(true);
+		expect(listener).toHaveBeenCalledWith('hi');
+		expect(restartsSent(socket)).toEqual([]);
+	});
+
+	it('a debounced full-reload that fires after the restart is required does not reload', async () => {
+		const t = setup();
+		quiet();
+		await t.connect();
+
+		await send(t.runtime, { type: 'full-reload' });
+		await send(t.runtime, { type: 'custom', event: NS_RESTART_REQUIRED_EVENT, data: { reason: 'no CLI attached' } });
+		await new Promise((r) => setTimeout(r, 20));
+
+		expect(t.importModule).not.toHaveBeenCalled();
+	});
+
+	it(`the server's ${NS_RESTART_REQUIRED_EVENT} reply to a device request does not send it again`, async () => {
+		const t = setup();
+		quiet();
+		const socket = await t.connect();
+
+		t.runtime.requestRestart('hot.decline() in /src/a.ts');
+		await send(t.runtime, { type: 'custom', event: NS_RESTART_REQUIRED_EVENT, data: { reason: 'restart the app manually' } });
+		t.runtime.requestRestart('dispose of /src/b.ts failed');
+
+		expect(restartsSent(socket)).toHaveLength(1);
+		expect(t.overlay.setUpdateStage).toHaveBeenLastCalledWith('restart-required', { detail: 'restart the app manually' });
+	});
+
+	it('a restart requested while the socket is down is sent once it reconnects', async () => {
+		const t = setup();
+		quiet();
+		vi.spyOn(console, 'log').mockImplementation(() => {});
+		const first = await t.connect();
+
+		first.close();
+		t.runtime.requestRestart('hot.decline() in /src/a.ts');
+		await vi.waitFor(() => expect(t.hmrSockets()).toHaveLength(2));
+		const second = t.hmrSockets()[1];
+		second.open();
+
+		await vi.waitFor(() => expect(restartsSent(second)).toEqual([{ type: 'custom', event: NS_RESTART_EVENT, data: { reason: 'hot.decline() in /src/a.ts' } }]));
+		expect(restartsSent(first)).toEqual([]);
+		expect(t.importModule).not.toHaveBeenCalled();
 	});
 });

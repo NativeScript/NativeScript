@@ -11,16 +11,33 @@ import { fileURLToPath } from 'node:url';
 
 const runtimeFile = (relToHmrServer: string) => fileURLToPath(new URL(relToHmrServer, import.meta.url));
 
-async function resolveThinBootstrapUrls(server: ViteDevServer, origin: string): Promise<{ client: string; moduleUrls: NsDevBootstrapModuleUrls; corePackageUrl: string }> {
-	const root = server.config.root;
-	const urlFor = (file: string) => thinDeviceUrl(origin, viteUrlForFile(file, root));
-	const resolvedCore = await server.environments.client.pluginContainer.resolveId('@nativescript/core', path.join(root, 'index.html'));
+async function resolveCoreEntryFile(server: ViteDevServer): Promise<string> {
+	const resolvedCore = await server.environments.client.pluginContainer.resolveId('@nativescript/core', path.join(server.config.root, 'index.html'));
 	// Use the resolver's id verbatim (no realpath): it is what Vite's import
 	// analysis serves, symlinked or not (the CLI runs with --preserve-symlinks).
 	const coreFile = resolvedCore?.id?.split('?')[0];
 	if (!coreFile) {
 		throw new Error('Unable to resolve @nativescript/core from the project root');
 	}
+	return coreFile;
+}
+
+/**
+ * Vite URL prefixes of the packages a soft reload never re-evaluates even when
+ * they are served from outside `node_modules` (`/@fs/…`): `@nativescript/core`
+ * and this package's dev client. The device evicts by them and the server
+ * turns edits under them into an app restart (`hmr/shared/app-owned.ts`).
+ */
+export async function resolveNonEvictableViteUrlPrefixes(server: ViteDevServer): Promise<string[]> {
+	const root = server.config.root;
+	const coreFile = await resolveCoreEntryFile(server);
+	return [`${viteUrlForFile(corePackageDir(coreFile), root)}/`, `${viteUrlForFile(runtimeFile('../../'), root)}/`];
+}
+
+async function resolveThinBootstrapUrls(server: ViteDevServer, origin: string): Promise<{ client: string; moduleUrls: NsDevBootstrapModuleUrls; keepUrlPrefixes: string[] }> {
+	const root = server.config.root;
+	const urlFor = (file: string) => thinDeviceUrl(origin, viteUrlForFile(file, root));
+	const coreFile = await resolveCoreEntryFile(server);
 	return {
 		client: urlFor(runtimeFile('../client/index.js')),
 		moduleUrls: {
@@ -29,7 +46,7 @@ async function resolveThinBootstrapUrls(server: ViteDevServer, origin: string): 
 			launchBridge: urlFor(runtimeFile('../shared/runtime/launch-bridge.js')),
 			coreBridge: urlFor(coreFile),
 		},
-		corePackageUrl: `${urlFor(corePackageDir(coreFile))}/`,
+		keepUrlPrefixes: (await resolveNonEvictableViteUrlPrefixes(server)).map((prefix) => thinDeviceUrl(origin, prefix)),
 	};
 }
 
@@ -174,6 +191,17 @@ function sendCorsPreflight(req: import('node:http').IncomingMessage, res: import
 	return false;
 }
 
+// The device keeps the `wsUrl` (and its `?token=`) it booted with, while
+// `server.restart()` resolves a new config with a new random token. This
+// module stays loaded across restarts, so it pins one token per process.
+let processWebSocketToken: string | undefined;
+
+/** Gives every config resolved in this process the first one's `webSocketToken`. */
+export function pinWebSocketToken(config: { webSocketToken: string }): void {
+	processWebSocketToken ??= config.webSocketToken;
+	config.webSocketToken = processWebSocketToken;
+}
+
 export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?: boolean }): Plugin {
 	let config: ResolvedConfig | undefined;
 	const sessionId = new Date().toISOString();
@@ -182,6 +210,9 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 		name: 'ns-hmr-client',
 		configResolved(c) {
 			config = c;
+			// Vite checks upgrades against `config.webSocketToken` of the config
+			// it hands to `configResolved`, so pinning it here is what it uses.
+			if (c.command === 'serve') pinWebSocketToken(c as { webSocketToken: string });
 			// Capture app-configured `__FOO__` defines for the dev deps bundle,
 			// which esbuild builds outside Vite's define substitution. See
 			// setUserDefineEntries.
@@ -216,7 +247,7 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 								wsProtocol: session.wsProtocol,
 								entryUrl: session.entryUrl,
 								origin: session.origin,
-								keepUrlPrefixes: [thin.corePackageUrl],
+								keepUrlPrefixes: thin.keepUrlPrefixes,
 							},
 						});
 						res.setHeader('Content-Type', 'application/javascript; charset=utf-8');

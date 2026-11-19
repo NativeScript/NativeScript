@@ -86,6 +86,10 @@ export type HmrOverlayRuntimeState = {
 	// 'received' (i.e., a new save fires) so each cycle is timed
 	// independently.
 	updateCycleStartedAt: number;
+	// Set by the 'restart-required' update stage. Only a new process clears
+	// it, so the live overlay keeps showing it over later update,
+	// connection and hide calls.
+	restartRequired: boolean;
 };
 
 export function getOverlayGlobal(): any {
@@ -123,6 +127,7 @@ export function getRuntimeState(): HmrOverlayRuntimeState {
 			verbose: false,
 			updateAutoHideTimer: null,
 			updateCycleStartedAt: 0,
+			restartRequired: false,
 		} satisfies HmrOverlayRuntimeState;
 	}
 	const state = g.__NS_HMR_DEV_OVERLAY_STATE__ as Partial<HmrOverlayRuntimeState>;
@@ -134,6 +139,7 @@ export function getRuntimeState(): HmrOverlayRuntimeState {
 	if (typeof state.androidBuildFailed === 'undefined') state.androidBuildFailed = false;
 	if (typeof state.updateAutoHideTimer === 'undefined') state.updateAutoHideTimer = null;
 	if (typeof state.updateCycleStartedAt !== 'number') state.updateCycleStartedAt = 0;
+	if (typeof state.restartRequired !== 'boolean') state.restartRequired = false;
 	return state as HmrOverlayRuntimeState;
 }
 

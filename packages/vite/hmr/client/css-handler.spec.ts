@@ -128,15 +128,15 @@ describe('css-handler', () => {
 		expect(addTaggedAdditionalCSS).not.toHaveBeenCalled();
 	});
 
-	it('fetches each stylesheet as raw CSS with a t cache-buster and applies it', async () => {
+	it('applies the stylesheet text each update carries, without any fetch', async () => {
 		const realmApplier = vi.fn();
 		getGlobalScope().__NS_HMR_APPLY_CSS__ = realmApplier;
-		const fetch = vi.fn(async () => ({ text: async () => '.a { color: red; }' }));
+		const fetch = vi.fn();
 		vi.stubGlobal('fetch', fetch);
 
-		await handleCssUpdates([{ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: 7 }], 'http://127.0.0.1:5173/');
+		await handleCssUpdates([{ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: 7, css: '.a { color: red; }' }]);
 
-		expect(fetch).toHaveBeenCalledWith('http://127.0.0.1:5173/src/app.css?t=7', { headers: { Accept: 'text/css' } });
+		expect(fetch).not.toHaveBeenCalled();
 		expect(realmApplier).toHaveBeenCalledWith('.a { color: red; }', true);
 		vi.unstubAllGlobals();
 	});

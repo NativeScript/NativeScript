@@ -7,7 +7,7 @@
  */
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
-export type HmrUpdateOverlayStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete' | 'failed';
+export type HmrUpdateOverlayStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete' | 'failed' | 'restart-required';
 export type HmrConnectionOverlayStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline' | 'healthy';
 export type HmrOverlayInfo = { detail?: string; progress?: number | null };
 

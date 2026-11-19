@@ -21,8 +21,9 @@ export type HmrConnectionStage = 'connecting' | 'reconnecting' | 'synchronizing'
 
 // HMR apply stages, in chronological order (received → evicting → reimporting →
 // rebooting → complete, or failed). Progress percentages are deliberately non-linear so the
-// bar keeps moving through the long re-import + reboot tail.
-export type HmrUpdateStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete' | 'failed';
+// bar keeps moving through the long re-import + reboot tail. 'restart-required' is
+// terminal: the change can only be applied by restarting the app.
+export type HmrUpdateStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete' | 'failed' | 'restart-required';
 
 export type HmrOverlayStageInfo = {
 	detail?: string;
@@ -63,6 +64,7 @@ export const DEFAULT_SNAPSHOT: HmrOverlaySnapshot = {
 const HMR_UPDATE_TITLE = 'HMR update applying...';
 const HMR_UPDATE_DONE_TITLE = 'HMR update applied';
 const HMR_UPDATE_FAILED_TITLE = 'HMR update failed';
+const HMR_RESTART_REQUIRED_TITLE = 'Restart required';
 
 function describeAttempt(info?: HmrOverlayStageInfo): string {
 	const attempt = Number(info?.attempt || 0);
@@ -377,6 +379,18 @@ export function createUpdateOverlaySnapshot(stage: HmrUpdateStage, info?: HmrOve
 			busy: false,
 			blocking: false,
 			tone: 'error',
+		},
+		'restart-required': {
+			visible: true,
+			mode: 'update',
+			badge: 'RESTART',
+			title: HMR_RESTART_REQUIRED_TITLE,
+			phase: 'This change needs an app restart',
+			detail: '',
+			progress: null,
+			busy: false,
+			blocking: false,
+			tone: 'warn',
 		},
 	};
 

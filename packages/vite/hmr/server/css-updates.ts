@@ -3,7 +3,6 @@ import { isCSSRequest } from 'vite';
 import * as path from 'path';
 import { getAppCssState } from '../../helpers/app-css-state.js';
 import { NS_CSS_UPDATES_EVENT, type CssUpdateItem, type CssUpdatesEventData } from '../shared/protocol.js';
-import { getServerOrigin } from './server-origin.js';
 
 /**
  * The global stylesheet (`app.css`, or `styles.css`) is baked into
@@ -25,12 +24,12 @@ export function appCssRootRelPath(root: string, appCssAbsPath: string): string |
 	return rel.startsWith('/') ? rel : `/${rel}`;
 }
 
-export function buildCssUpdateItem(cssPath: string, timestamp = Date.now()): CssUpdateItem {
-	return { type: 'css-update', path: cssPath, acceptedPath: cssPath, timestamp };
+export function buildCssUpdateItem(cssPath: string, css: string, timestamp = Date.now()): CssUpdateItem {
+	return { type: 'css-update', path: cssPath, acceptedPath: cssPath, timestamp, css };
 }
 
-export function buildCssUpdatesEventData(server: ViteDevServer, updates: CssUpdateItem[], reason?: CssUpdatesEventData['reason']): CssUpdatesEventData {
-	return { origin: getServerOrigin(server), updates, ...(reason ? { reason } : {}) };
+export function buildCssUpdatesEventData(updates: CssUpdateItem[], reason?: CssUpdatesEventData['reason']): CssUpdatesEventData {
+	return { updates, ...(reason ? { reason } : {}) };
 }
 
 const normalizeFsPath = (p: string): string => path.resolve(p).replace(/\\/g, '/');
@@ -67,16 +66,18 @@ export async function handleAppCssHotUpdate(options: Pick<HotUpdateOptions, 'typ
 	}
 
 	const isStylesheet = changed === state.path || isCSSRequest(changed);
-	if (!isStylesheet) {
-		const { changed: outputChanged } = await state.refresh();
-		if (!outputChanged) {
-			if (verbose) console.info(`[ns-css] Tailwind/PostCSS output unchanged after ${path.basename(file)}`);
-			return undefined;
-		}
+	const result = await state.refresh();
+	if (!isStylesheet && !result.changed) {
+		if (verbose) console.info(`[ns-css] Tailwind/PostCSS output unchanged after ${path.basename(file)}`);
+		return undefined;
 	}
 
-	server.ws.send(NS_CSS_UPDATES_EVENT, buildCssUpdatesEventData(server, [buildCssUpdateItem(appCssRel)]));
-	if (verbose) console.info(`[ns-css] ${path.basename(file)} → ${NS_CSS_UPDATES_EVENT} ${appCssRel}`);
+	if (result.css === undefined) {
+		console.warn(`[ns-css] ${path.basename(state.path)} failed to compile after ${path.basename(file)} changed; no ${NS_CSS_UPDATES_EVENT} sent`);
+	} else {
+		server.ws.send(NS_CSS_UPDATES_EVENT, buildCssUpdatesEventData([buildCssUpdateItem(appCssRel, result.css)]));
+		if (verbose) console.info(`[ns-css] ${path.basename(file)} → ${NS_CSS_UPDATES_EVENT} ${appCssRel}`);
+	}
 
 	// ns:css-updates already applies the stylesheet under its `app.css` tag; a
 	// Vite update of the device's fetched copy would apply it a second time.
@@ -99,12 +100,12 @@ export async function sendConnectCssSync(server: ViteDevServer, client: Pick<Web
 	const appCssRel = appCssRootRelPath(server.config.root || process.cwd(), state.path);
 	if (!appCssRel) return false;
 
-	const { changedSinceStartup } = await state.refresh();
+	const { changedSinceStartup, css } = await state.refresh();
 	// The socket can close during the Tailwind compile.
-	if (!changedSinceStartup || (client.socket && client.socket.readyState !== 1)) return false;
+	if (!changedSinceStartup || css === undefined || (client.socket && client.socket.readyState !== 1)) return false;
 
 	try {
-		client.send(NS_CSS_UPDATES_EVENT, buildCssUpdatesEventData(server, [buildCssUpdateItem(appCssRel)], 'connect-sync'));
+		client.send(NS_CSS_UPDATES_EVENT, buildCssUpdatesEventData([buildCssUpdateItem(appCssRel, css)], 'connect-sync'));
 	} catch (error) {
 		if (verbose) console.warn('[ns-css] connect-sync send failed', error);
 		return false;

@@ -8,6 +8,8 @@ export interface AppCssRefreshResult {
 	 * stylesheet sync — see hmr/server/css-updates.ts for the rationale.
 	 */
 	changedSinceStartup: boolean;
+	/** The generated stylesheet; absent when generation failed. */
+	css?: string;
 }
 
 /**
@@ -39,7 +41,7 @@ export function createAppCssRefresher(options: { generate: () => Promise<string>
 			if (startupGeneratedCss === undefined) {
 				startupGeneratedCss = generatedCss;
 			}
-			return { changed, changedSinceStartup: generatedCss !== startupGeneratedCss };
+			return { changed, changedSinceStartup: generatedCss !== startupGeneratedCss, css: generatedCss };
 		} catch (error) {
 			if (options.verbose) console.warn('[ns-entry] app.css refresh failed; reporting changed (conservative)', error);
 			return { changed: true, changedSinceStartup: true };

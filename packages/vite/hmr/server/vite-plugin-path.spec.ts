@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { corePackageDir, createNsDevClientBootstrapCode, createNsDevSessionDescriptor, resolveViteHmrWsUrl, type NsDevBootstrapModuleUrls, type ViteHmrWsConfig } from './vite-plugin.js';
+import { corePackageDir, createNsDevClientBootstrapCode, createNsDevSessionDescriptor, pinWebSocketToken, resolveViteHmrWsUrl, type NsDevBootstrapModuleUrls, type ViteHmrWsConfig } from './vite-plugin.js';
 
 function wsConfig(server: Partial<ViteHmrWsConfig['server']> & { ws?: unknown }, extra: Partial<Pick<ViteHmrWsConfig, 'base' | 'webSocketToken'>> = {}): ViteHmrWsConfig {
 	return { base: '/', webSocketToken: 'tok-1', ...extra, server: { port: 5173, hmr: undefined, ...server } } as ViteHmrWsConfig;
@@ -22,6 +22,16 @@ describe('resolveViteHmrWsUrl', () => {
 
 	it('URL-encodes the token and falls back to the base path', () => {
 		expect(resolveViteHmrWsUrl('http://127.0.0.1:5173', wsConfig({}, { webSocketToken: 'a+b/c=' }))).toBe('ws://127.0.0.1:5173/?token=a%2Bb%2Fc%3D');
+	});
+});
+
+describe('pinWebSocketToken', () => {
+	it('keeps the first resolved token for every later config of the process', () => {
+		const first = { webSocketToken: 'first' };
+		const restarted = { webSocketToken: 'minted-on-restart' };
+		pinWebSocketToken(first);
+		pinWebSocketToken(restarted);
+		expect(restarted.webSocketToken).toBe('first');
 	});
 });
 
@@ -173,7 +183,7 @@ describe('nsHmrClientVitePlugin middleware', () => {
 			wsProtocol: 'vite-hmr',
 			entryUrl: `${SERVER_ORIGIN}/ns/v/src/app.ts`,
 			origin: SERVER_ORIGIN,
-			keepUrlPrefixes: [`${SERVER_ORIGIN}/ns/v/node_modules/@nativescript/core/`],
+			keepUrlPrefixes: [`${SERVER_ORIGIN}/ns/v/node_modules/@nativescript/core/`, expect.stringMatching(new RegExp(`^${SERVER_ORIGIN}/ns/v/@fs/.*/vite/$`))],
 		});
 	});
 });

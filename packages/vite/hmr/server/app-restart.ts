@@ -1,0 +1,136 @@
+import type { EnvironmentModuleNode, HotUpdateOptions, Plugin, ViteDevServer } from 'vite';
+import * as path from 'path';
+import { isAppOwnedViteUrl } from '../shared/app-owned.js';
+import { NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT, type RestartEventData } from '../shared/protocol.js';
+import { viteUrlForFile } from './thin/thin-mode.js';
+import { resolveNonEvictableViteUrlPrefixes } from './vite-plugin.js';
+
+/**
+ * IPC message `vite serve` sends its parent (the NativeScript CLI) when a
+ * change can only be applied by restarting the app process. A soft full
+ * reload re-evaluates app modules in place; it can't replace code that
+ * evaluates once per process or undo a half-applied teardown.
+ */
+export interface NativeScriptRestartMessage {
+	type: 'nativescript:restart';
+	reason: string;
+}
+
+export const NATIVESCRIPT_RESTART_MESSAGE_TYPE = 'nativescript:restart';
+
+export interface AppRestartRequesterOptions {
+	/** The parent's IPC channel (`process.send`), absent when the CLI spawned the server without one. */
+	send?: ((message: NativeScriptRestartMessage) => unknown) | undefined;
+	/** Tells connected devices a restart is required (no CLI to perform it). */
+	notifyDevices(data: RestartEventData): void;
+	log(message: string): void;
+	/** Requests within this window collapse into one restart. */
+	debounceMs?: number;
+}
+
+export interface AppRestartRequester {
+	request(reason: string): void;
+	/** Sends a pending request now; for tests and shutdown. */
+	flush(): void;
+}
+
+export function createAppRestartRequester(options: AppRestartRequesterOptions): AppRestartRequester {
+	const debounceMs = options.debounceMs ?? 250;
+	const reasons: string[] = [];
+	let timer: ReturnType<typeof setTimeout> | undefined;
+
+	const flush = () => {
+		if (timer) clearTimeout(timer);
+		timer = undefined;
+		if (!reasons.length) return;
+		const reason = reasons.splice(0).join('; ');
+		if (options.send) {
+			options.send({ type: NATIVESCRIPT_RESTART_MESSAGE_TYPE, reason });
+			return;
+		}
+		// No CLI to restart the app: say so, and leave the device as it is
+		// rather than soft-reloading it into a half-applied state.
+		options.log(`[NativeScript] restart the app to apply: ${reason}`);
+		options.notifyDevices({ reason });
+	};
+
+	return {
+		request(reason: string) {
+			if (!reasons.includes(reason)) reasons.push(reason);
+			if (timer) clearTimeout(timer);
+			timer = setTimeout(flush, debounceMs);
+		},
+		flush,
+	};
+}
+
+/**
+ * True when an edit to `file` must restart the app: the device loaded it as
+ * JavaScript, and a soft reload would not re-evaluate it (the device's own
+ * eviction rule, `isAppOwnedViteUrl`). Pushing Vite's `?t=` update for such a
+ * file would instead load a second instance next to the live one.
+ */
+export function needsAppRestartForEdit(file: string, modules: readonly Pick<EnvironmentModuleNode, 'type'>[], root: string, keepPrefixes: readonly string[]): boolean {
+	if (!modules.some((mod) => mod.type === 'js')) return false;
+	return !isAppOwnedViteUrl(viteUrlForFile(file, root), keepPrefixes);
+}
+
+function relativeToRoot(file: string, root: string): string {
+	const rel = path.relative(root, file).split(path.sep).join('/');
+	return rel && !rel.startsWith('..') ? rel : file;
+}
+
+// Module state, not plugin state: `server.restart()` (and a config edit)
+// builds new plugin instances, but this module evaluates once per process.
+const processState = { serverStarts: 0 };
+let currentServer: ViteDevServer | undefined;
+const requester = createAppRestartRequester({
+	send: typeof process.send === 'function' ? (message) => process.send!(message) : undefined,
+	notifyDevices: (data) => currentServer?.ws.send(NS_RESTART_REQUIRED_EVENT, data),
+	log: (message) => (currentServer?.config.logger ?? console).warn(message),
+});
+
+/** Asks for an app restart (see {@link NativeScriptRestartMessage}). */
+export function requestAppRestart(reason: string): void {
+	requester.request(reason);
+}
+
+/**
+ * Restart triggers on the dev server: edits to code a soft reload never
+ * re-evaluates, a device's `ns:restart`, and the first device connection
+ * after Vite restarted itself (the device's modules came from the previous
+ * server's graph and plugin state).
+ */
+export function nsAppRestartPlugin(options: { request?: (reason: string) => void; state?: { serverStarts: number } } = {}): Plugin {
+	const request = options.request ?? requestAppRestart;
+	const state = options.state ?? processState;
+	let keepPrefixes: Promise<string[]> | undefined;
+
+	return {
+		name: 'nativescript-app-restart',
+		apply: 'serve',
+		configureServer(server) {
+			currentServer = server;
+			state.serverStarts++;
+			let restartPending = state.serverStarts > 1;
+			server.ws.on(NS_RESTART_EVENT, (data?: Partial<RestartEventData>) => {
+				request(typeof data?.reason === 'string' && data.reason ? data.reason : 'the device requested a restart');
+			});
+			server.ws.on('vite:client:connect', () => {
+				if (!restartPending) return;
+				restartPending = false;
+				request('the Vite dev server restarted');
+			});
+		},
+		hotUpdate: {
+			order: 'pre',
+			async handler(ctx: HotUpdateOptions) {
+				if (this.environment.name !== 'client' || ctx.type !== 'update') return;
+				keepPrefixes ??= resolveNonEvictableViteUrlPrefixes(ctx.server).catch(() => []);
+				if (!needsAppRestartForEdit(ctx.file, ctx.modules, ctx.server.config.root, await keepPrefixes)) return;
+				request(`${relativeToRoot(ctx.file, ctx.server.config.root)} changed`);
+				return [];
+			},
+		},
+	};
+}

@@ -1,28 +1,43 @@
 import path from 'path';
+import { createHash } from 'crypto';
 import { readdirSync, statSync, existsSync, mkdirSync } from 'fs';
 
 let isInitialBuild = true;
+
+/** The boot bundle the CLI copies into the app; the HMR dev server serves everything else. */
+export const BOOT_BUNDLE_FILE = 'bundle.mjs';
+
+/** Content hash of the boot bundle in a Rollup output bundle, or undefined when it isn't part of it. */
+export function hashBootBundle(bundle: Record<string, { type: string; code?: string; source?: string | Uint8Array }>): string | undefined {
+	const output = bundle[BOOT_BUNDLE_FILE];
+	if (!output) return undefined;
+	const content = output.type === 'chunk' ? output.code : output.source;
+	if (content == null) return undefined;
+	return createHash('sha1').update(content).digest('hex');
+}
 
 // NativeScript CLI integration for live reloads, non-HMR rebuilds
 export function cliPlugin(opts: { distOutputFolder: string; isDevMode: boolean; verbose: boolean; hmrActive: boolean }) {
 	// Capture emitted files directly from Rollup hooks to avoid relying on FS state
 	const lastBundleFiles = new Set<string>();
 	let lastOutDir: string | undefined;
-	// This plugin should not trigger NativeScript CLI rebuild/refresh cycles when HMR is active
+	// Under HMR the device fetches app code from the dev server, so a rebuild
+	// only matters to the CLI when the boot bundle it copies into the app
+	// changed: the CLI then restarts the app with the new one.
+	let lastBootBundleHash: string | undefined;
+	let bootBundleChanged = false;
 	return {
 		name: 'nativescript-cli-integration',
 		apply: 'build',
 		// Ensure we run after other plugins (like vite-plugin-static-copy)
 		enforce: 'post' as const,
-		// Resolve build outDir so we can read final outputs after all plugins finish
-		configResolved(config) {
-			// Under HMR, when not initial build; skip - HMR client handles everything
-			if (opts.hmrActive && !isInitialBuild) return;
-		},
 		// Use Rollup hook to record emitted file names (relative to output dir)
 		generateBundle(options, bundle) {
-			// Under HMR, still capture files on initial build
-			if (opts.hmrActive && !isInitialBuild) return;
+			const hash = hashBootBundle(bundle as any);
+			if (hash !== undefined) {
+				bootBundleChanged = lastBootBundleHash !== undefined && hash !== lastBootBundleHash;
+				lastBootBundleHash = hash;
+			}
 			try {
 				const keys = Object.keys(bundle);
 				for (const k of keys) lastBundleFiles.add(k);
@@ -40,8 +55,6 @@ export function cliPlugin(opts: { distOutputFolder: string; isDevMode: boolean; 
 		},
 		// called only when writing to disk
 		writeBundle(options, bundle) {
-			// Under HMR, still capture files on initial build
-			if (opts.hmrActive && !isInitialBuild) return;
 			try {
 				const keys = Object.keys(bundle);
 				for (const k of keys) lastBundleFiles.add(k);
@@ -55,8 +68,9 @@ export function cliPlugin(opts: { distOutputFolder: string; isDevMode: boolean; 
 		},
 		// Defer CLI notification until after all plugins (including static copy) are done.
 		closeBundle() {
-			if (opts.hmrActive && !isInitialBuild) {
-				// Reset trackers to avoid leaking state between builds even if no-op
+			const skipUnderHmr = opts.hmrActive && !isInitialBuild && !bootBundleChanged;
+			bootBundleChanged = false;
+			if (skipUnderHmr) {
 				lastBundleFiles.clear();
 				lastOutDir = undefined;
 				return;
