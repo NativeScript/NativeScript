@@ -1,4 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// @nativescript/core can't evaluate in Node; the overlay reads its classes only when drawing.
+vi.mock('@nativescript/core/application', () => ({}));
+vi.mock('@nativescript/core/color', () => ({}));
+vi.mock('@nativescript/core/ui', () => ({}));
 import { getGlobalScope } from './global-scope.js';
 import { NS_DEV_SYMBOL_KEY, nsDev } from './dev-globals.js';
 
@@ -12,6 +17,7 @@ let applyMonotonicBootProgress: typeof import('./boot-progress.js').applyMonoton
 // module graph.
 beforeEach(async () => {
 	vi.resetModules();
+	stubNsRuntime({});
 	({ ensureHmrDevOverlayRuntimeInstalled } = await import('./dev-overlay.js'));
 	({ startBrowserRuntimeSession } = await import('./session-bootstrap.js'));
 	({ setRestorePlaceholder } = await import('./placeholder-hooks.js'));
@@ -21,7 +27,7 @@ beforeEach(async () => {
 const SESSION_DESCRIPTOR = {
 	sessionId: 'session-1',
 	origin: 'http://localhost:5173',
-	clientUrl: 'http://localhost:5173/__ns_dev__/client',
+	clientUrl: 'http://localhost:5173/@id/__x00__virtual:ns-dev-client',
 	// The dev-server descriptor emits the CANONICAL (untagged) entry URL.
 	entryUrl: 'http://localhost:5173/src/main.ts',
 	wsUrl: 'ws://localhost:5173/vite-hmr?token=abc',
@@ -36,14 +42,10 @@ function sessionResponse(overrides: Record<string, unknown> = {}) {
 	};
 }
 
-// Stub the global CJS `require` so `ns:module` resolves to the given module
-// object, mirroring how the device runtime provides the dev host API.
-// Restored by `vi.unstubAllGlobals()` in afterEach.
+// Mocks the `ns:module` builtin the device runtime provides the dev host API
+// through. Removed in afterEach.
 function stubNsRuntime(api: Record<string, unknown>) {
-	vi.stubGlobal('require', (specifier: string) => {
-		if (specifier === 'ns:module') return api;
-		throw new Error(`No such built-in module: ${specifier}`);
-	});
+	vi.doMock('ns:module', () => ({ default: api }));
 }
 
 // One successful boot that configures the runtime import map. Expects
@@ -66,6 +68,7 @@ describe('browser runtime session bootstrap', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 		vi.unstubAllGlobals();
+		vi.doUnmock('ns:module');
 		vi.useRealTimers();
 		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 		delete getGlobalScope().__NS_HMR_IMPORT__;

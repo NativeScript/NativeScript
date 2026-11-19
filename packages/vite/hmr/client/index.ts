@@ -6,8 +6,8 @@
  * app entry, wrapped in `nativescript:beforeReboot`/`afterReboot`) and the dev
  * overlay.
  *
- * Importing this module has no side effects. The `/__ns_dev__/client`
- * bootstrap calls `start()` once the app has booted.
+ * Importing this module has no side effects. The dev client bootstrap
+ * (`createNsDevClientModuleCode`) calls `start()` once the app has booted.
  */
 import type { ConnectedPayload, CustomPayload, ErrorPayload, FullReloadPayload, PrunePayload, Update, UpdatePayload } from 'vite';
 import { Queue, type HMRClient, type ModuleNamespace } from './hmr-client.js';
@@ -17,7 +17,8 @@ import { overlayDriver, type HmrOverlayDriver, type HmrOverlayInfo } from './ove
 import { describeRuntimeError, describeServerError, deviceModuleUrlsInStack, type ErrorOverlayText } from './error-overlay.js';
 import { NS_AFTER_REBOOT_EVENT, NS_BEFORE_REBOOT_EVENT, NS_BEFORE_RERUN_EVENT, NS_BEFORE_RESTART_EVENT, NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT, NS_UPDATE_RERUN_EVENT, type BeforeRerunEventData, type RebootEventData, type RestartEventData, type UpdateRerunEventData } from '../shared/protocol.js';
 import { createUpdateModules, viteUrlCandidates, type UpdateModules } from '../shared/update-modules.js';
-import { readNsRuntimeDevHostApi, type NsRuntimeDevHostApi } from '../shared/runtime/browser-runtime-contract.js';
+import type { NsRuntimeDevHostApi } from '../shared/runtime/browser-runtime-contract.js';
+import { nsRuntimeDevHostApi } from '../shared/runtime/runtime-host.js';
 import { ENV_VERBOSE } from './utils.js';
 
 type DeviceFullReloadPayload = FullReloadPayload & { ifFallback?: boolean };
@@ -154,7 +155,7 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 	function invalidateModules(urls: string[]): void {
 		if (!urls.length) return;
 		try {
-			const invalidate = (deps.devHost ?? readNsRuntimeDevHostApi(globalThis)).invalidateModules;
+			const invalidate = (deps.devHost ?? nsRuntimeDevHostApi()).invalidateModules;
 			if (typeof invalidate === 'function') invalidate(urls);
 		} catch (err) {
 			client.logger.error(err);

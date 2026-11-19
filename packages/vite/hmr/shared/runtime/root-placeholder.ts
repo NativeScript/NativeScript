@@ -283,13 +283,6 @@ export function installRootPlaceholder(verbose?: boolean) {
 					}
 				} catch {}
 				try {
-					// The bundle.mjs require shim answers from the served core.
-					if (typeof g.require === 'function') {
-						const mod = g.require(moduleId);
-						if (mod) return { value: (mod.default ?? mod) || mod, via: 'require', moduleId };
-					}
-				} catch {}
-				try {
 					const nr = g.__nativeRequire;
 					if (typeof nr === 'function') {
 						const mod = nr(moduleId, '/');
@@ -580,45 +573,11 @@ export function installRootPlaceholder(verbose?: boolean) {
 							const __ns_deferred_reset = () => {
 								try {
 									const isModuleNameEntry = __ns_deferred_entry && __ns_deferred_entry.moduleName && !__ns_deferred_entry.create;
-									if (isModuleNameEntry) {
-										if (typeof (Application as any).resetRootView === 'function') {
-											(Application as any).resetRootView(__ns_deferred_entry);
-										}
-									} else {
-										// Framework path: two-phase boot with dominative document
+									if (!isModuleNameEntry) {
 										(Application as any)._rootView = null;
-
-										try {
-											const domModule =
-												typeof require === 'function'
-													? (() => {
-															try {
-																return require('dominative');
-															} catch {
-																return null;
-															}
-														})()
-													: null;
-											const doc = domModule?.document;
-
-											if (doc && typeof (Application as any).resetRootView === 'function') {
-												(Application as any).resetRootView({ create: () => doc });
-												if (__ns_deferred_entry && typeof __ns_deferred_entry.create === 'function') {
-													__ns_deferred_entry.create();
-												}
-											} else {
-												if (typeof (Application as any).resetRootView === 'function') {
-													(Application as any).resetRootView(__ns_deferred_entry);
-												}
-											}
-										} catch (e2: any) {
-											if (verbose) console.warn('[ns-placeholder] two-phase boot failed:', e2?.message || e2);
-											try {
-												if (typeof (Application as any).resetRootView === 'function') {
-													(Application as any).resetRootView(__ns_deferred_entry);
-												}
-											} catch {}
-										}
+									}
+									if (typeof (Application as any).resetRootView === 'function') {
+										(Application as any).resetRootView(__ns_deferred_entry);
 									}
 								} catch (e) {
 									console.warn('[ns-placeholder] deferred patched run() error:', e);

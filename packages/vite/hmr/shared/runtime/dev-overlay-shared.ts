@@ -5,6 +5,11 @@
  * `dev-overlay.ts` for that.
  */
 
+// The modules bundle-entry-points and the boot's Application import evaluate
+// anyway; the core barrel would pull more of core ahead of the app's polyfills.
+import { Application } from '@nativescript/core/application';
+import { Color } from '@nativescript/core/color';
+import { ActivityIndicator, Frame, GridLayout, Label, Page, StackLayout } from '@nativescript/core/ui';
 import { DEFAULT_SNAPSHOT, type HmrOverlayAction, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
 import { getGlobalScope } from './global-scope.js';
 
@@ -146,6 +151,18 @@ export function getRuntimeState(): HmrOverlayRuntimeState {
 	return runtimeState;
 }
 
+// Read on use, not at evaluation: the overlay draws only after core has booted.
+const coreExports: Record<string, () => unknown> = {
+	ActivityIndicator: () => ActivityIndicator,
+	Application: () => Application,
+	Color: () => Color,
+	Frame: () => Frame,
+	GridLayout: () => GridLayout,
+	Label: () => Label,
+	Page: () => Page,
+	StackLayout: () => StackLayout,
+};
+
 export function resolveCoreExport(name: string): any {
 	const g = getOverlayGlobal();
 	try {
@@ -154,24 +171,7 @@ export function resolveCoreExport(name: string): any {
 		}
 	} catch {}
 	try {
-		// The bundle.mjs require shim answers from the served core.
-		if (typeof g.require === 'function') {
-			const mod = g.require('@nativescript/core');
-			const ns = (mod && (mod.default ?? mod)) || mod;
-			if (ns && ns[name]) {
-				return ns[name];
-			}
-		}
-	} catch {}
-	try {
-		const nativeReq = g.__nativeRequire;
-		if (typeof nativeReq === 'function') {
-			const mod = nativeReq('@nativescript/core', '/');
-			const ns = (mod && (mod.default ?? mod)) || mod;
-			if (ns && ns[name]) {
-				return ns[name];
-			}
-		}
+		return coreExports[name]?.();
 	} catch {}
 	return undefined;
 }

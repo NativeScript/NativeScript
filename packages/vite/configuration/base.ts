@@ -43,7 +43,6 @@ import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { normalizeModuleId } from '../helpers/normalize-id.js';
 import { getHmrWatchIgnoreGlobs } from '../helpers/hmr-scope.js';
 import { NS_OPTIMIZE_DEPS_EXCLUDE, nsOptimizeDepsPolicyPlugin } from '../helpers/optimize-deps.js';
-import { nsVersionQueryGuardPlugin } from '../hmr/server/version-query-guard.js';
 import { sbgClassNamesPlugin } from '../helpers/sbg-class-names.js';
 import { chunkFileNames } from '../helpers/chunk-file-names.js';
 import { nativescriptBuiltinModules } from '../helpers/builtin-modules.js';
@@ -288,10 +287,10 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Merge any dependency-provided `nativescript.vite.mjs` configs. Runs
 			// in an awaited `config` hook so ESM configs load correctly.
 			externalConfigsPlugin(),
-			// Under HMR, rewrite every bare `@nativescript/core*` specifier to
-			// its dev-server URL so bundle.mjs contains NO bundled copy of the
-			// core runtime (see helpers/ns-core-external-urls.ts).
-			...(hmrActive ? [nsCoreExternalUrlsPlugin({ platform, projectRoot, nsCoreRoot: NS_CORE_ROOT, hmrPort, useHttps }), nsVersionQueryGuardPlugin({ nsCoreRoot: NS_CORE_ROOT })] : []),
+			// Android HMR builds still emit the app components (custom
+			// Activity/Application) as local chunks; their core imports must name
+			// the served core rather than bundle a second one.
+			...(hmrActive && platform === 'android' ? [nsCoreExternalUrlsPlugin({ platform, projectRoot, nsCoreRoot: NS_CORE_ROOT, hmrPort, useHttps })] : []),
 			createPlatformCssPlugin(platform),
 			// TODO: move to per-project basis based on usage
 			createEnsureHoistedThemeLinkPlugin(THEME_CORE_ROOT, projectRoot, platform),

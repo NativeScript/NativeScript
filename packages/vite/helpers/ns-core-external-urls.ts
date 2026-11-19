@@ -17,15 +17,16 @@ export interface NsCoreExternalUrlsPluginOptions {
 /**
  * HMR builds only: externalize every `@nativescript/core*` reference (bare
  * specifier, or absolute path into the resolved core root) to the device URL
- * the dev server serves that file under, so bundle.mjs contains NO bundled copy
- * of the core runtime and shares one core realm with the served app graph.
- * enforce:'pre' so it fires BEFORE Vite's alias resolution converts bare
- * specifiers to absolute filesystem paths.
+ * the dev server serves that file under, so the local chunks of an HMR build
+ * (Android app components) bundle no copy of core and share the served one.
+ * The URL carries no `?v=`: it can't match the served core's once a dep
+ * optimizer exists. enforce:'pre' so it fires BEFORE Vite's alias resolution
+ * converts bare specifiers to absolute filesystem paths.
  */
 export function nsCoreExternalUrlsPlugin(opts: NsCoreExternalUrlsPluginOptions): Plugin {
 	const { platform, projectRoot, nsCoreRoot, hmrPort, useHttps } = opts;
 	// Same device-reachable origin helper as `main-entry.ts`, so both emit
-	// byte-identical URL strings (the runtime keys HTTP modules by URL).
+	// byte-identical origins (the runtime keys HTTP modules by URL).
 	//
 	// Protocol must match the dev server's protocol. `NS_HTTPS` is the single
 	// switch (it also drives the server TLS + `wss` HMR socket); `NS_HMR_PROTO`

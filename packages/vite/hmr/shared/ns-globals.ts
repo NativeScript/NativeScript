@@ -2,9 +2,9 @@
    in `declare global` registers the property on `typeof globalThis` (see header). */
 /**
  * Ambient typings for the `__NS_*` / `__ns*` globals the HMR runtime stashes
- * on `globalThis`. State shared between `bundle.mjs` and served modules
- * lives on the dev globals object instead (`hmr/shared/runtime/dev-globals.ts`),
- * and state used within one of those worlds is module state.
+ * on `globalThis`. State string-generated code reads lives on the dev
+ * globals object instead (`hmr/shared/runtime/dev-globals.ts`), and state
+ * used within the served module graph is module state.
  *
  * Conventions:
  *   - Every key is `var … | undefined` — `var` (not `const`/`let`) is what adds the

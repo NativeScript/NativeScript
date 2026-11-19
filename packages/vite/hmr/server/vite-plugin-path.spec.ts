@@ -2,8 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('./server-origin.js', () => ({ getServerOrigin: () => 'http://192.168.1.5:5173' }));
 
-import { allowDeviceHost, allowServedDirs, corePackageDir, createNsDevClientBootstrapCode, createNsDevSessionDescriptor, nsViteClientPlugin, pinWebSocketToken, resolveViteHmrWsUrl, type NsDevBootstrapModuleUrls, type ViteHmrWsConfig } from './vite-plugin.js';
-import { NS_DEV_EXPR } from '../shared/runtime/dev-globals.js';
+import { allowDeviceHost, allowServedDirs, corePackageDir, createNsDevClientModuleCode, createNsDevSessionDescriptor, nsViteClientPlugin, pinWebSocketToken, resolveViteHmrWsUrl, type ViteHmrWsConfig } from './vite-plugin.js';
 
 function wsConfig(server: Partial<ViteHmrWsConfig['server']> & { ws?: unknown }, extra: Partial<Pick<ViteHmrWsConfig, 'base' | 'webSocketToken'>> = {}): ViteHmrWsConfig {
 	return { base: '/', webSocketToken: 'tok-1', ...extra, server: { port: 5173, hmr: undefined, ...server } } as ViteHmrWsConfig;
@@ -54,7 +53,7 @@ describe('createNsDevSessionDescriptor', () => {
 			sessionId: 'session-123',
 			origin: 'http://192.168.1.5:5173',
 			entryUrl: 'http://192.168.1.5:5173/src/main.ts',
-			clientUrl: 'http://192.168.1.5:5173/__ns_dev__/client',
+			clientUrl: 'http://192.168.1.5:5173/@id/__x00__virtual:ns-dev-client',
 			wsUrl: 'ws://192.168.1.5:5173/vite-hmr?token=tok-1',
 			wsProtocol: 'vite-hmr',
 			platform: 'ios',
@@ -79,10 +78,6 @@ describe('corePackageDir', () => {
 });
 
 const ORIGIN = 'http://192.168.1.5:5173';
-const MODULE_URLS: NsDevBootstrapModuleUrls = {
-	launchBridge: `${ORIGIN}/@fs/pkg/vite/hmr/shared/runtime/launch-bridge.js`,
-	coreBridge: `${ORIGIN}/node_modules/@nativescript/core/index.js`,
-};
 const START = {
 	wsUrl: 'ws://192.168.1.5:5173/vite-hmr?token=tok-1',
 	wsProtocol: 'vite-hmr',
@@ -90,44 +85,29 @@ const START = {
 	origin: ORIGIN,
 };
 
-function bootstrapCode() {
-	return createNsDevClientBootstrapCode({
-		clientImport: `${ORIGIN}/@fs/pkg/vite/hmr/client/index.js`,
-		moduleUrls: MODULE_URLS,
-		start: START,
-	});
-}
-
-describe('createNsDevClientBootstrapCode', () => {
+describe('createNsDevClientModuleCode', () => {
 	it('starts the HMR client with the server-baked options once boot completes', () => {
-		const code = bootstrapCode();
-		expect(code).toContain(`const __nsHmrClientUrl = "${ORIGIN}/@fs/pkg/vite/hmr/client/index.js";`);
-		expect(code).toContain(`const __nsHmrStartOptions = ${JSON.stringify(START)};`);
-		expect(code).toContain('.then((mod) => mod.start(__nsHmrStartOptions))');
-		expect(code).toContain(`const __nsDev = ${NS_DEV_EXPR};`);
-		expect(code).toContain('if (!__nsDev.bootComplete) {');
+		const code = createNsDevClientModuleCode(START);
+		expect(code).toContain(`const startOptions = ${JSON.stringify(START)};`);
+		expect(code).toContain("import('@nativescript/vite/hmr/client/index.js')");
+		expect(code).toContain('.then((mod) => mod.start(startOptions))');
+		expect(code).toContain('if (!nsDev().bootComplete) {');
 		expect(code).not.toContain('WebSocket');
-		expect(code).not.toContain('ns_hmr_role');
-		expect(code).not.toContain('__NS_HMR_BROWSER_RUNTIME');
-		expect(code).not.toContain('__NS_CLIENT_STRATEGY');
-		expect(code).not.toContain('__NS_HOT_REGISTRY__');
-		expect(code).not.toContain('ns:angular-update');
 	});
 
 	it('installs the launch bridge before the HMR client, and no stylesheet', () => {
-		const code = bootstrapCode();
-		expect(code).toContain(`import * as __nsCoreBridge from "${MODULE_URLS.coreBridge}";`);
-		const bridgeAt = code.indexOf('__nsInstallLaunchBridge(__nsCoreNs && __nsCoreNs.Application);');
-		const clientAt = code.indexOf('__nsStartHmrClientAfterBoot();\n');
+		const code = createNsDevClientModuleCode(START);
+		const bridgeAt = code.indexOf('installLaunchNotificationBridge(Application);');
+		const clientAt = code.indexOf('startHmrClientAfterBoot();\n');
 		expect(bridgeAt).toBeGreaterThan(-1);
 		expect(bridgeAt).toBeLessThan(clientAt);
 		expect(code).not.toContain('Css');
 	});
 
-	it('imports only absolute URLs, so the device never consults the import map for it', () => {
-		const imports = [...bootstrapCode().matchAll(/^import .* from "([^"]+)";$/gm)].map((m) => m[1]);
-		expect(imports.length).toBeGreaterThan(0);
-		expect(imports.every((url) => url.startsWith(`${ORIGIN}/`))).toBe(true);
+	it('names every import by bare specifier, for import analysis to write its URL', () => {
+		const code = createNsDevClientModuleCode(START);
+		const specifiers = [...code.matchAll(/\bfrom '([^']+)'|import\('([^']+)'\)/g)].map((m) => m[1] ?? m[2]);
+		expect(specifiers).toEqual(['@nativescript/vite/hmr/shared/runtime/launch-bridge.js', '@nativescript/vite/hmr/shared/runtime/dev-globals.js', '@nativescript/core', '@nativescript/vite/hmr/client/index.js']);
 	});
 });
 
@@ -165,26 +145,14 @@ describe('nsHmrClientVitePlugin middleware', () => {
 		expect(session.wsUrl).toBe('ws://192.168.1.5:5173/vite-hmr?token=tok-1');
 		expect(session.wsProtocol).toBe('vite-hmr');
 	});
-
-	it('bakes the server origin into the client bootstrap start options', async () => {
-		const code = await serve('/__ns_dev__/client');
-		expect(code).not.toContain('evil.example');
-		const start = JSON.parse(code.match(/const __nsHmrStartOptions = (.*);/)![1]);
-		expect(start).toEqual({
-			wsUrl: 'ws://192.168.1.5:5173/vite-hmr?token=tok-1',
-			wsProtocol: 'vite-hmr',
-			entryUrl: `${SERVER_ORIGIN}/src/app.ts`,
-			origin: SERVER_ORIGIN,
-			root: '/app',
-		});
-	});
 });
 
 describe('nsViteClientPlugin', () => {
-	it("answers Vite's aliased /@vite/client id with the NativeScript client, in the client environment only", () => {
+	it("answers Vite's aliased /@vite/client id with the NativeScript client, in the client environment only", async () => {
 		const plugin = nsViteClientPlugin();
 		const aliased = '/@fs/repo/node_modules/vite/dist/client/client.mjs';
 		(plugin.configResolved as any)({
+			root: '/app',
 			resolve: {
 				alias: [
 					{ find: /^\/?@vite\/env/, replacement: '/@fs/repo/node_modules/vite/dist/client/env.mjs' },
@@ -192,11 +160,12 @@ describe('nsViteClientPlugin', () => {
 				],
 			},
 		});
-		const resolveId = (id: string, environment = 'client') => (plugin.resolveId as any).call({ environment: { name: environment } }, id);
-		expect(resolveId(aliased)).toMatch(/\/hmr\/client\/thin-vite-client\.js$/);
-		expect(resolveId('/@vite/client')).toMatch(/\/hmr\/client\/thin-vite-client\.js$/);
-		expect(resolveId('/@fs/repo/node_modules/vite/dist/client/env.mjs')).toBeNull();
-		expect(resolveId(aliased, 'ssr')).toBeNull();
+		const resolve = async (specifier: string) => ({ id: `/app/node_modules/${specifier}?v=abc` });
+		const resolveId = (id: string, environment = 'client') => (plugin.resolveId as any).call({ environment: { name: environment }, resolve }, id, undefined, {});
+		expect(await resolveId(aliased)).toBe('/app/node_modules/@nativescript/vite/hmr/client/thin-vite-client.js');
+		expect(await resolveId('/@vite/client')).toBe('/app/node_modules/@nativescript/vite/hmr/client/thin-vite-client.js');
+		expect(await resolveId('/@fs/repo/node_modules/vite/dist/client/env.mjs')).toBeNull();
+		expect(await resolveId(aliased, 'ssr')).toBeNull();
 	});
 });
 

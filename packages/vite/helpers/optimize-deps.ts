@@ -6,7 +6,7 @@ import type { Plugin } from 'vite';
  * served as its own files evaluates twice on device.
  *
  * - `@nativescript/core`, `@nativescript/vite`, `@valor/nativescript-websockets`:
- *   one instance per app, shared with `bundle.mjs` and the dev client.
+ *   one instance per app, shared with the dev boot module and the dev client.
  * - `module` / `node:module` / `set-value`: aliased to local shims
  *   (`helpers/css-tree.ts`, `resolveConfig.alias` in `configuration/base.ts`);
  *   the optimizer does not apply those aliases, and css-tree's
@@ -41,7 +41,7 @@ export function enforceOptimizeDepsPolicy(optimizeDeps: OptimizeDepsLike, includ
  * (the flavor config plus the app's own `vite.config`) lists in
  * `optimizeDeps.include` is pre-bundled. With nothing listed, Vite creates no
  * dep optimizer and every dependency is served as its own file at a
- * version-less URL, the same URL `bundle.mjs` and the import map use.
+ * version-less URL.
  *
  * Includes added by other plugins (Analog adds Angular's) are dropped: the
  * list is captured in a `config` hook ordered before every other plugin's,

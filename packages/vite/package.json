@@ -68,6 +68,7 @@
 			"default": "./framework.js"
 		},
 		"./hmr/client/index.js": "./hmr/client/index.js",
+		"./hmr/client/thin-vite-client.js": "./hmr/client/thin-vite-client.js",
 		"./hmr/frameworks/core/client/reboot": "./hmr/frameworks/core/client/reboot.js",
 		"./hmr/frameworks/core/client/reboot.js": "./hmr/frameworks/core/client/reboot.js",
 		"./hmr/frameworks/vue/client/reboot": "./hmr/frameworks/vue/client/reboot.js",
@@ -82,6 +83,8 @@
 		"./hmr/shared/runtime/browser-runtime-contract.js": "./hmr/shared/runtime/browser-runtime-contract.js",
 		"./hmr/shared/runtime/session-bootstrap": "./hmr/shared/runtime/session-bootstrap.js",
 		"./hmr/shared/runtime/session-bootstrap.js": "./hmr/shared/runtime/session-bootstrap.js",
+		"./hmr/shared/runtime/launch-bridge.js": "./hmr/shared/runtime/launch-bridge.js",
+		"./hmr/shared/runtime/dev-globals.js": "./hmr/shared/runtime/dev-globals.js",
 		"./runtime/core-aliases-early": "./runtime/core-aliases-early.js",
 		"./runtime/core-aliases-early.js": "./runtime/core-aliases-early.js"
 	},

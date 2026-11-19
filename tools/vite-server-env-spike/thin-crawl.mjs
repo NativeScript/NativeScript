@@ -6,8 +6,10 @@
 //
 // Usage (from the repo root):
 //   node tools/vite-server-env-spike/thin-crawl.mjs --app tools/vite-server-env-spike/apps/ng --flavor angular [--platform ios] [--bundle <bundle.mjs>] [--allow-dup-instances]
-// --bundle  also load the absolute URLs baked into a built HMR bundle.mjs (the core externals) and the
-//   bare specifiers it leaves to the import map; without it, core identity vs bundle.mjs is unchecked
+// --bundle  also load the absolute URLs baked into a built HMR bundle.mjs (the dev boot module and
+//   everything it imports) and the bare specifiers it leaves to the import map, and fail on any core URL
+//   baked there; without it, core identity vs bundle.mjs is unchecked
+// --optimize-include a,b  add these to the flavor config's optimizeDeps.include (forces a dep optimizer)
 // --allow-dup-instances  report source files evaluated in more than one instance (inlined in a
 //   bundle and also served, or inlined in two bundles) as a warning instead of a failure
 // --vite-config  boot from the app's own vite.config.* (as the CLI does) instead of the bare flavor config
@@ -33,6 +35,7 @@ const appRoot = path.resolve(repoRoot, take('--app', 'apps/toolbox'));
 const flavor = take('--flavor', 'typescript');
 const platform = take('--platform', 'ios');
 const bundleArg = take('--bundle', '');
+const optimizeInclude = take('--optimize-include', '').split(',').filter(Boolean);
 const useAppViteConfig = args.includes('--vite-config');
 const allowDupInstances = args.includes('--allow-dup-instances');
 const extraSeeds = [];
@@ -57,6 +60,8 @@ if (useAppViteConfig) {
 } else {
 	const mod = await import(pathToFileURL(path.join(nsViteDir, `configuration/${flavor}.js`)).href);
 	const config = await mod[`${flavor}Config`]({ mode: 'development' });
+	// As an app's own `optimizeDeps.include`, which nsOptimizeDepsPolicyPlugin keeps.
+	if (optimizeInclude.length) config.optimizeDeps = { ...config.optimizeDeps, include: [...(config.optimizeDeps?.include ?? []), ...optimizeInclude] };
 	server = await createServer({ ...config, root: appRoot, configFile: false, mode: 'development' });
 }
 await server.listen();
@@ -109,12 +114,13 @@ const mapUrl = session.runtimeConfigUrl;
 const runtimeConfig = await (await fetch(toLocal(mapUrl))).json();
 const importMap = runtimeConfig.importMap ?? {};
 
+// The client bootstrap is served through Vite; its dynamic import of the HMR client is absolute on the wire.
 const bootstrapCode = await (await fetch(toLocal(session.clientUrl))).text();
-const hmrClientMatch = bootstrapCode.match(/const __nsHmrClientUrl = ("(?:[^"\\]|\\.)*")/);
-const hmrClientUrl = hmrClientMatch ? JSON.parse(hmrClientMatch[1]) : null;
-if (!hmrClientUrl) sessionFailures.push({ key: '__nsHmrClientUrl', error: 'not found in the client bootstrap' });
+const hmrClientMatch = bootstrapCode.match(/import\((["'])(https?:\/\/[^"']+\/hmr\/client\/index\.[jt]s(?:\?[^"']*)?)\1\)/);
+const hmrClientUrl = hmrClientMatch ? hmrClientMatch[2] : null;
+if (!hmrClientUrl) sessionFailures.push({ key: 'hmrClient', error: 'no absolute dynamic import of hmr/client/index in the client bootstrap' });
 
-const queue = [{ url: session.clientUrl, from: 'session.clientUrl' }, ...(hmrClientUrl ? [{ url: hmrClientUrl, from: 'bootstrap.__nsHmrClientUrl' }] : []), { url: session.entryUrl, from: 'session.entryUrl' }];
+const queue = [{ url: session.clientUrl, from: 'session.clientUrl' }, ...(hmrClientUrl ? [{ url: hmrClientUrl, from: 'bootstrap.hmrClient' }] : []), { url: session.entryUrl, from: 'session.entryUrl' }];
 // Loaded after what the app reaches, so the per-prefix counts can separate the two.
 const mapSeeds = [];
 for (const [spec, target] of Object.entries(importMap.imports ?? {})) mapSeeds.push({ url: new URL(target, mapUrl).href, from: `importMap.imports[${spec}]` });
@@ -122,7 +128,7 @@ for (const [scope, entries] of Object.entries(importMap.scopes ?? {})) {
 	for (const [spec, target] of Object.entries(entries)) mapSeeds.push({ url: new URL(target, mapUrl).href, from: `importMap.scopes[${scope}][${spec}]` });
 }
 for (const seed of extraSeeds) mapSeeds.push({ url: new URL(seed, deviceOrigin).href, from: `--seed ${seed}` });
-const bundle = bundleFile ? { file: bundleFile, urls: [], originMismatch: [], bareSpecifiers: [], bareMissing: [], localImports: 0, nonLiteralDynamic: [] } : null;
+const bundle = bundleFile ? { file: bundleFile, urls: [], coreUrls: [], originMismatch: [], bareSpecifiers: [], bareMissing: [], localImports: 0, nonLiteralDynamic: [] } : null;
 let bundleCode = '';
 if (bundle) {
 	bundleCode = fs.readFileSync(bundleFile, 'utf8');
@@ -132,6 +138,9 @@ if (bundle) {
 		if (!/^\/(node_modules|src|@fs|@id|@vite|__ns_dev__)\//.test(u.pathname)) continue;
 		if (u.origin !== deviceOrigin) bundle.originMismatch.push(m);
 		bundle.urls.push(m);
+		// bundle.mjs is built before the dev server knows the optimizer's hash: a core URL baked there
+		// can't match the one import analysis writes.
+		if (/\/@nativescript\/core\/|\/packages\/core\//.test(u.pathname)) bundle.coreUrls.push(m);
 		queue.push({ url: `${deviceOrigin}${u.pathname}${u.search}`, from: 'bundle.mjs' });
 	}
 	// bundle.mjs is evaluated from the app's files on device, so a relative import stays local and
@@ -781,7 +790,7 @@ const importMapVsAnalysisMismatch = importMapVsAnalysis.filter((x) => x.status =
 const importMapVsAnalysisFail = importMapVsAnalysis.filter((x) => x.status === 'fail').length;
 
 const emptyBodies = [...bodies].filter(([, b]) => b.length === 0).map(([u]) => u);
-const failureCount = cjsServedRawDevice + sessionFailures.length + Object.values(failures).reduce((n, list) => n + list.length, 0) + nonce.filter((n) => !n.ok).length + (bundle?.originMismatch.length ?? 0) + (bundle?.bareMissing.length ?? 0);
+const failureCount = cjsServedRawDevice + sessionFailures.length + Object.values(failures).reduce((n, list) => n + list.length, 0) + nonce.filter((n) => !n.ok).length + (bundle?.originMismatch.length ?? 0) + (bundle?.bareMissing.length ?? 0) + (bundle?.coreUrls.length ?? 0);
 
 const report = {
 	app: path.basename(appRoot),
@@ -798,6 +807,7 @@ const report = {
 	deviceModules: deviceReached.size,
 	deviceBytes: [...deviceReached].reduce((n, u) => n + fetched.get(u).bytes, 0),
 	totalBytes: [...fetched.values()].reduce((n, e) => n + e.bytes, 0),
+	deviceUrls: [...deviceReached].sort().map((u) => [u.slice(deviceOrigin.length), fetched.get(u).bytes]),
 	requestsByPrefix,
 	totals,
 	failureCount,
@@ -864,7 +874,7 @@ lines.push(`  duplicate modules ${duplicates.length}`, ...top(duplicates, 5));
 	lines.push(`  cross-realm groups (one URL per isolate, not failures) ${crossRealm.length}`, ...crossRealm.map((c) => `      [${c.check}] ${c.urls.map((x) => `${relU(x.url)} (${x.realms.map((r) => (r === 'main' ? 'main' : `worker ${relU(r.slice('worker '.length))}`)).join(', ')})`).join(' | ')}`));
 	lines.push(`  same file under 2+ URL strings: fail ${sameFileFailures} (both loaded), warn ${sameFileTwoUrls.length - sameFileFailures} (one only via an import-map seed); loaded modules ${loaded.size}; excluded non-script ${sameFileExcluded.nonScript}, virtual ${sameFileExcluded.virtual}`, ...sameFileTwoUrls.slice(0, 12).map((d) => `      [${d.severity}/${d.scope}] ${path.relative(repoRoot, d.file)}: ${d.urls.map((x) => `${relU(x.url)}${x.loaded ? '' : '(seed-only)'}`).join(' | ')}`));
 }
-if (bundle) lines.push(`  bundle.mjs ${bundle.urls.length} URLs, origin mismatches ${bundle.originMismatch.length}; bare specifiers via import map ${bundle.bareSpecifiers.length}${bundle.bareSpecifiers.length ? ` [${bundle.bareSpecifiers.map((b) => b.spec).join(' ')}]` : ''}; bare missing from map ${bundle.bareMissing.length}${bundle.bareMissing.length ? ` [${bundle.bareMissing.join(' ')}]` : ''}; local imports ${bundle.localImports}; non-literal dynamic ${bundle.nonLiteralDynamic.length}`, ...top(bundle.originMismatch));
+if (bundle) lines.push(`  bundle.mjs ${bundle.urls.length} URLs, core URLs ${bundle.coreUrls.length}, origin mismatches ${bundle.originMismatch.length}; bare specifiers via import map ${bundle.bareSpecifiers.length}${bundle.bareSpecifiers.length ? ` [${bundle.bareSpecifiers.map((b) => b.spec).join(' ')}]` : ''}; bare missing from map ${bundle.bareMissing.length}${bundle.bareMissing.length ? ` [${bundle.bareMissing.join(' ')}]` : ''}; local imports ${bundle.localImports}; non-literal dynamic ${bundle.nonLiteralDynamic.length}`, ...top(bundle.originMismatch));
 lines.push(
 	`  bundles ${bundles.length} (${bundles.map((b) => `${new URL(b.url).pathname.split('/').pop()}${new URL(b.url).search}:${b.files.length}${b.deviceReached ? '' : '[seed-only]'}`).join(' ')})`,
 	`  inlined source files ${inlinedIn.size}, individually served files ${servedAs.size}`,

@@ -21,13 +21,6 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 					}
 				} catch {}
 				try {
-					// Under HMR the bundle.mjs require shim answers from the served core.
-					if (typeof g.require === 'function') {
-						const mod = g.require(moduleId);
-						if (mod) return { value: (mod.default ?? mod) || mod, via: 'require', moduleId };
-					}
-				} catch {}
-				try {
 					const nr = g.__nativeRequire;
 					if (typeof nr === 'function') {
 						const mod = nr(moduleId, '/');

@@ -1,4 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// @nativescript/core can't evaluate in Node; the overlay reads its classes only when drawing.
+vi.mock('@nativescript/core/application', () => ({}));
+vi.mock('@nativescript/core/color', () => ({}));
+vi.mock('@nativescript/core/ui', () => ({}));
 import { computeAndroidPanelLayout, hexRgbaToAndroidArgb } from './dev-overlay.js';
 import { getGlobalScope } from './global-scope.js';
 import { NS_DEV_SYMBOL_KEY } from './dev-globals.js';

@@ -66,9 +66,8 @@ export interface NsRuntimeConfigurePayload {
 
 /**
  * The native dev-host contract — mechanism only. The runtime exposes its
- * mechanism primitives as the `ns:module` builtin module (reachable via
- * `require("ns:module")`, `import ... from "ns:module"` and
- * `import("ns:module")` — see the iOS runtime's docs/ns-builtin-modules.md);
+ * mechanism primitives as the `ns:module` builtin module (loaded by
+ * `runtime-host.ts`; see the iOS runtime's docs/ns-builtin-modules.md);
  * every policy concern (boot orchestration, import.meta.hot, full reload,
  * CSS apply, worker teardown, WebSocket protocol) lives in JS inside
  * @nativescript/vite. Worker teardown in particular is fully userland: the
@@ -137,29 +136,6 @@ export function assertNsDevSessionDescriptor(session: unknown): asserts session 
 		if (typeof candidate.features !== 'object') {
 			throw new Error('Invalid dev session features');
 		}
-	}
-}
-
-/**
- * Resolve the dev host API from the `ns:module` builtin module via the
- * runtime's global CJS `require` (installed on the global object by
- * ModuleInternal). Always read through this function rather than requiring
- * the builtin directly so every consumer resolves the contract identically —
- * and degrades to an empty surface off-device (tests, non-NativeScript
- * environments, runtimes without the builtin).
- */
-export function readNsRuntimeDevHostApi(target: Partial<typeof globalThis> = globalThis): NsRuntimeDevHostApi {
-	const requireFn = (target as { require?: (specifier: string) => unknown }).require;
-	if (typeof requireFn !== 'function') {
-		return {};
-	}
-	try {
-		const api = requireFn('ns:module');
-		return api && typeof api === 'object' ? (api as NsRuntimeDevHostApi) : {};
-	} catch {
-		// No such built-in module — a runtime predating ns:module or a
-		// host whose require doesn't know the scheme.
-		return {};
 	}
 }
 

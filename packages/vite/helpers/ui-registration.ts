@@ -101,7 +101,7 @@ import 'virtual:ns-bundler-context';
 // Patch CSS accessors to be resilient to early default initializations before style exists
 (function(){
   try {
-    const __ui = (global.loadModule ? global.loadModule('@nativescript/core/ui') : (global.require ? global.require('@nativescript/core/ui') : null));
+    const __ui = global.loadModule ? global.loadModule('@nativescript/core/ui') : null;
     if (__ui && __ui.View) {
       const View = __ui.View;
       const props = ['order','flexGrow','flexShrink','flexWrapBefore','alignSelf'];
@@ -131,7 +131,7 @@ import 'virtual:ns-bundler-context';
 // Some XML builder paths attempt to load 'Frame' directly instead of the barrel.
 // We expose individual element names so global.loadModule('Frame') works.
 try {
-  const __ui = (global.loadModule ? global.loadModule('@nativescript/core/ui') : (global.require ? global.require('@nativescript/core/ui') : null));
+  const __ui = global.loadModule ? global.loadModule('@nativescript/core/ui') : null;
   if (__ui && global.registerModule) {
     const existsFn = global.moduleExists ? (n) => global.moduleExists(n) : () => false;
     Object.keys(__ui).forEach(k => {

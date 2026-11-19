@@ -15,11 +15,11 @@
 // callback invoked on the next macrotask with a synthesized NSNotification.
 //
 // Ordering contract: this MUST be installed before the app entry evaluates.
-// The /__ns_dev__/client bootstrap wrapper imports this module and the
-// app graph's @nativescript/core entry STATICALLY and calls the installer at its own
-// evaluation — the session bootstrap imports that wrapper before the entry,
+// The dev client bootstrap (`createNsDevClientModuleCode`) imports this module
+// and @nativescript/core STATICALLY and calls the installer at its own
+// evaluation — the session bootstrap imports that bootstrap before the entry,
 // so the wrap is deterministically in place when app code runs. (The full HMR
-// client module cannot own this: the wrapper starts it asynchronously, and
+// client module cannot own this: the bootstrap starts it asynchronously, and
 // its evaluation reliably loses the race against the entry graph.)
 
 /** Wrap one Application-like `.ios` object. Returns true when wrapped (or already wrapped). */

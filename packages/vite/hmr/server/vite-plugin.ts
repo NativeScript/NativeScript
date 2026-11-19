@@ -4,8 +4,7 @@ import net from 'node:net';
 import path from 'path';
 import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, VITE_HMR_WS_PROTOCOL, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
 import type { NsHmrStartOptions } from '../client/index.js';
-import { NS_DEV_EXPR } from '../shared/runtime/dev-globals.js';
-import { viteUrlForFile } from './vite-url.js';
+import { deviceUrlForGraphUrl, viteUrlForFile } from './vite-url.js';
 import { IMPORT_MAP_PATH } from './import-map-route.js';
 import { createDeviceRequestMiddleware, useFirst } from './device-requests.js';
 import { getServerOrigin } from './server-origin.js';
@@ -38,20 +37,6 @@ export async function resolveNonEvictableViteUrlPrefixes(server: ViteDevServer):
 	const root = server.config.root;
 	const coreFile = await resolveCoreEntryFile(server);
 	return [`${viteUrlForFile(corePackageDir(coreFile), root)}/`, `${viteUrlForFile(nsVitePackageDir(), root)}/`];
-}
-
-async function resolveBootstrapUrls(server: ViteDevServer, origin: string): Promise<{ client: string; moduleUrls: NsDevBootstrapModuleUrls }> {
-	const root = server.config.root;
-	const base = origin.replace(/\/+$/, '');
-	const urlFor = (file: string) => `${base}${viteUrlForFile(file, root)}`;
-	const coreFile = await resolveCoreEntryFile(server);
-	return {
-		client: urlFor(runtimeFile('../client/index.js')),
-		moduleUrls: {
-			launchBridge: urlFor(runtimeFile('../shared/runtime/launch-bridge.js')),
-			coreBridge: urlFor(coreFile),
-		},
-	};
 }
 
 /** The `@nativescript/core` package directory of its resolved entry file. */
@@ -103,7 +88,11 @@ export function resolveViteHmrWsUrl(origin: string, config: ViteHmrWsConfig): st
 }
 
 export const NS_DEV_SESSION_PATH = '/__ns_dev__/session';
-export const NS_DEV_CLIENT_PATH = '/__ns_dev__/client';
+
+const NS_DEV_CLIENT_ID = 'virtual:ns-dev-client';
+const NS_DEV_CLIENT_RESOLVED = '\0' + NS_DEV_CLIENT_ID;
+/** The root-relative URL the device requests the dev client bootstrap under. */
+export const NS_DEV_CLIENT_DEVICE_PATH = deviceUrlForGraphUrl(NS_DEV_CLIENT_RESOLVED);
 
 export function createNsDevSessionDescriptor(options: { projectRoot: string; origin: string; wsUrl: string; platform: NsDevPlatform; sessionId: string; mainEntryPathname?: string }): NsDevSessionDescriptor {
 	const origin = options.origin.replace(/\/$/, '');
@@ -113,7 +102,7 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; ori
 		sessionId: options.sessionId,
 		origin,
 		entryUrl: `${origin}${entryPathname}`,
-		clientUrl: `${origin}${NS_DEV_CLIENT_PATH}`,
+		clientUrl: `${origin}${NS_DEV_CLIENT_DEVICE_PATH}`,
 		wsUrl: options.wsUrl,
 		wsProtocol: VITE_HMR_WS_PROTOCOL,
 		platform: options.platform,
@@ -123,46 +112,38 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; ori
 	};
 }
 
-/** Absolute device URLs for the bootstrap's own imports. */
-export interface NsDevBootstrapModuleUrls {
-	/** The `@nativescript/core` entry at the URL the app graph loads it from, so the bootstrap shares its module record. */
-	coreBridge: string;
-	launchBridge: string;
-}
+/**
+ * The dev client bootstrap, served through Vite's transform like any module
+ * so import analysis writes the URL of everything it imports. The session
+ * bootstrap imports it before the app entry, which makes it the one
+ * deterministic point to wrap Application's launch observers
+ * (see shared/runtime/launch-bridge.ts).
+ */
+export function createNsDevClientModuleCode(start: NsHmrStartOptions): string {
+	return `import { installLaunchNotificationBridge } from '@nativescript/vite/hmr/shared/runtime/launch-bridge.js';
+import { nsDev } from '@nativescript/vite/hmr/shared/runtime/dev-globals.js';
+import { Application } from '@nativescript/core';
 
-export function createNsDevClientBootstrapCode(options: { clientImport: string; moduleUrls: NsDevBootstrapModuleUrls; start: NsHmrStartOptions }) {
-	const urls = options.moduleUrls;
-
-	return `
-import { installLaunchNotificationBridge as __nsInstallLaunchBridge } from ${JSON.stringify(urls.launchBridge)};
-import * as __nsCoreBridge from ${JSON.stringify(urls.coreBridge)};
-
-// The session bootstrap imports this module before the app entry, which makes
-// it the one deterministic point to wrap Application's launch observers
-// (see shared/runtime/launch-bridge.ts).
 try {
-	const __nsCoreNs = __nsCoreBridge && (__nsCoreBridge.default ?? __nsCoreBridge);
-	__nsInstallLaunchBridge(__nsCoreNs && __nsCoreNs.Application);
+	installLaunchNotificationBridge(Application);
 } catch (launchBridgeErr) {
 	console.warn('[ns-dev-client] launch-notification bridge install failed', launchBridgeErr);
 }
 
-const __nsHmrClientUrl = ${JSON.stringify(options.clientImport)};
-const __nsHmrStartOptions = ${JSON.stringify(options.start)};
-const __nsDev = ${NS_DEV_EXPR};
+const startOptions = ${JSON.stringify(start)};
 
 // The HMR socket opens only once the app has booted: socket traffic racing
 // the boot-time module fetches has crashed the native runtime.
-function __nsStartHmrClientAfterBoot() {
-	if (!__nsDev.bootComplete) {
-		setTimeout(__nsStartHmrClientAfterBoot, 100);
+function startHmrClientAfterBoot() {
+	if (!nsDev().bootComplete) {
+		setTimeout(startHmrClientAfterBoot, 100);
 		return;
 	}
-	import(__nsHmrClientUrl)
-		.then((mod) => mod.start(__nsHmrStartOptions))
-		.catch((error) => console.error('[ns-dev-client] failed to start the HMR client', __nsHmrClientUrl, error));
+	import('@nativescript/vite/hmr/client/index.js')
+		.then((mod) => mod.start(startOptions))
+		.catch((error) => console.error('[ns-dev-client] failed to start the HMR client', error));
 }
-__nsStartHmrClientAfterBoot();
+startHmrClientAfterBoot();
 `;
 }
 
@@ -189,6 +170,7 @@ export function pinWebSocketToken(config: { webSocketToken: string }): void {
 }
 
 const THIN_VITE_CLIENT_FILE = runtimeFile('../client/thin-vite-client.js');
+const THIN_VITE_CLIENT_SPECIFIER = '@nativescript/vite/hmr/client/thin-vite-client.js';
 
 /**
  * Serves the device HMR client (`hmr/client/thin-vite-client.ts`) as Vite's
@@ -196,22 +178,30 @@ const THIN_VITE_CLIENT_FILE = runtimeFile('../client/thin-vite-client.js');
  * before any plugin resolves it; resolving that id to our file keeps the
  * device URL `/@vite/client` and resolves the client's relative imports from
  * this package.
+ *
+ * The file is resolved by bare specifier, as the dev boot and client bootstrap
+ * import this package: a linked install is otherwise reached both through its
+ * symlink and its real path, and the modules the client shares with them load
+ * twice.
  */
 export function nsViteClientPlugin(): Plugin {
 	const clientIds = new Set<string>(['/@vite/client']);
+	let root = process.cwd();
 	return {
 		name: 'nativescript-vite-client',
 		apply: 'serve',
 		enforce: 'pre',
 		configResolved(config) {
+			root = config.root;
 			for (const alias of config.resolve.alias) {
 				const matches = alias.find instanceof RegExp ? alias.find.test('/@vite/client') : alias.find === '/@vite/client';
 				if (matches && typeof alias.replacement === 'string') clientIds.add(alias.replacement);
 			}
 		},
-		resolveId(id) {
-			if (this.environment?.name !== 'client') return null;
-			return clientIds.has(id) ? THIN_VITE_CLIENT_FILE : null;
+		async resolveId(id, _importer, options) {
+			if (this.environment?.name !== 'client' || !clientIds.has(id)) return null;
+			const resolved = await this.resolve(THIN_VITE_CLIENT_SPECIFIER, path.join(root, 'index.html'), { ...options, skipSelf: true });
+			return resolved && !resolved.external ? resolved.id.split('?', 1)[0] : THIN_VITE_CLIENT_FILE;
 		},
 	};
 }
@@ -230,9 +220,9 @@ function realpathOrSelf(dir: string): string {
  * Adds `dirs` to the resolved `server.fs.allow`, as given and as real paths:
  * the resolver yields symlinked ids under `--preserve-symlinks` and real paths
  * otherwise. Vite reads the list on every check, so entries added after
- * config resolution count. Files the device requests directly (bootstrap
- * modules, `bundle.mjs` externals, import-map targets) are checked against
- * it before any import analysis marks them safe.
+ * config resolution count. Files the device requests directly (import-map
+ * targets, the core URLs of Android app components) are checked against it
+ * before any import analysis marks them safe.
  */
 export function allowServedDirs(config: { server: { fs: { allow: string[] } } }, dirs: Iterable<string>): void {
 	const allow = config.server.fs.allow;
@@ -270,10 +260,35 @@ export function allowDeviceHost(config: { server: { allowedHosts: string[] | tru
 
 export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?: boolean }): Plugin {
 	let config: ResolvedConfig | undefined;
+	let devServer: ViteDevServer | undefined;
 	const sessionId = new Date().toISOString();
 
 	return {
 		name: 'ns-hmr-client',
+		resolveId(id) {
+			if (this.environment?.name !== 'client') return null;
+			return id === NS_DEV_CLIENT_ID || id === NS_DEV_CLIENT_RESOLVED ? NS_DEV_CLIENT_RESOLVED : null;
+		},
+		load(id) {
+			if (id !== NS_DEV_CLIENT_RESOLVED || !devServer) return null;
+			// Every value here is fixed for the process (origin, pinned token,
+			// root), so Vite's cached transform of this module stays valid.
+			const origin = getServerOrigin(devServer);
+			const session = createNsDevSessionDescriptor({
+				projectRoot: devServer.config.root,
+				origin,
+				wsUrl: resolveViteHmrWsUrl(origin, devServer.config),
+				platform: opts.platform,
+				sessionId,
+			});
+			return createNsDevClientModuleCode({
+				wsUrl: session.wsUrl,
+				wsProtocol: session.wsProtocol,
+				entryUrl: session.entryUrl,
+				origin: session.origin,
+				root: devServer.config.root,
+			});
+		},
 		configResolved(c) {
 			config = c;
 			if (c.command === 'serve') {
@@ -286,6 +301,7 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 			}
 		},
 		configureServer(server) {
+			devServer = server;
 			// One origin for every URL handed to the device: the one bundle.mjs
 			// was built with, never the request's Host header.
 			const getOrigin = () => getServerOrigin(server);
@@ -300,32 +316,6 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 			server.middlewares.use(async (req, res, next) => {
 				try {
 					const url = new URL(req.url || '', 'http://localhost');
-					if (url.pathname === NS_DEV_CLIENT_PATH) {
-						if (sendCorsPreflight(req, res)) return;
-						const origin = getOrigin();
-						const session = createNsDevSessionDescriptor({
-							projectRoot: server.config.root,
-							origin,
-							wsUrl: resolveViteHmrWsUrl(origin, server.config),
-							platform: opts.platform,
-							sessionId,
-						});
-						const bootstrap = await resolveBootstrapUrls(server, origin);
-						const code = createNsDevClientBootstrapCode({
-							clientImport: bootstrap.client,
-							moduleUrls: bootstrap.moduleUrls,
-							start: {
-								wsUrl: session.wsUrl,
-								wsProtocol: session.wsProtocol,
-								entryUrl: session.entryUrl,
-								origin: session.origin,
-								root: server.config.root,
-							},
-						});
-						res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-						res.end(code);
-						return;
-					}
 					if (url.pathname !== NS_DEV_SESSION_PATH) return next();
 					if (sendCorsPreflight(req, res)) return;
 

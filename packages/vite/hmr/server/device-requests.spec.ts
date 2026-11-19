@@ -10,11 +10,10 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 const ORIGIN = 'http://192.168.1.2:5173';
 vi.mock('./server-origin.js', () => ({ getServerOrigin: () => ORIGIN }));
 
-import { NS_DEV_EXPR } from '../shared/runtime/dev-globals.js';
-import { nsCoreRegistrationPlugin } from './core-registration.js';
+import { nativescriptBuiltinModules } from '../../helpers/builtin-modules.js';
 import { stripDevNonce } from './device-requests.js';
 import { getServedModules } from './served-modules.js';
-import { nsHmrClientVitePlugin, nsViteClientPlugin } from './vite-plugin.js';
+import { NS_DEV_CLIENT_DEVICE_PATH, nsHmrClientVitePlugin, nsViteClientPlugin } from './vite-plugin.js';
 
 describe('stripDevNonce', () => {
 	it('drops the param and keeps the others in order, with no dangling separator', () => {
@@ -47,6 +46,7 @@ describe('device requests on a real Vite server', () => {
 			'app/src/main.js': "import { core } from '@nativescript/core';\nexport const load = () => import('/src/lazy.js');\nexport const app = core;\n",
 			'app/src/lazy.js': "import { dep } from './dep.js';\nexport const lazy = dep;\n",
 			'app/src/dep.js': "export const dep = 'a';\n",
+			'app/src/builtins.js': "import * as nsModule from 'ns:module';\nexport const util = () => import('ns:util');\nexport const api = nsModule;\n",
 			'core/package.json': JSON.stringify({ name: '@nativescript/core', main: 'index.js' }),
 			'core/index.js': "export const core = 'core';\n",
 		};
@@ -70,10 +70,16 @@ describe('device requests on a real Vite server', () => {
 			configFile: false,
 			logLevel: 'silent',
 			appType: 'custom',
-			resolve: { alias: [{ find: /^@nativescript\/core$/, replacement: coreDir }] },
+			resolve: {
+				alias: [
+					{ find: /^@nativescript\/core$/, replacement: coreDir },
+					// This package's sources, under the names its published build has.
+					{ find: /^@nativescript\/vite\/(.*)\.js$/, replacement: `${packageDir}/$1.ts` },
+				],
+			},
 			optimizeDeps: { noDiscovery: true, include: [] },
 			server: { middlewareMode: true, ws: false, watch: null, fs: { allow: [root] } },
-			plugins: [prePlugin, nsViteClientPlugin(), nsHmrClientVitePlugin({ platform: 'ios' }), nsCoreRegistrationPlugin()],
+			plugins: [prePlugin, nativescriptBuiltinModules(), nsViteClientPlugin(), nsHmrClientVitePlugin({ platform: 'ios' })],
 		});
 		httpServer = http.createServer(server.middlewares);
 		await new Promise<void>((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
@@ -134,18 +140,37 @@ describe('device requests on a real Vite server', () => {
 
 	it('resolves /@vite/client to the NativeScript client through Vite’s alias', async () => {
 		const resolved = await server.environments.client.pluginContainer.resolveId('/@vite/client');
-		expect(resolved?.id).toBe(path.join(packageDir, 'hmr/client/thin-vite-client.js'));
+		expect(resolved?.id).toBe(path.join(packageDir, 'hmr/client/thin-vite-client.ts'));
 	});
 
 	it('allows serving this package and the resolved @nativescript/core outside the root', async () => {
 		expect((await get(`/@fs${packageDir}/hmr/server/vite-url.ts`)).status).toBe(200);
-		const core = await get(`/@fs${coreDir}/index.js`);
-		expect(core.status).toBe(200);
-		expect(core.body).toContain(`import * as __ns_core_self__ from "/@fs${coreDir}/index.js";`);
-		expect(core.body).toContain('if (!t[k]) t[k] = v;');
-		expect(core.body).toContain(`const d = ${NS_DEV_EXPR};`);
-		expect(core.body).toContain('["@nativescript/core/index.js","@nativescript/core/index","@nativescript/core"]');
+		expect((await get(`/@fs${coreDir}/index.js`)).status).toBe(200);
 		expect((await get(`/@fs${tmp}/outside.js`)).status).not.toBe(200);
+	});
+
+	it('serves runtime builtins under their own specifier, static and dynamic', async () => {
+		const { status, body } = await get('/src/builtins.js');
+		expect(status).toBe(200);
+		expect(body).toContain('from "ns:module"');
+		expect(body).toContain('import("ns:util")');
+		expect(body).not.toContain('/@id/ns:');
+	});
+
+	it('serves the dev client bootstrap through Vite, every import written by import analysis', async () => {
+		const session = JSON.parse((await get('/__ns_dev__/session')).body);
+		expect(session.clientUrl).toBe(`${ORIGIN}${NS_DEV_CLIENT_DEVICE_PATH}`);
+
+		const { status, type, body } = await get(NS_DEV_CLIENT_DEVICE_PATH);
+		expect(status).toBe(200);
+		expect(type).toMatch(/javascript/);
+		expect(body).toContain(`from "/@fs${packageDir}/hmr/shared/runtime/launch-bridge.ts"`);
+		expect(body).toContain(`from "/@fs${packageDir}/hmr/shared/runtime/dev-globals.ts"`);
+		expect(body).toContain(`from "/@fs${coreDir}/index.js"`);
+		expect(body).toContain(`import("${ORIGIN}/@fs${packageDir}/hmr/client/index.ts")`);
+		expect(body).not.toMatch(/["']@nativescript\//);
+		const start = JSON.parse(body.match(/const startOptions = (.*);/)![1]);
+		expect(start).toEqual({ wsUrl: session.wsUrl, wsProtocol: 'vite-hmr', entryUrl: `${ORIGIN}/src/main.js`, origin: ORIGIN, root });
 	});
 
 	it("passes Vite's host check for the NS_HMR_HOST hostname only", async () => {

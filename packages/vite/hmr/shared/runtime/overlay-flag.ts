@@ -1,6 +1,6 @@
 /**
  * The single implementation of the `NS_VITE_PROGRESS_OVERLAY` opt-out gate.
- * Bundled into `bundle.mjs` only, where `define` substitutes the flag.
+ * Served in dev, where Vite's `/@vite/env` installs the define on globalThis.
  */
 declare const __NS_HMR_PROGRESS_OVERLAY_ENABLED__: boolean | undefined;
 

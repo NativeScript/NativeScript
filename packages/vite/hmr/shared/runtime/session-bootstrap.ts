@@ -1,4 +1,5 @@
-import { assertNsDevSessionDescriptor, readNsRuntimeDevHostApi, type NsDevSessionDescriptor, type NsRuntimeDevHostApi } from './browser-runtime-contract.js';
+import { assertNsDevSessionDescriptor, type NsDevSessionDescriptor, type NsRuntimeDevHostApi } from './browser-runtime-contract.js';
+import { loadNsRuntimeDevHostApi } from './runtime-host.js';
 import { ensureHmrDevOverlayRuntimeInstalled, setHmrBootStage } from './dev-overlay.js';
 import { formatBootTimeline, type BootTrace } from './boot-timeline.js';
 import { applyMonotonicBootProgress, BOOT_IMPORT_DETAIL, clearBootProgressState, computeBootImportProgress } from './boot-progress.js';
@@ -86,14 +87,7 @@ function getRuntimeConfigUrl(session: NsDevSessionDescriptor) {
 }
 
 async function configureLoaderImportMap(runtimeConfigUrl: string, runtimeApi: NsRuntimeDevHostApi, verbose?: boolean) {
-	let configureLoader = runtimeApi.configureLoader;
-	if (typeof configureLoader !== 'function') {
-		// The caller may have captured a stale/empty API snapshot (e.g. a
-		// test stub, or a capture taken before the realm was fully set up).
-		// Re-resolve `ns:module` fresh — a stale `{}` snapshot must not
-		// decide the fate of the whole dev session.
-		configureLoader = readNsRuntimeDevHostApi(getGlobalScope()).configureLoader;
-	}
+	const configureLoader = runtimeApi.configureLoader;
 	if (typeof configureLoader !== 'function') {
 		// NOT verbose-gated on purpose. Without the import map, bare specifiers
 		// the device resolves at runtime are unresolvable, which surfaces far
@@ -207,7 +201,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			});
 		}
 
-		const runtimeApi = readNsRuntimeDevHostApi(globalThis);
+		const runtimeApi = await loadNsRuntimeDevHostApi();
 
 		const tImap = Date.now();
 		const alreadyConfigured = importMapConfigured;

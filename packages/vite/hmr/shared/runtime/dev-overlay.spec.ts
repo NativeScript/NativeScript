@@ -1,4 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// @nativescript/core can't evaluate in Node; the overlay reads its classes only when drawing.
+vi.mock('@nativescript/core/application', () => ({}));
+vi.mock('@nativescript/core/color', () => ({}));
+vi.mock('@nativescript/core/ui', () => ({}));
 import { computeAndroidToastMargin, computeIosOverlayLayout, computeIosOverlayWindowLevel, iosOverlayCapturesTouch, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, getHmrDevOverlayPosition } from './dev-overlay.js';
 import { applySnapshotToIosRefs } from './dev-overlay-ios.js';
 import { applySnapshotToLiveRefs } from './dev-overlay-tree.js';

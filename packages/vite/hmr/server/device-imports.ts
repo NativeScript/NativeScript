@@ -1,17 +1,24 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { initSync, parse } from 'es-module-lexer';
+import { isBuiltinModuleId } from '../../helpers/builtin-modules.js';
+
+const ID_PREFIX = '/@id/';
 
 /**
- * Prefixes `origin` to every dynamic `import('/…')` whose specifier is a
- * root-relative string literal, query untouched. Static imports stay
- * root-relative.
+ * Rewrites a served module's import specifiers into the form the device
+ * runtime resolves:
+ * - a runtime builtin (`ns:module`), which Vite's import analysis serves as
+ *   `/@id/ns:module`, goes back to the builtin specifier;
+ * - every dynamic `import('/…')` whose specifier is a root-relative string
+ *   literal gets `origin` prefixed, query untouched. NativeScript runtimes
+ *   resolve a dynamic `import()` of a non-`http(s)` specifier on the
+ *   filesystem and strip its query.
  *
- * NativeScript runtimes resolve a dynamic `import()` of a non-`http(s)`
- * specifier on the filesystem and strip its query, so the device can only
- * follow absolute URLs there.
+ * Other static imports stay root-relative.
  */
-export function absolutizeDynamicImports(code: string, origin: string): string {
-	if (!code.includes('import(') && !code.includes('import (')) return code;
+export function rewriteDeviceImports(code: string, origin: string): string {
+	const hasDynamic = code.includes('import(') || code.includes('import (');
+	if (!hasDynamic && !code.includes(ID_PREFIX)) return code;
 	initSync();
 	let imports: ReturnType<typeof parse>[0];
 	try {
@@ -23,13 +30,21 @@ export function absolutizeDynamicImports(code: string, origin: string): string {
 	let out = '';
 	let last = 0;
 	for (const imp of imports) {
-		if (imp.d < 0 || !imp.n || !imp.n.startsWith('/') || imp.n.startsWith('//')) continue;
-		const quote = code[imp.s];
-		if (quote !== '"' && quote !== "'") continue;
-		const start = imp.s + 1;
+		if (!imp.n || !imp.n.startsWith('/') || imp.n.startsWith('//')) continue;
+		const dynamic = imp.d > -1;
+		const quote = dynamic ? code[imp.s] : '';
+		if (dynamic && quote !== '"' && quote !== "'") continue;
+		const start = dynamic ? imp.s + 1 : imp.s;
+		const end = dynamic ? imp.e - 1 : imp.e;
 		if (code[start] !== '/') continue;
-		out += code.slice(last, start) + base;
-		last = start;
+		const builtin = imp.n.startsWith(ID_PREFIX) ? imp.n.slice(ID_PREFIX.length).split('?', 1)[0] : '';
+		if (builtin && isBuiltinModuleId(builtin)) {
+			out += code.slice(last, start) + builtin;
+			last = end;
+		} else if (dynamic) {
+			out += code.slice(last, start) + base;
+			last = start;
+		}
 	}
 	return last === 0 ? code : out + code.slice(last);
 }
@@ -49,13 +64,13 @@ function toBuffer(chunk: unknown, encoding: unknown): Buffer {
 }
 
 /**
- * Applies {@link absolutizeDynamicImports} to the body of a 2xx JavaScript
+ * Applies {@link rewriteDeviceImports} to the body of a 2xx JavaScript
  * response, whichever middleware answers it. Rewriting the response rather
  * than the transform result keeps Vite's own specifiers intact: its soft
  * invalidation re-stamps `?t=` only on specifiers equal to an imported
  * module's root-relative URL.
  */
-export function absolutizeDynamicImportsInResponse(req: IncomingMessage, res: ServerResponse, getOrigin: () => string): void {
+export function rewriteDeviceImportsInResponse(req: IncomingMessage, res: ServerResponse, getOrigin: () => string): void {
 	const write = res.write;
 	const end = res.end;
 	// undefined: undecided until the first write/end, when status and headers are final.
@@ -83,7 +98,7 @@ export function absolutizeDynamicImportsInResponse(req: IncomingMessage, res: Se
 		let body = original;
 		if (original.length) {
 			const code = original.toString('utf8');
-			const rewritten = absolutizeDynamicImports(code, getOrigin());
+			const rewritten = rewriteDeviceImports(code, getOrigin());
 			if (rewritten !== code) body = Buffer.from(rewritten, 'utf8');
 		}
 		// The ETag stays Vite's: for one server origin the rewrite is a pure function of the body.

@@ -1,5 +1,4 @@
-import { getGlobalScope } from './global-scope.js';
-import { readNsRuntimeDevHostApi } from './browser-runtime-contract.js';
+import { nsRuntimeDevHostApi } from './runtime-host.js';
 import { nsDev } from './dev-globals.js';
 
 /**
@@ -16,7 +15,7 @@ import { nsDev } from './dev-globals.js';
 export function setDevBootComplete(value: boolean): void {
 	nsDev().bootComplete = value;
 	try {
-		const nativeSetter = readNsRuntimeDevHostApi(getGlobalScope()).setDevBootComplete;
+		const nativeSetter = nsRuntimeDevHostApi().setDevBootComplete;
 		if (typeof nativeSetter === 'function') {
 			nativeSetter(value);
 		}
