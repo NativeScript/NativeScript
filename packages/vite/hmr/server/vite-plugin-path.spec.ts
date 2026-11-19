@@ -1,4 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('./server-origin.js', () => ({ getServerOrigin: () => 'http://192.168.1.5:5173' }));
+
 import { allowDeviceHost, allowServedDirs, corePackageDir, createNsDevClientBootstrapCode, createNsDevSessionDescriptor, nsViteClientPlugin, pinWebSocketToken, resolveViteHmrWsUrl, type NsDevBootstrapModuleUrls, type ViteHmrWsConfig } from './vite-plugin.js';
 import { NS_DEV_EXPR } from '../shared/runtime/dev-globals.js';
 
@@ -77,7 +80,6 @@ describe('corePackageDir', () => {
 
 const ORIGIN = 'http://192.168.1.5:5173';
 const MODULE_URLS: NsDevBootstrapModuleUrls = {
-	vendorBootstrap: `${ORIGIN}/@fs/pkg/vite/hmr/shared/runtime/vendor-bootstrap.js`,
 	entryRuntime: `${ORIGIN}/@fs/pkg/vite/hmr/entry-runtime.js`,
 	launchBridge: `${ORIGIN}/@fs/pkg/vite/hmr/shared/runtime/launch-bridge.js`,
 	coreBridge: `${ORIGIN}/node_modules/@nativescript/core/index.js`,
@@ -91,7 +93,6 @@ const START = {
 
 function bootstrapCode(verbose = false) {
 	return createNsDevClientBootstrapCode({
-		origin: ORIGIN,
 		clientImport: `${ORIGIN}/@fs/pkg/vite/hmr/client/index.js`,
 		verbose,
 		moduleUrls: MODULE_URLS,
@@ -115,24 +116,26 @@ describe('createNsDevClientBootstrapCode', () => {
 		expect(code).not.toContain('ns:angular-update');
 	});
 
-	it('installs app.css, the launch bridge and the vendor registry before the HMR client', () => {
+	it('installs app.css and the launch bridge before the HMR client', () => {
 		const code = bootstrapCode();
 		expect(code).toContain(`import * as __nsCoreBridge from "${MODULE_URLS.coreBridge}";`);
-		expect(code).toContain(`import { vendorManifest as __nsVendorManifest, __nsVendorModuleMap } from "${ORIGIN}/__ns_dev__/vendor.mjs";`);
 		const cssAt = code.indexOf('__nsInstallHttpCoreCssSupport(__nsCoreBridge, false);');
 		const bridgeAt = code.indexOf('__nsInstallLaunchBridge(__nsCoreNs && __nsCoreNs.Application);');
-		const vendorAt = code.indexOf('__nsInstallVendorBootstrap(__nsVendorManifest, __nsVendorModuleMap, false);');
 		const clientAt = code.indexOf('__nsStartHmrClientAfterBoot();\n');
 		expect(cssAt).toBeGreaterThan(-1);
 		expect(cssAt).toBeLessThan(bridgeAt);
-		expect(bridgeAt).toBeLessThan(vendorAt);
-		expect(vendorAt).toBeLessThan(clientAt);
+		expect(bridgeAt).toBeLessThan(clientAt);
+	});
+
+	it('imports only absolute URLs, so the device never consults the import map for it', () => {
+		const imports = [...bootstrapCode().matchAll(/^import .* from "([^"]+)";$/gm)].map((m) => m[1]);
+		expect(imports.length).toBeGreaterThan(0);
+		expect(imports.every((url) => url.startsWith(`${ORIGIN}/`))).toBe(true);
 	});
 
 	it('passes the verbose flag to the boot helpers', () => {
 		const code = bootstrapCode(true);
 		expect(code).toContain('__nsInstallHttpCoreCssSupport(__nsCoreBridge, true);');
-		expect(code).toContain('__nsInstallVendorBootstrap(__nsVendorManifest, __nsVendorModuleMap, true);');
 	});
 });
 
@@ -140,31 +143,27 @@ describe('nsHmrClientVitePlugin middleware', () => {
 	const SERVER_ORIGIN = 'http://192.168.1.5:5173';
 
 	async function serve(pathname: string) {
+		// A fresh module instance: the pinned webSocketToken is module state.
 		vi.resetModules();
-		vi.doMock('./server-origin.js', () => ({ getServerOrigin: () => SERVER_ORIGIN }));
-		try {
-			const { nsHmrClientVitePlugin } = await import('./vite-plugin.js');
-			const middlewares: Array<(req: any, res: any, next: () => void) => unknown> = [];
-			const server: any = {
-				config: { root: '/app', base: '/', webSocketToken: 'tok-1', define: {}, server: { port: 5173, hmr: { path: '/vite-hmr' }, fs: { allow: [] }, allowedHosts: [] } },
-				middlewares: { use: (fn: any) => middlewares.push(fn), stack: [] },
-				environments: { client: { pluginContainer: { resolveId: async () => ({ id: '/app/node_modules/@nativescript/core/index.js' }) } } },
-			};
-			const plugin = nsHmrClientVitePlugin({ platform: 'android' });
-			(plugin.configResolved as any)(server.config);
-			(plugin.configureServer as any)(server);
-			let body = '';
-			const res: any = { setHeader: () => {}, end: (chunk: string) => (body = chunk) };
-			const req = { url: pathname, method: 'GET', headers: { host: 'evil.example:9999' } };
-			for (const middleware of middlewares) {
-				let calledNext = false;
-				await middleware(req, res, () => (calledNext = true));
-				if (!calledNext) break;
-			}
-			return body;
-		} finally {
-			vi.doUnmock('./server-origin.js');
+		const { nsHmrClientVitePlugin } = await import('./vite-plugin.js');
+		const middlewares: Array<(req: any, res: any, next: () => void) => unknown> = [];
+		const server: any = {
+			config: { root: '/app', base: '/', webSocketToken: 'tok-1', define: {}, server: { port: 5173, hmr: { path: '/vite-hmr' }, fs: { allow: [] }, allowedHosts: [] } },
+			middlewares: { use: (fn: any) => middlewares.push(fn), stack: [] },
+			environments: { client: { pluginContainer: { resolveId: async () => ({ id: '/app/node_modules/@nativescript/core/index.js' }) } } },
+		};
+		const plugin = nsHmrClientVitePlugin({ platform: 'android' });
+		(plugin.configResolved as any)(server.config);
+		(plugin.configureServer as any)(server);
+		let body = '';
+		const res: any = { setHeader: () => {}, end: (chunk: string) => (body = chunk) };
+		const req = { url: pathname, method: 'GET', headers: { host: 'evil.example:9999' } };
+		for (const middleware of middlewares) {
+			let calledNext = false;
+			await middleware(req, res, () => (calledNext = true));
+			if (!calledNext) break;
 		}
+		return body;
 	}
 
 	it('builds the session from the server origin, not the Host header', async () => {

@@ -1,11 +1,10 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import * as esbuild from 'esbuild';
 import { build, type Plugin, type UserConfig } from 'vite';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 
-import { builtinModulesEsbuildPlugin, isBuiltinModuleId, nativescriptBuiltinModules, resetBuiltinModules } from './builtin-modules.js';
+import { isBuiltinModuleId, nativescriptBuiltinModules, resetBuiltinModules } from './builtin-modules.js';
 
 describe('builtin modules', () => {
 	afterEach(() => resetBuiltinModules());
@@ -86,33 +85,6 @@ describe('builtin modules', () => {
 			write('plain.js', `import { inspect } from 'ns:util';\nconsole.log(inspect);`);
 
 			await expect(bundle('plain.js', [])).rejects.toThrow(/ns:util/);
-		});
-	});
-
-	describe('esbuild bundles', () => {
-		it('externalizes builtins ahead of other resolvers', async () => {
-			nativescriptBuiltinModules({ include: ['node:worker_threads'] });
-			const result = await esbuild.build({
-				stdin: { contents: `import { inspect } from 'ns:util';\nimport { Worker } from 'node:worker_threads';\nconsole.log(inspect, Worker);`, loader: 'js' },
-				bundle: true,
-				write: false,
-				format: 'esm',
-				plugins: [
-					builtinModulesEsbuildPlugin(),
-					{
-						name: 'stub-everything',
-						setup(b) {
-							b.onResolve({ filter: /.*/ }, () => ({ path: 'stub', namespace: 'stub' }));
-							b.onLoad({ filter: /.*/, namespace: 'stub' }, () => ({ contents: 'throw new Error("stubbed")' }));
-						},
-					},
-				],
-			});
-			const output = result.outputFiles[0].text;
-
-			expect(output).toContain('from "ns:util"');
-			expect(output).toContain('from "node:worker_threads"');
-			expect(output).not.toContain('stubbed');
 		});
 	});
 });

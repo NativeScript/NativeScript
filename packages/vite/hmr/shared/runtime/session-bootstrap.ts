@@ -96,10 +96,9 @@ async function configureLoaderImportMap(runtimeConfigUrl: string, runtimeApi: Ns
 		configureLoader = readNsRuntimeDevHostApi(getGlobalScope()).configureLoader;
 	}
 	if (typeof configureLoader !== 'function') {
-		// NOT verbose-gated on purpose. Without the import map, every bare
-		// specifier in served modules (e.g. `@nativescript/core` inside the
-		// vendor view) is unresolvable and the dev session degrades into an
-		// undebuggable stall. Surface the contract violation loudly with the
+		// NOT verbose-gated on purpose. Without the import map, bare specifiers
+		// the device resolves at runtime are unresolvable, which surfaces far
+		// from its cause. Surface the contract violation loudly with the
 		// remediation, then continue so file-based flows still work.
 		console.error('[ns-entry] ns:module configureLoader is unavailable — the import map cannot be installed and bare-specifier imports WILL fail. Update @nativescript/ios to a runtime that provides the ns:module builtin module.');
 		setHmrBootStage('configuring-import-map', {

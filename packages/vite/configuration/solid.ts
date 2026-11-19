@@ -3,11 +3,10 @@ import path from 'path';
 import alias from '@rollup/plugin-alias';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { findMonorepoWorkspaceRoot, getProjectRootPath } from '../helpers/project.js';
+import { getProjectRootPath } from '../helpers/project.js';
 import { mergeConfig, type UserConfig } from 'vite';
 import { baseConfig } from './base.js';
 import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
-import { findSolidPackagesShippingJsx } from '../hmr/frameworks/solid/build/solid-jsx-deps.js';
 import { resolveSolidDevEntry, SOLID_RUNTIME_PACKAGES } from '../helpers/solid-runtime.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -83,38 +82,7 @@ const buildSolidPlugins = (prod: boolean) => [
 
 export const solidConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
 	const prod = mode !== 'development';
-	const projectRoot = getProjectRootPath();
-	const monorepoRoot = findMonorepoWorkspaceRoot(projectRoot);
-	// Any Solid library that ships `.jsx`/`.tsx` files in its published
-	// output (e.g. `solid-navigation`'s `dist/src/*.jsx`) MUST bypass
-	// Vite's depscanner. The depscanner concatenates the package into
-	// `node_modules/.vite/deps/<pkg>.js` with the JSX preserved, then
-	// `vite:import-analysis` hits the first JSX expression and aborts the
-	// dev server with `Failed to parse source for import analysis…`. The
-	// `vite-plugin-solid` `transform` hook only runs on ids ending in
-	// `.jsx`/`.tsx`, so it never sees the pre-bundled `.js` to fix it.
-	// Excluding these packages routes them through the normal serve
-	// pipeline, where the original `.jsx` ids match the Solid plugin's
-	// filter. See `hmr/frameworks/solid/build/solid-jsx-deps.ts` for the detection rules.
-	const solidJsxPackages = findSolidPackagesShippingJsx(projectRoot, monorepoRoot);
 	return mergeConfig(baseConfig({ mode, flavor: 'solid' }), {
 		plugins: [...getTypeCheckPlugins('solid', options.typeCheck), ...buildSolidPlugins(prod)],
-		optimizeDeps: {
-			// Defense-in-depth: keep `module` / `node:module` out of the
-			// depscanner's pre-bundle set even if a downstream config swaps
-			// out the base `optimizeDeps.exclude`. The root rationale (and the
-			// canonical exclude list) lives in `configuration/base.ts`; see
-			// the comment above `optimizeDepsExclude` there for the full
-			// css-tree → createRequire → HMR rewrite chain that necessitates
-			// this. Vite's `mergeConfig` concatenates `exclude` arrays, so
-			// duplicating these here is harmless.
-			//
-			// Also exclude our own Solid HMR runtime helper. If the depscanner
-			// pre-bundles `@nativescript/vite/solid-bootstrap`, the device is
-			// served the bare specifier (which the package `exports` subpath
-			// map doesn't resolve there) and 404s. Excluding it routes
-			// the import through normal resolution → the real file is served.
-			exclude: ['module', 'node:module', '@nativescript/vite/solid-bootstrap', ...solidJsxPackages],
-		},
 	});
 };

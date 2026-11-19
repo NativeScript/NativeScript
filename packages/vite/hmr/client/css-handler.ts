@@ -1,4 +1,5 @@
-import { ENV_VERBOSE as VERBOSE, getCore } from './utils.js';
+import { addTaggedAdditionalCSS, Application, removeTaggedAdditionalCSS } from '@nativescript/core';
+import { ENV_VERBOSE as VERBOSE } from './utils.js';
 import { getAppCssApplier } from '../shared/runtime/app-css-applier.js';
 import { restyleRootAndModals } from '../shared/runtime/restyle-roots.js';
 import type { CssUpdateItem } from '../shared/protocol.js';
@@ -7,20 +8,6 @@ import type { CssUpdateItem } from '../shared/protocol.js';
 // `helpers/main-entry.ts` and `entry-runtime.ts::APP_CSS_TAG` so HMR's
 // remove/add pair replaces the boot-time selectors instead of stacking.
 export const APP_CSS_TAG = 'app.css';
-
-type TaggedCssApi = {
-	add?: (cssText: string, tag: string) => unknown;
-	remove?: (tag: string) => unknown;
-};
-
-function resolveTaggedCssApi(): TaggedCssApi {
-	const add = getCore('addTaggedAdditionalCSS');
-	const remove = getCore('removeTaggedAdditionalCSS');
-	if (typeof add === 'function' && typeof remove === 'function') {
-		return { add, remove };
-	}
-	return {};
-}
 
 // CSS helper: apply CSS and refresh the current page so new styles render.
 //
@@ -51,20 +38,16 @@ export function applyCssText(cssText: string, tag: string = APP_CSS_TAG): void {
 		// Replace selectors via remove + add tagged pair so deleted
 		// rules disappear (the additive `Application.addCss` cannot
 		// undo previously installed selectors).
-		const taggedCss = resolveTaggedCssApi();
-		const Application = getCore('Application');
 		let appliedTagged = false;
-		if (taggedCss.add && taggedCss.remove) {
-			try {
-				taggedCss.remove(tag);
-				taggedCss.add(cssText, tag);
-				appliedTagged = true;
-				if (VERBOSE) console.info(`[ns-hmr] CSS applied via tagged replace (tag=${tag})`);
-			} catch (taggedError: any) {
-				console.warn('[ns-hmr] tagged CSS replace failed, falling back to addCss:', taggedError?.message || String(taggedError));
-			}
+		try {
+			removeTaggedAdditionalCSS(tag);
+			addTaggedAdditionalCSS(cssText, tag);
+			appliedTagged = true;
+			if (VERBOSE) console.info(`[ns-hmr] CSS applied via tagged replace (tag=${tag})`);
+		} catch (taggedError: any) {
+			console.warn('[ns-hmr] tagged CSS replace failed, falling back to addCss:', taggedError?.message || String(taggedError));
 		}
-		if (!appliedTagged && Application && Application.addCss) {
+		if (!appliedTagged && Application?.addCss) {
 			Application.addCss(cssText);
 			if (VERBOSE) console.info('[ns-hmr] CSS applied via addCss (additive fallback)');
 		}

@@ -2,7 +2,6 @@ import { setHmrBootStage } from './dev-overlay.js';
 import { clearBootPlaceholderRefs, hasBootPlaceholderRefs, setBootPlaceholderRefs } from './dev-overlay-tree.js';
 import { buildPlaceholderPage } from './root-placeholder-view.js';
 import { getGlobalScope } from './global-scope.js';
-import { getVendorRequire } from './vendor-resolve.js';
 import { markDevBootComplete } from './boot-complete.js';
 import { nsDev } from './dev-globals.js';
 import { isResetRootPatched, markResetRootPatched, restorePlaceholder, setRestorePlaceholder } from './placeholder-hooks.js';
@@ -46,11 +45,9 @@ function getCommittedRootView(application: any, placeholderRoot: any): any | nul
 	const primary = probe(application);
 	if (primary) return primary;
 
-	// Vite HMR realm split: Angular's `Application.resetRootView` may have
-	// committed the real root on a different Application instance than the
-	// one the placeholder/early hook patched. Scan every Application we
-	// know about so we can detect the commit regardless of which twin
-	// Angular actually wrote to.
+	// The framework may have committed the real root on another Application
+	// instance than the one the placeholder/early hook patched, so scan
+	// every Application we know about.
 	try {
 		const known = nsDev().knownApplications || [];
 		for (const app of known) {
@@ -286,16 +283,9 @@ export function installRootPlaceholder(verbose?: boolean) {
 					}
 				} catch {}
 				try {
-					const reg = g.__nsVendorRegistry;
-					if (reg?.has?.(moduleId)) {
-						const mod = reg.get(moduleId);
-						if (mod) return { value: (mod.default ?? mod) || mod, via: '__nsVendorRegistry', moduleId };
-					}
-				} catch {}
-				try {
-					const req = getVendorRequire();
-					if (req) {
-						const mod = req(moduleId);
+					// The bundle.mjs require shim answers from the served core.
+					if (typeof g.require === 'function') {
+						const mod = g.require(moduleId);
 						if (mod) return { value: (mod.default ?? mod) || mod, via: 'require', moduleId };
 					}
 				} catch {}
@@ -401,24 +391,11 @@ export function installRootPlaceholder(verbose?: boolean) {
 			alreadyPatchedEarly: earlyAndroidWrapped,
 			alreadyPatchedView: resetRootViewPatched,
 			globalApplicationSame: g.Application === Application,
-			vendorApplicationSame: (() => {
-				try {
-					const v = g.__nsVendorRegistry?.get?.('@nativescript/core');
-					return v?.Application === Application || v?.default?.Application === Application;
-				} catch {
-					return null;
-				}
-			})(),
 		});
-		// Always patch every Application instance we can find. The early
-		// Android hook in `core-aliases-early.ts` only patches `g.Application`
-		// (the bundled realm's Application) and its prototype — but on Vite
-		// HMR there can be a SECOND Application loaded by the HTTP realm
-		// (`vendor-registry @nativescript/core`) that Angular's `import { Application }`
-		// actually resolves to. If we don't patch that twin too, Angular's
-		// `Application.resetRootView({ create: () => doc })` lands on an
-		// unpatched object, the placeholder finalize callback is never
-		// invoked, and the boot stalls at "Waiting for the app root view".
+		// Patch the resolved Application, `g.Application` when it differs, and
+		// their prototype: a framework's `resetRootView` call on an unpatched
+		// object never finalizes the placeholder, and the boot stalls at
+		// "Waiting for the app root view".
 		const makePatched = (origReset: (...args: any[]) => any, label: string) =>
 			function __ns_dev_patched_reset_root_view(entry?: any) {
 				diag(`patched resetRootView called (${label})`, {
@@ -456,36 +433,9 @@ export function installRootPlaceholder(verbose?: boolean) {
 				return false;
 			}
 		})();
-		// Vendor-realm Application coverage. Even when `earlyAndroidWrapped`
-		// is true, the early hook only touched `g.Application` + its proto;
-		// the vendor's Application is a separate object with its own
-		// `resetRootView` that the early hook never sees.
-		let wrappedVendor = false;
-		let wrappedVendorAppModule = false;
-		try {
-			const reg = g.__nsVendorRegistry;
-			if (reg && typeof reg.get === 'function') {
-				const vendorCore = reg.get('@nativescript/core');
-				const vendorApp = vendorCore?.Application || vendorCore?.default?.Application;
-				if (vendorApp && vendorApp !== Application) {
-					wrappedVendor = wrapOnce(vendorApp, 'vendor-core');
-					try {
-						const vp = Object.getPrototypeOf(vendorApp);
-						if (vp && vp !== Object.getPrototypeOf(Application)) {
-							wrapOnce(vp, 'vendor-core-proto');
-						}
-					} catch {}
-				}
-				const vendorAppMod = reg.get('@nativescript/core/application');
-				const vendorAppOnly = vendorAppMod?.Application || vendorAppMod?.default?.Application;
-				if (vendorAppOnly && vendorAppOnly !== Application && vendorAppOnly !== vendorApp) {
-					wrappedVendorAppModule = wrapOnce(vendorAppOnly, 'vendor-application');
-				}
-			}
-		} catch {}
 		// Track every Application instance we know about so
 		// `tryFinalizeBootPlaceholder` can poll the real root view on the
-		// instance Angular actually committed to.
+		// instance the framework actually committed to.
 		try {
 			const apps = (nsDev().knownApplications ||= []);
 			const push = (a: any) => {
@@ -493,17 +443,6 @@ export function installRootPlaceholder(verbose?: boolean) {
 			};
 			push(Application);
 			push(g.Application);
-			try {
-				const reg = g.__nsVendorRegistry;
-				if (reg && typeof reg.get === 'function') {
-					const vendorCore = reg.get('@nativescript/core');
-					push(vendorCore?.Application);
-					push(vendorCore?.default?.Application);
-					const vendorAppMod = reg.get('@nativescript/core/application');
-					push(vendorAppMod?.Application);
-					push(vendorAppMod?.default?.Application);
-				}
-			} catch {}
 		} catch {}
 		resetRootViewPatched = true;
 		markResetRootPatched();
@@ -512,8 +451,6 @@ export function installRootPlaceholder(verbose?: boolean) {
 			wrappedLocal,
 			wrappedGlobal,
 			wrappedProto,
-			wrappedVendor,
-			wrappedVendorAppModule,
 			knownApplications: (nsDev().knownApplications || []).length,
 		});
 		const canCreatePlaceholderRoot = !!Frame && !!Page && !!Label;
@@ -582,8 +519,6 @@ export function installRootPlaceholder(verbose?: boolean) {
 				// behavior, but resetRootView() is the documented API for
 				// replacing the root of a running app.
 				//
-				// Patch on ALL possible references. The vendor-registry Application,
-				// globalThis.Application, and the prototype may be different objects.
 				try {
 					if (Application && typeof (Application as any).run === 'function') {
 						const _originalRun = (Application as any).run.bind(Application);
@@ -607,7 +542,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 						//   TypeError: Cannot read properties of null (reading '_context')
 						// because `setRootApp(app)` hasn't run yet.
 						//
-						// `setRootApp` is module-private inside the vendor bundle, so the bridge
+						// `setRootApp` is module-private inside nativescript-vue, so the bridge
 						// cannot call it directly. Deferring the synchronous root attachment to a
 						// microtask restores the production timing: every consumer that called
 						// `Application.run(entry)` completes its tail (including private state
@@ -655,8 +590,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 
 										try {
 											const domModule =
-												g.__nsVendorRegistry?.get?.('dominative') ||
-												(typeof require === 'function'
+												typeof require === 'function'
 													? (() => {
 															try {
 																return require('dominative');
@@ -664,7 +598,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 																return null;
 															}
 														})()
-													: null);
+													: null;
 											const doc = domModule?.document;
 
 											if (doc && typeof (Application as any).resetRootView === 'function') {

@@ -9,8 +9,6 @@ describe('@nativescript/vite package exports', () => {
 	it('exports required HMR runtime helpers', () => {
 		const exportsMap = packageJson.exports || {};
 
-		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/vendor-bootstrap');
-		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/vendor-bootstrap.js');
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/root-placeholder');
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/root-placeholder.js');
 	});

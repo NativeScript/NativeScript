@@ -4,9 +4,7 @@ import net from 'node:net';
 import path from 'path';
 import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, VITE_HMR_WS_PROTOCOL, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
 import type { NsHmrStartOptions } from '../client/index.js';
-import { setUserDefineEntries } from '../../helpers/global-defines.js';
 import { NS_DEV_EXPR } from '../shared/runtime/dev-globals.js';
-import { SERVER_VENDOR_PATH } from '../shared/vendor/manifest.js';
 import { viteUrlForFile } from './vite-url.js';
 import { IMPORT_MAP_PATH } from './import-map-route.js';
 import { createDeviceRequestMiddleware, useFirst } from './device-requests.js';
@@ -14,6 +12,9 @@ import { getServerOrigin } from './server-origin.js';
 import { fileURLToPath } from 'node:url';
 
 const runtimeFile = (relToHmrServer: string) => fileURLToPath(new URL(relToHmrServer, import.meta.url));
+
+/** This package's directory (`@nativescript/vite`), as the running copy is installed. */
+export const nsVitePackageDir = (): string => runtimeFile('../../');
 
 /** The `@nativescript/core` entry file as the client environment resolves it. */
 export async function resolveCoreEntryFile(server: Pick<ViteDevServer, 'config' | 'environments'>): Promise<string> {
@@ -36,7 +37,7 @@ export async function resolveCoreEntryFile(server: Pick<ViteDevServer, 'config' 
 export async function resolveNonEvictableViteUrlPrefixes(server: ViteDevServer): Promise<string[]> {
 	const root = server.config.root;
 	const coreFile = await resolveCoreEntryFile(server);
-	return [`${viteUrlForFile(corePackageDir(coreFile), root)}/`, `${viteUrlForFile(runtimeFile('../../'), root)}/`];
+	return [`${viteUrlForFile(corePackageDir(coreFile), root)}/`, `${viteUrlForFile(nsVitePackageDir(), root)}/`];
 }
 
 async function resolveBootstrapUrls(server: ViteDevServer, origin: string): Promise<{ client: string; moduleUrls: NsDevBootstrapModuleUrls }> {
@@ -47,7 +48,6 @@ async function resolveBootstrapUrls(server: ViteDevServer, origin: string): Prom
 	return {
 		client: urlFor(runtimeFile('../client/index.js')),
 		moduleUrls: {
-			vendorBootstrap: urlFor(runtimeFile('../shared/runtime/vendor-bootstrap.js')),
 			entryRuntime: urlFor(runtimeFile('../entry-runtime.js')),
 			launchBridge: urlFor(runtimeFile('../shared/runtime/launch-bridge.js')),
 			coreBridge: urlFor(coreFile),
@@ -126,21 +126,17 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; ori
 
 /** Absolute device URLs for the bootstrap's own imports. */
 export interface NsDevBootstrapModuleUrls {
-	vendorBootstrap: string;
 	entryRuntime: string;
 	/** The `@nativescript/core` entry at the URL the app graph loads it from, so the bootstrap shares its module record. */
 	coreBridge: string;
 	launchBridge: string;
 }
 
-export function createNsDevClientBootstrapCode(options: { origin: string; clientImport: string; verbose?: boolean; moduleUrls: NsDevBootstrapModuleUrls; start: NsHmrStartOptions }) {
-	const normalizedOrigin = options.origin.replace(/\/$/, '');
+export function createNsDevClientBootstrapCode(options: { clientImport: string; verbose?: boolean; moduleUrls: NsDevBootstrapModuleUrls; start: NsHmrStartOptions }) {
 	const urls = options.moduleUrls;
 	const verbose = options.verbose ? 'true' : 'false';
 
 	return `
-import { installVendorBootstrap as __nsInstallVendorBootstrap } from ${JSON.stringify(urls.vendorBootstrap)};
-import { vendorManifest as __nsVendorManifest, __nsVendorModuleMap } from ${JSON.stringify(`${normalizedOrigin}${SERVER_VENDOR_PATH}`)};
 import { installLaunchNotificationBridge as __nsInstallLaunchBridge } from ${JSON.stringify(urls.launchBridge)};
 import * as __nsCoreBridge from ${JSON.stringify(urls.coreBridge)};
 import { installHttpCoreCssSupport as __nsInstallHttpCoreCssSupport } from ${JSON.stringify(urls.entryRuntime)};
@@ -163,11 +159,6 @@ try {
 	__nsInstallLaunchBridge(__nsCoreNs && __nsCoreNs.Application);
 } catch (launchBridgeErr) {
 	console.warn('[ns-dev-client] launch-notification bridge install failed', launchBridgeErr);
-}
-
-__nsInstallVendorBootstrap(__nsVendorManifest, __nsVendorModuleMap, ${verbose});
-if (!(globalThis.__nsVendorRegistry && typeof globalThis.__nsVendorRegistry.get === 'function')) {
-	throw new Error('NativeScript vendor registry was not initialized');
 }
 
 const __nsHmrClientUrl = ${JSON.stringify(options.clientImport)};
@@ -259,11 +250,19 @@ function realpathOrSelf(dir: string): string {
  */
 export function allowServedDirs(config: { server: { fs: { allow: string[] } } }, dirs: Iterable<string>): void {
 	const allow = config.server.fs.allow;
-	for (const dir of dirs) {
-		for (const candidate of new Set([toPosix(path.resolve(dir)), toPosix(realpathOrSelf(path.resolve(dir)))])) {
-			if (!allow.includes(candidate)) allow.push(candidate);
-		}
+	for (const candidate of servedDirForms(dirs)) {
+		if (!allow.includes(candidate)) allow.push(candidate);
 	}
+}
+
+/** Each directory as given and as its real path, POSIX, without a trailing slash. */
+export function servedDirForms(dirs: Iterable<string>): string[] {
+	const out = new Set<string>();
+	for (const dir of dirs) {
+		out.add(toPosix(path.resolve(dir)));
+		out.add(toPosix(realpathOrSelf(path.resolve(dir))));
+	}
+	return [...out];
 }
 
 /**
@@ -295,14 +294,10 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 				// Vite checks upgrades against `config.webSocketToken` of the config
 				// it hands to `configResolved`, so pinning it here is what it uses.
 				pinWebSocketToken(c as { webSocketToken: string });
-				allowServedDirs(c, [runtimeFile('../../')]);
+				allowServedDirs(c, [nsVitePackageDir()]);
 				// Vite freezes a copy of `allowedHosts` when it creates the server.
 				allowDeviceHost(c);
 			}
-			// Capture app-configured `__FOO__` defines for the dev deps bundle,
-			// which esbuild builds outside Vite's define substitution. See
-			// setUserDefineEntries.
-			setUserDefineEntries(c.define as Record<string, unknown> | undefined);
 		},
 		configureServer(server) {
 			// One origin for every URL handed to the device: the one bundle.mjs
@@ -331,7 +326,6 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 						});
 						const bootstrap = await resolveBootstrapUrls(server, origin);
 						const code = createNsDevClientBootstrapCode({
-							origin,
 							clientImport: bootstrap.client,
 							verbose: opts.verbose,
 							moduleUrls: bootstrap.moduleUrls,

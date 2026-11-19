@@ -16,7 +16,6 @@ import { getCliFlags } from '../helpers/cli-flags.js';
 import { getMonorepoWorkspaceRoot } from '../helpers/project.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { resolveVerboseFlag } from '../helpers/logging.js';
-import { NS_OPTIMIZE_DEPS_EXCLUDE } from '../helpers/optimize-deps.js';
 
 function hasNgDeclarePartial(code: string): boolean {
 	return code.indexOf('\u0275\u0275ngDeclare') !== -1 || code.indexOf('ɵɵngDeclare') !== -1 || code.indexOf('ngDeclare') !== -1;
@@ -367,42 +366,6 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 				return { code: next, map: null };
 			},
 		},
-		// Enforce: fully disable dependency optimization during serve to avoid rxjs esm5 crawling and OOM
-		{
-			name: 'ns-disable-optimize-deps',
-			enforce: 'post',
-			apply: 'serve',
-			config(userConfig) {
-				const od = (userConfig as any)?.optimizeDeps || {};
-				const prevExclude: string[] = Array.isArray(od.exclude) ? od.exclude : [];
-				const exclude = new Set<string>(prevExclude);
-				[...NS_OPTIMIZE_DEPS_EXCLUDE, 'rxjs'].forEach((x) => exclude.add(x));
-				return {
-					optimizeDeps: {
-						noDiscovery: true,
-						entries: [],
-						include: [],
-						exclude: Array.from(exclude),
-						rolldownOptions: {
-							...(od.rolldownOptions || {}),
-							plugins: [],
-						},
-					},
-				} as any;
-			},
-			configResolved(resolved) {
-				const resolvedConfig = resolved as any;
-				const deps = (resolvedConfig.optimizeDeps ||= {} as any);
-				deps.noDiscovery = true;
-				deps.entries = [];
-				deps.include = [];
-				const exclude = new Set<string>(Array.isArray(deps.exclude) ? deps.exclude : []);
-				[...NS_OPTIMIZE_DEPS_EXCLUDE, 'rxjs'].forEach((x) => exclude.add(x));
-				deps.exclude = Array.from(exclude);
-				const rolldownOptions = (deps.rolldownOptions ||= {});
-				rolldownOptions.plugins = [];
-			},
-		},
 	];
 }
 
@@ -616,16 +579,6 @@ export const angularConfig = ({
 			// than dist/esm5 via the 'default' condition. This avoids the esm5 module
 			// explosion and OOM while respecting the package's exports field in Vite 8.
 			conditions: ['es2015'],
-		},
-		// Disable dependency optimization entirely for NativeScript Angular HMR.
-		// Vite 5.1+: use noDiscovery with an empty include list (disabled was removed).
-		// The HTTP loader + vendor bridge manage dependencies; pre-bundling can OOM.
-		optimizeDeps: {
-			noDiscovery: true,
-			include: [],
-			entries: [],
-			exclude: ['@nativescript/core', 'rxjs'],
-			rolldownOptions: { plugins: [] },
 		},
 	});
 

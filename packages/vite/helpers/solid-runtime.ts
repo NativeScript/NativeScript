@@ -8,8 +8,7 @@ import path from 'node:path';
  * prod build exports it as `undefined`.
  *
  * Deliberately narrow — enabling the `development` condition globally breaks
- * packages whose dev entries are environment-ambiguous stubs (see the
- * conditions note in hmr/shared/vendor/manifest.ts).
+ * packages whose dev entries are environment-ambiguous stubs.
  */
 export const SOLID_RUNTIME_PACKAGES: readonly string[] = ['solid-js', '@solidjs/signals', '@solidjs/universal', '@solidjs/web'];
 

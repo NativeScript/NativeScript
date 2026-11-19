@@ -1,14 +1,12 @@
 /**
  * Internals shared by the dev-overlay backends (boot placeholder, in-tree
  * live overlay, iOS UIWindow overlay): the per-session runtime state,
- * core-class resolution that respects the realm rule, and
- * snapshot/text formatting. Not part of the public overlay API — import
+ * core-class resolution, and snapshot/text formatting. Not part of the public overlay API — import
  * `dev-overlay.ts` for that.
  */
 
 import { DEFAULT_SNAPSHOT, type HmrOverlayAction, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
 import { getGlobalScope } from './global-scope.js';
-import { getVendorRequire } from './vendor-resolve.js';
 
 const DEFAULT_OVERLAY_POSITION: HmrOverlayPosition = 'top';
 
@@ -151,24 +149,14 @@ export function getRuntimeState(): HmrOverlayRuntimeState {
 export function resolveCoreExport(name: string): any {
 	const g = getOverlayGlobal();
 	try {
-		const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
-		if (reg && typeof reg.get === 'function') {
-			const mod = reg.get('@nativescript/core');
-			const ns = (mod && (mod.default ?? mod)) || mod;
-			if (ns && ns[name]) {
-				return ns[name];
-			}
-		}
-	} catch {}
-	try {
 		if (g && g[name]) {
 			return g[name];
 		}
 	} catch {}
 	try {
-		const req = getVendorRequire();
-		if (req) {
-			const mod = req('@nativescript/core');
+		// The bundle.mjs require shim answers from the served core.
+		if (typeof g.require === 'function') {
+			const mod = g.require('@nativescript/core');
 			const ns = (mod && (mod.default ?? mod)) || mod;
 			if (ns && ns[name]) {
 				return ns[name];

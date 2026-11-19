@@ -24,9 +24,9 @@ export interface NativeScriptDevGlobals {
 	overlay?: HmrOverlayApi;
 	/** Origin of the dev server the session booted from. Generated worker code resolves worker URLs against it. */
 	httpOrigin?: string;
-	/** Served `@nativescript/core` modules by specifier, registered by each one's footer. Read by the `bundle.mjs` require shim and the deps bundle. */
+	/** Served `@nativescript/core` modules by specifier, registered by each one's footer. Read by the `bundle.mjs` require shim. */
 	coreModules?: Record<string, unknown>;
-	/** Turns an ESM namespace into a plain object for CommonJS callers. Installed by `bundle.mjs`; used by the core footer and the deps bundle. */
+	/** Turns an ESM namespace into a plain object for CommonJS callers. Installed by `bundle.mjs`; used by the core footer and the require shim. */
 	cjsShape?: (value: unknown) => unknown;
 }
 

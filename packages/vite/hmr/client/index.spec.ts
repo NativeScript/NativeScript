@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Update } from 'vite';
+
+vi.mock('@nativescript/core', () => ({ Application: undefined, addTaggedAdditionalCSS: vi.fn(), removeTaggedAdditionalCSS: vi.fn() }));
 import { HMRClient, HMRContext } from './hmr-client.js';
 import { registerEntryBoundary } from './hot-state.js';
 import { createNsHmrRuntime, type DeviceHotPayload } from './index.js';

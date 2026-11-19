@@ -1,5 +1,4 @@
 import { getGlobalScope } from '../hmr/shared/runtime/global-scope.js';
-import { getVendorRequire } from '../hmr/shared/runtime/vendor-resolve.js';
 import { isResetRootPatched, markResetRootPatched, restorePlaceholder } from '../hmr/shared/runtime/placeholder-hooks.js';
 // Early alias installer for @nativescript/core plus Android init resilience.
 // Runs on device in the virtual entry context.
@@ -22,16 +21,9 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 					}
 				} catch {}
 				try {
-					const reg = g.__nsVendorRegistry;
-					if (reg?.has?.(moduleId)) {
-						const mod = reg.get(moduleId);
-						if (mod) return { value: (mod.default ?? mod) || mod, via: '__nsVendorRegistry', moduleId };
-					}
-				} catch {}
-				try {
-					const req = getVendorRequire();
-					if (req) {
-						const mod = req(moduleId);
+					// Under HMR the bundle.mjs require shim answers from the served core.
+					if (typeof g.require === 'function') {
+						const mod = g.require(moduleId);
 						if (mod) return { value: (mod.default ?? mod) || mod, via: 'require', moduleId };
 					}
 				} catch {}

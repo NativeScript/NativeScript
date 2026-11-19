@@ -14,36 +14,6 @@ export function isHmrProgressOverlayEnabled(env: NodeJS.ProcessEnv = process.env
 	return !['0', 'false', 'off', 'no'].includes(raw);
 }
 
-// ── User-configured `__FOO__` defines ─────────────────────────────────────────
-// An app may add its own `__FOO__`-style entries to Vite `config.define`
-// (e.g. `__NS_NATIVE_OVERRIDES__`). The dev deps bundle is built by esbuild,
-// outside Vite's define substitution, so it needs them handed over explicitly.
-// Captured from the resolved config in `configResolved`.
-const USER_DEFINE_IDENTIFIER_RE = /^__[A-Za-z0-9_]+__$/;
-let userDefineEntries: Array<[string, string]> = [];
-
-/**
- * Record the app's `__FOO__`-style `define` entries from the resolved Vite
- * config. Only bare `__FOO__` identifiers are kept. Vite `define` VALUES are
- * JS-expression strings (e.g. `"true"`), so they pass through verbatim; a
- * non-string value is JSON-encoded defensively.
- */
-export function setUserDefineEntries(define: Record<string, unknown> | undefined): void {
-	const entries: Array<[string, string]> = [];
-	if (define) {
-		for (const [key, value] of Object.entries(define)) {
-			if (!USER_DEFINE_IDENTIFIER_RE.test(key)) continue;
-			entries.push([key, typeof value === 'string' ? value : JSON.stringify(value)]);
-		}
-	}
-	userDefineEntries = entries;
-}
-
-/** The captured `__FOO__` define entries as `[key, expression]` pairs (see setUserDefineEntries). */
-export function getUserDefineEntries(): ReadonlyArray<[string, string]> {
-	return userDefineEntries;
-}
-
 export function getGlobalDefines(opts: { platform: string; targetMode: string; verbose: boolean; flavor: string; isCI?: boolean }) {
 	const isAndroid = opts.platform === 'android';
 	const isApple = opts.platform === 'ios' || opts.platform === 'visionos';

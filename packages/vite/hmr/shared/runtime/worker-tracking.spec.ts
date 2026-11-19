@@ -57,8 +57,9 @@ describe('installWorkerConstructorTracking', () => {
 	it('keeps subclassing working via new.target', () => {
 		const g = makeScope();
 		installWorkerConstructorTracking(g);
+		const TrackedWorker: new (script: string) => any = g.Worker;
 
-		class MyWorker extends g.Worker {
+		class MyWorker extends TrackedWorker {
 			extra = 'x';
 		}
 		const worker = new MyWorker('~/sub.js');

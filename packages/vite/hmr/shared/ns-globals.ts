@@ -31,9 +31,6 @@ declare global {
 	var __NS_DEV_PLACEHOLDER_ROOT_VIEW__: any;
 	var __NS_DEV_PLACEHOLDER_ROOT_EARLY__: any;
 	var __NS_HMR_WORKERS__: any;
-	var __nsRequire: any;
-	var __nsVendorRequire: any;
-	var __nsVendorRegistry: any;
 }
 
 export {};

@@ -74,8 +74,7 @@ export function clearVerboseCache(): void {
 }
 
 // Vite/Rollup warning filter helper
-// Centralizes suppression of noisy build warnings that are either benign or
-// expected given NativeScript's virtual vendor bundling strategy.
+// Centralizes suppression of noisy build warnings that are benign.
 // Currently filters:
 //  - Sourcemap missing source files (common in published packages)
 //  - Sourcemap source paths that walk outside the published package (the map
@@ -83,8 +82,6 @@ export function clearVerboseCache(): void {
 //    consumer's node_modules doesn't have)
 //  - Sidecar `.js.map` files listed in a `//# sourceMappingURL=` comment that
 //    were not published alongside the `.js` file
-//  - Eval usage attributed to the virtual "@nativescript/vendor" module
-//  - License/annotation position warnings for the vendor bundle
 //  - Analog Angular optimizer/router plugins that never emit sourcemaps
 // Extend this list cautiously; prefer documenting each suppression reason.
 //
@@ -134,14 +131,6 @@ export function shouldSuppressViteWarning(msg: string): boolean {
 	// missing file, so suppressing the warn-level diagnostic is the
 	// least invasive fix.
 	if (msg.includes('Failed to load source map for')) {
-		return true;
-	}
-	// Vendor eval usage (third-party libs aggregated); benign
-	if (msg.includes('Use of eval') && (msg.includes('@nativescript/vendor') || msg.includes('"@nativescript/vendor"'))) {
-		return true;
-	}
-	// Annotation/license position warning for vendor bundle
-	if ((msg.includes('contains an annotation that Rollup cannot interpret') || msg.includes('position of the comment')) && (msg.includes('@nativescript/vendor') || msg.includes('"@nativescript/vendor"'))) {
 		return true;
 	}
 	// Analog Angular optimizer/router plugins do not emit sourcemaps; Vite floods logs with warnings.

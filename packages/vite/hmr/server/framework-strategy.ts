@@ -74,7 +74,6 @@ const BUILT_IN_STRATEGIES = new Map<string, FrameworkServerStrategy>([
 	['angular', angularServerStrategy],
 	// Key order is significant for the import map.
 	['vue', { flavor: 'vue', importMapSpecifiers: () => ['nativescript-vue', 'vue'] }],
-	// The vendor bundle externalizes `solid-js`, so its bare import must resolve through the import map.
 	['solid', { flavor: 'solid', importMapSpecifiers: () => ['solid-js'] }],
 	['react', { flavor: 'react' }],
 	['typescript', { flavor: 'typescript' }],

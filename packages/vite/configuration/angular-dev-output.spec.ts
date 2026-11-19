@@ -78,3 +78,11 @@ describe('angularConfig non-HMR development output', () => {
 		expect(output.chunkFileNames).toBe('[name]-[hash].mjs');
 	});
 });
+
+describe('angularConfig optimizeDeps', () => {
+	it('leaves the dev dependency policy to the base config', () => {
+		const config = angularConfig({ mode: 'development' });
+		expect(config.optimizeDeps).toBeUndefined();
+		expect((config.plugins ?? []).flat().map((p: any) => p?.name)).not.toContain('ns-disable-optimize-deps');
+	});
+});

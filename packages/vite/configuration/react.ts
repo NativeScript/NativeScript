@@ -9,10 +9,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // NativeScript-safe automatic-JSX runtime shim (see shims/react-jsx-runtime.ts).
-// react/jsx-runtime + react/jsx-dev-runtime are CJS modules whose named exports
-// the device can't statically detect when they are served raw, so the device
-// fails with "does not provide an export named 'jsx'". The shim reimplements the
-// runtime on React.createElement and exposes explicit named exports.
 const jsxRuntimeShimPath = resolve(dirname(__dirname), 'shims', 'react-jsx-runtime.js');
 
 // React for NativeScript renders through DOMiNATIVE via the
@@ -21,10 +17,6 @@ const jsxRuntimeShimPath = resolve(dirname(__dirname), 'shims', 'react-jsx-runti
 // So, unlike the native-element `react-nativescript` path, there is NO
 // `react-dom -> react-nativescript` aliasing here: the web markup renders as-is
 // through dominative + masonkit, exactly like the Solid flavor.
-//
-// `react` must resolve as a single instance (see the `case 'react'` note in
-// base.ts → `disableOptimizeDeps`): two copies would split the hooks dispatcher
-// and silently break hooks/context.
 export const reactConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
 	return mergeConfig(baseConfig({ mode, flavor: 'react' }), {
 		plugins: [
@@ -46,12 +38,10 @@ export const reactConfig = ({ mode }, options: TypeCheckControlOptions = {}): Us
 			jsxImportSource: 'react',
 		},
 		optimizeDeps: {
-			// `module` / `node:module` are aliased to local polyfills (see base.ts);
-			// keep them out of the depscanner. Also exclude the renderer entry so the
-			// device resolves it through normal resolution rather
-			// than a pre-bundle URL that the package `exports` map can't serve there
-			// (mirrors Solid excluding `@nativescript/vite/solid-bootstrap`).
-			exclude: ['module', 'node:module', '@nativescript-community/react'],
+			// CommonJS packages: pre-bundled so the device gets ESM named exports.
+			// Every importer resolves an included package to its one pre-bundle,
+			// so `react` stays a single instance (two would split the hooks dispatcher).
+			include: ['react', 'react-reconciler'],
 		},
 	});
 };

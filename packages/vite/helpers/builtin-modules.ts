@@ -1,5 +1,4 @@
 import type { Plugin } from 'vite';
-import type { Plugin as EsbuildPlugin } from 'esbuild';
 
 export interface NativeScriptBuiltinModulesOptions {
 	/**
@@ -67,18 +66,4 @@ export function isBuiltinModuleId(id: string): boolean {
 		matcher.lastIndex = 0;
 		return matcher.test(id);
 	});
-}
-
-/**
- * esbuild counterpart of `nativescriptBuiltinModules`, for bundles that bypass Vite plugins.
- *
- * @internal
- */
-export function builtinModulesEsbuildPlugin(): EsbuildPlugin {
-	return {
-		name: 'ns-builtin-modules',
-		setup(build) {
-			build.onResolve({ filter: /^[^./]/ }, (args) => (isBuiltinModuleId(args.path) ? { path: args.path, external: true } : undefined));
-		},
-	};
 }

@@ -71,12 +71,9 @@ function wrapLaunchNotificationObserverApi(appIos: any): boolean {
 }
 
 /**
- * Wrap every reachable `Application.ios`. Multiple `Application` instances can
- * coexist on device (the core realm the APP graph imports, the
- * vendor-registry/deps-bundle realm, whatever landed on globalThis) — which
- * one an app's registration goes through depends on its import path, so wrap
- * them all. `explicitApplication` should be the app graph's core Application
- * (what app code actually gets); extra candidates are best-effort.
+ * Wrap every reachable `Application.ios`: `explicitApplication` should be the
+ * app graph's core Application (what app code actually gets); extra
+ * candidates and `globalThis.Application` are best-effort.
  */
 export function installLaunchNotificationBridge(explicitApplication?: any, extraCandidates?: any[]): boolean {
 	let wrappedAny = false;

@@ -42,10 +42,10 @@ describe('cliPlugin build notifications', () => {
 		const build = await createPlugin(true);
 		build({ 'bundle.mjs': chunk('boot v1'), 'bundle.mjs.map': asset('map 1') });
 		build({ 'bundle.mjs': chunk('boot v1'), 'bundle.mjs.map': asset('map 2') });
-		build({ 'bundle.mjs': chunk('boot v2'), 'bundle.mjs.map': asset('map 3'), 'ns-vendor.mjs': chunk('vendor') });
+		build({ 'bundle.mjs': chunk('boot v2'), 'bundle.mjs.map': asset('map 3'), 'chunk-a.mjs': chunk('chunk') });
 
 		expect(sent.map((m) => m.buildType)).toEqual(['initial', 'incremental']);
-		expect(sent[1]).toMatchObject({ isHMR: false, emittedFiles: ['bundle.mjs', 'bundle.mjs.map', 'ns-vendor.mjs'] });
+		expect(sent[1]).toMatchObject({ isHMR: false, emittedFiles: ['bundle.mjs', 'bundle.mjs.map', 'chunk-a.mjs'] });
 	});
 
 	it('without HMR, notifies the CLI after every build', async () => {

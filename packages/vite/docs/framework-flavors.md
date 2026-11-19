@@ -23,7 +23,6 @@ So a flavor brings no HMR code of its own. Its framework's Vite plugin must emit
 | --- | --- |
 | **Config helper** | Calls `registerFrameworkFlavor`, wraps `baseConfig({ mode, flavor })`, adds the framework's Vite plugin. |
 | **`server`** (optional) | Device loader configuration: import-map specifiers, volatile URL patterns, query-identity paths. |
-| **`vendor.exclude`** (optional) | Package roots kept out of the dev vendor bundle. |
 
 ## Package layout
 
@@ -85,7 +84,7 @@ When a TypeScript project imports `.tsrx` files and has `@tsrx/typescript-plugin
 
 ## Device loader configuration (`server`)
 
-Most flavors need none. When the framework's modules need special handling in the device import map, pass a `FrameworkServerStrategy` whose `flavor` matches:
+Most flavors need none. Vite rewrites every bare import in the code it serves, so the device import map only matters for bare specifiers the device resolves itself at runtime, such as `import(name)` with a computed package name. It holds `@nativescript/core`, the package name of each of the app's `dependencies`, and `node:` builtins. When the framework needs more, pass a `FrameworkServerStrategy` whose `flavor` matches:
 
 ```ts
 registerFrameworkFlavor({
@@ -99,22 +98,9 @@ registerFrameworkFlavor({
 
 | Member | Purpose | Built-in example |
 | --- | --- | --- |
-| `importMapSpecifiers()` | Bare specifiers the device import map must carry. | Vue: `['nativescript-vue', 'vue']`; Solid: `['solid-js']` |
+| `importMapSpecifiers()` | Bare specifiers the device import map must carry beyond the app's `dependencies`. | Vue: `['nativescript-vue', 'vue']`; Solid: `['solid-js']` |
 | `volatilePatterns()` | URL substrings the runtime drops from its registry before every dynamic import of a matching URL, so each import re-fetches. | Angular: `['/@ng/component']` |
 | `preserveQueryPaths()` | Path substrings whose query string is the module identity, so it is never collapsed. | Angular: `['/@ng/component']` |
-
-## Keeping a runtime package out of the dev vendor bundle
-
-A dev session evaluates `node_modules` code from one bundle, seeded on first boot from every root in the app's `dependencies`. A compiler can make that seed wrong: Octane rewrites `from 'octane'` in the components it compiles to its NativeScript renderer package, so seeding `octane` itself would evaluate its DOM runtime on device for nothing. The flavor declares it:
-
-```ts
-registerFrameworkFlavor({
-  flavor: 'octane',
-  vendor: { exclude: ['octane'] },
-});
-```
-
-`vendor.exclude` names package roots the vendor collection must not seed, even though the app depends on them directly; they are not traversed for peer dependencies either. An excluded package still reaches the bundle through whichever vendored package imports it, and anything the device imports that the bundle lacks is served per-module and recorded for the next boot. The semantics match the `NS_VENDOR_EXCLUDE` environment variable an app can set itself.
 
 ## Checklist
 
@@ -122,12 +108,11 @@ registerFrameworkFlavor({
 - [ ] The config helper adds the framework's own Vite plugin, and that plugin emits stock Vite HMR payloads and uses `import.meta.hot`.
 - [ ] `package.json` declares `nativescript.vite.flavor` (+ `config` for `init`).
 - [ ] `server`, if set, has the same `flavor` and only the members the framework needs.
-- [ ] `vendor.exclude` lists runtime packages the compiler rewrites away.
 - [ ] On a device: a component edit applies in place, and an edit nothing accepts triggers a full reload.
 
 ## Reference
 
 - `@nativescript/vite/framework` — `registerFrameworkFlavor`, `getFrameworkFlavor`, `isBuiltInFlavor`, `baseConfig`, `getTypeCheckPlugins`; types `FrameworkFlavorDefinition`, `FrameworkServerStrategy`, `TypeCheckControlOptions`, `TypeCheckSetting`, `TypeCheckFlavor`.
-- `FrameworkFlavorDefinition` = `{ flavor; server?: FrameworkServerStrategy; vendor?: { exclude?: string[] } }`, documented in `hmr/framework-flavors.ts`.
+- `FrameworkFlavorDefinition` = `{ flavor; server?: FrameworkServerStrategy }`, documented in `hmr/framework-flavors.ts`.
 - `FrameworkServerStrategy` = `{ flavor; importMapSpecifiers?(); volatilePatterns?(); preserveQueryPaths?() }`, documented in `hmr/server/framework-strategy.ts`.
 - Worked example: [`@nativescript-community/vite-octane`](https://github.com/nativescript-community/octane/tree/main/packages/vite-octane).

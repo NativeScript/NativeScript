@@ -699,6 +699,109 @@ The design is in DESIGN.md ("Serving: plain Vite URLs", "Module identity", "Fail
 - **Base:** only `base: '/'` works on device.
 All of the deps-bundle and vendor items go in phase 3c.
 
+## Round 16: phase 3c, dependencies without NativeScript pre-bundling
+
+**What changed.**
+- **Deleted:** the esbuild deps bundle (`/__ns_dev__/deps-bundle.mjs`), `/__ns_dev__/vendor.mjs` and `vendor-manifest.json`, `vendor-bootstrap`/`vendor-resolve`, `hmr/shared/vendor/*`, `platform-polyfills`, `nativeclass-esbuild-plugin`, `package-classifier`, `dev-routes`, `vendorManifestPlugin` (with its HMR-build `ns-vendor.mjs`/`ns-vendor-manifest.json`), Solid's JSX-package discovery exclude, and the `__nsVendor*`/`__nsRequire`/`__NS_DEPS_MODULES__`/`__NS_VENDOR_MANIFEST__` globals. 28 files, 6,937 lines.
+- **Consumers** (`core-aliases-early`, `root-placeholder`, `dev-overlay-shared`) reach core through the `bundle.mjs` require shim, which is now the final `globalThis.require`. The HMR client's CSS handler imports `@nativescript/core` as ESM.
+- **Dependencies:** Vite's dep optimizer is off in dev for every flavor unless the app lists `optimizeDeps.include` (see DESIGN "Dependencies"). React lists `react` and `react-reconciler`. Once an optimizer exists, a version guard keeps core and `@nativescript/vite` URLs free of `?v=`.
+- **Import map:** 504 → 14 entries (Angular). Keys are `@nativescript/core`, the app's `dependencies`, strategy specifiers and node builtins. `?v=`/`&v=` are no longer volatile patterns.
+
+**`thin-crawl.mjs` additions.** It now detects duplicate instances:
+- a file inlined in a bundle and also served;
+- a file inlined in two bundles;
+- one file under two URL strings (`x.js` vs `x.js?v=`), checked against the URLs baked into `--bundle`.
+
+It also reports CommonJS served raw, `\p{` regexes (no ICU on device), optimizer stability, import map vs import analysis for every key, and runtime `require` callers. Its new flags are `--seed`, `--vite-config` and `--allow-dup-instances`. It warns when `--bundle` is missing.
+
+**Angular fixture** (`apps/ng`, `--bundle`; HEAD = `883c6451b`'s build, verified identical):
+
+| | HEAD | after |
+|---|---|---|
+| requests / KiB, device | 687 / 21,644 | 683 / 21,499 |
+| requests / KiB, with every map target | 1,491 / 162,388 | 692 / 27,773 |
+| `/__ns_dev__` (device) | 4 (123 KiB) | 2 (3 KiB) |
+| import-map entries | 504 | 14 |
+| duplicate instances | 6 (deps bundle ∩ served: 5 `@valor/nativescript-websockets` files, `zone.js`) | 0 |
+| same file under two URLs | 0 | 0 |
+| CommonJS served raw / `\p{` (map targets only) | 339 / 13 | 0 / 0 |
+
+The deps bundle inlined 6 files from 2 packages (`zone.js`, websockets), none of them CommonJS or NativeClass.
+
+**Toolbox** (`apps/toolbox`, linked core):
+
+| | HEAD | after |
+|---|---|---|
+| requests, device (with `--bundle`) | 290 | 425 |
+| duplicate instances | 4: imagepicker `index.ios.js`/`common.js` and perms `index.ios.js`/`index.common.js`. Each was in the deps bundle (evaluated at boot through `vendor.mjs`), in `.vite/deps`, and served raw once the image page loads | 0 |
+| optimizer | on (discovery) | none |
+
+The toolbox's 135 extra requests are css-tree, `@csstools` and source-map-js served file by file, where Vite's discovery used to pre-bundle them. The 290 is the discovery arm on the 3c tree with `--bundle`; HEAD's own crawl (281) ran without `--bundle`.
+
+**(a) plain files vs (b) Vite's optimizer**, measured with a temporary switch on every flavor:
+
+| | requests | duplicates |
+|---|---|---|
+| toolbox, (b) on | 290 | 0 |
+| toolbox, (a) off | 425 | 0 |
+| toolbox with core installed as a real `node_modules` directory, (b) | 638 | **215 core files twice** |
+| same, (a) | 423 | 0 |
+
+- **Why (b) fails with an installed core.** With an optimizer present, Vite's resolver stamps `?v=<browserHash>` on every resolved `node_modules` `.js`. `bundle.mjs` and the bootstrap use version-less core URLs, so core evaluated twice. (b) also pre-bundled nothing in that layout. Baking `?v=` into `bundle.mjs` can't work, because the hash changes on re-optimization.
+- **Inferred for HEAD too, not measured there.** TypeScript, JavaScript and Vue apps that install core from npm ran (b) at HEAD, and the `?v=` stamp is Vite's own; the toolbox's linked core hid it.
+- **(b) again, with the version guard** (`out/phase3c-b/`):
+
+  | layout | (a) | (b) + guard |
+  |---|---|---|
+  | toolbox (linked core) | 425 | 290 |
+  | installed core | 423 | 423 (nothing optimized) |
+  | ng | 683 | 443 warm; 445 cold, plus 1 `full-reload` |
+
+  - Core is single in every run.
+  - **ng's cold first boot re-optimizes and restarts the app.** The scanner has no entries, so `@angular/*` and `@nativescript/angular` are discovered from the first `main.ts` request. Vite logs "optimized dependencies changed. reloading" and sends `full-reload`. Two device requests get `504`, 11 import-map entries change mid-session, and `@nativescript_angular.js` loads under two `?v=` values.
+  - **A duplicate instance remains:** `tslib.es6.mjs` is inlined into rxjs's pre-bundle chunk and also served raw for core. The crawler's bundle check couldn't see it; seven Vite pre-bundles have no source map. A sourcemap overlap script found it.
+  - The stock crawler starts requesting during the first optimizer run, which hides late discovery; a delayed copy (`thin-crawl-delay.mjs`) exposes it.
+- **Decision: (a).** By the agreed order (duplicates, then CommonJS correctness, then requests), (b) loses on the first criterion even with the guard: tslib is doubled, and a cold boot restarts the app. (a) has zero duplicates by construction, no mid-session re-optimization and no drifting exclude list. It costs requests where discovery pre-bundles well (ng 683 vs 443, toolbox 425 vs 290) and nothing with an installed core.
+- **CommonJS goes through `optimizeDeps.include`.** Checked with an installed core plus `include: ['tslib']`: an optimizer exists, 0 of 253 core URLs carry `?v=`, and duplicates are 0.
+- **A CommonJS package requiring core, pre-bundled** (`cjs-core-probe`, installed core):
+  - `require('@nativescript/core/color')` stays a runtime `__require`. Vite's CommonJS-external facade hoists only an exact excluded name, not a subpath. It reaches the `bundle.mjs` shim, which answers from `coreModules`. `color` and `http` are evaluated at boot and registered; on a miss the shim returns `{}`.
+  - `require('@valor/nativescript-websockets')` (excluded, exact name) is hoisted to an ESM import at the import-map URL: one instance.
+  - The package's own `require('tslib')` was inlined, so tslib loaded twice (pre-bundle and raw for core). That is the shared-dependency hazard of any include.
+
+**Runtime facts behind it** (ns-v8ios-runtime `204ac2bd`):
+- **Native `require`:** `ModuleInternal::RequireCallback` resolves bare names on disk only (`tns_modules`) and throws for http URLs. It never reads the import map.
+- **`IsVolatileUrl`:** before every dynamic `import()` of a matching URL, it evicts the module from the registry, which creates a new instance.
+
+**Android SBG.** `Main.java` walks every `.js`/`.mjs` under `assets/app` and `js_parser.js` never follows imports, so the HMR-only `ns-vendor.mjs` stub (`import '@nativescript/core/ui/frame/activity.android'`) gave it nothing. In both HEAD and after Android HMR builds, the activity is reachable only as a dynamic import of its served URL; no `activity.android*.mjs` chunk is emitted.
+
+**Builds** (apps/ng, scratch outDirs):
+- **Release:** iOS and Android file lists and `bundle.mjs` are byte-identical. Only Rollup's `vendor.mjs` chunk shrinks, by 505 bytes: the `core-aliases-early` vendor-registry lookup and the dead `getVendorRequire` helper are gone.
+- **HMR:** `ns-vendor.mjs` and `ns-vendor-manifest.json` are gone. `bundle.mjs` is about 3.8 KB smaller, with only the vendor-registry code removed.
+
+**Checked** (the final build synced into the fixture; every run sequential):
+- vitest 878/878 in 85 files.
+- `tsc -p tsconfig.lib.json`: 261 errors, all under `../core`. `tsconfig.spec.json`: 0 in `packages/vite`; the 3 pre-existing errors are fixed.
+- nx build and prettier pass.
+- The Angular and toolbox crawls pass with `--bundle`, with 0 duplicate instances.
+- payload-probe, full run: 17/17. `--only r4,r5,r6,r7,r8 --fresh-plugins`: 5/5. Catch-ups r4 0, r5 0, r6 1, r7 0.
+- `boot-bundle-hash.mjs`: stable.
+
+**Not checked:**
+- anything on a device;
+- Vue, Solid and React (no fixture);
+- a NativeClass dependency in a pre-bundle.
+
+**Device checklist:**
+1. **Angular fixture, iOS simulator:** boot through the lazy home route, one edit of each kind (template, style, class), and the restart-after-`vite.config` boot race. Check the device log for a missing `vendor.mjs`, `__nsVendorRegistry` or `require` errors.
+2. **One `@nativescript/core`:** in the Angular app, `Application` seen by app code must be `===` the one `bundle.mjs` booted, e.g. log `globalThis.Application === (await import('@nativescript/core')).Application`.
+3. **App CSS edits** (`ns:css-updates`): the CSS handler now imports `addTaggedAdditionalCSS`/`removeTaggedAdditionalCSS` from core as ESM.
+4. **A plugin that uses CommonJS `require('@nativescript/core/…')`**, e.g. `@nativescript-community/gesturehandler` (`require('@nativescript/core/ui/core/view').View`), or any CJS plugin:
+   - as installed (served raw): expect it to load, with core answered by the shim;
+   - if it is pure CommonJS (no ESM syntax): it must fail without `optimizeDeps.include: ['<plugin>']`, and work with it, with core still single (check 2).
+5. **Toolbox on the iOS simulator:** boot, then the image-handling page (imagepicker + perms, now served raw and version-less), the websockets demo, and a TS edit (an app restart until phase 4).
+6. **Physical device on `NS_HMR_HOST`:** boot only.
+7. **Optional: a React app,** to check that `react`/`react-reconciler` load through the pre-bundle and that `react-jsx-runtime`'s named imports resolve.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

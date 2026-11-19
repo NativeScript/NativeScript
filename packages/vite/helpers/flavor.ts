@@ -52,11 +52,7 @@ let targetFlavor: string;
  * 'angular' })`). Dependency-based detection reads only the project's OWN
  * package.json, which misses hoisted framework packages in monorepos (an Nx
  * app depending on a root-level `@nativescript/angular` detects as
- * 'javascript'). A wrong flavor silently disables flavor-gated build steps —
- * most critically the deps-bundle Angular linker, leaving `ɵɵngDeclare*`
- * partial declarations unlinked and crashing at runtime with "needs to be
- * compiled using the JIT compiler" the first time such a factory is pulled
- * (observed with `_PlatformLocation` during an HMR reboot).
+ * 'javascript'). A wrong flavor silently disables flavor-gated build steps.
  */
 export function setProjectFlavor(flavor: string): void {
 	if (flavor) {

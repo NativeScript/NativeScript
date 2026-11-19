@@ -27,7 +27,6 @@ import { nsCoreExternalUrlsPlugin } from '../helpers/ns-core-external-urls.js';
 import { getProjectFlavor, setProjectFlavor } from '../helpers/flavor.js';
 import { preserveImportsPlugin } from '../helpers/preserve-imports.js';
 import { optimizeDepsPlatformResolver } from '../helpers/esbuild-platform-resolver.js';
-import { vendorManifestPlugin } from '../hmr/shared/vendor/manifest.js';
 import { resolveVerboseFlag, createFilteredViteLogger } from '../helpers/logging.js';
 import { externalConfigsPlugin } from '../helpers/external-configs.js';
 import { getHMRPlugins } from '../hmr/server/index.js';
@@ -43,7 +42,8 @@ import { appComponentsPlugin } from '../helpers/app-components.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { normalizeModuleId } from '../helpers/normalize-id.js';
 import { getHmrWatchIgnoreGlobs } from '../helpers/hmr-scope.js';
-import { NS_OPTIMIZE_DEPS_EXCLUDE } from '../helpers/optimize-deps.js';
+import { NS_OPTIMIZE_DEPS_EXCLUDE, nsOptimizeDepsPolicyPlugin } from '../helpers/optimize-deps.js';
+import { nsVersionQueryGuardPlugin } from '../hmr/server/version-query-guard.js';
 import { sbgClassNamesPlugin } from '../helpers/sbg-class-names.js';
 import { chunkFileNames } from '../helpers/chunk-file-names.js';
 import { nativescriptBuiltinModules } from '../helpers/builtin-modules.js';
@@ -115,9 +115,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 
 	flavor = flavor || (getProjectFlavor() as string);
 	// Seed the flavor singleton with the config-declared flavor so every later
-	// getProjectFlavor() consumer (deps-bundle linker gating, worker serving)
-	// sees the truth even when package.json detection can't —
-	// see setProjectFlavor for the hoisted-monorepo failure this prevents.
+	// getProjectFlavor() consumer sees the truth even when package.json
+	// detection can't — see setProjectFlavor for the hoisted-monorepo case.
 	setProjectFlavor(flavor);
 	if (verbose) {
 		console.log(`Building for ${flavor}.`);
@@ -242,81 +241,31 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		staticCopyTargets.push({ src: `${fontsDir}/**/*`.replace(/\\/g, '/'), dest: 'fonts', rename: { stripBase: fontsStripBase } });
 	}
 
-	let disableOptimizeDeps = false;
-	// some flavor-specific adjustments for optimizing deps
-	switch (flavor) {
-		case 'angular':
-		// Solid joins Angular in disabling Vite's dep optimizer under HMR,
-		// where discovery actively hurts: Vite discovers
-		// `solid-js` (+ `solid-js/web`, `solid-js/jsx-runtime`) mid-boot, emits
-		// `optimized dependencies changed. reloading`, and that full reload
-		// re-evaluates the solid-js reactive core while `globalThis.Solid$$`
-		// from the first evaluation still persists. The result is the
-		// "You appear to have multiple instances of Solid" warning, a split
-		// reactive graph, and a flaky white screen on cold boot (the renderer
-		// and the app's signals end up in different Owner realms). `noDiscovery`
-		// keeps `solid-js` resolving through the stable resolve.alias →
-		// `dist/dev.js` URL for the whole session, so there is a single core and
-		// no mid-boot reload. Mirrors Angular, which has run this way reliably.
-		case 'solid':
-		// React (rendering through dominative via @nativescript-community/react)
-		// has the same single-instance requirement as Solid: two copies of `react`
-		// — one pre-bundled by Vite's depscanner, one served per module —
-		// means two reconciler/dispatcher realms, so hooks/context silently break.
-		// Disable discovery under HMR so `react` resolves through one stable path.
-		case 'react':
-			disableOptimizeDeps = hmrActive || process.env.NS_DISABLE_OPTIMIZEDEPS === '1' || process.env.NS_DISABLE_OPTIMIZEDEPS === 'true';
-			break;
-	}
-
-	// `module` / `node:module` are aliased to local polyfills (see
-	// `aliasCssTree` and the `node:module` entry in `resolveConfig.alias`).
-	// With discovery enabled (every non-Angular flavor) Vite's depscanner
-	// pre-bundles them at `/node_modules/.vite/deps/module.js`, and
-	// `css-tree/lib/data-patch.js` has crashed on device with `createRequire`
-	// undefined. Excluding both specifiers from optimizeDeps keeps the alias
-	// path intact end-to-end. Angular sets `noDiscovery: true` so it never hits
-	// this in the first place, but adding it here is still safe because the
-	// Angular config rebuilds `optimizeDeps.exclude` from a different list.
-	const optimizeDepsExclude = [...NS_OPTIMIZE_DEPS_EXCLUDE];
-	const optimizeDepsConditions = ['module', 'react-native', 'import', 'browser', 'default'];
-	const optimizeDepsConfig = disableOptimizeDeps
-		? {
-				noDiscovery: true,
-				include: [],
-				entries: [],
-				exclude: [...optimizeDepsExclude, 'rxjs'],
-				rolldownOptions: {
-					resolve: {
-						conditionNames: optimizeDepsConditions,
-						extensions: platformExtensions as any,
-					},
-					transform: {
-						define: {
-							global: 'globalThis',
-							'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
-						},
-					},
-					plugins: [nativescriptBuiltinModules()],
+	// Dev (serve) only; builds never read it. Discovery stays off and
+	// `nsOptimizeDepsPolicyPlugin` keeps `include` to what the flavor and the
+	// app list, so without includes no dep optimizer exists and every
+	// dependency is served at a version-less file URL. An include list
+	// pre-bundles CommonJS packages; the options below apply to those builds.
+	const [nativeClassTransform] = createNativeClassTransformerPlugin();
+	const optimizeDepsConfig = {
+		noDiscovery: true,
+		entries: [],
+		include: [],
+		exclude: [...NS_OPTIMIZE_DEPS_EXCLUDE],
+		rolldownOptions: {
+			resolve: {
+				conditionNames: ['module', 'react-native', 'import', 'browser', 'default'],
+				extensions: platformExtensions as any,
+			},
+			transform: {
+				define: {
+					global: 'globalThis',
+					'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
 				},
-			}
-		: {
-				include: [],
-				exclude: optimizeDepsExclude,
-				rolldownOptions: {
-					resolve: {
-						conditionNames: optimizeDepsConditions,
-						extensions: platformExtensions as any,
-					},
-					transform: {
-						define: {
-							global: 'globalThis',
-							'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
-						},
-					},
-					plugins: [nativescriptBuiltinModules(), optimizeDepsPlatformResolver({ platform, verbose })],
-				},
-			};
+			},
+			plugins: [nativescriptBuiltinModules(), optimizeDepsPlatformResolver({ platform, verbose }), { name: 'ns-nativeclass-optimize-deps', transform: nativeClassTransform.transform as any }],
+		},
+	};
 
 	// The Android static binding generator finds a decorated class only from its own
 	// `X = __decorate([JavaProxy('name')], X)` statement; compressing statements into comma
@@ -332,7 +281,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		define: defineConfig,
 		optimizeDeps: optimizeDepsConfig,
 		plugins: [
-			// Must stay first: Vite stubs `node:` builtins for the browser otherwise.
+			// Must stay ahead of every plugin with a `config` hook (see the plugin).
+			nsOptimizeDepsPolicyPlugin({ verbose }),
+			// Must be the first resolver: Vite stubs `node:` builtins for the browser otherwise.
 			nativescriptBuiltinModules(),
 			// Merge any dependency-provided `nativescript.vite.mjs` configs. Runs
 			// in an awaited `config` hook so ESM configs load correctly.
@@ -340,7 +291,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Under HMR, rewrite every bare `@nativescript/core*` specifier to
 			// its dev-server URL so bundle.mjs contains NO bundled copy of the
 			// core runtime (see helpers/ns-core-external-urls.ts).
-			...(hmrActive ? [nsCoreExternalUrlsPlugin({ platform, projectRoot, nsCoreRoot: NS_CORE_ROOT, hmrPort, useHttps })] : []),
+			...(hmrActive ? [nsCoreExternalUrlsPlugin({ platform, projectRoot, nsCoreRoot: NS_CORE_ROOT, hmrPort, useHttps }), nsVersionQueryGuardPlugin({ nsCoreRoot: NS_CORE_ROOT })] : []),
 			createPlatformCssPlugin(platform),
 			// TODO: move to per-project basis based on usage
 			createEnsureHoistedThemeLinkPlugin(THEME_CORE_ROOT, projectRoot, platform),
@@ -354,16 +305,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			}),
 			// Ensure explicit keep markers are honored
 			preserveImportsPlugin(),
-			hmrActive
-				? vendorManifestPlugin({
-						projectRoot,
-						platform,
-						mode: targetMode,
-						verbose,
-						emitAssets: true,
-						flavor,
-					})
-				: undefined,
 			// Vue HMR plugins for development mode
 			// HMR plugins (source streaming replaces prior exploded source plugin when enabled)
 			...(hmrActive ? [...getHMRPlugins({ platform, flavor, verbose })] : []),
@@ -555,15 +496,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				reportCompressedSize: false,
 			}),
 			rolldownOptions: {
-				onwarn(warning, defaultHandler) {
-					// Suppress COMMONJS_VARIABLE_IN_ESM from the vendor virtual module.
-					// The esbuild-bundled vendor code may contain CommonJS `exports` references
-					// inside ESM wrapper code which Rolldown flags but is harmless at runtime.
-					if (warning.code === 'COMMONJS_VARIABLE_IN_ESM' && (warning.id?.includes('@nativescript/vendor') || warning.message?.includes('@nativescript/vendor'))) {
-						return;
-					}
-					defaultHandler(warning);
-				},
 				treeshake: {
 					// Preserve side effects for NativeScript core so classes/functions
 					// aren't tree-shaken out inadvertently. This does NOT cause cross‑chunk duplication;
@@ -611,16 +543,10 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// Keep critical NativeScript core bootstrap/lifecycle modules in the main bundle
 					// so they evaluate AFTER bundle-entry-points initialize Application.
 					manualChunks(id) {
-						// In HMR, avoid emitting a Rollup vendor chunk on disk. The dev server
-						// serves vendor over HTTP and we separately emit a single ns-vendor.mjs
-						// for Android SBG to scan via the vendorManifestPlugin above.
+						// Under HMR the app graph is served by the dev server; bundle.mjs
+						// carries only the boot code, so it gets no vendor split.
 						if (hmrActive) {
 							return undefined;
-						}
-						const normalizedId = id.split('?')[0].replace(/\\/g, '/');
-						// Ensure virtual vendor modules live in vendor.mjs
-						if (normalizedId.includes('@nativescript/vendor') || normalizedId.includes('@nativescript/vendor-manifest')) {
-							return 'vendor';
 						}
 						if (id.includes('node_modules')) {
 							// Keep Angular, NativeScript core, and Angular ecosystem packages

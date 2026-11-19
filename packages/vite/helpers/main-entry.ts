@@ -332,15 +332,13 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// device. These modules are not used at runtime for NativeScript
 			// apps, so we safely return an empty object from a shim.
 			//
-			// IMPORTANT: Under HMR, vendor packages call the real NativeScript
-			// CommonJS require() with `@nativescript/core/<sub>` specifiers
-			// (e.g. `require('@nativescript/core/ui/core/view').View` in
-			// `@nativescript-community/gesturehandler`). If we overwrite
-			// globalThis.require with a blanket stub, every such call returns
-			// `{}` and any property access on the result (e.g. `.View`) is
-			// `undefined`, cascading into `TypeError: Cannot read properties
-			// of undefined (reading 'prototype')` inside `applyMixins` when
-			// vendor install() hooks run.
+			// IMPORTANT: this shim is the final `globalThis.require`. The native
+			// loader resolves only on disk and never consults the import map, yet
+			// served dependency code calls require() with `@nativescript/core/<sub>`
+			// specifiers (e.g. `require('@nativescript/core/ui/core/view').View` in
+			// `@nativescript-community/gesturehandler`). A blanket stub would hand
+			// those `{}`, cascading into `TypeError: Cannot read properties of
+			// undefined (reading 'prototype')` inside `applyMixins`.
 			//
 			// Instead, install a DELEGATING shim:
 			//   - If the specifier is a Node built-in (fs, path, os, …) or
@@ -385,8 +383,8 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			//     delegate symbols, overwrites methods); a fresh copy per
 			//     require() would lose those mutations on the next lookup.
 			//   - Under HMR, published as the dev globals' `cjsShape` so the served
-			//     core's registration footer and the deps bundle's createRequire
-			//     share this one cache and see mutation-consistent shapes.
+			//     core's registration footer shares this one cache and sees
+			//     mutation-consistent shapes.
 			imports += '  var __nsShapeCache = new WeakMap();\n';
 			imports += `  var __nsShapeCjs = ${opts.hmrActive ? '__nsDev.cjsShape || (__nsDev.cjsShape = ' : '('}function __nsShape(obj) {\n`;
 			imports += "    if (!obj || typeof obj !== 'object') return obj;\n";

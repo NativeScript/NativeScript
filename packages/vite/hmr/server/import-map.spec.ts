@@ -1,147 +1,101 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockExistsSync = vi.fn();
-const mockReaddirSync = vi.fn();
+const packageJsons = vi.hoisted(() => new Map<string, string>());
 
 vi.mock('fs', () => ({
-	existsSync: (...args: unknown[]) => mockExistsSync(...args),
-	readdirSync: (...args: unknown[]) => mockReaddirSync(...args),
-	readFileSync: vi.fn(),
+	readFileSync: (file: string) => {
+		const text = packageJsons.get(String(file).replace(/\\/g, '/'));
+		if (text === undefined) throw Object.assign(new Error(`ENOENT: ${file}`), { code: 'ENOENT' });
+		return text;
+	},
 }));
 
-const mockGetVendorManifest = vi.fn(() => null as unknown);
-const mockListVendorModules = vi.fn(() => [] as string[]);
-
-vi.mock('../shared/vendor/registry.js', () => ({
-	getVendorManifest: (...args: unknown[]) => mockGetVendorManifest(...args),
-	listVendorModules: (...args: unknown[]) => mockListVendorModules(...args),
-}));
-
-vi.mock('../../helpers/project.js', () => ({
-	getProjectRootPath: vi.fn(() => '/workspace/app'),
-}));
-
-import { collectImportMapSpecifiers, getCanonicalization } from './import-map.js';
+import { collectImportMapSpecifiers, getCanonicalization, getVolatilePatterns } from './import-map.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 
-function strategyWithImportMapSpecifiers(specifiers: string[]): FrameworkServerStrategy {
-	return { importMapSpecifiers: () => specifiers } as unknown as FrameworkServerStrategy;
-}
-
-function dir(name: string) {
-	return {
-		name,
-		isDirectory: () => true,
-		isSymbolicLink: () => false,
-	};
-}
-
 const ORIGIN = 'http://localhost:5173';
+const APP = '/workspace/app';
+
+function setAppPackageJson(pkg: Record<string, unknown>) {
+	packageJsons.set(`${APP}/package.json`, JSON.stringify(pkg));
+}
+
+function collect(strategy?: FrameworkServerStrategy) {
+	return collectImportMapSpecifiers({ origin: ORIGIN, flavor: strategy?.flavor ?? 'typescript', projectRoot: APP, strategy });
+}
 
 describe('collectImportMapSpecifiers', () => {
 	beforeEach(() => {
-		mockExistsSync.mockReturnValue(true);
-		mockReaddirSync.mockImplementation((target: string) => {
-			const normalized = String(target).replace(/\\/g, '/');
-			if (normalized.endsWith('/node_modules')) {
-				return [dir('@nativescript'), dir('@vitejs'), dir('vite'), dir('solid-js')];
-			}
-			if (normalized.endsWith('/node_modules/@nativescript')) {
-				return [dir('vite')];
-			}
-			if (normalized.endsWith('/node_modules/@vitejs')) {
-				return [dir('plugin-vue')];
-			}
-			return [];
-		});
-		mockGetVendorManifest.mockReturnValue(null);
-		mockListVendorModules.mockReturnValue([]);
+		packageJsons.clear();
 	});
 
-	it('omits build-time and prefix-only package roots', () => {
-		const specifiers = collectImportMapSpecifiers({ origin: ORIGIN, flavor: 'angular' });
+	it("keys @nativescript/core first, then the package name of each of the app's dependencies", () => {
+		setAppPackageJson({
+			dependencies: { '@nativescript/core': '~9.0.0', rxjs: '^7.8.0', '@ngx-translate/core': '^15.0.0' },
+			devDependencies: { 'only-at-build-time': '^1.0.0' },
+		});
 
-		expect(specifiers).not.toContain('@nativescript/vite');
-		expect(specifiers).not.toContain('vite');
-		expect(specifiers).not.toContain('@vitejs/plugin-vue');
-		expect(specifiers).toContain('solid-js');
+		const specifiers = collect();
+
+		expect(specifiers.slice(0, 3)).toEqual(['@nativescript/core', 'rxjs', '@ngx-translate/core']);
+		expect(specifiers.filter((spec) => spec === '@nativescript/core')).toHaveLength(1);
+		expect(specifiers).not.toContain('only-at-build-time');
 		expect(specifiers.some((spec) => spec.endsWith('/'))).toBe(false);
 	});
 
-	it('adds framework specifiers once, in map order', () => {
-		const specifiers = collectImportMapSpecifiers({
-			origin: ORIGIN,
-			flavor: 'solid',
-			strategy: strategyWithImportMapSpecifiers(['solid-js', 'solid-js/web']),
+	it('leaves out build tooling, platform runtimes and this package', () => {
+		setAppPackageJson({
+			dependencies: { '@nativescript/vite': '*', '@nativescript/ios': '*', '@nativescript/android': '*', vite: '*', '@types/node': '*', '@vitejs/plugin-vue': '*', 'solid-js': '*' },
 		});
 
-		expect(specifiers.filter((spec) => spec === 'solid-js')).toHaveLength(1);
-		expect(specifiers).toContain('solid-js/web');
-		expect(specifiers.indexOf('solid-js/web')).toBeGreaterThan(specifiers.indexOf('@nativescript/core'));
+		const specifiers = collect();
+
+		expect(specifiers).not.toContain('@nativescript/vite');
+		expect(specifiers).not.toContain('@nativescript/ios');
+		expect(specifiers).not.toContain('@nativescript/android');
+		expect(specifiers).not.toContain('vite');
+		expect(specifiers).not.toContain('@types/node');
+		expect(specifiers).not.toContain('@vitejs/plugin-vue');
+		expect(specifiers).toContain('solid-js');
 	});
 
-	it('keys @nativescript/core once and never its subpaths, even when the vendor manifest lists them', () => {
-		mockGetVendorManifest.mockReturnValue({
-			version: 1,
-			createdAt: new Date().toISOString(),
-			hash: 'test-hash',
-			modules: {},
-			aliases: {
-				'@nativescript/core/ui/frame/activity.android': '@nativescript/core/ui/frame/activity.android',
-			},
-		});
-		mockListVendorModules.mockReturnValue(['@nativescript/core', '@nativescript/core/ui/frame/activity.android', '@nativescript/core/application', 'rxjs']);
+	it('keys only @nativescript/core and the builtins when the app has no readable package.json', () => {
+		const specifiers = collect();
 
-		const specifiers = collectImportMapSpecifiers({ origin: ORIGIN, flavor: 'angular' });
+		expect(specifiers[0]).toBe('@nativescript/core');
+		expect(specifiers.every((spec) => spec === '@nativescript/core' || spec.startsWith('node:'))).toBe(true);
+	});
 
-		expect(specifiers.filter((spec) => spec === '@nativescript/core')).toHaveLength(1);
-		expect(specifiers).not.toContain('@nativescript/core/ui/frame/activity.android');
-		expect(specifiers).not.toContain('@nativescript/core/application');
-		expect(specifiers[0]).toBe('rxjs');
+	it('adds framework specifiers once, after the dependencies', () => {
+		setAppPackageJson({ dependencies: { 'solid-js': '*', '@nativescript-community/solid-js': '*' } });
+
+		const specifiers = collect({ flavor: 'solid', importMapSpecifiers: () => ['solid-js', 'solid-js/web'] });
+
+		expect(specifiers.filter((spec) => spec === 'solid-js')).toHaveLength(1);
+		expect(specifiers.indexOf('solid-js/web')).toBeGreaterThan(specifiers.indexOf('@nativescript-community/solid-js'));
 	});
 
 	it('keys node: builtins but not their bare names', () => {
-		const specifiers = collectImportMapSpecifiers({ origin: ORIGIN, flavor: 'angular' });
+		const specifiers = collect();
 
 		expect(specifiers).toContain('node:url');
 		expect(specifiers).toContain('node:path');
 		expect(specifiers).not.toContain('url');
 	});
+
+	it('reads package.json on every call, so an added dependency is keyed without a restart', () => {
+		setAppPackageJson({ dependencies: {} });
+		expect(collect()).not.toContain('rxjs');
+
+		setAppPackageJson({ dependencies: { rxjs: '*' } });
+		expect(collect()).toContain('rxjs');
+	});
 });
 
-describe('vendor specifiers', () => {
-	beforeEach(() => {
-		mockExistsSync.mockReturnValue(true);
-		mockReaddirSync.mockImplementation((target: string) => {
-			const normalized = String(target).replace(/\\/g, '/');
-			if (normalized.endsWith('/node_modules')) {
-				return [dir('rxjs'), dir('@ngx-translate'), dir('vue')];
-			}
-			if (normalized.endsWith('/node_modules/@ngx-translate')) {
-				return [dir('core')];
-			}
-			return [];
-		});
-		mockGetVendorManifest.mockReturnValue(null);
-		mockListVendorModules.mockReturnValue([]);
-	});
-
-	it('keys vendor roots first and aliases only when their canonical package is keyed', () => {
-		mockGetVendorManifest.mockReturnValue({
-			version: 1,
-			createdAt: new Date().toISOString(),
-			hash: 'test-hash',
-			modules: {},
-			aliases: { 'rxjs/operators': 'rxjs', 'not-vendored/sub': 'not-vendored' },
-		});
-		mockListVendorModules.mockReturnValue(['rxjs', '@ngx-translate/core']);
-
-		const specifiers = collectImportMapSpecifiers({ origin: ORIGIN, flavor: 'vue' });
-
-		expect(specifiers.slice(0, 3)).toEqual(['rxjs', '@ngx-translate/core', 'rxjs/operators']);
-		expect(specifiers).not.toContain('not-vendored/sub');
-		expect(specifiers).toContain('vue');
-		expect(specifiers.filter((spec) => spec === 'rxjs')).toHaveLength(1);
+describe('getVolatilePatterns', () => {
+	it("is only the strategy's patterns: a Vite `?v=` URL is one module instance, not a re-fetch", () => {
+		expect(getVolatilePatterns()).toEqual([]);
+		expect(getVolatilePatterns({ flavor: 'angular', volatilePatterns: () => ['/@ng/component'] })).toEqual(['/@ng/component']);
 	});
 });
 

@@ -5,8 +5,14 @@
 // (see device-resolve.mjs).
 //
 // Usage (from the repo root):
-//   node tools/vite-server-env-spike/thin-crawl.mjs --app tools/vite-server-env-spike/apps/ng --flavor angular [--platform ios] [--bundle <bundle.mjs>]
-// --bundle  also load the absolute URLs baked into a built HMR bundle.mjs (the core externals)
+//   node tools/vite-server-env-spike/thin-crawl.mjs --app tools/vite-server-env-spike/apps/ng --flavor angular [--platform ios] [--bundle <bundle.mjs>] [--allow-dup-instances]
+// --bundle  also load the absolute URLs baked into a built HMR bundle.mjs (the core externals) and the
+//   bare specifiers it leaves to the import map; without it, core identity vs bundle.mjs is unchecked
+// --allow-dup-instances  report source files evaluated in more than one instance (inlined in a
+//   bundle and also served, or inlined in two bundles) as a warning instead of a failure
+// --vite-config  boot from the app's own vite.config.* (as the CLI does) instead of the bare flavor config
+// --seed <path>  (repeatable) also load this Vite URL after the import-map targets, e.g. a page
+//   module the app only reaches by navigation
 // Output: tools/vite-server-env-spike/out/thin-crawl-<app>.json + summary on stdout; exits 1 on any failure.
 
 import fs from 'node:fs';
@@ -27,6 +33,10 @@ const appRoot = path.resolve(repoRoot, take('--app', 'apps/toolbox'));
 const flavor = take('--flavor', 'typescript');
 const platform = take('--platform', 'ios');
 const bundleArg = take('--bundle', '');
+const useAppViteConfig = args.includes('--vite-config');
+const allowDupInstances = args.includes('--allow-dup-instances');
+const extraSeeds = [];
+for (let i; (i = args.indexOf('--seed')) >= 0;) extraSeeds.push(args.splice(i, 2)[1]);
 const bundleFile = bundleArg ? path.resolve(bundleArg) : null;
 
 process.chdir(appRoot);
@@ -39,10 +49,43 @@ const nsViteDir = path.join(appRoot, 'node_modules/@nativescript/vite');
 const viteReq = createRequire(path.join(nsViteDir, 'package.json'));
 const { createServer } = await import(pathToFileURL(viteReq.resolve('vite')).href);
 const { init, parse } = await import(pathToFileURL(viteReq.resolve('es-module-lexer')).href);
-const mod = await import(pathToFileURL(path.join(nsViteDir, `configuration/${flavor}.js`)).href);
-const config = await mod[`${flavor}Config`]({ mode: 'development' });
-const server = await createServer({ ...config, root: appRoot, configFile: false, mode: 'development' });
+let server;
+if (useAppViteConfig) {
+	const configFile = ['vite.config.mts', 'vite.config.ts', 'vite.config.js', 'vite.config.mjs'].map((f) => path.join(appRoot, f)).find((f) => fs.existsSync(f));
+	if (!configFile) throw new Error(`--vite-config: no vite.config.* in ${appRoot}`);
+	server = await createServer({ root: appRoot, configFile, mode: 'development' });
+} else {
+	const mod = await import(pathToFileURL(path.join(nsViteDir, `configuration/${flavor}.js`)).href);
+	const config = await mod[`${flavor}Config`]({ mode: 'development' });
+	server = await createServer({ ...config, root: appRoot, configFile: false, mode: 'development' });
+}
 await server.listen();
+const optimizerState = () => {
+	const md = server.environments.client.depsOptimizer?.metadata;
+	let diskBrowserHash = null;
+	try {
+		diskBrowserHash = JSON.parse(fs.readFileSync(path.join(server.config.cacheDir, 'deps/_metadata.json'), 'utf8')).browserHash;
+	} catch {}
+	return { browserHash: md?.browserHash ?? null, hash: md?.hash ?? null, optimized: md ? Object.keys(md.optimized).length : null, discovered: md ? Object.keys(md.discovered ?? {}).length : null, diskBrowserHash };
+};
+const optimizerAtStart = optimizerState();
+// No device is connected, so a payload sent here would otherwise vanish; a re-optimization shows up as `full-reload`.
+const hotSent = [];
+const channels = new Map();
+for (const [name, ch] of [
+	['ws', server.ws],
+	['environments.client.hot', server.environments.client.hot],
+]) {
+	if (ch?.send && !channels.has(ch)) channels.set(ch, name);
+}
+for (const [ch, name] of channels) {
+	const send = ch.send.bind(ch);
+	ch.send = (...a) => {
+		const p = typeof a[0] === 'string' ? { type: 'custom', event: a[0] } : a[0];
+		hotSent.push({ channel: name, type: p?.type, event: p?.event, path: p?.path, triggeredBy: p?.triggeredBy });
+		return send(...a);
+	};
+}
 await init;
 const local = `http://localhost:${server.config.server.port}`;
 const graph = server.environments.client.moduleGraph;
@@ -78,16 +121,38 @@ for (const [spec, target] of Object.entries(importMap.imports ?? {})) mapSeeds.p
 for (const [scope, entries] of Object.entries(importMap.scopes ?? {})) {
 	for (const [spec, target] of Object.entries(entries)) mapSeeds.push({ url: new URL(target, mapUrl).href, from: `importMap.scopes[${scope}][${spec}]` });
 }
-const bundle = bundleFile ? { file: bundleFile, urls: [], originMismatch: [] } : null;
+for (const seed of extraSeeds) mapSeeds.push({ url: new URL(seed, deviceOrigin).href, from: `--seed ${seed}` });
+const bundle = bundleFile ? { file: bundleFile, urls: [], originMismatch: [], bareSpecifiers: [], bareMissing: [], localImports: 0, nonLiteralDynamic: [] } : null;
+let bundleCode = '';
 if (bundle) {
-	const code = fs.readFileSync(bundleFile, 'utf8');
-	for (const m of new Set([...code.matchAll(/["'`](https?:\/\/[^"'`\s]+)["'`]/g)].map((m) => m[1]))) {
+	bundleCode = fs.readFileSync(bundleFile, 'utf8');
+	for (const m of new Set([...bundleCode.matchAll(/["'`](https?:\/\/[^"'`\s]+)["'`]/g)].map((m) => m[1]))) {
 		const u = new URL(m);
 		// The bundle also bakes in the bare origin and unrelated URLs; only module URLs are loaded.
 		if (!/^\/(node_modules|src|@fs|@id|@vite|__ns_dev__)\//.test(u.pathname)) continue;
 		if (u.origin !== deviceOrigin) bundle.originMismatch.push(m);
 		bundle.urls.push(m);
 		queue.push({ url: `${deviceOrigin}${u.pathname}${u.search}`, from: 'bundle.mjs' });
+	}
+	// bundle.mjs is evaluated from the app's files on device, so a relative import stays local and
+	// a bare one goes through the import map.
+	const bundleImporter = 'file:///app/bundle.mjs';
+	let imps = [];
+	try {
+		imps = parse(bundleCode)[0];
+	} catch (e) {
+		bundle.parseError = String(e?.message || e);
+	}
+	for (const imp of imps) {
+		const r = resolveDeviceImport(imp, bundleImporter, importMap, mapUrl);
+		if (!r) continue;
+		if (r.kind === 'non-literal') bundle.nonLiteralDynamic.push(bundleCode.slice(imp.s, imp.e).slice(0, 120));
+		else if (r.kind === 'bare-missing') bundle.bareMissing.push(r.spec);
+		else if (r.url && !isHttpUrl(r.url)) bundle.localImports++;
+		else if (r.bare) {
+			bundle.bareSpecifiers.push({ spec: r.spec, url: r.url, dynamic: imp.d > -1 });
+			queue.push({ url: r.url, from: `bundle.mjs bare ${r.spec}` });
+		}
 	}
 }
 
@@ -101,6 +166,7 @@ const nonLiteralDynamic = [];
 const builtins = new Map();
 const bareUsed = new Map();
 const cjsLike = [];
+const requesters = new Map();
 
 let deviceReached = null;
 for (;;) {
@@ -112,6 +178,8 @@ for (;;) {
 	}
 	const { url, from } = queue.shift();
 	const href = new URL(url).href.replace(/#.*$/, '');
+	if (!requesters.has(href)) requesters.set(href, new Set());
+	requesters.get(href).add(from);
 	if (fetched.has(href)) continue;
 	const entry = { from, status: 0, bytes: 0 };
 	fetched.set(href, entry);
@@ -129,8 +197,11 @@ for (;;) {
 		const res = await fetch(target);
 		entry.status = res.status;
 		entry.contentType = res.headers.get('content-type');
-		body = await res.text();
+		const buf = Buffer.from(await res.arrayBuffer());
+		body = buf.toString('utf8');
+		// `bytes` stays UTF-16 code units so it compares with earlier runs; `responseBytes` is the body size.
 		entry.bytes = body.length;
+		entry.responseBytes = buf.length;
 	} catch (e) {
 		entry.status = -1;
 		entry.error = String(e?.message || e);
@@ -161,6 +232,7 @@ for (;;) {
 		else {
 			if (r.bare && !bareUsed.has(r.spec)) bareUsed.set(r.spec, href);
 			queue.push({ url: r.url, from: href });
+			(entry.imports ??= []).push(new URL(r.url).href.replace(/#.*$/, ''));
 		}
 		if (FAILURE_KINDS.has(r.kind)) entry.failedImports = (entry.failedImports ?? 0) + 1;
 	}
@@ -240,8 +312,11 @@ async function identitiesOf(href) {
 	return ids;
 }
 const byIdentity = new Map();
+const identitiesByUrl = new Map();
 for (const href of bodies.keys()) {
-	for (const id of await identitiesOf(href)) {
+	const ids = await identitiesOf(href);
+	identitiesByUrl.set(href, ids);
+	for (const id of ids) {
 		if (!byIdentity.has(id)) byIdentity.set(id, new Set());
 		byIdentity.get(id).add(href);
 	}
@@ -254,14 +329,419 @@ for (const [identity, urls] of byIdentity) {
 }
 const duplicates = [...dupeGroups.values()];
 
+// What the device would really load: the closure of the session, bundle.mjs and --seed roots.
+// Import-map targets are seeded only to exercise them; one that nothing imports stays hypothetical.
+const isRootRequest = (from) => from.startsWith('session.') || from.startsWith('bootstrap.') || from.startsWith('bundle.mjs') || from.startsWith('--seed ');
+const loaded = new Set();
+{
+	const stack = [...requesters].filter(([, froms]) => [...froms].some(isRootRequest)).map(([href]) => href);
+	while (stack.length) {
+		const href = stack.pop();
+		if (loaded.has(href) || !fetched.has(href)) continue;
+		loaded.add(href);
+		stack.push(...(fetched.get(href).imports ?? []));
+	}
+}
+
+// One real file under two URL strings evaluates twice on device (the runtime keys modules by URL).
+// Only `t` (HMR stamp), `v` (optimizer browserHash) and `import` (explicit-import marker) pick an
+// instance of the same module; any other query (`?vue&type=…`, `?worker`, `?raw`, `?url`, `?inline`,
+// `?direct`) names a different module by design and stays part of the key. Excluded by design:
+// non-script files (CSS and assets: their `?import`/`?direct` variants are separate Vite modules
+// whose JS wrapper is not the file), `/@ng/component?c=` (volatile virtual) and other virtual ids
+// (no file), and `/__ns_dev__/` endpoints (not module responses).
+const INSTANCE_PARAMS = ['t', 'v', 'import'];
+const SCRIPT_FILE = /\.(?:[cm]?[jt]sx?|vue|svelte)$/;
+const sameFileGroups = new Map();
+const sameFileExcluded = { nonScript: 0, virtual: 0 };
+for (const [href, ids] of identitiesByUrl) {
+	const u = new URL(href);
+	if (u.pathname.startsWith('/__ns_dev__/') || u.pathname.startsWith('/@ng/component')) continue;
+	const fileId = [...ids].find((id) => id.startsWith('file:'));
+	if (!fileId) {
+		sameFileExcluded.virtual++;
+		continue;
+	}
+	const file = fileId.slice('file:'.length).replace(/\?.*$/, '');
+	if (!SCRIPT_FILE.test(file)) {
+		sameFileExcluded.nonScript++;
+		continue;
+	}
+	const key = `${file}${strip(u.search, INSTANCE_PARAMS)}`;
+	if (!sameFileGroups.has(key)) sameFileGroups.set(key, new Set());
+	sameFileGroups.get(key).add(href);
+}
+const sameFileTwoUrls = [];
+for (const [key, urls] of sameFileGroups) {
+	if (urls.size < 2) continue;
+	const loadedUrls = [...urls].filter((u) => loaded.has(u)).sort();
+	const deviceUrls = [...urls].filter((u) => deviceReached.has(u));
+	sameFileTwoUrls.push({
+		file: key,
+		severity: loadedUrls.length > 1 ? 'fail' : 'warn',
+		scope: deviceUrls.length > 1 ? 'device' : loadedUrls.length > 1 ? 'loaded' : 'all',
+		urls: [...urls].sort().map((u) => ({ url: u, loaded: loaded.has(u), requestedBy: [...(requesters.get(u) ?? [])].sort().slice(0, 4) })),
+	});
+}
+sameFileTwoUrls.sort((a, b) => (a.severity === b.severity ? a.file.localeCompare(b.file) : a.severity === 'fail' ? -1 : 1));
+const sameFileFailures = sameFileTwoUrls.filter((d) => d.severity === 'fail').length;
+
+// Duplicate instances: a source file inlined in a bundle evaluates once per bundle URL it is
+// in, and once more per URL it is served at individually. URL-level identities can't see that.
+const NS_BUNDLE_PATHS = new Set(['/__ns_dev__/deps-bundle.mjs', '/__ns_dev__/vendor.mjs']);
+// The `stdin.sourcefile` names of deps-bundle.ts and the fallback vendor build (vendor/manifest.ts).
+const ESBUILD_STDIN_NAMES = new Set(['ns-deps-bundle-entry.ts', 'ns-deps-bundle-discovery.ts', 'ns-vendor-entry.ts']);
+const clientEnv = server.environments.client;
+const isOptimizedDep = (pathname) => clientEnv.depsOptimizer?.isOptimizedDepUrl(pathname) ?? pathname.startsWith('/node_modules/.vite/');
+// Same mapping Vite's transform middleware uses to read an optimized dep's .map from disk.
+const diskPathOf = (pathname) => {
+	const p = decodeURIComponent(pathname);
+	return p.startsWith('/@fs/') ? p.slice('/@fs'.length) : path.resolve(server.config.root, p.slice(1));
+};
+const isFile = (p) => {
+	try {
+		return fs.statSync(p).isFile();
+	} catch {
+		return false;
+	}
+};
+// Sorts one bundle input spec into `into.files` (an existing file, by real path), `into.virtual` or `into.unresolved`.
+const collect = (into, base, spec) => {
+	// Rolldown prints a virtual id's NUL as the two characters `\0`; esbuild prints a stdin input by its `sourcefile` name.
+	if (spec.startsWith('\0') || spec.startsWith('\\0') || /^[\w-]+:/.test(spec) || ESBUILD_STDIN_NAMES.has(spec)) return into.virtual.add(spec);
+	const p = path.resolve(base, spec);
+	if (isFile(p)) into.files.add(real(p));
+	else into.unresolved.add(spec);
+};
+const newSet = () => ({ files: new Set(), virtual: new Set(), unresolved: new Set() });
+const bundles = [];
+for (const [href, body] of bodies) {
+	const { pathname } = new URL(href);
+	let kind = null;
+	if (NS_BUNDLE_PATHS.has(pathname)) kind = 'ns-deps';
+	else if (isOptimizedDep(pathname) && /\.m?js$/.test(pathname)) kind = 'vite-deps';
+	if (!kind) continue;
+	const b = { url: href, kind, file: kind === 'vite-deps' ? real(diskPathOf(pathname)) : null, deviceReached: deviceReached.has(href) };
+	let inputs = null;
+	if (kind === 'ns-deps') {
+		// esbuild (deps-bundle.ts: absWorkingDir = project root, not minified) prints a column-0
+		// `// <path relative to absWorkingDir>` before each module; indented `//` lines are code comments.
+		b.source = 'esbuild region comments';
+		inputs = newSet();
+		for (const m of body.matchAll(/^\/\/ (\S+)$/gm)) collect(inputs, server.config.root, m[1]);
+		// A module wrapped in __esm/__commonJS evaluates only when first required; the rest evaluate with the bundle.
+		const marks = [...body.matchAll(/^\/\/ (\S+)$/gm)];
+		b.lazy = marks
+			.filter((m, i) => /^var [\w$]+ = __(?:esm|commonJS)\(/m.test(body.slice(m.index, marks[i + 1]?.index ?? body.length)))
+			.map((m) => path.resolve(server.config.root, m[1]))
+			.filter(isFile)
+			.map(real);
+	} else {
+		// Rolldown writes the map next to the output; `sources` resolve against the map file's directory,
+		// independent of the optimizer's cwd. `//#region` comments (relative to its cwd) are the cross-check.
+		const smu = body.match(/\/\/# sourceMappingURL=(\S+)\s*$/);
+		if (smu && !smu[1].startsWith('data:')) {
+			const mapHref = new URL(smu[1], href).href;
+			try {
+				const map = await (await fetch(toLocal(mapHref))).json();
+				const mapDir = path.dirname(diskPathOf(new URL(mapHref).pathname));
+				inputs = newSet();
+				for (const s of map.sources ?? []) collect(inputs, path.resolve(mapDir, map.sourceRoot ?? ''), s);
+				b.source = 'sourcemap';
+				b.map = mapHref;
+			} catch (e) {
+				b.mapError = String(e?.message || e);
+			}
+		}
+		const regions = newSet();
+		for (const m of body.matchAll(/^\/\/#region (.+)$/gm)) collect(regions, server.config.root, m[1]);
+		if (!inputs) {
+			b.source = 'rolldown region comments';
+			inputs = regions;
+		} else {
+			// A map-only source is expected (a module that emitted no code of its own); a region-only one is not.
+			const mapOnly = [...inputs.files].filter((f) => !regions.files.has(f));
+			const regionOnly = [...regions.files].filter((f) => !inputs.files.has(f));
+			if (mapOnly.length) b.mapOnlySources = mapOnly;
+			if (regionOnly.length || regions.unresolved.size) b.regionMismatch = { regionOnly, unresolved: [...regions.unresolved] };
+		}
+	}
+	b.files = [...inputs.files];
+	b.virtual = [...inputs.virtual];
+	b.unresolved = [...inputs.unresolved];
+	bundles.push(b);
+}
+const fileOfIdentity = (id) => (id.startsWith('file:') ? id.slice('file:'.length).replace(/\?.*$/, '') : null);
+const bundleUrls = new Set(bundles.map((b) => b.url));
+const servedAs = new Map();
+for (const [href, ids] of identitiesByUrl) {
+	if (bundleUrls.has(href)) continue;
+	for (const id of ids) {
+		const file = fileOfIdentity(id);
+		if (!file) continue;
+		if (!servedAs.has(file)) servedAs.set(file, new Set());
+		servedAs.get(file).add(href);
+	}
+}
+const inlinedIn = new Map();
+for (const b of bundles) {
+	for (const file of b.files) {
+		if (!inlinedIn.has(file)) inlinedIn.set(file, new Set());
+		inlinedIn.get(file).add(b.url);
+	}
+}
+const pkgByDir = new Map();
+function packageOf(file) {
+	const seen = [];
+	let dir = path.dirname(file);
+	let found = null;
+	for (;;) {
+		if (pkgByDir.has(dir)) {
+			found = pkgByDir.get(dir);
+			break;
+		}
+		seen.push(dir);
+		try {
+			const pj = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
+			// Nested `{"type":"module"}` package.json files carry no name; keep walking up.
+			if (pj.name && pj.version) {
+				found = { name: pj.name, version: pj.version, root: dir };
+				break;
+			}
+		} catch {}
+		const up = path.dirname(dir);
+		if (up === dir) break;
+		dir = up;
+	}
+	for (const d of seen) pkgByDir.set(d, found);
+	return found;
+}
+const pkgLabel = (file) => {
+	const p = packageOf(file);
+	return p ? `${p.name}@${p.version}` : null;
+};
+const scopeOf = (urlSets) => (urlSets.every((urls) => [...urls].some((u) => deviceReached.has(u))) ? 'device' : 'all');
+const bundleFileOf = new Map(bundles.map((b) => [b.url, b.file ?? new URL(b.url).pathname]));
+const inlinedAndServed = [];
+const inlinedInSeveralBundles = [];
+for (const [file, inBundles] of inlinedIn) {
+	const served = servedAs.get(file);
+	if (served) inlinedAndServed.push({ file, package: pkgLabel(file), scope: scopeOf([inBundles, served]), inlinedIn: [...inBundles].sort(), servedAs: [...served].sort() });
+	if (inBundles.size > 1) {
+		const sameBundleFile = new Set([...inBundles].map((u) => bundleFileOf.get(u))).size === 1;
+		const deviceBundles = [...inBundles].filter((u) => deviceReached.has(u));
+		inlinedInSeveralBundles.push({ file, package: pkgLabel(file), scope: deviceBundles.length > 1 ? 'device' : 'all', sameBundleFile, inlinedIn: [...inBundles].sort() });
+	}
+}
+const pkgCopies = new Map();
+for (const file of new Set([...inlinedIn.keys(), ...servedAs.keys()])) {
+	const p = packageOf(file);
+	if (!p) continue;
+	const k = `${p.name}@${p.version}`;
+	if (!pkgCopies.has(k)) pkgCopies.set(k, new Set());
+	pkgCopies.get(k).add(p.root);
+}
+const packageCopies = [...pkgCopies].filter(([, roots]) => roots.size > 1).map(([pkg, roots]) => ({ package: pkg, roots: [...roots].sort() }));
+const duplicateInstances = [];
+for (const file of [...new Set([...inlinedAndServed, ...inlinedInSeveralBundles].map((d) => d.file))].sort()) {
+	const a = inlinedAndServed.find((d) => d.file === file);
+	const b = inlinedInSeveralBundles.find((d) => d.file === file);
+	duplicateInstances.push({ file, package: pkgLabel(file), scope: a?.scope === 'device' || b?.scope === 'device' ? 'device' : 'all', inlinedIn: [...inlinedIn.get(file)].sort(), servedAs: [...(servedAs.get(file) ?? [])].sort() });
+}
+const dupInstanceCount = duplicateInstances.length;
+const instances = {
+	bundles: bundles.map(({ files, ...b }) => ({ ...b, fileCount: files.length, files: files.sort() })),
+	inlinedFiles: inlinedIn.size,
+	servedFiles: servedAs.size,
+	duplicateInstanceCount: dupInstanceCount,
+	duplicateInstances,
+	inlinedAndServed,
+	inlinedInSeveralBundles,
+	packageCopies,
+};
+
 const countByPrefix = (urls) => {
 	const out = {};
 	for (const u of urls) out[fetched.get(u).prefix] = (out[fetched.get(u).prefix] ?? 0) + 1;
 	return out;
 };
 const requestsByPrefix = { device: countByPrefix(deviceReached), all: countByPrefix(fetched.keys()) };
+// Only URLs that got an HTTP response count as requests (foreign-origin ones were never sent).
+const tally = (urls) => {
+	const out = { requests: 0, bytes: 0, byPrefix: {} };
+	for (const u of urls) {
+		const e = fetched.get(u);
+		if (e.status <= 0) continue;
+		const t = (out.byPrefix[e.prefix] ??= { requests: 0, bytes: 0 });
+		t.requests++;
+		t.bytes += e.responseBytes ?? 0;
+		out.requests++;
+		out.bytes += e.responseBytes ?? 0;
+	}
+	return out;
+};
+const totals = { device: tally(deviceReached), all: tally(fetched.keys()) };
+const readText = (file) => {
+	try {
+		return fs.readFileSync(file, 'utf8');
+	} catch {
+		return '';
+	}
+};
+const CJS_TOKENS = /(^|[^.\w$'"])(module\.exports|exports\.[A-Za-z_$][\w$]*|require\s*\()/m;
+const hasNoModuleSyntax = (code) => {
+	try {
+		const [imps, exps] = parse(code);
+		return imps.length === 0 && exps.length === 0;
+	} catch {
+		return false;
+	}
+};
+const isCjsSource = (code) => hasNoModuleSyntax(code) && CJS_TOKENS.test(code);
+
+// A raw npm file the device evaluates as ESM: CommonJS there has no `module`/`exports`/`require` to bind to.
+const cjsServedRaw = [];
+for (const [href, body] of bodies) {
+	const { pathname } = new URL(href);
+	const e = fetched.get(href);
+	const raw = (pathname.startsWith('/node_modules/') && !pathname.startsWith('/node_modules/.vite/')) || (pathname.startsWith('/@fs/') && pathname.includes('/node_modules/'));
+	if (!raw || !/javascript/.test(e.contentType ?? '') || !isCjsSource(body)) continue;
+	cjsServedRaw.push({ url: href, from: e.from, deviceReached: deviceReached.has(href), tokens: [...new Set((body.match(new RegExp(CJS_TOKENS.source, 'gm')) ?? []).map((t) => t.replace(/^[^\w$]/, '').trim()))].slice(0, 4) });
+}
+const cjsServedRawDevice = cjsServedRaw.filter((c) => c.deviceReached).length;
+
+const nsDepsCoverage = bundles
+	.filter((b) => b.kind === 'ns-deps' && b.files.length)
+	.map((b) => {
+		const rows = b.files.map((file) => {
+			const code = readText(file);
+			return { file, package: pkgLabel(file), cjs: isCjsSource(code), nativeClass: /\bNativeClass\b/.test(code), platformSuffixed: /\.(ios|android|visionos)\.[cm]?[jt]sx?$/.test(file), lazy: b.lazy?.includes(file) ?? false };
+		});
+		const pkgs = (pred) => [...new Set(rows.filter(pred).map((r) => r.package))].sort();
+		return {
+			url: b.url,
+			files: rows.length,
+			cjs: rows.filter((r) => r.cjs).length,
+			nativeClass: rows.filter((r) => r.nativeClass).length,
+			platformSuffixed: rows.filter((r) => r.platformSuffixed).length,
+			lazy: rows.filter((r) => r.lazy).length,
+			packages: pkgs(() => true),
+			cjsPackages: pkgs((r) => r.cjs),
+			nativeClassPackages: pkgs((r) => r.nativeClass),
+			platformSuffixedPackages: pkgs((r) => r.platformSuffixed),
+			rows,
+		};
+	});
+
+// The device's native `require` reaches @nativescript/core only through bundle.mjs's registry shim, never npm over HTTP.
+// Bundlers rename a `createRequire(import.meta.url)` result (`require$2`) or call it inline, so those
+// callees count too; a relative spec there resolves against the module's HTTP URL, so it is kept.
+const escapeRe = (s) => s.replace(/[$.]/g, '\\$&');
+const requireCallers = new Map();
+const noteRequires = (code, where) => {
+	const aliases = [...code.matchAll(/(?:var|let|const)\s+([\w$]+)\s*=\s*(?:[\w$]+\.)?createRequire\s*\(/g)].map((m) => m[1]);
+	const callee = ['require', ...aliases].map(escapeRe).join('|');
+	const re = new RegExp(`(?:(?<![\\w$.])(${callee})|(createRequire\\s*\\([^()]*(?:\\([^()]*\\))?[^()]*\\)))\\s*\\(\\s*(['"\`])([^'"\`]+)\\3\\s*\\)`, 'g');
+	for (const m of code.matchAll(re)) {
+		const lineStart = code.lastIndexOf('\n', m.index) + 1;
+		if (/\/\/|^\s*\*/.test(code.slice(lineStart, m.index))) continue;
+		const viaCreateRequire = m[2] || aliases.includes(m[1]);
+		const spec = m[4];
+		if ((spec.startsWith('.') || spec.startsWith('/')) && !viaCreateRequire) continue;
+		const key = viaCreateRequire ? `${spec} (createRequire)` : spec;
+		if (!requireCallers.has(key)) requireCallers.set(key, new Set());
+		requireCallers.get(key).add(where);
+	}
+};
+for (const href of bodies.keys()) noteRequires(bodies.get(href), href);
+for (const file of inlinedIn.keys()) noteRequires(readText(file), `inlined:${file}`);
+if (bundleCode) noteRequires(bundleCode, 'bundle.mjs');
+const requireBySpec = Object.fromEntries([...requireCallers].sort(([a], [b]) => a.localeCompare(b)).map(([spec, where]) => [spec, [...where].sort()]));
+
+// NativeScript's V8 is built without ICU: a Unicode property escape under the `u`/`v` flag is a
+// SyntaxError (at module compile time for a regex literal, at construction for a RegExp string).
+const UNICODE_PROP = /\\{1,2}[pP]\{[^}\n]{0,40}\}?/g;
+const unicodePropertyEscapes = [];
+const scanUnicodeProps = (code, where, scope) => {
+	const hits = [];
+	for (const m of code.matchAll(UNICODE_PROP)) {
+		const lineEnd = code.indexOf('\n', m.index);
+		const tail = code.slice(m.index, lineEnd < 0 ? Math.min(code.length, m.index + 400) : Math.min(lineEnd, m.index + 400));
+		// Heuristic: the first `/flags` closing a literal, or a `"flags"` second RegExp argument.
+		const flags = tail.match(/[^\\]\/([dgimsuyv]+)\b/)?.[1] ?? tail.match(/['"`]\s*,\s*['"`]([dgimsuyv]+)['"`]/)?.[1] ?? null;
+		hits.push({ snippet: code.slice(Math.max(0, m.index - 30), m.index + 50).replace(/\s+/g, ' '), flags, unicodeFlag: flags == null ? null : /[uv]/.test(flags) });
+	}
+	if (hits.length) unicodePropertyEscapes.push({ where, scope, count: hits.length, hits: hits.slice(0, 5) });
+};
+for (const [href, body] of bodies) scanUnicodeProps(body, href, deviceReached.has(href) ? 'device' : loaded.has(href) ? 'loaded' : 'all');
+if (bundleCode) scanUnicodeProps(bundleCode, 'bundle.mjs', 'device');
+for (const file of inlinedIn.keys()) scanUnicodeProps(readText(file), `inlined:${file}`, [...inlinedIn.get(file)].some((u) => deviceReached.has(u)) ? 'device' : 'all');
+
+// Settle before the end snapshot: crawl imports can register missing deps whose optimizer run is
+// debounced, and the end-of-crawl map fetch below resolves every key again.
+async function settledOptimizerState() {
+	let last = JSON.stringify(optimizerState());
+	let stable = 0;
+	for (let i = 0; i < 40 && stable < 3; i++) {
+		await sleep(500);
+		const now = JSON.stringify(optimizerState());
+		stable = now === last ? stable + 1 : 0;
+		last = now;
+	}
+	return JSON.parse(last);
+}
+const optimizerAtEnd = await settledOptimizerState();
+const hotSentDuringCrawl = hotSent.slice();
+const fullReloads = hotSentDuringCrawl.filter((p) => p.type === 'full-reload');
+const optimizer = {
+	depsOptimizerPresent: !!server.environments.client.depsOptimizer,
+	config: (({ noDiscovery, include, exclude, entries }) => ({ noDiscovery, include, exclude, entries }))(server.environments.client.config.optimizeDeps ?? {}),
+	start: optimizerAtStart,
+	end: optimizerAtEnd,
+	changed: optimizerAtStart.browserHash !== optimizerAtEnd.browserHash || optimizerAtStart.hash !== optimizerAtEnd.hash,
+	fullReloads,
+	hotSent: hotSentDuringCrawl,
+};
+
+const mapAtEnd = (await (await fetch(toLocal(mapUrl))).json()).importMap ?? {};
+const importMapDiff = [];
+for (const k of new Set([...Object.keys(importMap.imports ?? {}), ...Object.keys(mapAtEnd.imports ?? {})])) {
+	const a = importMap.imports?.[k];
+	const b = mapAtEnd.imports?.[k];
+	if (a !== b) importMapDiff.push({ spec: k, start: a ?? null, end: b ?? null });
+}
+if (JSON.stringify(importMap.scopes ?? {}) !== JSON.stringify(mapAtEnd.scopes ?? {})) importMapDiff.push({ scopes: true, start: importMap.scopes ?? null, end: mapAtEnd.scopes ?? null });
+
+// Each map target vs the URL(s) import analysis wrote for the same module: an optimized dep's
+// `/node_modules/.vite/deps/<file>?v=<browserHash>`, and every URL of the target's file (same
+// by-design query) that served code or bundle.mjs requested. A difference is a second instance
+// once the device loads both; the map target is loaded only when something imports the bare spec.
+const optimizedMeta = server.environments.client.depsOptimizer?.metadata;
+const sameFileKeyOf = (href) => {
+	const fileId = [...(identitiesByUrl.get(href) ?? [])].find((id) => id.startsWith('file:'));
+	return fileId ? `${fileId.slice('file:'.length).replace(/\?.*$/, '')}${strip(new URL(href).search, INSTANCE_PARAMS)}` : null;
+};
+const requestedByCode = (href) => [...(requesters.get(href) ?? [])].some((f) => !f.startsWith('importMap.'));
+const importMapVsAnalysis = [];
+for (const [spec, target] of Object.entries(importMap.imports ?? {})) {
+	const t = new URL(target, mapUrl).href;
+	const analysis = new Set();
+	const info = optimizedMeta?.optimized?.[spec] ?? optimizedMeta?.discovered?.[spec];
+	const expectedOptimized = info?.file ? `${deviceOrigin}/${path.relative(server.config.root, info.file).split(path.sep).join('/')}?v=${optimizedMeta.browserHash}` : null;
+	if (expectedOptimized) analysis.add(expectedOptimized);
+	const key = sameFileKeyOf(t);
+	if (key) for (const href of fetched.keys()) if (requestedByCode(href) && sameFileKeyOf(href) === key) analysis.add(href);
+	const differing = [...analysis].filter((u) => u !== t).sort();
+	const mapTargetLoaded = loaded.has(t);
+	const otherLoaded = differing.filter((u) => loaded.has(u));
+	const status = !differing.length ? (analysis.size ? 'ok' : 'unused') : mapTargetLoaded && otherLoaded.length ? 'fail' : 'warn';
+	importMapVsAnalysis.push({ spec, status, mapTarget: t, mapTargetLoaded, mapTargetRequestedBy: [...(requesters.get(t) ?? [])].filter((f) => !f.startsWith('importMap.')).slice(0, 4), expectedOptimized, analysisUrls: [...analysis].sort(), differing });
+}
+const importMapVsAnalysisMismatch = importMapVsAnalysis.filter((x) => x.status === 'fail' || x.status === 'warn').length;
+const importMapVsAnalysisFail = importMapVsAnalysis.filter((x) => x.status === 'fail').length;
+
 const emptyBodies = [...bodies].filter(([, b]) => b.length === 0).map(([u]) => u);
-const failureCount = sessionFailures.length + Object.values(failures).reduce((n, list) => n + list.length, 0) + nonce.filter((n) => !n.ok).length + (bundle?.originMismatch.length ?? 0);
+const failureCount = cjsServedRawDevice + sessionFailures.length + Object.values(failures).reduce((n, list) => n + list.length, 0) + nonce.filter((n) => !n.ok).length + (bundle?.originMismatch.length ?? 0) + (bundle?.bareMissing.length ?? 0);
 
 const report = {
 	app: path.basename(appRoot),
@@ -279,12 +759,23 @@ const report = {
 	deviceBytes: [...deviceReached].reduce((n, u) => n + fetched.get(u).bytes, 0),
 	totalBytes: [...fetched.values()].reduce((n, e) => n + e.bytes, 0),
 	requestsByPrefix,
+	totals,
 	failureCount,
 	sessionFailures,
 	failures,
 	nonce,
 	duplicateCount: duplicates.length,
 	duplicates,
+	loadedModules: loaded.size,
+	sameFileTwoUrls: { failures: sameFileFailures, warnings: sameFileTwoUrls.length - sameFileFailures, excluded: sameFileExcluded, groups: sameFileTwoUrls },
+	unicodePropertyEscapes: { files: unicodePropertyEscapes.length, unicodeFlagged: unicodePropertyEscapes.filter((u) => u.hits.some((h) => h.unicodeFlag !== false)).length, list: unicodePropertyEscapes },
+	instances,
+	cjsServedRaw: { count: cjsServedRaw.length, device: cjsServedRawDevice, list: cjsServedRaw },
+	nsDepsCoverage,
+	requireCallers: { specifiers: Object.keys(requireBySpec).length, bySpecifier: requireBySpec },
+	importMapVsAnalysis: { mismatches: importMapVsAnalysisMismatch, failures: importMapVsAnalysisFail, entries: importMapVsAnalysis },
+	importMapDiff,
+	optimizer,
 	emptyBodies: { count: emptyBodies.length, urls: emptyBodies },
 	nonLiteralDynamic,
 	builtins: Object.fromEntries(builtins),
@@ -292,14 +783,17 @@ const report = {
 	cjsLike,
 	bundle,
 	bootstrapSha1: crypto.createHash('sha1').update(bootstrapCode).digest('hex'),
-	urls: Object.fromEntries([...fetched].map(([u, e]) => [u, { from: e.from, status: e.status, bytes: e.bytes, contentType: e.contentType }])),
+	urls: Object.fromEntries([...fetched].map(([u, e]) => [u, { from: e.from, status: e.status, bytes: e.bytes, responseBytes: e.responseBytes, contentType: e.contentType, imports: e.imports }])),
 };
 fs.mkdirSync(path.join(spikeDir, 'out'), { recursive: true });
 const outFile = path.join(spikeDir, 'out', `thin-crawl-${report.app}.json`);
 fs.writeFileSync(outFile, JSON.stringify(report, null, 2));
 
+const kib = (n) => `${(n / 1024).toFixed(0)} KiB`;
 const top = (list, n = 8) => list.slice(0, n).map((x) => `      ${JSON.stringify(x)}`);
+const noBundleWarning = '!!! WARNING: --bundle not given: core identity vs bundle.mjs unchecked (bundle.mjs core externals and bare specifiers not loaded)';
 const lines = [
+	...(bundle ? [] : [noBundleWarning]),
 	`thin-crawl ${report.app} (${flavor}/${platform}) origin=${deviceOrigin}`,
 	`  entry ${session.entryUrl}`,
 	`  hmr client ${hmrClientUrl}`,
@@ -310,6 +804,12 @@ const lines = [
 				.map(([p, n]) => `${p}=${n}`)
 				.join(' ')}`,
 	),
+	...Object.entries(totals).map(
+		([k, t]) =>
+			`  totals (${k}) ${t.requests} requests ${kib(t.bytes)}: ${Object.entries(t.byPrefix)
+				.map(([p, x]) => `${p}=${x.requests}/${kib(x.bytes)}`)
+				.join(' ')}`,
+	),
 	`  empty 200 bodies ${emptyBodies.length}`,
 	`  non-literal dynamic imports ${nonLiteralDynamic.length} (listed, not followed)`,
 	`  session failures ${sessionFailures.length}`,
@@ -318,9 +818,39 @@ const lines = [
 for (const [k, list] of Object.entries(failures)) lines.push(`  ${k} ${list.length}`, ...top(list));
 lines.push(`  nonce ${nonce.map((n) => `${n.ok ? 'ok' : 'FAIL'} status=${n.status} sameBody=${n.sameBody} graph ${n.graphSizeBefore}->${n.graphSizeAfter} ${n.url}`).join('; ') || 'NOT RUN'}`);
 lines.push(`  duplicate modules ${duplicates.length}`, ...top(duplicates, 5));
-if (bundle) lines.push(`  bundle.mjs ${bundle.urls.length} URLs, origin mismatches ${bundle.originMismatch.length}`, ...top(bundle.originMismatch));
-const ok = failureCount === 0 && duplicates.length === 0 && nonce.length > 0;
-lines.push(`${ok ? 'PASS' : 'FAIL'} failures=${failureCount} duplicates=${duplicates.length} → ${path.relative(repoRoot, outFile)}`);
+{
+	const relU = (u) => (u.startsWith(deviceOrigin) ? u.slice(deviceOrigin.length) : u);
+	lines.push(`  same file under 2+ URL strings: fail ${sameFileFailures} (both loaded), warn ${sameFileTwoUrls.length - sameFileFailures} (one only via an import-map seed); loaded modules ${loaded.size}; excluded non-script ${sameFileExcluded.nonScript}, virtual ${sameFileExcluded.virtual}`, ...sameFileTwoUrls.slice(0, 12).map((d) => `      [${d.severity}/${d.scope}] ${path.relative(repoRoot, d.file)}: ${d.urls.map((x) => `${relU(x.url)}${x.loaded ? '' : '(seed-only)'}`).join(' | ')}`));
+}
+if (bundle) lines.push(`  bundle.mjs ${bundle.urls.length} URLs, origin mismatches ${bundle.originMismatch.length}; bare specifiers via import map ${bundle.bareSpecifiers.length}${bundle.bareSpecifiers.length ? ` [${bundle.bareSpecifiers.map((b) => b.spec).join(' ')}]` : ''}; bare missing from map ${bundle.bareMissing.length}${bundle.bareMissing.length ? ` [${bundle.bareMissing.join(' ')}]` : ''}; local imports ${bundle.localImports}; non-literal dynamic ${bundle.nonLiteralDynamic.length}`, ...top(bundle.originMismatch));
+lines.push(
+	`  bundles ${bundles.length} (${bundles.map((b) => `${new URL(b.url).pathname.split('/').pop()}${new URL(b.url).search}:${b.files.length}${b.deviceReached ? '' : '[seed-only]'}`).join(' ')})`,
+	`  inlined source files ${inlinedIn.size}, individually served files ${servedAs.size}`,
+	...bundles.filter((b) => b.mapError || b.regionMismatch || b.unresolved.length).map((b) => `      ${JSON.stringify({ url: b.url, mapError: b.mapError, regionMismatch: b.regionMismatch, unresolved: b.unresolved })}`),
+	`  duplicate instances ${dupInstanceCount} files${dupInstanceCount && allowDupInstances ? ' (allowed)' : ''} (device ${duplicateInstances.filter((d) => d.scope === 'device').length}): inlined+served ${inlinedAndServed.length}, inlined in 2+ bundle URLs ${inlinedInSeveralBundles.length}`,
+	...duplicateInstances.slice(0, 12).map((d) => `      [${d.scope}] ${path.relative(repoRoot, d.file)}: inlined in ${d.inlinedIn.map((u) => new URL(u).pathname + new URL(u).search).join(', ')}${d.servedAs.length ? `; served as ${d.servedAs.map((u) => new URL(u).pathname + new URL(u).search).join(', ')}` : ''}`),
+	`  package copies (same name@version, different real paths) ${packageCopies.length}`,
+	...top(packageCopies, 5),
+);
+const rel = (u) => (u.startsWith(deviceOrigin) ? u.slice(deviceOrigin.length) : u);
+lines.push(
+	`  cjs served raw ${cjsServedRaw.length} (device ${cjsServedRawDevice})`,
+	...cjsServedRaw.slice(0, 8).map((c) => `      [${c.deviceReached ? 'device' : 'all'}] ${rel(c.url)} ${c.tokens.join(',')}`),
+	...nsDepsCoverage.map((c) => `  ns deps bundle covers ${c.files} files (${c.lazy} lazy) in ${c.packages.length} packages: cjs ${c.cjs} [${c.cjsPackages.join(' ')}], NativeClass ${c.nativeClass} [${c.nativeClassPackages.join(' ')}], platform-suffixed ${c.platformSuffixed} [${c.platformSuffixedPackages.join(' ')}]`),
+	`  runtime require() calls (bare specifiers, and any createRequire spec) ${Object.keys(requireBySpec).length}: ${Object.entries(requireBySpec)
+		.map(([k, v]) => `${k}(${v.length})`)
+		.join(' ')}`,
+	`  import map vs import analysis (every key): fail ${importMapVsAnalysisFail} (map target and another URL both loaded), warn ${importMapVsAnalysisMismatch - importMapVsAnalysisFail}, ok ${importMapVsAnalysis.filter((x) => x.status === 'ok').length}, unused ${importMapVsAnalysis.filter((x) => x.status === 'unused').length} / ${importMapVsAnalysis.length}`,
+	...importMapVsAnalysis.filter((x) => x.status === 'fail' || x.status === 'warn').map((x) => `      [${x.status}] ${x.spec}: map ${rel(x.mapTarget)}${x.mapTargetLoaded ? ' (loaded)' : ' (seed-only)'} vs analysis ${x.differing.map(rel).join(', ')}`),
+	`  unicode property escapes (\\p{ / \\P{; throws on device under u/v) ${unicodePropertyEscapes.length} sources (u/v-flagged or unknown ${report.unicodePropertyEscapes.unicodeFlagged})`,
+	...unicodePropertyEscapes.slice(0, 10).map((u) => `      [${u.scope}] ${rel(u.where).replace(repoRoot + '/', '')} x${u.count} flags=${[...new Set(u.hits.map((h) => h.flags ?? '?'))].join(',')} ${JSON.stringify(u.hits[0].snippet)}`),
+	`  import map changed during crawl ${importMapDiff.length}`,
+	...top(importMapDiff, 5),
+	`  optimizer present ${optimizer.depsOptimizerPresent} (noDiscovery=${optimizer.config.noDiscovery} include=${JSON.stringify(optimizer.config.include)}); browserHash ${optimizerAtStart.browserHash} -> ${optimizerAtEnd.browserHash}${optimizer.changed ? ' CHANGED' : ''}; optimized ${optimizerAtStart.optimized} -> ${optimizerAtEnd.optimized}, discovered ${optimizerAtStart.discovered} -> ${optimizerAtEnd.discovered}; full-reloads sent ${fullReloads.length}; hot payloads ${hotSentDuringCrawl.length}`,
+);
+const ok = failureCount === 0 && duplicates.length === 0 && sameFileFailures === 0 && importMapVsAnalysisFail === 0 && nonce.length > 0 && (allowDupInstances || dupInstanceCount === 0);
+lines.push(`${ok ? 'PASS' : 'FAIL'} failures=${failureCount} duplicates=${duplicates.length} sameFileTwoUrls=${sameFileFailures} importMapVsAnalysis=${importMapVsAnalysisFail} duplicateInstanceFiles=${dupInstanceCount}${allowDupInstances ? ' (allowed)' : ''} → ${path.relative(repoRoot, outFile)}`);
+if (!bundle) lines.push(noBundleWarning);
 console.log(lines.join('\n'));
 await server.close();
 process.exit(ok ? 0 : 1);
