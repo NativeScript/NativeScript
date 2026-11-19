@@ -426,7 +426,9 @@ if (server.environments?.client?.hot && server.environments.client.hot !== serve
 // Device-equivalent socket. The session descriptor names it (`wsUrl` with the
 // token, `wsProtocol`) when the installed package has one; otherwise build
 // Vite's HMR endpoint from the resolved config.
-const session = await (await fetch(`${local}/__ns_dev__/session`)).json();
+// The session descriptor and the loader config are served as modules (`export default {…};`).
+const fetchModuleJson = async (url) => JSON.parse((await (await fetch(url)).text()).replace(/^export default /, '').replace(/;\s*$/, ''));
+const session = await fetchModuleJson(`${local}/__ns_dev__/session.mjs`);
 const deviceOrigin = new URL(session.entryUrl).origin;
 const ENTRY_PATH = new URL(session.entryUrl).pathname;
 // The app directory (`/src/`, `/app/`): the crawl follows only app modules.
@@ -436,14 +438,14 @@ let mapUrl;
 let importMap = {};
 async function loadImportMap(current) {
 	mapUrl = current.runtimeConfigUrl;
-	importMap = (await (await fetch(toLocal(mapUrl))).json()).importMap ?? {};
+	importMap = (await fetchModuleJson(toLocal(mapUrl))).importMap ?? {};
 }
 await loadImportMap(session);
 // Opens the device-equivalent socket from the session descriptor; `reuseUrl`
 // reconnects with an earlier URL, as the device does after a disconnect.
 let socketUrl;
 async function openSocket(reuseUrl) {
-	const current = await (await fetch(`${local}/__ns_dev__/session`)).json();
+	const current = await fetchModuleJson(`${local}/__ns_dev__/session.mjs`);
 	const hmrPath = path.posix.join(server.config.base || '/', typeof server.config.server.ws === 'object' && server.config.server.ws?.path ? server.config.server.ws.path : '');
 	const fromSession = typeof current.wsProtocol === 'string';
 	const url = reuseUrl ?? (fromSession ? current.wsUrl.replace(/^wss?:\/\/[^/]+/, `ws://localhost:${port}`) : `ws://localhost:${port}${hmrPath}?token=${encodeURIComponent(server.config.webSocketToken)}`);
@@ -665,7 +667,7 @@ try {
 			await server.restart();
 			hook(server.ws, 'server.ws');
 			ws.close();
-			const after = await (await fetch(`${local}/__ns_dev__/session`)).json();
+			const after = await fetchModuleJson(`${local}/__ns_dev__/session.mjs`);
 			const tokenOf = (u) => new URL(u).searchParams.get('token');
 			log.push({ via: 'device', text: `token after restart ${tokenOf(after.wsUrl) === tokenOf(socketUrl) ? 'unchanged' : 'CHANGED'}; reconnecting with the URL from before` });
 			ws = await openSocket(socketUrl);
@@ -699,7 +701,7 @@ try {
 			// The new watcher needs its initial scan before it reports changes.
 			await settle();
 			if (edit.bootRace === 'before-crawl') await saveTemplate();
-			const boot = await (await fetch(`${local}/__ns_dev__/session`)).json();
+			const boot = await fetchModuleJson(`${local}/__ns_dev__/session.mjs`);
 			await loadImportMap(boot);
 			const bodies = new Map();
 			seen.clear();
@@ -795,7 +797,7 @@ try {
 			await sleep(300);
 			log.length = 0;
 			const failuresBefore = crawlFailureCount;
-			const boot = await (await fetch(`${local}/__ns_dev__/session`)).json();
+			const boot = await fetchModuleJson(`${local}/__ns_dev__/session.mjs`);
 			await loadImportMap(boot);
 			seen.clear();
 			const bodies = new Map();

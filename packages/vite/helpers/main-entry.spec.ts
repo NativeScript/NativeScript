@@ -23,3 +23,11 @@ describe('strict global require flag', () => {
 		expect(code.split('\n').find((line) => line.startsWith('import '))).toBe(STRICT_IMPORT);
 	});
 });
+
+describe('dev boot module', () => {
+	it('awaits the session and exports its failure for bundle.mjs, with no placeholder', () => {
+		const code = generateDevBootCode({ platform: 'ios', verbose: false, flavor: 'typescript' });
+		expect(code).toContain('export const bootFailure = await startBrowserRuntimeSession({"sessionUrl":"/__ns_dev__/session.mjs","importMapUrl":"/__ns_dev__/import-map.mjs"}, __nsVerboseLog);');
+		expect(code).not.toMatch(/placeholder/i);
+	});
+});

@@ -1,6 +1,6 @@
 /**
- * Internals shared by the dev-overlay backends (boot placeholder, in-tree
- * live overlay, iOS UIWindow overlay): the per-session runtime state,
+ * Internals shared by the dev-overlay backends (in-tree live overlay, iOS
+ * UIWindow overlay, Android DecorView overlay): the per-session runtime state,
  * core-class resolution, and snapshot/text formatting. Not part of the public overlay API — import
  * `dev-overlay.ts` for that.
  */
@@ -9,19 +9,11 @@
 // anyway; the core barrel would pull more of core ahead of the app's polyfills.
 import { Application } from '@nativescript/core/application';
 import { Color } from '@nativescript/core/color';
-import { ActivityIndicator, Frame, GridLayout, Label, Page, StackLayout } from '@nativescript/core/ui';
+import { Frame, GridLayout, Label, StackLayout } from '@nativescript/core/ui';
 import { DEFAULT_SNAPSHOT, type HmrOverlayAction, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
 import { getGlobalScope } from './global-scope.js';
 
 const DEFAULT_OVERLAY_POSITION: HmrOverlayPosition = 'top';
-
-export type BootOverlayRefs = {
-	page: any;
-	root: any;
-	titleLabel: any;
-	statusLabel: any;
-	activityIndicator?: any;
-};
 
 export type LiveOverlayRefs = {
 	page: any;
@@ -83,7 +75,6 @@ export type AndroidOverlayRefs = {
 
 export type HmrOverlayRuntimeState = {
 	snapshot: HmrOverlaySnapshot;
-	bootRefs: BootOverlayRefs | null;
 	liveRefs: LiveOverlayRefs | null;
 	iosRefs: IosOverlayRefs | null;
 	iosBuildFailed: boolean;
@@ -137,7 +128,6 @@ let runtimeState: HmrOverlayRuntimeState | null = null;
 export function getRuntimeState(): HmrOverlayRuntimeState {
 	runtimeState ||= {
 		snapshot: { ...DEFAULT_SNAPSHOT },
-		bootRefs: null,
 		liveRefs: null,
 		iosRefs: null,
 		iosBuildFailed: false,
@@ -153,13 +143,11 @@ export function getRuntimeState(): HmrOverlayRuntimeState {
 
 // Read on use, not at evaluation: the overlay draws only after core has booted.
 const coreExports: Record<string, () => unknown> = {
-	ActivityIndicator: () => ActivityIndicator,
 	Application: () => Application,
 	Color: () => Color,
 	Frame: () => Frame,
 	GridLayout: () => GridLayout,
 	Label: () => Label,
-	Page: () => Page,
 	StackLayout: () => StackLayout,
 };
 

@@ -712,42 +712,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this.started = true;
 
 		if (this.nativeApp) {
-			// During Vite HMR dev boot, the placeholder has already started
-			// the app lifecycle. A second run() with an entry should replace
-			// the placeholder root, NOT present a modal via runAsEmbeddedApp.
-			// The HTTP ESM realm creates a separate @nativescript/core instance,
-			// so JS-level patching of Application.run can't intercept this call.
-			// Detect HMR mode via the placeholder's global flag and use
-			// setWindowContent on the PRIMARY Application singleton (bundled realm)
-			// which has the actual window and root view hierarchy.
-			const g = globalThis as any;
-			if (g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__ || g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__) {
-				if (entry) {
-					// Defer to next run loop tick so resetRootView executes outside the
-					// HTTP ESM import context. Direct calls can fail with
-					// "ReferenceError: __COMMONJS__ is not defined" because the JS
-					// execution stack is in the HTTP realm when Builder loads modules.
-					const resolvedEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
-					setTimeout(() => {
-						try {
-							const primaryApp = g.Application;
-							if (primaryApp && typeof primaryApp.resetRootView === 'function') {
-								primaryApp.resetRootView(resolvedEntry);
-							}
-						} catch (e) {
-							if (__DEV__) console.warn('[app-ios] deferred resetRootView failed:', e);
-						}
-						delete g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
-						delete g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
-					}, 0);
-				} else {
-					// Framework (e.g. Angular) calls run() with no entry — it manages
-					// root views itself via resetRootView(). No-op to avoid presenting
-					// a modal via runAsEmbeddedApp or throwing "Main entry is missing".
-					if (__DEV__) console.info('[app-ios] run() called with no entry during HMR placeholder; framework manages root view');
-				}
-				return;
-			}
 			this.runAsEmbeddedApp();
 		} else {
 			this.runAsMainApp();

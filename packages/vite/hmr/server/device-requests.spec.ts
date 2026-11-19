@@ -158,15 +158,13 @@ describe('device requests on a real Vite server', () => {
 	});
 
 	it('serves the dev client bootstrap through Vite, every import written by import analysis', async () => {
-		const session = JSON.parse((await get('/__ns_dev__/session')).body);
+		const session = JSON.parse(/^export default ([\s\S]*);\n$/.exec((await get('/__ns_dev__/session.mjs')).body)![1]);
 		expect(session.clientUrl).toBe(`${ORIGIN}${NS_DEV_CLIENT_DEVICE_PATH}`);
 
 		const { status, type, body } = await get(NS_DEV_CLIENT_DEVICE_PATH);
 		expect(status).toBe(200);
 		expect(type).toMatch(/javascript/);
-		expect(body).toContain(`from "/@fs${packageDir}/hmr/shared/runtime/launch-bridge.ts"`);
 		expect(body).toContain(`from "/@fs${packageDir}/hmr/shared/runtime/dev-globals.ts"`);
-		expect(body).toContain(`from "/@fs${coreDir}/index.js"`);
 		expect(body).toContain(`import("${ORIGIN}/@fs${packageDir}/hmr/client/index.ts")`);
 		expect(body).not.toMatch(/["']@nativescript\//);
 		const start = JSON.parse(body.match(/const startOptions = (.*);/)![1]);

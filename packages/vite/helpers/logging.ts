@@ -1,4 +1,5 @@
 import { createLogger, type Logger } from 'vite';
+import { getCliFlags } from './cli-flags.js';
 
 const ENV_VERBOSE_KEYS = ['NS_VITE_VERBOSE', 'NS_ENV_VERBOSE', 'NS_VERBOSE', 'VERBOSE', 'VITE_DEBUG_LOGS', 'DEBUG'];
 
@@ -36,7 +37,9 @@ export function resolveVerboseFlag(options: ResolveOptions = {}): boolean {
 		return cachedVerbose;
 	}
 
-	const { env = typeof process !== 'undefined' ? process.env : undefined, cliFlags } = options;
+	// The result is cached, so a first caller that passes no flags must still
+	// see `--env.verbose`.
+	const { env = typeof process !== 'undefined' ? process.env : undefined, cliFlags = getCliFlags() } = options;
 	let resolved: boolean | undefined;
 
 	if (cliFlags && typeof cliFlags === 'object') {

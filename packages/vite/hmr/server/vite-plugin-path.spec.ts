@@ -57,7 +57,7 @@ describe('createNsDevSessionDescriptor', () => {
 			wsUrl: 'ws://192.168.1.5:5173/vite-hmr?token=tok-1',
 			wsProtocol: 'vite-hmr',
 			platform: 'ios',
-			runtimeConfigUrl: 'http://192.168.1.5:5173/__ns_dev__/import-map.json',
+			runtimeConfigUrl: 'http://192.168.1.5:5173/__ns_dev__/import-map.mjs',
 			hostModules: ['ns-host://runtime', 'ns-host://style-adapter'],
 			features: {
 				fullReload: true,
@@ -95,19 +95,17 @@ describe('createNsDevClientModuleCode', () => {
 		expect(code).not.toContain('WebSocket');
 	});
 
-	it('installs the launch bridge before the HMR client, and no stylesheet', () => {
+	it('starts the HMR client once booted, with no launch-notification replay and no stylesheet', () => {
 		const code = createNsDevClientModuleCode(START);
-		const bridgeAt = code.indexOf('installLaunchNotificationBridge(Application);');
-		const clientAt = code.indexOf('startHmrClientAfterBoot();\n');
-		expect(bridgeAt).toBeGreaterThan(-1);
-		expect(bridgeAt).toBeLessThan(clientAt);
+		expect(code).toContain('startHmrClientAfterBoot();\n');
+		expect(code).not.toContain('LaunchNotification');
 		expect(code).not.toContain('Css');
 	});
 
 	it('names every import by bare specifier, for import analysis to write its URL', () => {
 		const code = createNsDevClientModuleCode(START);
 		const specifiers = [...code.matchAll(/\bfrom '([^']+)'|import\('([^']+)'\)/g)].map((m) => m[1] ?? m[2]);
-		expect(specifiers).toEqual(['@nativescript/vite/hmr/shared/runtime/launch-bridge.js', '@nativescript/vite/hmr/shared/runtime/dev-globals.js', '@nativescript/core', '@nativescript/vite/hmr/client/index.js']);
+		expect(specifiers).toEqual(['@nativescript/vite/hmr/shared/runtime/dev-globals.js', '@nativescript/vite/hmr/client/index.js']);
 	});
 });
 
@@ -120,8 +118,10 @@ describe('nsHmrClientVitePlugin middleware', () => {
 		const { nsHmrClientVitePlugin } = await import('./vite-plugin.js');
 		const middlewares: Array<(req: any, res: any, next: () => void) => unknown> = [];
 		const server: any = {
-			config: { root: '/app', base: '/', webSocketToken: 'tok-1', define: {}, server: { port: 5173, hmr: { path: '/vite-hmr' }, fs: { allow: [] }, allowedHosts: [] } },
+			config: { root: '/app', base: '/', webSocketToken: 'tok-1', define: {}, logger: { info: () => {}, warn: () => {}, error: () => {} }, server: { port: 5173, hmr: { path: '/vite-hmr' }, fs: { allow: [] }, allowedHosts: [] } },
 			middlewares: { use: (fn: any) => middlewares.push(fn), stack: [] },
+			watcher: { on: () => {} },
+			ws: { send: () => {} },
 			environments: { client: { pluginContainer: { resolveId: async () => ({ id: '/app/node_modules/@nativescript/core/index.js' }) } } },
 		};
 		const plugin = nsHmrClientVitePlugin({ platform: 'android' });
@@ -139,7 +139,7 @@ describe('nsHmrClientVitePlugin middleware', () => {
 	}
 
 	it('builds the session from the server origin, not the Host header', async () => {
-		const session = JSON.parse(await serve('/__ns_dev__/session'));
+		const session = JSON.parse(/^export default ([\s\S]*);\n$/.exec(await serve('/__ns_dev__/session.mjs'))![1]);
 		expect(session.origin).toBe(SERVER_ORIGIN);
 		expect(session.entryUrl).toBe(`${SERVER_ORIGIN}/src/app.ts`);
 		expect(session.wsUrl).toBe('ws://192.168.1.5:5173/vite-hmr?token=tok-1');

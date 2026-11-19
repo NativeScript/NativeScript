@@ -12,10 +12,8 @@ import type { HmrOverlayApi } from './dev-overlay.js';
 export const NS_DEV_SYMBOL_KEY = 'nativescript.dev';
 
 export interface NativeScriptDevGlobals {
-	/** Set by the boot placeholder once the first app root is up. The dev client bootstrap waits for it before starting the HMR client. */
+	/** Set once the app has launched. The dev client bootstrap waits for it before starting the HMR client. */
 	bootComplete?: boolean;
-	/** Every `Application` instance the boot placeholder's run wrapper saw. */
-	knownApplications?: unknown[];
 	/** The dev overlay installed at boot and driven by the HMR client. */
 	overlay?: HmrOverlayApi;
 	/** Origin of the dev server the session booted from. Generated worker code resolves worker URLs against it. */

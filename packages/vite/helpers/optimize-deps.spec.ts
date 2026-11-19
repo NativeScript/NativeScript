@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createServer, type ViteDevServer } from 'vite';
-import { excludedSpecifierPattern, getOptimizeDepsDefine, isExcludedSpecifier, NS_OPTIMIZE_DEPS_EXCLUDE, optimizeDepsEsmRequirePlugin } from './optimize-deps.js';
+import { excludedSpecifierPattern, getNsOptimizeDepsExclude, getOptimizeDepsDefine, isExcludedSpecifier, NS_OPTIMIZE_DEPS_EXCLUDE, optimizeDepsEsmRequirePlugin } from './optimize-deps.js';
 
 describe('isExcludedSpecifier / excludedSpecifierPattern', () => {
 	const names = ['@nativescript/core', 'node:module', 'set-value'];
@@ -23,6 +23,36 @@ describe('isExcludedSpecifier / excludedSpecifierPattern', () => {
 describe('NS_OPTIMIZE_DEPS_EXCLUDE', () => {
 	it('keeps the single-instance packages and the aliased shims external to pre-bundles', () => {
 		expect([...NS_OPTIMIZE_DEPS_EXCLUDE].sort()).toEqual(['@nativescript/core', '@nativescript/vite', 'module', 'node:module', 'set-value']);
+	});
+});
+
+describe('getNsOptimizeDepsExclude', () => {
+	const previous = process.env.NS_VITE_PREBUNDLE_CORE;
+	afterEach(() => {
+		if (previous === undefined) delete process.env.NS_VITE_PREBUNDLE_CORE;
+		else process.env.NS_VITE_PREBUNDLE_CORE = previous;
+	});
+
+	it('excludes core unless NS_VITE_PREBUNDLE_CORE=1 and core is installed', () => {
+		delete process.env.NS_VITE_PREBUNDLE_CORE;
+		expect(getNsOptimizeDepsExclude('/app/node_modules/@nativescript/core')).toContain('@nativescript/core');
+		process.env.NS_VITE_PREBUNDLE_CORE = '1';
+		expect(getNsOptimizeDepsExclude('/app/node_modules/@nativescript/core')).not.toContain('@nativescript/core');
+		expect(getNsOptimizeDepsExclude('/repo/packages/core')).toContain('@nativescript/core');
+		expect(getNsOptimizeDepsExclude(undefined)).toContain('@nativescript/core');
+	});
+
+	it('keeps a linked core (realpath outside node_modules) excluded', () => {
+		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ns-prebundle-core-'));
+		try {
+			fs.mkdirSync(path.join(tmp, 'checkout'));
+			fs.mkdirSync(path.join(tmp, 'node_modules/@nativescript'), { recursive: true });
+			fs.symlinkSync(path.join(tmp, 'checkout'), path.join(tmp, 'node_modules/@nativescript/core'));
+			process.env.NS_VITE_PREBUNDLE_CORE = '1';
+			expect(getNsOptimizeDepsExclude(path.join(tmp, 'node_modules/@nativescript/core'))).toContain('@nativescript/core');
+		} finally {
+			fs.rmSync(tmp, { recursive: true, force: true });
+		}
 	});
 });
 

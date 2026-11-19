@@ -28,9 +28,8 @@ function topmostPageModule(): string | undefined {
 	}
 }
 
-// Installed at dispose time: the boot placeholder restores the original
-// `run` once boot completes, so a patch made at module load would be undone.
-// The original `run` must never be called after launch: iOS presents the new
+// Armed at dispose time only, so the entry's first `Application.run` (the
+// launch) is the real one. The original `run` must never be called after launch: iOS presents the new
 // root as a modal and Android throws "Application is already started".
 function armRedirect(): void {
 	const app = Application as any;

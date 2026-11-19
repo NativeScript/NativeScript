@@ -1,3 +1,4 @@
+import { realpathSync } from 'node:fs';
 import type { Rolldown } from 'vite';
 
 /**
@@ -14,6 +15,17 @@ import type { Rolldown } from 'vite';
 export const NS_OPTIMIZE_DEPS_EXCLUDE = ['@nativescript/core', '@nativescript/vite', 'set-value', 'module', 'node:module'] as const;
 
 /**
+ * {@link NS_OPTIMIZE_DEPS_EXCLUDE} without `@nativescript/core` when
+ * `NS_VITE_PREBUNDLE_CORE=1` (experimental) and core is installed: `coreDir`'s
+ * realpath under `node_modules`. A linked or source checkout of core stays
+ * served, so edits to it keep reaching the module graph.
+ */
+export function getNsOptimizeDepsExclude(coreDir: string | undefined): readonly string[] {
+	const prebundleCore = process.env.NS_VITE_PREBUNDLE_CORE === '1' && !!coreDir && /[\\/]node_modules[\\/]/.test(realpathOrSelf(coreDir));
+	return prebundleCore ? NS_OPTIMIZE_DEPS_EXCLUDE.filter((name) => name !== '@nativescript/core') : NS_OPTIMIZE_DEPS_EXCLUDE;
+}
+
+/**
  * `define`s for the dev dep optimizer's Rolldown build. Webpack's
  * `__non_webpack_require__` becomes a plain `require`, which the pre-bundle
  * resolves like any other `require()`: bundled, or an ESM import of an
@@ -27,6 +39,14 @@ export function getOptimizeDepsDefine(nodeEnv: 'development' | 'production'): Re
 		'process.env.NODE_ENV': JSON.stringify(nodeEnv),
 		__non_webpack_require__: 'require',
 	};
+}
+
+function realpathOrSelf(file: string): string {
+	try {
+		return realpathSync(file);
+	} catch {
+		return file;
+	}
 }
 
 /** True when `spec` is one of `names` or a subpath of one. */

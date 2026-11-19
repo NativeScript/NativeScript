@@ -1,5 +1,4 @@
 import { getGlobalScope } from '../hmr/shared/runtime/global-scope.js';
-import { isResetRootPatched, markResetRootPatched, restorePlaceholder } from '../hmr/shared/runtime/placeholder-hooks.js';
 // Early alias installer for @nativescript/core plus Android init resilience.
 // Runs on device in the virtual entry context.
 
@@ -207,90 +206,6 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 			androidInitPatched = true;
 			if (verbose) {
 				console.info('[ns-entry] AndroidApplication.init patched for resilience');
-			}
-		} catch {}
-
-		// Android-only: wrap Application.resetRootView to defer until Activity is ready during early HTTP boot
-		try {
-			const App: any = g.Application;
-			if (App && ((typeof __ANDROID__ !== 'undefined' && __ANDROID__) || typeof android !== 'undefined')) {
-				const proto = Object.getPrototypeOf(App);
-				const origReset = (App && App.resetRootView) || (proto && proto.resetRootView);
-				if (typeof origReset === 'function' && !isResetRootPatched()) {
-					const isReady = () => {
-						try {
-							const a: any = App.android;
-							return !!(a && (a.foregroundActivity || a.startActivity));
-						} catch {
-							return false;
-						}
-					};
-					const once = (fn: () => void, timeoutMs = 6000) => {
-						try {
-							const a: any = App.android;
-							if (!a || typeof a.on !== 'function' || typeof a.off !== 'function') {
-								// Fallback polling if events API not ready
-								const start = Date.now();
-								const tick = () => {
-									if (isReady() || Date.now() - start > timeoutMs) return fn();
-									setTimeout(tick, 60);
-								};
-								return tick();
-							}
-							let done = false;
-							const finish = () => {
-								if (done) return;
-								done = true;
-								try {
-									a.off(a.activityStartedEvent || 'activityStarted', onAny);
-									a.off(a.activityResumedEvent || 'activityResumed', onAny);
-								} catch {}
-								fn();
-							};
-							const onAny = () => {
-								if (isReady()) finish();
-							};
-							a.on(a.activityStartedEvent || 'activityStarted', onAny);
-							a.on(a.activityResumedEvent || 'activityResumed', onAny);
-							setTimeout(finish, timeoutMs);
-						} catch {
-							fn();
-						}
-					};
-					const patched = function __ns_safe_resetRootView(this: any, entry: any) {
-						if (!isReady()) {
-							if (verbose) {
-								console.info('[ns-entry][android] deferring resetRootView until activity is ready');
-							}
-							return once(() => {
-								try {
-									origReset.call(this, entry);
-									try {
-										restorePlaceholder();
-									} catch {}
-								} catch (e) {
-									console.error('[ns-entry][android] deferred resetRootView failed', e);
-									throw e;
-								}
-							});
-						}
-						const res = origReset.call(this, entry);
-						try {
-							restorePlaceholder();
-						} catch {}
-						return res;
-					} as any;
-					try {
-						App.resetRootView = patched;
-					} catch {}
-					try {
-						if (proto && typeof proto === 'object') (proto as any).resetRootView = patched;
-					} catch {}
-					markResetRootPatched();
-					if (verbose) {
-						console.info('[ns-entry] Application.resetRootView patched for early-boot readiness');
-					}
-				}
 			}
 		} catch {}
 	} catch {}

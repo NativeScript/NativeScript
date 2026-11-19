@@ -90,12 +90,6 @@ export interface NsRuntimeDevHostApi {
 	createRequire?: (filenameOrURL: string | URL) => (specifier: string) => unknown;
 	/** `createPumpingRequire` — like `createRequire`, but settles top-level-await graphs by pumping V8 tasks; boot-only options. */
 	createPumpingRequire?: (filenameOrURL: string | URL, options?: { deadlineSeconds?: number; onTimeout?: 'throw' | 'return-pending'; pumpRunLoop?: boolean }) => (specifier: string) => unknown;
-	/**
-	 * `setDevBootComplete` — flips the native cold-boot gate. Only runtimes that
-	 * let the client arm that gate expose it; current runtimes scope the gate
-	 * to entry evaluation natively and omit the member.
-	 */
-	setDevBootComplete?: (value?: boolean) => void;
 }
 
 function isNonEmptyString(value: unknown): value is string {

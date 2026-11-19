@@ -1212,6 +1212,222 @@ Stage 1 removes the first: Vite writes every URL the device loads, so there is n
 - **Pre-bundle edit bursts on Vite 8.0.2:** a second app restart when the last event lands after the request; and 8.0.2's `server.restart` called mid-restart returns the in-flight promise and drops the force flag.
 - **Deep imports of an included package** next to its pre-bundle: unmeasured.
 
+## Round 20: phase 5c, boot dev like release (spike, `NS_VITE_BOOT_LIKE_RELEASE=1`)
+
+**Question.** Can dev boot like release: `bundle.mjs` awaits the session and the app entry, there is no placeholder root, and the entry's own `Application.run` launches the app? The constraint: everything before `UIApplicationMain` must fit in the iOS launch budget (about 20 s on a device).
+
+**iOS runtime** (ns-v8ios-runtime @ 7a94e204, the source of `@nativescript/ios` 9.1.2-next.2026-11-18, read-only):
+- **`UIApplicationMain` from JS is always deferred.** `MetadataBuilder.mm:1353-1378` matches the C function by name, queues the call with `Tasks::Register`, and returns `undefined` to JS. This is unconditional: it applies from a microtask, inside a pump, and after boot. So `run` returns on iOS too; in the logs `entry evaluated` follows `Application.run called`.
+- **The real call happens in `-[NativeScript runMainApplication]`** (`NativeScript.mm:128-210`):
+  1. `RunMainScript`, then one `Tasks::Drain`.
+  2. While the entry promise is pending (or module-graph work is in flight), a loop of `CFRunLoopRunInMode(default, 0.01)` followed by `Tasks::Drain`. Draining comes before polling, so `UIApplicationMain` takes over in the slice after `run`, even while `bundle.mjs` is still pending.
+  3. A deadline of 120 s, after which the boot fails fatally.
+  4. An entry that settles without `run` makes the process exit.
+  5. An entry that rejects before the drain is fatal: the runtime logs and throws, which terminates the app, even when `run` was already queued.
+- **No microtask starvation.** The real `UIApplicationMain` runs from the Tasks lambda, with no JS frames and no checkpoint on the stack. The microtask policy is V8's default `kAuto` (the runtime never sets one).
+- **Fetching is concurrent.** `HttpLoader.mm:816-834` uses one ephemeral `NSURLSession`, `HTTPMaximumConnectionsPerHost = 16`, completions off the main queue. `ModuleInternalCallbacks.mm:1466-1667` walks the graph breadth-first and enqueues a module's imports when its body arrives. Debug request timeout is 30 s with one retry after 0.12 s (`HttpLoader.mm:365`, `912-934`).
+- **The local entry's settle window** (`ModuleInternal.mm:51-58`, about 1 s) runs nestable V8 tasks (module fetches) but not the run loop. `fetch` completes on the run loop, so a `fetch` in `bundle.mjs`'s evaluation waits out that second.
+
+**Spike** (uncommitted):
+- `helpers/boot-like-release.ts` holds the flag.
+- `helpers/main-entry.ts`: the dev boot module skips `installRootPlaceholder` and ends with `await startBrowserRuntimeSession(…, { bootLikeRelease: true })`. `bundle.mjs` imports the boot module statically, so it awaits it.
+- `session-bootstrap.ts` under the flag:
+  - loads the session and the loader config as modules: `/__ns_dev__/session.mjs` and `/__ns_dev__/import-map.mjs`, both in parallel, from new routes in `vite-plugin.ts` and `import-map-route.ts`;
+  - before the entry import, installs a launch-event listener that marks boot complete on the next tick, and a one-shot `run` observer;
+  - on a boot failure, never throws. It records `nsDev().bootFailed` and, if `run` was not called yet, launches the boot card in its error stage (`boot-error-root.ts`) through `Application.run`.
+- `hmr/client/index.ts`: after a failed boot, the next update requests an app restart.
+- The dev client drops the launch-notification bridge under the flag: app code now registers before launch.
+- Measurement only: `spike-request-timing.ts` (`NS_VITE_SPIKE_REQUEST_LOG`, `NS_VITE_SPIKE_REQUEST_DELAY_MS`, middleware ahead of Vite's) and `NS_VITE_SPIKE_WARMUP=1` (`warmupRequest` of the boot module, the dev client and the entry at server start).
+
+**The session fetch.** The first spike fetched the session as before, and `session` took 1,187 ms (server log: the request was answered at +0.2 s; the device received it about 1 s later). Loaded as a module it takes 12–22 ms. The placeholder path's `session` fetch takes about 490 ms, and the cause is not established. Its `bundle.mjs` settles at once, so the fetch completes only after `UIApplicationMain` and the placeholder launch have taken the main run loop; that is likely, but untested.
+
+**Per-phase stamps** (ms from launch: first request, boot module evaluated, session ready, entry import start, entry evaluated, `run`, launch):
+- vue hot: 830, 1227, 1256, 1259, 1296, 1296, 1619;
+- vue cold: 820, 1482, 1513, 1517, 1585, 1585, 1904;
+- ng hot: 803, 1237, 1258, 1261, 1316, 1316, 1616;
+- ng cold: 820, 1579, 1607, 1612, 1752, 1751, 2049;
+- ng hot +100 ms: 803, 3354, 3489, 3595, 4080, 4080, 4385.
+
+The boot module graph (core) dominates. The timestamps print unconditionally under the flag, a departure from keeping instrumentation behind verbose: Angular printed none of the verbose device lines with `--env.verbose` (not investigated).
+
+**Measurements** (iOS simulator `558CB0B8`, LAN address of this Mac, Vite 8.0.2 for ng and 8.3.8 for vue). Times are from launch:
+- Relaunches are timed from host `simctl launch`. On a relaunch, the first request arrives at +0.79–0.83 s.
+- First boots after a server start are timed from the first request minus 0.82 s.
+- `run` is `Application.run called`; `launch` is the app's launch event (`didFinishLaunching`). `run` → launch is about 0.30 s of UIKit startup.
+- "hot" is a relaunch against a server that has already transformed the graph. "cold" clears `node_modules/.vite` and `.ns-vite-build` and is the first boot after the server starts.
+
+| flag on | vue run / launch | ng run / launch |
+|---|---|---|
+| hot (2 runs) | 1.29 / 1.61, 1.29 / 1.60 | 1.32 / 1.62, 1.33 / 1.63 |
+| cold | 1.59 / 1.90 | 1.75 / 2.05 |
+| cold + warmup | 1.31 / 1.61 | 1.36 / 1.65, 1.37 / 1.66 |
+| hot, +30 ms per request (2 runs) | 1.96 / 2.26, 1.95 / 2.25 | 2.01 / 2.30, 2.01 / 2.30 |
+| hot, +100 ms per request (2 runs) | 4.08 / 4.39, 4.01 / 4.32 | 4.08 / 4.39, 4.08 / 4.37 |
+| requests / KiB | 328 / 8,994 | 335 / 9,096 |
+| max in flight (30 and 100 ms runs) | 16 | 16 |
+
+- **Serial or concurrent: concurrent.** Serial fetching would add requests × delay: about 10 s at 30 ms and 33 s at 100 ms. Measured: vue +0.66 s / +2.75 s, i.e. 22 / 27.5 sequential round trips; ng +0.68 s / +2.76 s, i.e. 23 / 27.6. That is graph depth combined with the 16-connection cap (335 / 16 ≈ 21 waves).
+- **Placeholder path for reference** (flag off, ng hot): last boot response at +1.90 s (session +1.48 s). At +30 ms: +2.76 s, so +0.86 s, the same concurrency.
+- **Warmup:** cold minus warmup is −0.28 s (vue) and −0.39 s (ng). The warmup settles in 104–188 ms; Vite's pre-transform of static imports then finishes before the CLI has installed and launched the app.
+
+**Real device (extrapolation, not measured).** The simulator does not enforce the launch watchdog, and localhost is a lower bound. Boot ≈ launch (about 1–2 s) + device compile and evaluate (perhaps 2–3× the simulator's 0.5 s) + max(depth, requests / 16) × RTT (about 28 × RTT) + bytes / bandwidth + server transforms (+0.3–0.4 s cold).
+- Wi-Fi RTT 5–50 ms → 0.15–1.4 s.
+- 9 MB (ng on 8.0.2) or 17.9 MB (ng on 8.3.8, inline pre-bundle maps) at 30–100 Mbit/s → 0.7–4.8 s.
+- Worst case about 8–10 s for these fixtures, inside the budget.
+- **What the flag moves before launch.** With the placeholder, only the boot module graph (about 300 of 335 requests, mostly core) loads before `UIApplicationMain`. The session, import map, dev client and entry graph load after launch, outside the watchdog. With the flag the entry graph, including its cold server transforms (Analog's first compile, for instance), loads before launch too.
+  - In these fixtures the entry graph is small: about 30 requests, 55 ms hot, 140 ms cold (ng), and about 5 round trips at +100 ms.
+  - In a real app it is the term that grows, and its server-side part has no bound.
+- A stalled request costs 30 s + 0.12 s + 30 s. The placeholder does not help when the server is unreachable or a boot-graph request stalls, because `bundle.mjs` statically imports `/@vite/env` and the boot module over HTTP in both modes. It does help when an entry-graph request or transform stalls.
+- **A lever for that term:** hold the app launch until the server's warmup crawl is idle (`environment.waitForRequestsIdle()`, present in 8.0.2 and 8.3.8), so cold transforms are spent before the process exists. On ng cold, the warmup's `warmupRequest`s settle in 199 ms and the crawl goes idle at 250 ms (static imports only; the lazy home route is not crawled).
+
+**Checks on the simulator** (flag on; fixture files restored after each run):
+- **Cold boot:** vue and ng boot.
+- **Vue:**
+  - template edit (`Counter.vue`): applied;
+  - soft reboot (`app/setup.ts`): `setup v2` logged, root replaced;
+  - syntax error: "HMR update failed" overlay with the compiler message; the fix applies in place.
+- **Angular:**
+  - template edit: applied;
+  - class edit in `home.component.ts`: soft reboot through `main.ts`;
+  - syntax error: overlay; the fix reboots.
+- **The soft reboot needs nothing from the placeholder:** `frameworks/core/client/reboot.ts` arms its own `run` → `resetRootView` redirect at dispose time.
+- **Boot error before `run`:**
+  - vue, a `throw` in `app/app.ts`: the error card shows `spike boot throw`, and the HMR client connects.
+  - ng, a syntax error in `src/main.ts`: the card shows `HTTP import failed … (status=500)`, and on connect the HMR overlay shows Vite's compile error above it.
+  - In both cases the fix triggers `app restart required: the app failed to boot (…)`, the CLI restarts the app, and it boots.
+  - The card's copy still reads "Retrying after a boot failure" (placeholder wording).
+- **Server stopped:** the same in both modes. `bundle.mjs` fails to instantiate (`HTTP import failed: …/@vite/env (network error)`), the runtime reports "Fatal: the main module failed to run", and the app exits. The runtime also logs "module graph walk missed …/@vite/env — falling back to a blocking synchronous fetch. This should not happen; please report it."
+
+- **Flag off, final build** (Vue): placeholder boot as before (`real app root committed`, `[ns-boot] ok total=545ms`), launch bridge installed, `setup.ts` soft reboot applied.
+- A failure after `run` (the app still launches) sets no `bootFailed`, so later updates apply normally.
+
+**Not checked:** Android (the code depends on neither `run` returning nor launching first), a physical device, toolbox (TS flavor), a throw in the entry after `run`.
+
+**Deletable if adopted** (not deleted):
+- `root-placeholder.ts` (709 lines: patched `run`, `resetRootView` wraps, finalize polling, `knownApplications`, the `__NS_DEV_PLACEHOLDER_*` globals) and `placeholder-hooks.ts`;
+- `launch-bridge.ts`;
+- the boot heartbeat and `boot-progress.ts`;
+- the fetch-based `/__ns_dev__/session` and `import-map.json` routes;
+- `setDevBootComplete`'s native call (older runtimes only);
+- the Android `resetRootView` deferral in `runtime/core-aliases-early.ts` (verify on Android);
+- the stale comment in `reboot.ts` about the placeholder restoring `run`.
+
+`root-placeholder-view.ts` and the overlay's boot refs stay only if the boot error card does.
+
+**Trade-off of deleting the placeholder:** nothing is on screen until `run`, so a slow boot on a device shows only the launch screen.
+
+**Runtime:** no change needed, and nothing beyond thin mode's existing minimum: the boot handoff loop is in c5e9886e (#383, first tag v9.0.4-next.2026-08-19). Tested only on 9.1.2-next.2026-11-18. The 30 s debug fetch budget is in builds from 2026-11-15 on (43e5c3a5). Citations opened directly: `MetadataBuilder.mm:1353-1378`, `NativeScript.mm:126-210`, `ModuleInternal.mm:48-58`, `HttpLoader.mm:362-368` and `824-830`. The microtask policy, the graph walk and the retry come from a subagent's read.
+
+## Round 21: phase 5c, boot like release (implementation)
+
+**What changed** (uncommitted; DESIGN "Boot like release"). The spike's path is the only path: there is no flag and no placeholder root.
+- **`bundle.mjs`** is the bundled `runtime/dev-boot-loader.ts`, about 8 KB with no static HTTP import:
+  1. `import(origin + '/@vite/env')`, with a 6 s reachability timeout;
+  2. `await import(<boot module>)`;
+  3. if either fails, or the boot module exports a `bootFailure`, it launches the fallback screen.
+- **The boot module** ends with `export const bootFailure = await startBrowserRuntimeSession({ sessionUrl, importMapUrl }, verbose)`.
+- **`session-bootstrap.ts`**:
+  - loads `session.mjs` and `import-map.mjs` as modules, in parallel;
+  - imports the dev client, then the entry;
+  - marks boot complete on the tick after the launch event;
+  - never rejects. It resolves the failure only if `Application.started` is still false, and then cancels the boot-complete listener.
+- **Fallback screen** (raw UIKit through the runtime, so no served code is involved):
+  - **dev server unreachable:** a text screen plus an alert; it polls `GET /__ns_dev__/restart` every 2 s, and the first answer asks the CLI to restart the app;
+  - **boot failure:** the device error and stack, plus the server's recent transform error (`GET /__ns_dev__/boot-failed`). The server restarts the app on the next file change and drops the stale `full-reload` that Vite keeps for the next socket connection;
+  - the window sits at `UIWindowLevelNormal + 1`, above core's own launch window.
+- **Server**:
+  - `hmr/server/dev-boot-routes.ts`: the `restart`, `boot-failed` and `warm` routes, the transform-error capture, and the boot-graph warm-up (`warmupRequest` of `\0virtual:ns-dev-boot`, the dev client and the entry, then `waitForRequestsIdle`);
+  - `hmr/server/dev-routes.ts`: the path constants;
+  - the session and import map are served only as modules; the dev client no longer installs the launch-notification bridge.
+- **The launch hold:** `helpers/ns-cli-plugins.ts` delays the HMR build's first CLI notification until `GET /__ns_dev__/warm` answers, with a 30 s cap. In the logs: the server warmed up in 368–596 ms, and the build waited 5–454 ms.
+  - It reaches the dev server at `server.host` when that names one interface, otherwise on loopback, and over https when `server.https` is set (certificate not checked).
+  - The CLI's `useHttps` flag doesn't reach the build's resolved config. With it set and `server.https` unset, the hold would wait the full 30 s; not tested.
+  - The fallback's `NSURLSession` calls also assume a certificate the device trusts.
+- **Angular printed no verbose device lines** because of `helpers/logging.ts`. `resolveVerboseFlag` caches its first result, and `angular.ts` called it with no CLI flags before `baseConfig` did, so `--env.verbose` was lost. It now defaults to `getCliFlags()`. Angular prints `[ns-entry] …` lines again.
+- **The verbose boot stamps** are `[ns-entry] session start | session ready | importing entry | entry evaluated | launch event t=<ms>`.
+- **Spike measurement code moved to the fixtures:**
+  - `tools/vite-server-env-spike/request-timing-plugin.mjs` (`NS_SPIKE_REQUEST_LOG`, `NS_SPIKE_REQUEST_DELAY_MS`; it also logs the remote address) is wired into both fixtures' `vite.config.mts`;
+  - `thin-crawl.mjs` and `payload-probe.mjs` read the module-form session and import map.
+- **Core:** `application.ios.ts` `run()` loses its placeholder branch (36 lines). That branch was dead without the `__NS_DEV_PLACEHOLDER_*` globals. The fixtures still run the core tarball, which is unaffected.
+- **Deleted** (`git rm`):
+  - `root-placeholder.ts` (709 lines) and its spec (215);
+  - `root-placeholder-view.ts` (326);
+  - `placeholder-hooks.ts` (31);
+  - `launch-bridge.ts` (89);
+  - `boot-progress.ts` (57) and its spec (81);
+  - `boot-placeholder-ui.ts` (128) and its spec (109);
+  - `boot-complete.ts` (27);
+  - the overlay's boot mode (`dev-overlay*.ts`, about −500 lines);
+  - the Android `resetRootView` deferral in `core-aliases-early.ts` (85);
+  - `setDevBootComplete`, `knownApplications`, and the `__NS_DEV_PLACEHOLDER_*` declarations.
+  - Net, in this phase's files: +392 / −3,198 lines, plus 339 new lines in the loader and routes and 4 new specs.
+- **Specs:** vitest 896/896 in 88 files (one spec file was rewritten, four are new). `tsc`: 261 errors, all under `../core`.
+
+**Simulator checks** (final build, Vue and Angular):
+- **Cold boot** (`.vite` cleared): both apps boot.
+- **Template edit:** applied in place.
+- **Soft reboot:** works (Vue `setup.ts`; Angular class edit through `main.ts`).
+- **Syntax error + fix:** the overlay appears and the fix applies.
+- **Boot error before `run`:** the fallback card shows. Cases: Vue, a `throw` in `app/app.ts`; Angular, a syntax error in `src/main.ts`. Angular's card also shows Analog's message (`main.ts:7:28: Property assignment expected.`). The fix triggers one restart.
+  - Two earlier builds restarted twice. The first time, core's launch event started the HMR client, which then got a `full-reload`. The second time, Vite replayed its buffered `full-reload` to the restarted app. Both are fixed: the boot-complete cancel, and dropping that payload.
+- **Server stopped, then relaunch:** "Dev server unreachable" shows (screen plus alert). After `ns run` starts, the log has `Restarting the app on ios: the dev server is reachable again`. The CLI also restarts the app itself after its build, so this scenario boots twice.
+- **Vue relaunch timings, launch → `entry evaluated` / launch event:** 1.50 / 1.80 s and 1.28 / 1.59 s; requests 322 / 8,893 KiB. That matches the spike (Round 20). The table there still describes this boot.
+
+**Pre-bundling an installed core** (`NS_VITE_PREBUNDLE_CORE=1`, off by default; `helpers/optimize-deps.ts` `getNsOptimizeDepsExclude`, `helpers/dev-optimize-deps.ts`; outputs in `out/phase5c-prebundle-core/`):
+
+| cold crawl, `--bundle` | ng off | ng on | vue off | vue on |
+|---|---|---|---|---|
+| device requests | 324 | 81 | 319 | 74 |
+| device KiB (inline maps included) | 17,711 | 18,915 | 8,881 | 10,091 |
+| raw core requests | 254 | 0 | 252 | 0 |
+| pre-bundled deps / js files | 24 / 34 | 24 / 46 | 13 / 16 | 12 / 23 |
+| core files inlined | 0 | 240 | 0 | 238 |
+| duplicates / two URLs / duplicate instances / beyond scan / reloads | 0 | 0 | 0 | 0 |
+
+- **Core stays one instance:** it is never served raw. The 14 core files missing from the maps hold only re-exports (Rolldown emits nothing for them). The import map points `@nativescript/core` at the pre-bundle.
+- **Bytes rise 7–14%:** the pre-bundles carry inline source maps and code the boot never evaluates. Requests fall about 75%. Cold optimize time is unchanged (crawls 5–7 s).
+- **Fixes it needed:**
+  - core's names in `NS_OPTIMIZE_DEPS_EXCLUDE` are no longer re-added through the "platform-main" rule;
+  - `@nativescript/core/xhr` (imported by `virtual:ns-xhr-polyfill`) and `@nativescript/core/file-system` (imported by the injected `runtime/module-require.js`) are added to `include`. The scanner never reads either importer, and otherwise each was registered at the first request.
+  - That list is hand-written for these two fixtures; another core subpath that only unscanned code imports would re-optimize the dev server.
+- **Linked core:** a linked or workspace-source core stays excluded, so its edits keep reaching the graph.
+- **Simulator** (final build, flag on, cold):
+  - ng: 86 requests / 5,928 KiB, Vite 8.0.2. A relaunch reaches `entry evaluated` at 1.21 s and launch at 1.52 s, against about 1.32 / 1.62 s with the flag off. The template edit, class edit (soft reboot) and syntax error + fix all work.
+  - vue: 78 requests / 10,103 KiB. `[ns-require-probe] cjs=true esm-require=true` (one `Color` class) and the `setup.ts` soft reboot both work.
+- **Not checked:** the payload probes with the flag on; Android, whose app components import core without `?v=`, so two cores are likely there; an edit to an installed pre-bundled core (that goes to `nsPreBundleWatchPlugin`).
+
+**iPhone (iPhone 11 Pro, iOS 26.0.1): blocked, nothing measured.**
+- **The CLI doesn't see the phone.** `ns device ios` lists only simulators: the phone is paired over the network only, not USB-connected.
+- **The app was built and installed by hand instead:**
+  - `ns build ios --for-device --team-id U56623MFCT` set up signing;
+  - the HMR `bundle.mjs` was copied into `platforms/ios/vue/app`;
+  - then `xcodebuild` and `devicectl device install app` (script `$CLAUDE_JOB_DIR/tmp/p5c/device-hmr-install.sh`).
+- **The phone never reaches the dev server.** `devicectl device process launch --console` with `OS_ACTIVITY_DT_MODE=enable` streams the console. Every request fails with `NSURLErrorDomain -1009`, `_NSURLErrorNWPathKey=unsatisfied (Local network prohibited)`, with the server down and with it up on `192.168.1.100:5173`; the server saw no request from the phone.
+  - The cause is iOS's Local Network permission for the new bundle id, not yet granted on the phone.
+  - Network access alone unblocks the measurements: the hand-install path works without the CLI. USB is needed only for the restart checks (the CLI restarts only the device it deployed to).
+- **Signed with team `U56623MFCT`** (Blackout Lighting Console Inc.), with `-allowProvisioningUpdates`; I took the team id from q2-blackout's `build.xcconfig`. That may have registered an App ID and a development profile for `org.nativescript.spike.vue` on that account.
+  - Leftovers: `org.nativescript.spike.vue` is installed on the iPhone, and `tools/vite-server-env-spike/apps/vue/platforms/ios` holds the device build (not tracked).
+- **The fallback did run on the device:** `CONSOLE ERROR: [ns-entry] the dev server at http://192.168.1.100:5173 is unreachable …`, then the 2 s `restart` polls. So the unreachable path works on hardware; its UI was not seen (no screenshot tool for devices here).
+- **To unblock:** connect the iPhone by USB (so `ns run ios --device 00008030-000408D42692802E` deploys, streams logs and restarts it), and allow Local Network for the spike apps on the phone.
+
+**Slow-boot path** (design only; not built, pending iPhone numbers):
+1. If the boot module hasn't resolved after a budget of about 12 s, the loader launches early: it calls `UIApplicationMain` with core's delegate, puts a placeholder window up, and keeps importing.
+2. When the entry later calls `Application.run`, core's iOS `run` sees `nativeApp` and takes `runAsEmbeddedApp`. Instead it must set the root on the existing window, then refire what UIKit already delivered: the launch event, `UIApplicationDidFinishLaunchingNotification` observers, and `didBecomeActive`.
+3. That needs a small hook in core (a "launched by the dev loader" branch in `run`). It replaces both the patched-`run` → `resetRootView` path and the launch bridge.
+
+**USB transport for module requests** (idea, not built):
+- The CLI already forwards the inspector socket over usbmux: the device listens and the host connects ("debugger has opened inspector socket on port 18183").
+- usbmux connects host → device only. So for module fetches, the runtime would listen on a device-local port, the CLI would hold a connection to it, and requests would flow device → host over that connection (peertalk-style), served by the dev server.
+- On the runtime side, `HttpLoader` gets an alternative transport for `http://<origin>` URLs.
+- On the CLI side, a usbmux proxy (ios-device-lib's port connection) to the dev server.
+- It needs USB anyway, and the CLI already requires USB to deploy to a device. iOS 17+ CoreDevice tunnels are host-initiated as well; whether an app can reach the host through one is unverified.
+
+**Not checked:**
+- the iPhone;
+- Android, including the deleted `resetRootView` deferral and the fallback screen, which is iOS-only (Android rethrows);
+- the toolbox (TS flavor);
+- visionOS / embedded hosts (`NS_SWIFTUI_BOOT`), where the old placeholder skipped `run` when a host `UIApplication` already existed. The fallback calls `UIApplicationMain`, which would assert there.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

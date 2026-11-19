@@ -11,6 +11,7 @@ import { resolveDeviceReachableOrigin } from './dev-host.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
 import { BUNDLE_CSS_AST_SENTINEL, inlineBundleCss } from './bundle-css.js';
 import { deviceUrlForGraphUrl } from '../hmr/server/vite-url.js';
+import { IMPORT_MAP_PATH, NS_DEV_SESSION_PATH } from '../hmr/server/dev-routes.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -142,8 +143,7 @@ function generateBootCode(opts: BootCodeOptions, bootOrigin: string): string {
 		imports += `console.info('[ns-entry] core globals loaded');\n`;
 	}
 
-	// Seed the real NativeScript Application singleton before any early HMR/placeholder
-	// code runs. Dynamic discovery is too late for iOS placeholder startup.
+	// `installCoreAliasesEarly` below reads `globalThis.Application`.
 	imports += `import { Application as __nsEarlyApplication } from ${JSON.stringify(coreSpec('application'))};\n`;
 	imports += `try { if (__nsEarlyApplication && (typeof __nsEarlyApplication.run === 'function' || typeof __nsEarlyApplication.on === 'function' || typeof __nsEarlyApplication.resetRootView === 'function')) { globalThis.Application = __nsEarlyApplication; } } catch {}\n`;
 	if (opts.verbose) {
@@ -170,18 +170,6 @@ function generateBootCode(opts: BootCodeOptions, bootOrigin: string): string {
 	 */
 	imports += "import { installCoreAliasesEarly } from '@nativescript/vite/runtime/core-aliases-early.js';\n";
 	imports += 'installCoreAliasesEarly(__nsVerboseLog);\n';
-
-	if (opts.hmrActive) {
-		// Placeholder root for HMR to show prior to http loaded es modules take over
-		if (opts.verbose) {
-			imports += `console.info('[ns-entry] installing placeholder...');\n`;
-		}
-		imports += "import { installRootPlaceholder } from '@nativescript/vite/hmr/shared/runtime/root-placeholder.js';\n";
-		imports += 'installRootPlaceholder(__nsVerboseLog);\n';
-		if (opts.verbose) {
-			imports += `console.info('[ns-entry] placeholder installed');\n`;
-		}
-	}
 
 	// Load NS bundle entry points after early hook
 	imports += `import ${JSON.stringify(coreSpec('bundle-entry-points'))};\n`;
@@ -295,11 +283,10 @@ function generateBootCode(opts: BootCodeOptions, bootOrigin: string): string {
 		if (opts.verbose) {
 			imports += `console.info('[ns-entry] including deterministic dev session bootstrap', { platform: ${JSON.stringify(opts.platform)}, mainRel: ${JSON.stringify(mainEntryRelPosix)} });\n`;
 		}
-		const sessionUrl = bootOrigin + '/__ns_dev__/session';
+		const sessionUrls = { sessionUrl: bootOrigin + NS_DEV_SESSION_PATH, importMapUrl: bootOrigin + IMPORT_MAP_PATH };
 		imports += "import { startBrowserRuntimeSession } from '@nativescript/vite/hmr/shared/runtime/session-bootstrap.js';\n";
-		imports += `startBrowserRuntimeSession(${JSON.stringify(sessionUrl)}, __nsVerboseLog).catch((error) => {\n`;
-		imports += `  console.error('[ns-entry] deterministic dev session bootstrap failed', error && error.stack ? error.stack : error);\n`;
-		imports += `});\n`;
+		// `bundle.mjs` awaits this module and shows a failure itself.
+		imports += `export const bootFailure = await startBrowserRuntimeSession(${JSON.stringify(sessionUrls)}, __nsVerboseLog);\n`;
 		if (opts.verbose) {
 			imports += `console.info('[ns-entry] deterministic dev session bootstrap appended');\n`;
 		}
@@ -360,12 +347,15 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 
 	const bootOptions: BootCodeOptions = { ...opts, flavor: effectiveFlavor };
 
-	// bundle.mjs under HMR. Its static graph is linked before session-bootstrap's
-	// `configureLoader` installs the import map, so it names absolute URLs only.
-	// `/@vite/env` installs `config.define` on globalThis (Vite's client
-	// environment does no define substitution in served modules) and must
-	// evaluate before the boot module's graph.
-	const generateHmrBundleEntry = (bootOrigin: string): string => `import '${bootOrigin}/@vite/env';\nimport '${bootOrigin}${DEV_BOOT_DEVICE_PATH}';\n` + appComponentImports(opts);
+	// bundle.mjs under HMR: the bundled dev boot loader, which imports the
+	// served graph dynamically so an unreachable dev server can be shown
+	// instead of failing the main module's link. It runs before
+	// session-bootstrap's `configureLoader` installs the import map, so it
+	// names absolute URLs only.
+	const generateHmrBundleEntry = (bootOrigin: string): string => {
+		const loaderOptions = { origin: bootOrigin, bootUrl: bootOrigin + DEV_BOOT_DEVICE_PATH, verbose: opts.verbose };
+		return `import { bootFromDevServer } from '@nativescript/vite/runtime/dev-boot-loader.js';\nawait bootFromDevServer(${JSON.stringify(loaderOptions)});\n` + appComponentImports(opts);
+	};
 
 	return {
 		name: 'main-entry',

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@nativescript/core/application', () => ({}));
 vi.mock('@nativescript/core/color', () => ({}));
 vi.mock('@nativescript/core/ui', () => ({}));
-import { computeAndroidToastMargin, computeIosOverlayLayout, computeIosOverlayWindowLevel, iosOverlayCapturesTouch, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, getHmrDevOverlayPosition } from './dev-overlay.js';
+import { computeAndroidToastMargin, computeIosOverlayLayout, computeIosOverlayWindowLevel, iosOverlayCapturesTouch, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, getHmrDevOverlayPosition } from './dev-overlay.js';
 import { applySnapshotToIosRefs } from './dev-overlay-ios.js';
 import { applySnapshotToLiveRefs } from './dev-overlay-tree.js';
 import { getGlobalScope } from './global-scope.js';
@@ -26,24 +26,6 @@ describe('HMR dev overlay snapshots', () => {
 		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
-	it('builds a phase-based boot snapshot with attempt detail', () => {
-		const snapshot = createBootOverlaySnapshot('importing-main', {
-			detail: 'http://localhost:5173/src/main.ts?v=1',
-			attempt: 2,
-			attempts: 6,
-		});
-
-		expect(snapshot.visible).toBe(true);
-		expect(snapshot.mode).toBe('boot');
-		expect(snapshot.phase).toContain('Importing the app entry');
-		// 2026-05-10: 'importing-main' base lowered from 82 → 30 so the bar
-		// has ~62 percentage points of visible motion during the long
-		// HTTP-module-load phase (the heartbeat + snippet then ratchet it up
-		// toward 92 before 'waiting-for-app' fires at 94).
-		expect(snapshot.progress).toBe(30);
-		expect(snapshot.detail).toContain('Attempt 2/6');
-	});
-
 	it('builds a reconnect snapshot without a determinate progress bar', () => {
 		const snapshot = createConnectionOverlaySnapshot('reconnecting');
 
@@ -52,18 +34,6 @@ describe('HMR dev overlay snapshots', () => {
 		expect(snapshot.progress).toBeNull();
 		expect(snapshot.tone).toBe('warn');
 		expect(snapshot.phase).toContain('reconnect');
-	});
-
-	it('builds an explicit app-root-committed boot snapshot', () => {
-		const snapshot = createBootOverlaySnapshot('app-root-committed', {
-			detail: 'The real app root replaced the boot placeholder.',
-		});
-
-		expect(snapshot.visible).toBe(true);
-		expect(snapshot.mode).toBe('boot');
-		expect(snapshot.badge).toBe('READY');
-		expect(snapshot.phase).toContain('Real app root committed');
-		expect(snapshot.progress).toBe(100);
 	});
 });
 
@@ -76,23 +46,12 @@ describe('HMR dev overlay runtime API', () => {
 		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
-	it('installs a stable global API and tracks boot stages', () => {
+	it('installs a stable global API', () => {
 		const api = ensureHmrDevOverlayRuntimeInstalled(true);
 		const sameApi = ensureHmrDevOverlayRuntimeInstalled(false);
 
 		expect(api).toBe(sameApi);
 		expect(nsDev().overlay).toBe(api);
-
-		api.setBootStage('loading-core-bridge', {
-			detail: 'http://localhost:5173/node_modules/@nativescript/core/index.js',
-		});
-
-		expect(api.getSnapshot()).toMatchObject({
-			visible: true,
-			mode: 'boot',
-			phase: 'Loading the unified core bridge',
-			progress: 54,
-		});
 	});
 
 	it('switches from connection state back to hidden on hide()', () => {
@@ -113,57 +72,6 @@ describe('HMR dev overlay runtime API', () => {
 			mode: 'hidden',
 			badge: 'HMR',
 		});
-	});
-
-	// Stages can arrive out of progress order; the bar must never move backwards.
-	it('clamps a lower boot-stage progress to the previous value (monotonic ratchet)', () => {
-		const api = ensureHmrDevOverlayRuntimeInstalled(true);
-
-		api.setBootStage('preloading-style-scope', { detail: 'Preparing the shared style scope' });
-		expect(api.getSnapshot().progress).toBe(62);
-
-		api.setBootStage('importing-main', { detail: '/src/main.ts' });
-		// 'importing-main' base is 30; ratchet preserves the previous 62.
-		expect(api.getSnapshot().progress).toBe(62);
-		// Phase still reflects the new stage so the user sees the right label.
-		expect(api.getSnapshot().phase).toContain('Importing the app entry');
-	});
-
-	it('lets a higher boot-stage progress overwrite a lower previous value', () => {
-		const api = ensureHmrDevOverlayRuntimeInstalled(true);
-
-		api.setBootStage('importing-main', { detail: '/src/main.ts' });
-		expect(api.getSnapshot().progress).toBe(30);
-
-		api.setBootStage('waiting-for-app', { detail: 'Waiting for the real app root' });
-		// 'waiting-for-app' base is 94 — strictly greater than the previous
-		// 30, so the ratchet allows it through unchanged.
-		expect(api.getSnapshot().progress).toBe(94);
-	});
-
-	it('lets the snippet/heartbeat ratchet `importing-main` past its base (explicit progress override)', () => {
-		const api = ensureHmrDevOverlayRuntimeInstalled(true);
-
-		api.setBootStage('importing-main', { detail: '/src/main.ts' });
-		expect(api.getSnapshot().progress).toBe(30);
-
-		// Simulate the heartbeat / inline snippet pushing the bar forward
-		// once the module count + elapsed-time formula has accumulated.
-		api.setBootStage('importing-main', { detail: 'Evaluated 80 modules\n/src/foo.ts', progress: 92 });
-		expect(api.getSnapshot().progress).toBe(92);
-	});
-
-	it('does not ratchet across modes (connection / update reset cleanly)', () => {
-		const api = ensureHmrDevOverlayRuntimeInstalled(true);
-
-		api.setBootStage('preloading-style-scope', { detail: 'Preparing the shared style scope' });
-		expect(api.getSnapshot().progress).toBe(62);
-
-		// Switching to a connection snapshot is a fresh visual state — the
-		// ratchet must NOT carry the boot progress over.
-		api.setConnectionStage('reconnecting');
-		expect(api.getSnapshot().mode).toBe('connection');
-		expect(api.getSnapshot().progress).toBeNull();
 	});
 });
 

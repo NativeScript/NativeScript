@@ -1,6 +1,9 @@
 import path from 'path';
 import { createHash } from 'crypto';
 import { readdirSync, statSync, existsSync, mkdirSync } from 'fs';
+import http from 'http';
+import https from 'https';
+import { NS_DEV_WARM_PATH } from '../hmr/server/dev-routes.js';
 
 let isInitialBuild = true;
 
@@ -16,8 +19,51 @@ export function hashBootBundle(bundle: Record<string, { type: string; code?: str
 	return createHash('sha1').update(content).digest('hex');
 }
 
+// Covers the dev server starting up, which the CLI runs in parallel.
+const WARM_WAIT_MS = 30_000;
+const WARM_RETRY_MS = 200;
+
+/**
+ * Resolves once the dev server on `port` reports its boot graph warmed up
+ * (`hmr/server/dev-boot-routes.ts`), or after {@link WARM_WAIT_MS}. The CLI
+ * launches the app on this build's notification, and with the boot graph
+ * already transformed the device's first boot stays short inside the iOS
+ * launch watchdog.
+ */
+export interface DevServerAddress {
+	port: number;
+	/** `server.host` when it names one interface; a wildcard bind is reached on loopback. */
+	host?: string;
+	https?: boolean;
+}
+
+export function devServerAddressOf(server: { port?: number; host?: string | boolean; https?: unknown }): DevServerAddress {
+	const host = typeof server.host === 'string' && server.host && server.host !== '0.0.0.0' && server.host !== '::' ? server.host : undefined;
+	return { port: Number(server.port || 5173), host, https: !!server.https };
+}
+
+export function waitForDevServerWarm(address: DevServerAddress, deadline = Date.now() + WARM_WAIT_MS): Promise<boolean> {
+	const client = address.https ? https : http;
+	return new Promise((resolve) => {
+		const attempt = () => {
+			const remaining = deadline - Date.now();
+			if (remaining <= 0) return resolve(false);
+			// The dev server's certificate is usually self-signed.
+			const req = client.get({ host: address.host ?? '127.0.0.1', port: address.port, path: NS_DEV_WARM_PATH, timeout: remaining, rejectUnauthorized: false }, (res) => {
+				res.resume();
+				res.on('end', () => (res.statusCode === 200 ? resolve(true) : retry()));
+			});
+			req.on('timeout', () => req.destroy());
+			req.on('error', retry);
+		};
+		const retry = () => setTimeout(attempt, WARM_RETRY_MS);
+		attempt();
+	});
+}
+
 // NativeScript CLI integration for live reloads, non-HMR rebuilds
-export function cliPlugin(opts: { distOutputFolder: string; isDevMode: boolean; verbose: boolean; hmrActive: boolean }) {
+export function cliPlugin(opts: { distOutputFolder: string; isDevMode: boolean; verbose: boolean; hmrActive: boolean; waitForDevServer?: (address: DevServerAddress) => Promise<boolean> }) {
+	const waitForDevServer = opts.waitForDevServer ?? ((address: DevServerAddress) => waitForDevServerWarm(address));
 	// Capture emitted files directly from Rollup hooks to avoid relying on FS state
 	const lastBundleFiles = new Set<string>();
 	let lastOutDir: string | undefined;
@@ -26,11 +72,15 @@ export function cliPlugin(opts: { distOutputFolder: string; isDevMode: boolean; 
 	// changed: the CLI then restarts the app with the new one.
 	let lastBootBundleHash: string | undefined;
 	let bootBundleChanged = false;
+	let devServerAddress: DevServerAddress = { port: 5173 };
 	return {
 		name: 'nativescript-cli-integration',
 		apply: 'build',
 		// Ensure we run after other plugins (like vite-plugin-static-copy)
 		enforce: 'post' as const,
+		configResolved(config: { server: { port?: number; host?: string | boolean; https?: unknown } }) {
+			devServerAddress = devServerAddressOf(config.server);
+		},
 		// Use Rollup hook to record emitted file names (relative to output dir)
 		generateBundle(options, bundle) {
 			const hash = hashBootBundle(bundle as any);
@@ -67,7 +117,7 @@ export function cliPlugin(opts: { distOutputFolder: string; isDevMode: boolean; 
 			}
 		},
 		// Defer CLI notification until after all plugins (including static copy) are done.
-		closeBundle() {
+		async closeBundle() {
 			const skipUnderHmr = opts.hmrActive && !isInitialBuild && !bootBundleChanged;
 			bootBundleChanged = false;
 			if (skipUnderHmr) {
@@ -100,6 +150,14 @@ export function cliPlugin(opts: { distOutputFolder: string; isDevMode: boolean; 
 
 			if (opts.verbose) {
 				console.log(`Emitted ${emittedFiles.length} files in ${buildType} build.`);
+			}
+
+			if (opts.hmrActive && isInitialBuild && process.send) {
+				const started = Date.now();
+				const warmed = await waitForDevServer(devServerAddress);
+				if (opts.verbose || !warmed) {
+					console.log(warmed ? `[cliPlugin] dev server boot graph warm after ${Date.now() - started} ms` : `[cliPlugin] dev server boot graph not warm after ${Date.now() - started} ms; launching anyway`);
+				}
 			}
 
 			if (process.send) {

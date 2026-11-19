@@ -53,6 +53,11 @@ function makeRes(): FakeRes {
 
 type Handler = (req: any, res: any, next: any) => unknown;
 
+function moduleDefault(body: string | undefined): any {
+	const match = /^export default ([\s\S]*);\n$/.exec(body || '');
+	return JSON.parse(match ? match[1] : '{}');
+}
+
 function mount(overrides: Partial<RegisterImportMapRouteOptions> = {}) {
 	const handlers: Handler[] = [];
 	const resolveId = vi.fn(async (spec: string) => (spec === '@nativescript/core' ? { id: '/app/node_modules/@nativescript/core/index.js' } : null));
@@ -102,7 +107,7 @@ describe('registerImportMapRoute', () => {
 		expect(mockBuildRuntimeConfig).not.toHaveBeenCalled();
 	});
 
-	it('serves the runtime config as JSON on GET', async () => {
+	it('serves the runtime config as a module on GET', async () => {
 		const { handler } = mount();
 		const next = vi.fn();
 		const res = makeRes();
@@ -110,9 +115,9 @@ describe('registerImportMapRoute', () => {
 		expect(next).not.toHaveBeenCalled();
 		expect(res.statusCode).toBe(200);
 		expect(res.headers['Access-Control-Allow-Origin']).toBe('*');
-		expect(String(res.headers['Content-Type'])).toContain('application/json');
+		expect(String(res.headers['Content-Type'])).toContain('application/javascript');
 		expect(mockBuildRuntimeConfig).toHaveBeenCalledTimes(1);
-		const parsed = JSON.parse(res.body || '{}');
+		const parsed = moduleDefault(res.body);
 		expect(parsed.importMap).toEqual({ imports: { '@nativescript/core': `${TRUSTED_ORIGIN}/node_modules/@nativescript/core/index.js` } });
 		expect(parsed.volatilePatterns).toEqual(['/@ng/component']);
 		expect(parsed.canonicalization).toEqual({ preserveQueryFor: [] });
@@ -155,7 +160,7 @@ describe('registerImportMapRoute', () => {
 		for (let i = 0; i < 2; i++) {
 			const res = makeRes();
 			await handler({ url: IMPORT_MAP_PATH, method: 'GET', headers: {} }, res, vi.fn());
-			expect(JSON.parse(res.body || '{}').importMap).toEqual({ imports: { '@nativescript/core': `${TRUSTED_ORIGIN}/node_modules/@nativescript/core/index.js` } });
+			expect(moduleDefault(res.body).importMap).toEqual({ imports: { '@nativescript/core': `${TRUSTED_ORIGIN}/node_modules/@nativescript/core/index.js` } });
 		}
 		expect(mockBuildRuntimeConfig).toHaveBeenCalledWith(expect.objectContaining({ projectRoot: '/app' }));
 		expect(server.environments.client.pluginContainer.resolveId).toHaveBeenCalledTimes(4);

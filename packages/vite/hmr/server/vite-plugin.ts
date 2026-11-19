@@ -5,7 +5,8 @@ import path from 'path';
 import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, VITE_HMR_WS_PROTOCOL, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
 import type { NsHmrStartOptions } from '../client/index.js';
 import { deviceUrlForGraphUrl, viteUrlForFile } from './vite-url.js';
-import { IMPORT_MAP_PATH } from './import-map-route.js';
+import { IMPORT_MAP_PATH, NS_DEV_SESSION_PATH } from './dev-routes.js';
+import { registerDevBootRoutes } from './dev-boot-routes.js';
 import { createDeviceRequestMiddleware, useFirst } from './device-requests.js';
 import { getServerOrigin } from './server-origin.js';
 import { fileURLToPath } from 'node:url';
@@ -87,7 +88,7 @@ export function resolveViteHmrWsUrl(origin: string, config: ViteHmrWsConfig): st
 	return url.toString();
 }
 
-export const NS_DEV_SESSION_PATH = '/__ns_dev__/session';
+export { NS_DEV_SESSION_PATH };
 
 const NS_DEV_CLIENT_ID = 'virtual:ns-dev-client';
 const NS_DEV_CLIENT_RESOLVED = '\0' + NS_DEV_CLIENT_ID;
@@ -115,20 +116,11 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; ori
 /**
  * The dev client bootstrap, served through Vite's transform like any module
  * so import analysis writes the URL of everything it imports. The session
- * bootstrap imports it before the app entry, which makes it the one
- * deterministic point to wrap Application's launch observers
- * (see shared/runtime/launch-bridge.ts).
+ * bootstrap imports it before the app entry; it starts the HMR client once
+ * the app has launched.
  */
 export function createNsDevClientModuleCode(start: NsHmrStartOptions): string {
-	return `import { installLaunchNotificationBridge } from '@nativescript/vite/hmr/shared/runtime/launch-bridge.js';
-import { nsDev } from '@nativescript/vite/hmr/shared/runtime/dev-globals.js';
-import { Application } from '@nativescript/core';
-
-try {
-	installLaunchNotificationBridge(Application);
-} catch (launchBridgeErr) {
-	console.warn('[ns-dev-client] launch-notification bridge install failed', launchBridgeErr);
-}
+	return `import { nsDev } from '@nativescript/vite/hmr/shared/runtime/dev-globals.js';
 
 const startOptions = ${JSON.stringify(start)};
 
@@ -328,14 +320,23 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 						sessionId,
 					});
 
-					res.setHeader('Content-Type', 'application/json');
-					res.end(JSON.stringify(descriptor, null, 2));
+					// A module, so the device loads it through the module loader during boot.
+					res.setHeader('Content-Type', 'application/javascript');
+					res.end(`export default ${JSON.stringify(descriptor, null, 2)};\n`);
 				} catch (error: any) {
 					res.statusCode = 500;
 					res.setHeader('Content-Type', 'application/json');
 					res.end(JSON.stringify({ error: error?.message || 'Failed to build NativeScript dev session descriptor' }));
 				}
 			});
+			const onTransformError = registerDevBootRoutes(server, {
+				// Ids as Vite's transform middleware passes them on (`/@id/__x00__` unwrapped).
+				bootGraphUrls: () => ['\0virtual:ns-dev-boot', NS_DEV_CLIENT_RESOLVED, resolveProjectMainEntryPath(server.config.root)],
+			});
+			// After Vite's own middlewares, ahead of its error handler.
+			return () => {
+				server.middlewares.use(onTransformError);
+			};
 		},
 	};
 }

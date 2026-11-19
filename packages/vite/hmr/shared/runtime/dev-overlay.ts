@@ -1,17 +1,18 @@
 /**
- * Dev overlay public API: boot / connection / update stage setters plus the
- * auto-hide timing policy. Rendering is delegated to two backends behind the
+ * Dev overlay public API: connection / update stage setters plus the
+ * auto-hide timing policy. Rendering is delegated to backends behind the
  * shared snapshot/state model (`dev-overlay-shared.ts`):
  *
  * - `dev-overlay-ios.ts` — dedicated UIWindow above `UIWindowLevelAlert`, so
  *   the overlay stacks above modals/sheets/system alerts (preferred on iOS)
- * - `dev-overlay-tree.ts` — boot placeholder + in-tree toast chip (Android,
- *   and the fallback when the iOS window can't be built)
+ * - `dev-overlay-android.ts` — panel attached to the Activity's DecorView
+ * - `dev-overlay-tree.ts` — in-tree toast chip, the fallback when neither
+ *   native backend can be built
  */
 
-import { DEFAULT_SNAPSHOT, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, type HmrBootStage, type HmrConnectionStage, type HmrOverlayPosition, type HmrOverlaySnapshot, type HmrOverlayStageInfo, type HmrUpdateStage } from './dev-overlay-snapshots.js';
+import { DEFAULT_SNAPSHOT, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, type HmrConnectionStage, type HmrOverlayPosition, type HmrOverlaySnapshot, type HmrOverlayStageInfo, type HmrUpdateStage } from './dev-overlay-snapshots.js';
 import { getHmrDevOverlayPosition, getOverlayGlobal, getRuntimeState, type HmrOverlayRuntimeState } from './dev-overlay-shared.js';
-import { applySnapshotToBootRefs, applySnapshotToLiveRefs, buildBootOverlayRefs, ensureLiveOverlayRefs, updateBootStatusLabel } from './dev-overlay-tree.js';
+import { applySnapshotToLiveRefs, ensureLiveOverlayRefs } from './dev-overlay-tree.js';
 import { applySnapshotToIosRefs, ensureIosOverlayRefs, getIosOverlayHost } from './dev-overlay-ios.js';
 import { applySnapshotToAndroidRefs, ensureAndroidOverlayRefs, getAndroidOverlayHost } from './dev-overlay-android.js';
 import { resolveOverlayEnabled } from './overlay-flag.js';
@@ -19,8 +20,8 @@ import { nsDev } from './dev-globals.js';
 
 // Re-export the snapshot model and backend pure helpers so existing
 // `./dev-overlay.js` importers keep working.
-export { createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot } from './dev-overlay-snapshots.js';
-export type { HmrBootStage, HmrConnectionStage, HmrOverlayAction, HmrOverlayPosition, HmrOverlaySnapshot, HmrOverlayStageInfo, HmrUpdateStage } from './dev-overlay-snapshots.js';
+export { createConnectionOverlaySnapshot, createUpdateOverlaySnapshot } from './dev-overlay-snapshots.js';
+export type { HmrConnectionStage, HmrOverlayAction, HmrOverlayPosition, HmrOverlaySnapshot, HmrOverlayStageInfo, HmrUpdateStage } from './dev-overlay-snapshots.js';
 export { getHmrDevOverlayPosition } from './dev-overlay-shared.js';
 export { computeAndroidToastMargin } from './dev-overlay-tree.js';
 export type { AndroidSafeAreaInsets, AndroidToastMargin } from './dev-overlay-tree.js';
@@ -30,8 +31,6 @@ export type { AndroidOverlayHost, AndroidPanelLayout } from './dev-overlay-andro
 export type { IosOverlayLayout, IosRect, IosSafeInsets } from './dev-overlay-ios.js';
 
 export type HmrOverlayApi = {
-	ensureBootPage: (verbose?: boolean) => any | null;
-	setBootStage: (stage: HmrBootStage, info?: HmrOverlayStageInfo) => HmrOverlaySnapshot;
 	setConnectionStage: (stage: HmrConnectionStage, info?: HmrOverlayStageInfo) => HmrOverlaySnapshot;
 	// Drive the HMR-applying progress overlay. Callers (e.g., the
 	// angular client) walk: received → evicting → reimporting →
@@ -63,11 +62,6 @@ export function setHmrDevOverlayPosition(position: HmrOverlayPosition): void {
 function applyRuntimeSnapshot(snapshot: HmrOverlaySnapshot): HmrOverlaySnapshot {
 	const state = getRuntimeState();
 	state.snapshot = snapshot;
-	// Update the boot status label created by root-placeholder.ts
-	if (snapshot.mode === 'boot') {
-		updateBootStatusLabel(snapshot);
-	}
-	applySnapshotToBootRefs(state.bootRefs, snapshot);
 
 	// prefer the dedicated UIWindow
 	// path so the live/update overlays always stack on top of modals,
@@ -75,9 +69,7 @@ function applyRuntimeSnapshot(snapshot: HmrOverlaySnapshot): HmrOverlaySnapshot 
 	// iOS APIs aren't available (Android, tests, or when scene
 	// construction fails).
 	let handledByIos = false;
-	// Both 'connection' and 'update' use the small-panel surface
-	// (UIWindow on iOS, in-tree overlay everywhere else). 'boot' uses
-	// the placeholder root via applySnapshotToBootRefs above; 'hidden'
+	// Both 'connection' and 'update' use the small-panel surface; 'hidden'
 	// hides everything.
 	const wantsOverlay = snapshot.visible && (snapshot.mode === 'connection' || snapshot.mode === 'update');
 	if (getIosOverlayHost()) {
@@ -187,36 +179,6 @@ function logUpdateStageTransition(state: HmrOverlayRuntimeState, stage: HmrUpdat
 
 function createOverlayApi(): HmrOverlayApi {
 	return {
-		ensureBootPage(verbose?: boolean) {
-			const state = getRuntimeState();
-			state.verbose = state.verbose || !!verbose;
-			if (!state.snapshot.visible || state.snapshot.mode !== 'boot') {
-				state.snapshot = createBootOverlaySnapshot('placeholder');
-			}
-			if (!state.bootRefs) {
-				state.bootRefs = buildBootOverlayRefs(state.snapshot);
-			}
-			applySnapshotToBootRefs(state.bootRefs, state.snapshot);
-			return state.bootRefs?.page || null;
-		},
-		setBootStage(stage: HmrBootStage, info?: HmrOverlayStageInfo) {
-			// A boot transition cancels any pending HMR auto-hide so
-			// the boot phase always wins.
-			const state = getRuntimeState();
-			clearUpdateAutoHideTimer(state);
-			state.updateCycleStartedAt = 0;
-			const next = createBootOverlaySnapshot(stage, info);
-			// Monotonic boot-progress ratchet: boot stages can fire out of
-			// order across boot paths (JS session bootstrap vs the
-			// http-bootloader fallback) and individual bases were tuned
-			// independently, so clamp boot→boot transitions to never go
-			// backwards. Non-boot snapshots (error/ready) bypass — they
-			// genuinely want to reset the visual.
-			if (next.mode === 'boot' && state.snapshot.mode === 'boot' && typeof next.progress === 'number' && typeof state.snapshot.progress === 'number' && next.progress < state.snapshot.progress) {
-				next.progress = state.snapshot.progress;
-			}
-			return applyRuntimeSnapshot(next);
-		},
 		setConnectionStage(stage: HmrConnectionStage, info?: HmrOverlayStageInfo) {
 			const state = getRuntimeState();
 			if (state.restartRequired) return state.snapshot;
@@ -282,19 +244,11 @@ function createOverlayApi(): HmrOverlayApi {
 	};
 }
 
-// When the overlay is opted out, every surface (boot / connection / update / pending)
-// becomes a no-op so nothing is ever drawn. The boot placeholder root and the
-// boot-complete signal are owned by `root-placeholder.ts` and are
-// unaffected, so boot + HMR keep working — the user just sees no progress UI.
+// When the overlay is opted out, every surface becomes a no-op so nothing is
+// ever drawn; boot and HMR keep working, the user just sees no progress UI.
 function createNoopOverlayApi(): HmrOverlayApi {
 	const snapshot = () => getRuntimeState().snapshot;
 	return {
-		ensureBootPage() {
-			return null;
-		},
-		setBootStage() {
-			return snapshot();
-		},
 		setConnectionStage() {
 			return snapshot();
 		},
@@ -316,14 +270,6 @@ export function ensureHmrDevOverlayRuntimeInstalled(verbose?: boolean): HmrOverl
 		dev.overlay = resolveOverlayEnabled() ? createOverlayApi() : createNoopOverlayApi();
 	}
 	return dev.overlay;
-}
-
-export function createHmrBootOverlayPage(verbose?: boolean): any | null {
-	return ensureHmrDevOverlayRuntimeInstalled(verbose).ensureBootPage(verbose);
-}
-
-export function setHmrBootStage(stage: HmrBootStage, info?: HmrOverlayStageInfo): HmrOverlaySnapshot {
-	return ensureHmrDevOverlayRuntimeInstalled().setBootStage(stage, info);
 }
 
 export function setHmrConnectionStage(stage: HmrConnectionStage, info?: HmrOverlayStageInfo): HmrOverlaySnapshot {

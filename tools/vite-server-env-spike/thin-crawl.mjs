@@ -115,7 +115,9 @@ const local = `http://localhost:${server.config.server.port}`;
 const graph = server.environments.client.moduleGraph;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const session = await (await fetch(`${local}/__ns_dev__/session`)).json();
+// The session descriptor and the loader config are served as modules (`export default {…};`).
+const fetchModuleJson = async (url) => JSON.parse((await (await fetch(url)).text()).replace(/^export default /, '').replace(/;\s*$/, ''));
+const session = await fetchModuleJson(`${local}/__ns_dev__/session.mjs`);
 const deviceOrigin = new URL(session.entryUrl).origin;
 const sessionFailures = [];
 for (const key of ['entryUrl', 'clientUrl', 'runtimeConfigUrl']) {
@@ -131,7 +133,7 @@ const toLocal = (url) => {
 
 const mapUrl = session.runtimeConfigUrl;
 crawlPhase = 'import-map (start)';
-const runtimeConfig = await (await fetch(toLocal(mapUrl))).json();
+const runtimeConfig = await fetchModuleJson(toLocal(mapUrl));
 crawlPhase = 'crawl';
 const importMap = runtimeConfig.importMap ?? {};
 
@@ -831,7 +833,7 @@ const optimizer = {
 };
 
 crawlPhase = 'import-map (end)';
-const mapAtEnd = (await (await fetch(toLocal(mapUrl))).json()).importMap ?? {};
+const mapAtEnd = (await fetchModuleJson(toLocal(mapUrl))).importMap ?? {};
 crawlPhase = 'done';
 optimizer.endAfterMap = await settledOptimizerState();
 const importMapDiff = [];

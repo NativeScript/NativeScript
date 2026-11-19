@@ -113,7 +113,7 @@ describe('getDevOptimizeDeps', () => {
 		const core = path.join(root, 'core-src');
 		for (const file of ['index.ts', 'globals/index.ts', 'application/index.ios.ts', 'application/index.android.ts', 'bundle-entry-points.ts', 'inspector_modules.ts']) write(path.join(core, file));
 		const nsVite = path.join(nm, '@nativescript/vite');
-		for (const file of ['runtime/core-aliases-early.js', 'hmr/shared/runtime/root-placeholder.js', 'hmr/shared/runtime/session-bootstrap.js', 'hmr/shared/runtime/launch-bridge.js', 'hmr/shared/runtime/dev-globals.js']) write(path.join(nsVite, file));
+		for (const file of ['runtime/core-aliases-early.js', 'hmr/shared/runtime/session-bootstrap.js', 'hmr/shared/runtime/dev-globals.js']) write(path.join(nsVite, file));
 
 		process.chdir(root);
 		vi.resetModules();
@@ -122,24 +122,7 @@ describe('getDevOptimizeDeps', () => {
 
 		expect(deps.exclude).toEqual(['@nativescript/core', '@nativescript/vite', 'set-value', 'module', 'node:module', 'linked-lib', 'linked-tool', 'ns-plugin', '@valor/nativescript-websockets']);
 		expect(deps.include).toEqual(['cjs-lib']);
-		expect(deps.entries).toEqual([
-			'src/main.ts',
-			'src/polyfills.ts',
-			'src/pages/home.ts',
-			'core-src/globals/index.ts',
-			'core-src/application/index.ios.ts',
-			'node_modules/@nativescript/vite/runtime/core-aliases-early.js',
-			'node_modules/@nativescript/vite/hmr/shared/runtime/root-placeholder.js',
-			'core-src/bundle-entry-points.ts',
-			'node_modules/@valor/nativescript-websockets/index.js',
-			'node_modules/@nativescript/vite/hmr/shared/runtime/session-bootstrap.js',
-			'core-src/inspector_modules.ts',
-			'node_modules/@nativescript/vite/hmr/shared/runtime/launch-bridge.js',
-			'node_modules/@nativescript/vite/hmr/shared/runtime/dev-globals.js',
-			'core-src/index.ts',
-			'node_modules/linked-lib/index.js',
-			'node_modules/ns-plugin/index.ios.js',
-		]);
+		expect(deps.entries).toEqual(['src/main.ts', 'src/polyfills.ts', 'src/pages/home.ts', 'core-src/globals/index.ts', 'core-src/application/index.ios.ts', 'node_modules/@nativescript/vite/runtime/core-aliases-early.js', 'core-src/bundle-entry-points.ts', 'node_modules/@valor/nativescript-websockets/index.js', 'node_modules/@nativescript/vite/hmr/shared/runtime/session-bootstrap.js', 'core-src/inspector_modules.ts', 'node_modules/@nativescript/vite/hmr/shared/runtime/dev-globals.js', 'core-src/index.ts', 'node_modules/linked-lib/index.js', 'node_modules/ns-plugin/index.ios.js']);
 	});
 
 	it('pre-bundles the third-party imports of served linked and platform-main packages at scan time', async () => {

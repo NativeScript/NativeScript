@@ -1,282 +1,130 @@
-import { assertNsDevSessionDescriptor, type NsDevSessionDescriptor, type NsRuntimeDevHostApi } from './browser-runtime-contract.js';
+import { Application } from '@nativescript/core/application';
+import { assertNsDevSessionDescriptor, type NsDevSessionDescriptor, type NsRuntimeConfigurePayload, type NsRuntimeDevHostApi } from './browser-runtime-contract.js';
 import { loadNsRuntimeDevHostApi } from './runtime-host.js';
-import { ensureHmrDevOverlayRuntimeInstalled, setHmrBootStage } from './dev-overlay.js';
+import { ensureHmrDevOverlayRuntimeInstalled } from './dev-overlay.js';
 import { formatBootTimeline, type BootTrace } from './boot-timeline.js';
-import { applyMonotonicBootProgress, BOOT_IMPORT_DETAIL, clearBootProgressState, computeBootImportProgress } from './boot-progress.js';
-import { getGlobalScope } from './global-scope.js';
 import { nsDev } from './dev-globals.js';
-import { restorePlaceholder } from './placeholder-hooks.js';
 
-let importMapConfigured = false;
+/** Where the dev boot module loads the session from; both are served as modules. */
+export interface DevSessionUrls {
+	sessionUrl: string;
+	importMapUrl: string;
+}
+
+/** Why the dev boot failed before the app entry launched the app; `bundle.mjs` shows it. */
+export interface DevBootFailure {
+	message: string;
+	stack?: string;
+}
+
+export interface BrowserRuntimeSessionDeps {
+	importModule?: (url: string) => Promise<unknown>;
+}
 
 function describeError(error: unknown) {
-	if (error instanceof Error) {
-		return error.message;
-	}
-
-	return String(error);
+	return error instanceof Error ? error.message : String(error);
 }
 
-// Cold-boot module-load progress heartbeat.
-//
-// The entry `import()` synchronously walks the module graph over HTTP.
-// The iOS runtime's `MaybePumpJSThreadDuringBoot`
-// (`HMRSupport.mm`) gives the JS-thread CFRunLoop a 1 ms slice between
-// fetches so this 250 ms `setInterval` can fire and repaint the bar.
-//
-// Drives the bar from elapsed wall-clock time through
-// `computeBootImportProgress` + `applyMonotonicBootProgress` and
-// re-asserts `'importing-main'` so only the progress changes.
-//
-// Stopped in the caller's `finally` so it never races past
-// `'waiting-for-app'` or stomps an `'error'` frame.
-function startBootImportHeartbeat(startedAt: number, verbose?: boolean): () => void {
-	let timer: ReturnType<typeof setInterval> | null = null;
-	let stopped = false;
-	try {
-		timer = setInterval(() => {
-			if (stopped) {
-				return;
-			}
-			if (nsDev().bootComplete) {
-				return;
-			}
-			try {
-				const progress = applyMonotonicBootProgress(computeBootImportProgress(Date.now() - startedAt));
-				setHmrBootStage('importing-main', { detail: BOOT_IMPORT_DETAIL, progress });
-			} catch (heartbeatErr) {
-				if (verbose) {
-					console.warn('[ns-entry] boot-progress heartbeat tick failed', heartbeatErr);
-				}
-			}
-		}, 250);
-	} catch (intervalErr) {
-		if (verbose) {
-			console.warn('[ns-entry] boot-progress heartbeat unavailable (setInterval threw)', intervalErr);
-		}
-		return () => {};
-	}
-	return () => {
-		stopped = true;
-		if (timer) {
-			try {
-				clearInterval(timer);
-			} catch {}
-			timer = null;
-		}
-	};
-}
-
-function getSessionUrl(defaultSessionUrl: string) {
-	try {
-		const origin = nsDev().httpOrigin;
-		if (typeof origin === 'string' && /^https?:\/\//.test(origin)) {
-			return `${origin.replace(/\/$/, '')}/__ns_dev__/session`;
-		}
-	} catch {}
-
-	return defaultSessionUrl;
-}
-
-function getRuntimeConfigUrl(session: NsDevSessionDescriptor) {
-	if (typeof session.runtimeConfigUrl === 'string' && session.runtimeConfigUrl) {
-		return session.runtimeConfigUrl;
-	}
-
-	return `${session.origin.replace(/\/$/, '')}/__ns_dev__/import-map.json`;
-}
-
-async function configureLoaderImportMap(runtimeConfigUrl: string, runtimeApi: NsRuntimeDevHostApi, verbose?: boolean) {
+function configureLoaderImportMap(config: NsRuntimeConfigurePayload, runtimeApi: NsRuntimeDevHostApi) {
 	const configureLoader = runtimeApi.configureLoader;
 	if (typeof configureLoader !== 'function') {
-		// NOT verbose-gated on purpose. Without the import map, bare specifiers
-		// the device resolves at runtime are unresolvable, which surfaces far
-		// from its cause. Surface the contract violation loudly with the
-		// remediation, then continue so file-based flows still work.
+		// Not verbose-gated: without the import map every bare specifier the
+		// device resolves at runtime fails, far from this cause.
 		console.error('[ns-entry] ns:module configureLoader is unavailable — the import map cannot be installed and bare-specifier imports WILL fail. Update @nativescript/ios to a runtime that provides the ns:module builtin module.');
-		setHmrBootStage('configuring-import-map', {
-			detail: 'runtime configure hook unavailable — import map skipped (bare imports will fail)',
-		});
 		return;
 	}
-
-	// The first configure wins; later calls short-circuit (saves one extra
-	// fetch per boot).
-	if (importMapConfigured) {
-		if (verbose) {
-			console.info('[ns-entry] import map already configured by an earlier boot stage; skipping fetch', {
-				importMapUrl: runtimeConfigUrl,
-			});
-		}
-		return;
-	}
-
-	setHmrBootStage('configuring-import-map', {
-		detail: runtimeConfigUrl,
-	});
-
-	const response = await fetch(runtimeConfigUrl);
-	if (!response.ok) {
-		throw new Error(`NativeScript import map fetch failed: ${response.status}`);
-	}
-
-	const config = await response.json();
 	if (!config || typeof config !== 'object' || !config.importMap || typeof config.importMap !== 'object') {
 		throw new Error('Invalid NativeScript import map payload');
 	}
-
 	configureLoader({
 		importMap: config.importMap,
 		volatilePatterns: Array.isArray(config.volatilePatterns) ? config.volatilePatterns : [],
-		// The canonicalization vocabulary (which query params are cache
-		// busters, which path prefixes are dev endpoints, which paths keep
-		// their query verbatim) is server policy — pass it through so the
-		// runtime carries no URL vocabulary of its own. Runtimes that predate
-		// the field ignore it.
+		// The canonicalization vocabulary is server policy; runtimes that
+		// predate the field ignore it.
 		...(config.canonicalization && typeof config.canonicalization === 'object' ? { canonicalization: config.canonicalization } : {}),
 	});
-	importMapConfigured = true;
+}
 
-	if (verbose) {
-		console.info('[ns-entry] import map configured', {
-			entries: Object.keys(config.importMap?.imports || {}).length,
-			importMapUrl: runtimeConfigUrl,
-		});
+function stamp(verbose: boolean | undefined, phase: string): void {
+	if (verbose) console.info(`[ns-entry] ${phase} t=${Date.now()}`);
+}
+
+// Boot completes once the app has launched. On iOS that is after
+// `UIApplicationMain` took over, on Android `run` returns first: neither
+// ordering is assumed. Returns a function that cancels it.
+function completeBootOnLaunch(verbose?: boolean): () => void {
+	const app: any = Application;
+	let done = false;
+	const complete = () => {
+		if (done) return;
+		done = true;
+		setTimeout(() => {
+			nsDev().bootComplete = true;
+		}, 0);
+	};
+	if (typeof app.hasLaunched === 'function' && app.hasLaunched()) {
+		complete();
+		return () => {};
 	}
+	const onLaunch = () => {
+		stamp(verbose, 'launch event');
+		app.off(app.launchEvent, onLaunch);
+		complete();
+	};
+	app.on(app.launchEvent, onLaunch);
+	return () => app.off(app.launchEvent, onLaunch);
 }
 
-async function prepareRuntimeForSession(session: NsDevSessionDescriptor, runtimeApi: NsRuntimeDevHostApi, verbose?: boolean) {
-	await configureLoaderImportMap(getRuntimeConfigUrl(session), runtimeApi, verbose);
-}
-
-// Dynamic import with an overridable seam: hosts/tests can install
-// `__NS_HMR_IMPORT__` to observe or stub the module loads; otherwise this is
-// a plain dynamic `import()` through the runtime's HTTP ESM loader.
-function importModule(url: string): Promise<unknown> {
-	const g: any = getGlobalScope();
-	if (typeof g.__NS_HMR_IMPORT__ === 'function') {
-		return g.__NS_HMR_IMPORT__(url);
-	}
-	return import(/* @vite-ignore */ url);
-}
-
-// Session globals — plain JS policy; the native runtime writes none of
-// these.
-function applyDevSessionGlobals(session: NsDevSessionDescriptor) {
-	nsDev().httpOrigin = session.origin;
-}
-
-export async function startBrowserRuntimeSession(defaultSessionUrl: string, verbose?: boolean) {
+/**
+ * Boots the dev session: loads the session descriptor and the loader config,
+ * installs the import map, imports the dev client, then the app entry, whose
+ * own `Application.run` launches the app as in release.
+ *
+ * Never rejects: a rejected main module is fatal on iOS, even after `run`.
+ * Resolves the failure when the boot failed before the entry called `run`,
+ * so the caller can launch something that shows it.
+ */
+export async function startBrowserRuntimeSession(urls: DevSessionUrls, verbose?: boolean, deps: BrowserRuntimeSessionDeps = {}): Promise<DevBootFailure | undefined> {
+	const importModule = deps.importModule ?? ((url: string) => import(/* @vite-ignore */ url));
 	ensureHmrDevOverlayRuntimeInstalled(verbose);
-	const sessionUrl = getSessionUrl(defaultSessionUrl);
-	setHmrBootStage('probing-origin', {
-		detail: sessionUrl,
-	});
-
-	if (verbose) {
-		console.info('[ns-entry] starting browser runtime session', { sessionUrl });
-	}
-
-	// Boot timeline for the JS-orchestrated dev-session boot.
 	const trace: BootTrace = { t0: Date.now() };
-
+	stamp(verbose, 'session start');
+	let cancelBootComplete = () => {};
 	try {
-		const tSession = Date.now();
-		const response = await fetch(sessionUrl);
-		if (!response.ok) {
-			throw new Error(`NativeScript dev session fetch failed: ${response.status}`);
-		}
-
-		const session = (await response.json()) as NsDevSessionDescriptor;
+		// Modules, not `fetch`: the local main module's settle window services
+		// module fetches but not the run loop `fetch` completes on.
+		const [sessionModule, configModule] = (await Promise.all([importModule(urls.sessionUrl), importModule(urls.importMapUrl)])) as [{ default: NsDevSessionDescriptor }, { default: NsRuntimeConfigurePayload }];
+		const session = sessionModule.default;
 		assertNsDevSessionDescriptor(session);
-		trace.session = { ok: true, ms: Date.now() - tSession, meta: { sessionId: session.sessionId } };
-
-		if (verbose) {
-			console.info('[ns-entry] browser runtime session descriptor received', {
-				sessionId: session.sessionId,
-				origin: session.origin,
-				clientUrl: session.clientUrl,
-				entryUrl: session.entryUrl,
-				wsUrl: session.wsUrl,
-			});
-		}
-
-		const runtimeApi = await loadNsRuntimeDevHostApi();
+		trace.session = { ok: true, ms: Date.now() - trace.t0, meta: { sessionId: session.sessionId } };
 
 		const tImap = Date.now();
-		const alreadyConfigured = importMapConfigured;
-		await prepareRuntimeForSession(session, runtimeApi, verbose);
-		// Skip the import-map segment when an earlier stage already did
-		// the work (dedup path returns instantly with no I/O).
-		if (!alreadyConfigured) {
-			trace.importMap = { ok: true, ms: Date.now() - tImap };
-		}
+		configureLoaderImportMap(configModule.default, await loadNsRuntimeDevHostApi());
+		trace.importMap = { ok: true, ms: Date.now() - tImap };
+		nsDev().httpOrigin = session.origin;
+		stamp(verbose, 'session ready');
 
-		// Session globals. `setDevBootComplete` only exists on runtimes that
-		// still let the client arm their cold-boot gate; current runtimes derive
-		// that window natively and expose no such member.
-		applyDevSessionGlobals(session);
-		try {
-			runtimeApi.setDevBootComplete?.(false);
-		} catch {}
-
-		setHmrBootStage('loading-client', {
-			detail: session.clientUrl,
-		});
-
-		setHmrBootStage('importing-main', {
-			detail: session.entryUrl,
-		});
-		// A re-bootstrapped session starts a fresh progress ratchet.
-		clearBootProgressState();
 		const tBoot = Date.now();
-		const stopBootImportHeartbeat = startBootImportHeartbeat(tBoot, verbose);
-		try {
-			// No prewarm/seeding phase: the runtime's async module-graph walk
-			// discovers and fetches the transitive closure itself (concurrent
-			// NSURLSession fetches overlapped with on-device compile), which
-			// measured faster than any server-computed closure/archive seeding.
-			// The dev client bootstrap runs first: it installs what must
-			// precede app code (launch-notification bridge, bundled app.css).
-			if (verbose) {
-				console.info('[ns-entry] importing dev client + entry', {
-					clientUrl: session.clientUrl,
-					entryUrl: session.entryUrl,
-				});
-			}
-			await importModule(session.clientUrl);
-			await importModule(session.entryUrl);
-		} finally {
-			stopBootImportHeartbeat();
-		}
+		// The dev client goes first: it schedules the HMR client for after launch.
+		await importModule(session.clientUrl);
+		cancelBootComplete = completeBootOnLaunch(verbose);
+		stamp(verbose, 'importing entry');
+		await importModule(session.entryUrl);
 		trace.entry = { ok: true, ms: Date.now() - tBoot };
-		setHmrBootStage('waiting-for-app', {
-			detail: 'The deterministic NativeScript dev session is active. Waiting for the real app root to replace the boot placeholder.',
-		});
-		try {
-			restorePlaceholder('session-active');
-		} catch {}
-		if (verbose) {
-			console.info('[ns-entry] browser runtime session active; waiting for real app root commit', {
-				sessionId: session.sessionId,
-				origin: session.origin,
-				clientUrl: session.clientUrl,
-				entryUrl: session.entryUrl,
-			});
-		}
+		stamp(verbose, 'entry evaluated');
+		return undefined;
 	} catch (error) {
 		trace.error = { message: describeError(error) };
-		setHmrBootStage('error', {
-			detail: describeError(error),
-		});
-		if (verbose) {
-			console.error('[ns-entry] browser runtime session failed', error instanceof Error && error.stack ? error.stack : error);
-		}
-		throw error;
+		console.error('[ns-entry] dev boot failed', error instanceof Error && error.stack ? error.stack : error);
+		// The entry already launched the app; it reports its own errors from here.
+		if ((Application as any).started) return undefined;
+		// The fallback screen launches the app without the entry: core's launch
+		// event still fires, and an HMR client started then would apply updates
+		// to an app that never booted.
+		cancelBootComplete();
+		return { message: describeError(error), stack: error instanceof Error ? error.stack : undefined };
 	} finally {
 		trace.t1 = Date.now();
-		if (verbose) {
-			console.info(formatBootTimeline(trace));
-		}
+		if (verbose) console.info(formatBootTimeline(trace));
 	}
 }

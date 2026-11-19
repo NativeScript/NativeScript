@@ -8,7 +8,9 @@ import { buildRuntimeConfig } from './import-map.js';
 import { getServerOrigin } from './server-origin.js';
 import { viteUrlForFile } from './vite-url.js';
 
-export const IMPORT_MAP_PATH = '/__ns_dev__/import-map.json';
+import { IMPORT_MAP_PATH } from './dev-routes.js';
+
+export { IMPORT_MAP_PATH };
 
 /**
  * Device import map: each bare specifier points at the URL Vite's import
@@ -135,9 +137,10 @@ export function registerImportMapRoute(server: ViteDevServer, options: RegisterI
 
 			const importMap = { imports: await buildImportMap(server, runtimeConfig.specifiers, origin, { verbose }) };
 
-			res.setHeader('Content-Type', 'application/json');
+			// A module, so the device loads it through the module loader during boot.
+			res.setHeader('Content-Type', 'application/javascript');
 			res.end(
-				JSON.stringify(
+				`export default ${JSON.stringify(
 					{
 						importMap,
 						volatilePatterns: runtimeConfig.volatilePatterns,
@@ -145,11 +148,12 @@ export function registerImportMapRoute(server: ViteDevServer, options: RegisterI
 					},
 					null,
 					2,
-				),
+				)};\n`,
 			);
 		} catch (err: any) {
 			console.error('[import-map] error generating import map:', err?.message || err);
 			res.statusCode = 500;
+			res.setHeader('Content-Type', 'application/json');
 			res.end(JSON.stringify({ error: 'Failed to generate import map' }));
 		}
 	});

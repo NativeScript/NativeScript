@@ -6,7 +6,7 @@ import { createNsDevClientModuleCode } from '../hmr/server/vite-plugin.js';
 import { listBundlerContextCodeFiles, shouldExcludePlatformFile, walkAppFiles } from './bundler-context.js';
 import { generateDevBootCode } from './main-entry.js';
 import { findPackageInNodeModules } from './module-resolution.js';
-import { isExcludedSpecifier, NS_OPTIMIZE_DEPS_EXCLUDE } from './optimize-deps.js';
+import { getNsOptimizeDepsExclude, isExcludedSpecifier, NS_OPTIMIZE_DEPS_EXCLUDE } from './optimize-deps.js';
 import type { Platform } from './platform-types.js';
 import { getLinkedDependencyNames, getPackageJson, getProjectFilePath } from './project.js';
 import { resolveMainFieldPlatformVariant } from './resolve-main-field-platform.js';
@@ -123,7 +123,7 @@ export interface DevOptimizeDepsOptions {
 /**
  * The dev server's `optimizeDeps` lists.
  *
- * - `exclude`: {@link NS_OPTIMIZE_DEPS_EXCLUDE}, every linked dependency and
+ * - `exclude`: {@link getNsOptimizeDepsExclude}, every linked dependency and
  *   every platform-main package ({@link getPlatformMainPackageNames}). With
  *   `preserveSymlinks` a linked package's files sit under `node_modules`, so
  *   Vite would pre-bundle it, or inline it into another pre-bundle, instead
@@ -158,13 +158,18 @@ export function getDevOptimizeDeps(opts: DevOptimizeDepsOptions): { entries: str
 
 	const declared = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'].flatMap((section) => Object.keys(pkg[section] ?? {}));
 	const servedPackages = [...new Set([...getLinkedDependencyNames(projectRoot), ...getPlatformMainPackageNames(new Set([...declared, ...bootBare.map(packageNameOf)]), projectRoot, platform)])];
-	const exclude = [...new Set([...NS_OPTIMIZE_DEPS_EXCLUDE, ...servedPackages])];
+	const coreDir = opts.packageDirs?.['@nativescript/core'] ?? findPackageInNodeModules('@nativescript/core', projectRoot);
+	// `resolve.alias` resolves core ahead of the package resolvers, so its extensionless `main` doesn't make it platform-main.
+	const exclude = [...new Set([...getNsOptimizeDepsExclude(coreDir), ...servedPackages.filter((name) => !isExcludedSpecifier(name, NS_OPTIMIZE_DEPS_EXCLUDE))])];
 	const runtimePackages = new Set([...Object.keys(pkg.dependencies ?? {}), ...bootBare.map(packageNameOf)]);
 
 	const strategy = getFrameworkServerStrategy(flavor);
 	const strategySpecifiers = new Set(strategy?.importMapSpecifiers?.() ?? []);
 	const mapPackages = collectImportMapSpecifiers({ origin: '', flavor, projectRoot, strategy }).filter((spec) => isBareSpecifier(spec) && (strategySpecifiers.has(spec) || hasJavaScriptEntry(spec, projectRoot)));
-	const include = [...new Set([...bootBare, ...mapPackages])].filter((spec) => !isExcludedSpecifier(spec, exclude));
+	// Imported by modules the scanner never reads: `virtual:ns-xhr-polyfill` (a boot import) and the
+	// `require` helper `nsModuleRequirePlugin` injects into served modules.
+	const unscannedImports = ['@nativescript/core/xhr', '@nativescript/core/file-system'];
+	const include = [...new Set([...bootBare, ...unscannedImports, ...mapPackages])].filter((spec) => !isExcludedSpecifier(spec, exclude));
 
 	const mainEntry = getProjectFilePath(pkg.main);
 	const files = [mainEntry, ...bootImports.filter((spec) => spec.startsWith('/')).map((spec) => path.join(projectRoot, spec))];
@@ -172,7 +177,8 @@ export function getDevOptimizeDeps(opts: DevOptimizeDepsOptions): { entries: str
 		const appFiles = walkAppFiles(getProjectAppPath()).filter((f) => !shouldExcludePlatformFile(f, platform));
 		files.push(...listBundlerContextCodeFiles(flavor, appFiles, mainEntry).map((f) => path.resolve(projectRoot, f)));
 	}
-	for (const spec of new Set([...bootBare, ...clientImports.filter(isBareSpecifier)])) {
+	// App code imports core's barrel, which the scanner doesn't follow (core is excluded).
+	for (const spec of new Set([...bootBare, ...clientImports.filter(isBareSpecifier), '@nativescript/core'])) {
 		if (!isExcludedSpecifier(spec, exclude)) continue;
 		const name = packageNameOf(spec);
 		const dir = opts.packageDirs?.[name] ?? findPackageInNodeModules(name, projectRoot);
