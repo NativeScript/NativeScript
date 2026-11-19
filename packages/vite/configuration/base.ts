@@ -295,7 +295,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Ensure explicit keep markers are honored
 			preserveImportsPlugin(),
 			// HMR plugins (source streaming replaces prior exploded source plugin when enabled)
-			...(hmrActive ? [...getHMRPlugins({ platform, flavor, verbose })] : []),
+			...(hmrActive ? [...getHMRPlugins({ platform, flavor, verbose, watchNodeModules: !!cliFlags.watchNodeModules })] : []),
 			// TODO: make flavor plugins dynamic
 			// ...flavorPlugins,
 			...commonjsPlugins,

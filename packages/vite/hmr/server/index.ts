@@ -8,9 +8,9 @@ import { nsRerunPlugin } from './update-gate.js';
 import { nsModuleRequirePlugin } from './module-require.js';
 import { nsPreBundleWatchPlugin } from './prebundle-watch.js';
 
-export function getHMRPlugins(opts: { platform: NsDevPlatform; flavor: string; verbose: boolean }) {
+export function getHMRPlugins(opts: { platform: NsDevPlatform; flavor: string; verbose: boolean; watchNodeModules?: boolean }) {
 	// The app CSS hot-update hook ahead of `nsRerunPlugin`'s: both are `post`,
 	// and the update gate must record the stylesheet's modules, not the ones a
 	// framework hook swapped in.
-	return [nsViteClientPlugin(), nsHmrClientVitePlugin(opts), nsImportMapPlugin(opts), nsAppRestartPlugin(), ...nsAppCssModulePlugins(), nsRerunPlugin(opts), nsEntryBoundaryPlugin(opts), nsModuleRequirePlugin(), nsPreBundleWatchPlugin()].filter((plugin) => !!plugin);
+	return [nsViteClientPlugin(), nsHmrClientVitePlugin(opts), nsImportMapPlugin(opts), nsAppRestartPlugin(), ...nsAppCssModulePlugins(), nsRerunPlugin(opts), nsEntryBoundaryPlugin(opts), nsModuleRequirePlugin(), opts.watchNodeModules && nsPreBundleWatchPlugin()].filter((plugin) => !!plugin);
 }
