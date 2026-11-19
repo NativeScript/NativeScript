@@ -15,7 +15,7 @@ set -euo pipefail
 SPIKE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$SPIKE/../.." && pwd)"
 APP="$SPIKE/apps/ng"
-NS_ANGULAR_DIST="${NS_ANGULAR_DIST:-$HOME/projects/angular/.claude/worktrees/bootstrap-after-launch/dist/packages/angular}"
+NS_ANGULAR_DIST="${NS_ANGULAR_DIST:-$HOME/projects/angular/.claude/worktrees/vite-hmr-compat/dist/packages/angular}"
 LOCAL="$APP/.local"
 mkdir -p "$LOCAL"
 

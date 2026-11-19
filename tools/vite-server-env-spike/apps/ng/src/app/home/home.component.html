@@ -5,4 +5,6 @@
 <StackLayout>
 	<Label [text]="'Hot taps: ' + count()" class="title"></Label>
 	<Button text="Tap" (tap)="tap()"></Button>
+	<Button text="Details 1" nsRouterLink="/details/1"></Button>
+	<Button text="Open dialog" (tap)="openDialog()"></Button>
 </StackLayout>
