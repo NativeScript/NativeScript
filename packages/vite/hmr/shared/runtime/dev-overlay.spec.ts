@@ -538,7 +538,7 @@ describe('HMR apply overlay snapshots', () => {
 
 		const rebooting = createUpdateOverlaySnapshot('rebooting');
 		expect(rebooting.progress).toBe(90);
-		expect(rebooting.phase).toBe('Reloading app');
+		expect(rebooting.phase).toBe('Rebooting app');
 		expect(rebooting.tone).toBe('success');
 	});
 

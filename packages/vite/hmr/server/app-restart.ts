@@ -1,6 +1,5 @@
 import type { EnvironmentModuleNode, HotUpdateOptions, Plugin, ViteDevServer } from 'vite';
 import * as path from 'path';
-import { isAppOwnedViteUrl } from '../shared/app-owned.js';
 import { NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT, type RestartEventData } from '../shared/protocol.js';
 import { viteUrlForFile } from './thin/thin-mode.js';
 import { resolveNonEvictableViteUrlPrefixes } from './vite-plugin.js';
@@ -21,7 +20,7 @@ export const NATIVESCRIPT_RESTART_MESSAGE_TYPE = 'nativescript:restart';
 export interface AppRestartRequesterOptions {
 	/** The parent's IPC channel (`process.send`), absent when the CLI spawned the server without one. */
 	send?: ((message: NativeScriptRestartMessage) => unknown) | undefined;
-	/** Tells connected devices a restart is required (no CLI to perform it). */
+	/** Tells connected devices a restart is required. */
 	notifyDevices(data: RestartEventData): void;
 	log(message: string): void;
 	/** Requests within this window collapse into one restart. */
@@ -44,14 +43,14 @@ export function createAppRestartRequester(options: AppRestartRequesterOptions): 
 		timer = undefined;
 		if (!reasons.length) return;
 		const reason = reasons.splice(0).join('; ');
+		// The device stops applying updates either way, and gets to run its
+		// `nativescript:beforeRestart` listeners before the CLI replaces it.
+		options.notifyDevices({ reason });
 		if (options.send) {
 			options.send({ type: NATIVESCRIPT_RESTART_MESSAGE_TYPE, reason });
 			return;
 		}
-		// No CLI to restart the app: say so, and leave the device as it is
-		// rather than soft-reloading it into a half-applied state.
 		options.log(`[NativeScript] restart the app to apply: ${reason}`);
-		options.notifyDevices({ reason });
 	};
 
 	return {
@@ -65,10 +64,25 @@ export function createAppRestartRequester(options: AppRestartRequesterOptions): 
 }
 
 /**
+ * True for a module a soft reboot can re-evaluate. `@nativescript/core` and
+ * other `node_modules` packages evaluate once per process: core re-evaluated
+ * in place would mint a second `View` hierarchy the live native views fail
+ * `instanceof` against. The dev client keeps its identity because it is the
+ * code running the update. `keepPrefixes` are Vite URL prefixes of such
+ * packages served from outside `node_modules` (`/@fs/…`).
+ */
+export function isAppOwnedViteUrl(viteUrl: string, keepPrefixes: readonly string[]): boolean {
+	const path = viteUrl.replace(/[?#].*$/, '');
+	if (!path.startsWith('/') || path.includes('/node_modules/') || path.startsWith('/@vite/')) {
+		return false;
+	}
+	return !keepPrefixes.some((prefix) => path.startsWith(prefix));
+}
+
+/**
  * True when an edit to `file` must restart the app: the device loaded it as
- * JavaScript, and a soft reload would not re-evaluate it (the device's own
- * eviction rule, `isAppOwnedViteUrl`). Pushing Vite's `?t=` update for such a
- * file would instead load a second instance next to the live one.
+ * JavaScript and it evaluates once per process (`isAppOwnedViteUrl`). Vite's
+ * `?t=` update for such a file would load a second instance next to the live one.
  */
 export function needsAppRestartForEdit(file: string, modules: readonly Pick<EnvironmentModuleNode, 'type'>[], root: string, keepPrefixes: readonly string[]): boolean {
 	if (!modules.some((mod) => mod.type === 'js')) return false;

@@ -23,10 +23,10 @@ async function resolveCoreEntryFile(server: ViteDevServer): Promise<string> {
 }
 
 /**
- * Vite URL prefixes of the packages a soft reload never re-evaluates even when
+ * Vite URL prefixes of the packages that evaluate once per process even when
  * they are served from outside `node_modules` (`/@fs/…`): `@nativescript/core`
- * and this package's dev client. The device evicts by them and the server
- * turns edits under them into an app restart (`hmr/shared/app-owned.ts`).
+ * and this package's dev client. An edit under them restarts the app
+ * (`hmr/server/app-restart.ts`).
  */
 export async function resolveNonEvictableViteUrlPrefixes(server: ViteDevServer): Promise<string[]> {
 	const root = server.config.root;
@@ -34,7 +34,7 @@ export async function resolveNonEvictableViteUrlPrefixes(server: ViteDevServer):
 	return [`${viteUrlForFile(corePackageDir(coreFile), root)}/`, `${viteUrlForFile(runtimeFile('../../'), root)}/`];
 }
 
-async function resolveThinBootstrapUrls(server: ViteDevServer, origin: string): Promise<{ client: string; moduleUrls: NsDevBootstrapModuleUrls; keepUrlPrefixes: string[] }> {
+async function resolveThinBootstrapUrls(server: ViteDevServer, origin: string): Promise<{ client: string; moduleUrls: NsDevBootstrapModuleUrls }> {
 	const root = server.config.root;
 	const urlFor = (file: string) => thinDeviceUrl(origin, viteUrlForFile(file, root));
 	const coreFile = await resolveCoreEntryFile(server);
@@ -46,7 +46,6 @@ async function resolveThinBootstrapUrls(server: ViteDevServer, origin: string): 
 			launchBridge: urlFor(runtimeFile('../shared/runtime/launch-bridge.js')),
 			coreBridge: urlFor(coreFile),
 		},
-		keepUrlPrefixes: (await resolveNonEvictableViteUrlPrefixes(server)).map((prefix) => thinDeviceUrl(origin, prefix)),
 	};
 }
 
@@ -247,7 +246,6 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 								wsProtocol: session.wsProtocol,
 								entryUrl: session.entryUrl,
 								origin: session.origin,
-								keepUrlPrefixes: thin.keepUrlPrefixes,
 							},
 						});
 						res.setHeader('Content-Type', 'application/javascript; charset=utf-8');

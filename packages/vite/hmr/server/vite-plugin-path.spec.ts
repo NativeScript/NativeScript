@@ -86,7 +86,6 @@ const START = {
 	wsProtocol: 'vite-hmr',
 	entryUrl: `${ORIGIN}/ns/v/src/main.ts`,
 	origin: ORIGIN,
-	keepUrlPrefixes: [`${ORIGIN}/ns/v/node_modules/@nativescript/core/`],
 };
 
 function bootstrapCode(verbose = false) {
@@ -183,7 +182,6 @@ describe('nsHmrClientVitePlugin middleware', () => {
 			wsProtocol: 'vite-hmr',
 			entryUrl: `${SERVER_ORIGIN}/ns/v/src/app.ts`,
 			origin: SERVER_ORIGIN,
-			keepUrlPrefixes: [`${SERVER_ORIGIN}/ns/v/node_modules/@nativescript/core/`, expect.stringMatching(new RegExp(`^${SERVER_ORIGIN}/ns/v/@fs/.*/vite/$`))],
 		});
 	});
 });

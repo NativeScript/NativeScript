@@ -164,25 +164,23 @@ export interface ComponentUpdateRuleContext {
 }
 
 export interface ComponentUpdateRuleResult {
+	/** `null`: don't send it; Vite's own propagation to the entry boundary carries the edit. */
 	payload: unknown;
 }
 
 /**
- * Turns an `angular:component-update` that can't be applied in place into a
- * full reload: the root component hosts `page-router-outlet`, which does not
- * survive `ɵɵreplaceMetadata`, and a class change is never applied by it.
- * Every other payload passes through unchanged.
+ * Drops an `angular:component-update` that can't be applied in place: the root
+ * component hosts `page-router-outlet`, which does not survive
+ * `ɵɵreplaceMetadata`, and a class change is never applied by it. Those edits
+ * reboot the app through the entry boundary instead. Every other payload
+ * passes through unchanged.
  */
 export function applyComponentUpdateRules(payload: unknown, context: ComponentUpdateRuleContext): ComponentUpdateRuleResult {
 	if (!isComponentUpdatePayload(payload)) return { payload };
 	const id = (payload.data as { id?: unknown } | undefined)?.id;
 	const files = componentUpdateIdToFiles(id, context.idBases);
-	const classChanged = files.find((file) => context.hasClassChange(file));
-	if (classChanged) {
-		return { payload: { type: 'full-reload', path: '*', triggeredBy: classChanged } satisfies FullReloadPayload };
-	}
-	if (isRootComponentUpdate(context.root, id, context.idBases)) {
-		return { payload: { type: 'full-reload', path: '*', triggeredBy: files[0] } satisfies FullReloadPayload };
+	if (files.some((file) => context.hasClassChange(file)) || isRootComponentUpdate(context.root, id, context.idBases)) {
+		return { payload: null };
 	}
 	return { payload };
 }

@@ -213,12 +213,17 @@ export class HMRClient {
 		return Promise.allSettled(cbs.map(async (cb) => cb(data)));
 	}
 
-	isDeclined(path: string): boolean {
-		return this.declinedPaths.has(path);
+	/**
+	 * Calls only the `event` listeners registered by the hot contexts of
+	 * `ownerPaths`, once per context, instead of broadcasting.
+	 */
+	async notifyOwnerListeners(event: string, data: unknown, ownerPaths: readonly string[]): Promise<PromiseSettledResult<unknown>[]> {
+		const cbs = Array.from(new Set(ownerPaths)).flatMap((path) => this.ctxToListenersMap.get(path)?.get(event) ?? []);
+		return Promise.allSettled(cbs.map(async (cb) => cb(data)));
 	}
 
-	declinedOwnerPaths(): string[] {
-		return Array.from(this.declinedPaths);
+	isDeclined(path: string): boolean {
+		return this.declinedPaths.has(path);
 	}
 
 	send(payload: unknown): void {
@@ -256,61 +261,6 @@ export class HMRClient {
 				this.dataMap.delete(path);
 				this.declinedPaths.delete(path);
 			});
-		}
-	}
-
-	/** Every owner path that currently has a hot context. */
-	ownerPaths(): string[] {
-		const paths = new Set<string>();
-		for (const map of [this.hotModulesMap, this.disposeMap, this.pruneMap, this.ctxToListenersMap]) {
-			for (const key of map.keys()) paths.add(key);
-		}
-		return Array.from(paths);
-	}
-
-	/**
-	 * Runs the dispose callbacks of `paths` with their `data`; a throwing
-	 * callback doesn't stop the others. Returns the callbacks that failed.
-	 */
-	async disposePaths(paths: string[]): Promise<Array<{ path: string; reason: unknown }>> {
-		const results = await Promise.allSettled(
-			paths.map(async (path) => {
-				const disposer = this.disposeMap.get(path);
-				if (disposer) await disposer(this.dataMap.get(path));
-			}),
-		);
-		const failures: Array<{ path: string; reason: unknown }> = [];
-		results.forEach((result, i) => {
-			if (result.status === 'rejected') {
-				this.logger.error(`dispose of ${paths[i]} failed: ${(result.reason as any)?.message ?? result.reason}`);
-				failures.push({ path: paths[i], reason: result.reason });
-			}
-		});
-		return failures;
-	}
-
-	/**
-	 * Forgets the accept, dispose and prune callbacks and the `on` listeners
-	 * of `paths`, and keeps their `data` so a re-evaluation under the same URL
-	 * reads it back through `hot.data`.
-	 */
-	dropContexts(paths: string[]): void {
-		for (const path of paths) {
-			this.hotModulesMap.delete(path);
-			this.disposeMap.delete(path);
-			this.pruneMap.delete(path);
-			this.declinedPaths.delete(path);
-			const listeners = this.ctxToListenersMap.get(path);
-			if (listeners) {
-				for (const [event, fns] of listeners) {
-					const current = this.customListenersMap.get(event);
-					if (!current) continue;
-					const remaining = current.filter((l) => !fns.includes(l));
-					if (remaining.length) this.customListenersMap.set(event, remaining);
-					else this.customListenersMap.delete(event);
-				}
-				this.ctxToListenersMap.delete(path);
-			}
 		}
 	}
 

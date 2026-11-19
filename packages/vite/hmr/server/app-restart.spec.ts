@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createAppRestartRequester, needsAppRestartForEdit, nsAppRestartPlugin } from './app-restart.js';
+import { createAppRestartRequester, isAppOwnedViteUrl, needsAppRestartForEdit, nsAppRestartPlugin } from './app-restart.js';
 import { NS_RESTART_EVENT } from '../shared/protocol.js';
 
 describe('createAppRestartRequester', () => {
 	beforeEach(() => vi.useFakeTimers());
 	afterEach(() => vi.useRealTimers());
 
-	it('sends one IPC message to the CLI for a burst of requests', () => {
+	it('sends one IPC message to the CLI for a burst of requests, and tells the devices', () => {
 		const send = vi.fn();
 		const notifyDevices = vi.fn();
 		const log = vi.fn();
@@ -19,7 +19,7 @@ describe('createAppRestartRequester', () => {
 		vi.advanceTimersByTime(1);
 		expect(send).toHaveBeenCalledTimes(1);
 		expect(send).toHaveBeenCalledWith({ type: 'nativescript:restart', reason: 'a.js changed; b.js changed' });
-		expect(notifyDevices).not.toHaveBeenCalled();
+		expect(notifyDevices).toHaveBeenCalledWith({ reason: 'a.js changed; b.js changed' });
 		expect(log).not.toHaveBeenCalled();
 	});
 
@@ -41,6 +41,22 @@ describe('createAppRestartRequester', () => {
 		requester.request('x');
 		vi.advanceTimersByTime(10);
 		expect(send).toHaveBeenCalledTimes(2);
+	});
+});
+
+describe('isAppOwnedViteUrl', () => {
+	const keep = ['/@fs/repo/packages/core/'];
+	it.each([
+		['/src/app/home.ts?t=1', true],
+		['/@fs/repo/libs/shared/x.ts', true],
+		['/@id/__x00__virtual:app', true],
+		['/node_modules/@nativescript/core/index.js', false],
+		['/@fs/repo/node_modules/lib/x.js', false],
+		['/@vite/client', false],
+		['/@fs/repo/packages/core/ui/index.ts', false],
+		['relative.ts', false],
+	])('%s → %s', (url, expected) => {
+		expect(isAppOwnedViteUrl(url, keep)).toBe(expected);
 	});
 });
 

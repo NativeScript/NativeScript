@@ -1,11 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import type { Connect, HotUpdateOptions, Plugin } from 'vite';
+import type { Connect, EnvironmentModuleNode, HotUpdateOptions, Plugin } from 'vite';
 import type * as TS from 'typescript';
 import { getPackageJson } from '../../../../helpers/project.js';
 import { getProjectAppPath, getProjectAppRelativePath } from '../../../../helpers/utils.js';
 import { resolveBootstrapRootComponent } from './angular-root-component.js';
+import { resolveProjectMainEntryPath } from '../../../server/vite-plugin.js';
 import { ANGULAR_INVALIDATE_EVENT, applyComponentUpdateRules, ComponentUpdateLedger, hasOnlyHmrMetadataChanges, isComponentUpdatePayload, NG_COMPONENT_NO_UPDATE_MODULE, normalizeWsSendArgs, parseNgComponentRequest, toPosixPath, type FullReloadPayload, type RootComponentFile } from './hmr-payload-rules.js';
 
 const COMPONENT_DECORATOR_RE = /@Component\b/;
@@ -46,6 +47,8 @@ export interface AngularHmrRulesState {
 	getRoot(): RootComponentFile | null;
 	stale: StaleComponentClasses;
 	sentUpdates: ComponentUpdateLedger;
+	/** Vite URL of the app entry, the soft-reboot boundary. */
+	entryUrl?: string;
 	warn?(message: string): void;
 }
 
@@ -64,17 +67,18 @@ export function installAngularHmrRules(channel: HotChannelLike, state: AngularHm
 	channel.send = (...args: any[]) => {
 		const payload = normalizeWsSendArgs(args);
 		const result = applyComponentUpdateRules(payload, { idBases: state.idBases, root: state.getRoot(), hasClassChange: (file) => state.stale.has(file) });
-		// The device skips `.html`-path reloads (no HTML page), so only a page reload refreshes every class.
-		if (isPageReload(result.payload)) state.stale.clear();
+		// The entry update re-evaluates every edited class; Analog flushes its
+		// component updates before Vite's update, so they were judged already.
+		if (isPageReload(payload) || isEntryUpdate(payload, state.entryUrl)) state.stale.clear();
+		if (result.payload === null) return;
 		if (isComponentUpdatePayload(result.payload)) state.sentUpdates.record(result.payload.data);
-		if (result.payload === payload) return originalSend(...args);
-		return originalSend(result.payload);
+		return originalSend(...args);
 	};
 
 	// Angular core sends this when `ɵɵreplaceMetadata` throws on the device.
 	channel.on(ANGULAR_INVALIDATE_EVENT, (data?: { message?: unknown }) => {
 		const reason = typeof data?.message === 'string' ? `: ${data.message}` : '';
-		state.warn?.(`[ns-angular] in-place component update failed${reason}; reloading`);
+		state.warn?.(`[ns-angular] in-place component update failed${reason}; restarting the app`);
 		channel.send({ type: 'full-reload', path: '*' } satisfies FullReloadPayload);
 	});
 	return true;
@@ -95,6 +99,11 @@ export function createNgComponentGate(sentUpdates: ComponentUpdateLedger): Conne
 		res.setHeader('Cache-Control', 'no-cache');
 		res.end(NG_COMPONENT_NO_UPDATE_MODULE);
 	};
+}
+
+function isEntryUpdate(payload: unknown, entryUrl: string | undefined): boolean {
+	const p = payload as { type?: unknown; updates?: Array<{ type?: string; path?: string }> } | null;
+	return !!entryUrl && !!p && p.type === 'update' && !!p.updates?.some((u) => u.type === 'js-update' && u.path === entryUrl);
 }
 
 function isPageReload(payload: unknown): boolean {
@@ -143,13 +152,16 @@ export interface AngularHmrPayloadRulesOptions {
 /**
  * NativeScript rules on top of Analog's in-place component HMR:
  * - a `.ts` save that changes more than `template`/`templateUrl`/`styles`/
- *   `styleUrl`/`styleUrls` turns its `angular:component-update` into a full
- *   reload (Angular CLI parity: `ɵɵreplaceMetadata` never applies class changes);
- * - any update of the bootstrap component becomes a full reload;
- * - `angular:invalidate` from the device triggers a full reload.
+ *   `styleUrl`/`styleUrls`, and any edit of the bootstrap component, reboot the
+ *   app through the entry boundary (`hmr/server/entry-boundary.ts`):
+ *   `ɵɵreplaceMetadata` never applies class changes, and the root hosts
+ *   `page-router-outlet`, which doesn't survive it. Their
+ *   `angular:component-update` is dropped and Analog's self-accept marking is
+ *   undone, so Vite propagates the edit to the entry;
+ * - `angular:invalidate` from the device restarts the app.
  *
  * A `.ts` save is classified in a `pre` `hotUpdate` hook, which Vite runs
- * before Analog's `handleHotUpdate`.
+ * before Analog's `handleHotUpdate`; the marking is undone in a `post` one.
  */
 export function angularHmrPayloadRulesPlugins(options: AngularHmrPayloadRulesOptions): Plugin[] {
 	const projectRoot = options.projectRoot ?? process.cwd();
@@ -157,6 +169,18 @@ export function angularHmrPayloadRulesPlugins(options: AngularHmrPayloadRulesOpt
 	const snapshots = new Map<string, string>();
 	const stale = new StaleComponentClasses();
 	const sentUpdates = new ComponentUpdateLedger();
+	// Analog marks the modules of a component it updates in place as
+	// self-accepting, on the graph nodes themselves, which stops Vite's
+	// propagation at the component.
+	const selfAcceptingBefore = new WeakMap<object, Array<[{ isSelfAccepting?: boolean }, boolean | undefined]>>();
+	let entryUrl: string | undefined;
+
+	const isRootComponentEdit = (file: string, modules: readonly EnvironmentModuleNode[]): boolean => {
+		const rootFile = getRoot()?.file;
+		if (!rootFile) return false;
+		const owner = (candidate: string | null | undefined) => !!candidate && toPosixPath(candidate).replace(/\.[^./]+$/, '') === rootFile;
+		return owner(file) || modules.some((mod) => [...mod.importers].some((importer) => owner(importer.file)));
+	};
 
 	let root: RootComponentFile | null | undefined;
 	const getRoot = (): RootComponentFile | null => {
@@ -186,8 +210,11 @@ export function angularHmrPayloadRulesPlugins(options: AngularHmrPayloadRulesOpt
 			name: 'ns-angular-hmr-rules',
 			apply: 'serve',
 			enforce: 'pre',
+			configResolved(config) {
+				entryUrl = resolveProjectMainEntryPath(config.root);
+			},
 			configureServer(server) {
-				installAngularHmrRules(server.ws, { idBases, getRoot, stale, sentUpdates, warn: (message) => server.config.logger.warn(message) });
+				installAngularHmrRules(server.ws, { idBases, getRoot, stale, sentUpdates, entryUrl, warn: (message) => server.config.logger.warn(message) });
 				// `enforce: 'pre'` registers this ahead of Analog's middleware and the thin route.
 				server.middlewares.use(createNgComponentGate(sentUpdates));
 			},
@@ -205,6 +232,10 @@ export function angularHmrPayloadRulesPlugins(options: AngularHmrPayloadRulesOpt
 				order: 'pre',
 				async handler(ctx: HotUpdateOptions) {
 					if (this.environment.name !== 'client') return;
+					selfAcceptingBefore.set(
+						ctx,
+						ctx.modules.map((mod) => [mod, mod.isSelfAccepting]),
+					);
 					const file = toAppTsFile(ctx.file);
 					if (!file) return;
 					if (ctx.type === 'delete') {
@@ -216,6 +247,22 @@ export function angularHmrPayloadRulesPlugins(options: AngularHmrPayloadRulesOpt
 					const next = await ctx.read();
 					if (!hasOnlyHmrMetadataChanges(getTypeScript(), snapshots.get(file), next, file)) stale.add(file);
 					rememberSnapshot(file, next);
+				},
+			},
+		},
+		{
+			name: 'ns-angular-hmr-rules-post',
+			apply: 'serve',
+			hotUpdate: {
+				order: 'post',
+				handler(ctx: HotUpdateOptions) {
+					if (this.environment.name !== 'client') return;
+					const before = selfAcceptingBefore.get(ctx);
+					selfAcceptingBefore.delete(ctx);
+					if (!before) return;
+					const tsFile = toAppTsFile(ctx.file);
+					if (!(tsFile && stale.has(tsFile)) && !isRootComponentEdit(toPosixPath(ctx.file), ctx.modules)) return;
+					for (const [mod, value] of before) mod.isSelfAccepting = value;
 				},
 			},
 		},

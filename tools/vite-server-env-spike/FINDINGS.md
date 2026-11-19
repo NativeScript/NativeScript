@@ -437,6 +437,60 @@ The gate is a per-id ledger of the latest sent `angular:component-update`, plus 
 - It writes the webpack-only `__reboot_ng_modules__` family and `__onLiveSyncCore` only under `import.meta['webpackHot']`.
 - It no longer reads `__NS_HOT_REGISTRY__` or `__NS_DEV_ORIGIN__`.
 
+## Round 12: phase 2c, soft reboot through the app-entry HMR boundary
+
+The design is in DESIGN.md ("Soft reboot", "Soft reboot vs app restart", "Angular"). It replaces the round-11 in-process evict-everything reload: a Vite `full-reload` is now an app restart, and `hot.data` is back to Vite's semantics.
+
+**How Analog's in-place marking reaches the graph.** In the prototype, with `accept()` injected into the entry and the NS rules off:
+- a class edit still produced `angular:component-update` plus a `js-update` of the component itself;
+- `home.component.ts` was `isSelfAccepting=false` after the crawl;
+- in a `post` client `hotUpdate`, the very `EnvironmentModuleNode` came back with an own `isSelfAccepting: true`, so Analog's `markModuleSelfAccepting` takes effect on the graph node and stops propagation at the component.
+
+Restoring the pre-hook value in a `post` client `hotUpdate` makes Vite propagate to the entry. The first attempt, handing Vite other node objects from `handleHotUpdate`, failed with `removeTimestampQuery(undefined)`.
+
+**Which modules re-run.**
+- Vite stamps `lastHMRTimestamp` on the edited module's whole importer chain even when a closer boundary accepts the edit. For a template edit it stamped `main`, `app.routes` and `home.component.ts` although nothing re-evaluates.
+- So `rerun` is each `js-update`'s `acceptedPath` plus the imports reachable from it that carry the update's timestamp, which is exactly what `import(acceptedPath?t=)` re-evaluates.
+- Spec'd on a real Vite server (`entry-boundary.spec.ts`) over the tree main → one → child1, main → child2, child1 → child2, main → three → four:
+  - child1 edited → {main, one, child1};
+  - child2 edited with child1 self-accepting → boundaries child1 and main, re-running {child2, child1, one, main};
+  - child1 edited while self-accepting → {child1} only, though Vite stamped `one` and `main`.
+
+**`ns:rerun`, not a field on the update.** Analog's `hot-update-batch` buffers `update` payloads and flushes them as new objects (merging saves), so the module sets travel as a custom event right before each `update` with a `js-update`. They are matched by timestamp. The edited files are keyed by the save's timestamp, because Analog's own `css-update` payload for the same save comes first.
+
+**Final payloads** (`payload-probe.mjs`, both builds synced into the fixture; `?t=` crawl and boot-fetch emulation after each reboot):
+
+| Edit | Wire | `ns:rerun` (`changed` → `rerun`) |
+|---|---|---|
+| (a) `.html` ×2 | `angular:component-update` + `js-update …html` | html → {html} |
+| (b) `.css` ×2 | `css-update /<hash>.css?direct…` + `js-update …css` | css → {css} |
+| (c) class body | **`js-update /src/main.ts`**; Analog's component update dropped | home.component.ts → {main, app.routes, home.component.ts} |
+| (d) inline styles / template | `angular:component-update` + `js-update …component.ts` | → {the component} |
+| (e) `app.routes.ts` | `js-update /src/main.ts` | → {main, app.routes} |
+| (s) service class body | `js-update /src/main.ts` | probe.service.ts → {main, app.routes, probe.service} |
+| (f) root `.html` | `js-update /src/main.ts` | app.component.html → {main, app.component.ts} |
+| (g) global `app.css` | `ns:css-updates` with the CSS text | — |
+| (i) `angular:invalidate` | `full-reload` (restart) | — |
+| (r1) edit in `node_modules/@nativescript/core` | `ns:restart-required` + IPC `nativescript:restart` | — |
+| (r2) `server.restart()` | reconnect with the original `wsUrl`, `connected`, then `ns:restart-required` + IPC | — |
+| (r3) device `ns:restart` | `ns:restart-required` + IPC | — |
+
+After each reboot, the boot fetches of `AppComponent` and `HomeComponent` metadata still get the 26-byte no-op from the `/@ng/component` gate.
+
+**Device client.**
+- An entry update runs `vite:beforeUpdate` → `nativescript:beforeReboot` → the targeted `nativescript:beforeRerun` → entry `dispose` (`prepareHmrReboot`) → `import(main.ts?t=)` → `whenHmrRebootSettled` (≤ 15 s) → `nativescript:afterReboot` → `vite:afterUpdate`.
+- Payloads are built on the device with `createUpdateModules` (`isRerun`, `isChanged`, `modules`).
+- Types: `@nativescript/vite/client` augments Vite's `CustomEventMap`; a type-level spec has a negative control.
+
+**`@nativescript/angular`.**
+- `prepareHmrReboot` and `whenHmrRebootSettled` (bootstrap, then `ApplicationRef.whenStable()` capped at 5 s, then participant restore; never rejects).
+- `NATIVESCRIPT_HMR_PARTICIPANTS` and `requestNativeScriptAppRestart`.
+- The `vite:beforeFullReload` listener is gone.
+- The webpack harness shows 0 errors and 0 warnings, with `import.meta.hot` folded to `undefined`/`if (false) {}`.
+- Jest covers the snapshot helpers. The reboot state machine is only compiled, not run.
+
+**Not verified on a device:** everything above.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

@@ -33,6 +33,7 @@ const take = (name, dflt) => {
 const compilationApi = flag('--compilation-api');
 const keepNsStrategy = flag('--keep-ns-strategy');
 const noIpc = flag('--no-ipc');
+const noNsRules = flag('--no-ns-rules');
 const only = take('--only', '')
 	.split(',')
 	.map((s) => s.trim())
@@ -104,7 +105,10 @@ export class ProbeInlineComponent {
 }
 `,
 );
-replaceIn('src/app/app.routes.ts', `export const routes: Routes = [`, `export const PROBE_MARKER = 'a';\n\nexport const routes: Routes = [\n\t{ path: 'probe-inline', loadComponent: () => import('./probe-inline/probe-inline.component').then((m) => m.ProbeInlineComponent) },`);
+const SERVICE_TS = 'src/app/probe.service.ts';
+fs.writeFileSync(P(SERVICE_TS), `export class ProbeService {\n\tgreeting() {\n\t\treturn 'hello';\n\t}\n}\n`);
+created.push(SERVICE_TS);
+replaceIn('src/app/app.routes.ts', `export const routes: Routes = [`, `export { ProbeService } from './probe.service';\nexport const PROBE_MARKER = 'a';\n\nexport const routes: Routes = [\n\t{ path: 'probe-inline', loadComponent: () => import('./probe-inline/probe-inline.component').then((m) => m.ProbeInlineComponent) },`);
 
 const EDITS = [
 	{ key: 'a', label: '(a) external home.component.html text', file: 'src/app/home/home.component.html', from: `'Hot taps: '`, to: `'Hot taps!: '` },
@@ -115,6 +119,7 @@ const EDITS = [
 	{ key: 'd1', label: '(d) inline styles in component .ts', file: INLINE_TS, from: '.inline { color: red; }', to: '.inline { color: blue; }' },
 	{ key: 'd2', label: '(d) inline template in component .ts', file: INLINE_TS, from: `'Inline: '`, to: `'Inline!: '` },
 	{ key: 'e', label: '(e) non-component .ts (app.routes.ts)', file: 'src/app/app.routes.ts', from: `PROBE_MARKER = 'a'`, to: `PROBE_MARKER = 'b'` },
+	{ key: 's', label: '(s) service class body (probe.service.ts)', file: SERVICE_TS, from: `'hello'`, to: `'hello again'` },
 	{ key: 'f', label: '(f) root app.component.html', file: 'src/app/app.component.html', from: '<GridLayout>', to: '<GridLayout class="probe">' },
 	{ key: 'g', label: '(g) global app.css', file: 'src/app.css', append: '\n.probe-global { color: red; }\n' },
 	{ key: 'i', label: '(i) device sends angular:invalidate', send: { type: 'custom', event: 'angular:invalidate', data: { id: 'probe', message: 'probe: replaceMetadata threw' } } },
@@ -130,6 +135,7 @@ try {
 	const config = angularConfig({ mode: 'development' });
 	let plugins = config.plugins.flat(Infinity).filter(Boolean);
 	if (!keepNsStrategy) plugins = plugins.filter((p) => p.name !== 'nativescript-hmr-websocket');
+	if (noNsRules) plugins = plugins.filter((p) => !String(p.name).startsWith('ns-angular-hmr-rules'));
 	if (compilationApi) {
 		const angular = (await import(pathToFileURL(appReq.resolve('@analogjs/vite-plugin-angular')).href)).default;
 		const analogNames = new Set(
@@ -178,7 +184,7 @@ const summarize = (payload) => {
 		case 'prune':
 			return `prune ${short(payload.paths)}`;
 		case 'error':
-			return `error ${short(payload.err?.message)}`;
+			return `error ${short(payload.err?.message)} ${short(payload.err?.stack, 600)}`;
 		default:
 			return short(payload);
 	}
@@ -345,10 +351,12 @@ try {
 		else replaceIn(edit.file, edit.from, edit.to);
 		await settle();
 		const entries = log.splice(0);
-		// A device re-imports the entry after a full reload, which re-transforms the graph.
-		if (entries.some((e) => e.via === 'wire' && e.payload?.type === 'full-reload')) {
+		// A device re-imports the entry on a soft reboot, which re-transforms the changed chain.
+		const reboot = entries.find((e) => e.via === 'wire' && e.payload?.type === 'update' && e.payload.updates.some((u) => u.type === 'js-update' && u.path === new URL(session.entryUrl).pathname.slice('/ns/v'.length)));
+		if (reboot) {
+			const ts = reboot.payload.updates[0].timestamp;
 			seen.clear();
-			await crawl(session.entryUrl);
+			await crawl(`${session.entryUrl}?t=${ts}`);
 			await settle();
 			log.length = 0;
 			entries.push(...(await bootMetadataFetches()));

@@ -99,15 +99,15 @@ describe('applyComponentUpdateRules', () => {
 		expect(applyComponentUpdateRules(payload, { ...base, hasClassChange: () => false })).toEqual({ payload });
 	});
 
-	it('turns a class-changed component update into a full reload', () => {
+	it('drops a class-changed component update', () => {
 		const file = '/repo/src/app/home/home.component.ts';
 		const result = applyComponentUpdateRules(componentUpdate('src/app/home/home.component.ts', 'HomeComponent'), { ...base, hasClassChange: (candidate: string) => candidate === file });
-		expect(result).toEqual({ payload: { type: 'full-reload', path: '*', triggeredBy: file } });
+		expect(result).toEqual({ payload: null });
 	});
 
-	it('turns a root component update into a full reload', () => {
+	it('drops a root component update', () => {
 		const result = applyComponentUpdateRules(componentUpdate('src/app/app.component.ts', 'AppComponent'), { ...base, hasClassChange: () => false });
-		expect(result.payload).toEqual({ type: 'full-reload', path: '*', triggeredBy: '/repo/src/app/app.component.ts' });
+		expect(result).toEqual({ payload: null });
 	});
 
 	it('leaves other payloads untouched', () => {

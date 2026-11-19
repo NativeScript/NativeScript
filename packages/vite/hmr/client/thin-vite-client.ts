@@ -1,15 +1,16 @@
 /**
  * NativeScript implementation of the `/@vite/client` surface that Vite's
  * client-environment import analysis injects into served modules
- * (`createHotContext`, `updateStyle`, `removeStyle`, `injectQuery`). Served at
- * `/ns/v/@vite/client`.
+ * (`createHotContext`, `updateStyle`, `removeStyle`, `injectQuery`), plus
+ * `registerEntryBoundary` for the code the server injects into the app entry.
+ * Served at `/ns/v/@vite/client`.
  *
  * Holds no state: this file is reachable at two URLs (`/@vite/client` and its
  * own path), and the hot contexts must live in one module instance.
  */
 import { addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from '@nativescript/core';
 
-export { createHotContext } from './hot-state.js';
+export { createHotContext, registerEntryBoundary } from './hot-state.js';
 
 export function updateStyle(id: string, css: string): void {
 	removeTaggedAdditionalCSS(id);

@@ -6,7 +6,7 @@
  */
 export { registerFrameworkFlavor, getFrameworkFlavor, isBuiltInFlavor } from './hmr/framework-flavors.js';
 export type { FrameworkFlavorDefinition } from './hmr/framework-flavors.js';
-export type { FrameworkServerStrategy } from './hmr/server/framework-strategy.js';
+export type { FrameworkServerStrategy, FrameworkEntryBoundary } from './hmr/server/framework-strategy.js';
 
 export { baseConfig } from './configuration/base.js';
 export { getTypeCheckPlugins } from './helpers/typescript-check.js';

@@ -349,7 +349,7 @@ export function createUpdateOverlaySnapshot(stage: HmrUpdateStage, info?: HmrOve
 			mode: 'update',
 			badge: 'HMR',
 			title: HMR_UPDATE_TITLE,
-			phase: 'Reloading app',
+			phase: 'Rebooting app',
 			detail: '',
 			progress: 90,
 			busy: true,

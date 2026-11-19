@@ -67,6 +67,8 @@ describe('angularHmrPayloadRulesPlugins', () => {
 	const runHook = async (ctx: object, environment = 'client') => {
 		await plugins[0].hotUpdate.handler.call({ environment: { name: environment } }, ctx);
 	};
+	const runPostHook = (ctx: object) => plugins[1].hotUpdate.handler.call({ environment: { name: 'client' } }, ctx);
+	const entryUpdate = (timestamp = 9) => channel.channel.send({ type: 'update', updates: [{ type: 'js-update', path: '/src/main.ts', acceptedPath: '/src/main.ts', timestamp }] });
 
 	const sendHomeUpdate = (timestamp = 2) => channel.channel.send('angular:component-update', { id: homeId(), timestamp });
 
@@ -82,6 +84,7 @@ describe('angularHmrPayloadRulesPlugins', () => {
 		rootFile = path.join(workspace, 'src/app/app.component.ts');
 		fs.mkdirSync(path.dirname(homeFile), { recursive: true });
 		fs.writeFileSync(homeFile, HOME_SOURCE);
+		fs.writeFileSync(path.join(workspace, 'package.json'), JSON.stringify({ main: 'src/main.ts' }));
 
 		channel = createChannel();
 		plugins = angularHmrPayloadRulesPlugins({
@@ -91,6 +94,7 @@ describe('angularHmrPayloadRulesPlugins', () => {
 			loadTypeScript: () => ts,
 		});
 		middlewares = [];
+		plugins[0].configResolved({ root: workspace });
 		plugins[0].configureServer({ ws: channel.channel, config: { logger: { warn: vi.fn() } }, middlewares: { use: (fn: any) => middlewares.push(fn) } });
 		plugins[0].transform('compiled output', `${homeFile}?v=1`);
 	});
@@ -99,10 +103,11 @@ describe('angularHmrPayloadRulesPlugins', () => {
 		fs.rmSync(workspace, { recursive: true, force: true });
 	});
 
-	it('classifies a save before Analog sees it', () => {
-		expect(plugins).toHaveLength(1);
+	it('classifies a save before Analog sees it and undoes its marking after', () => {
+		expect(plugins).toHaveLength(2);
 		expect(plugins[0].hotUpdate.order).toBe('pre');
-		expect(plugins[0].apply).toBe('serve');
+		expect(plugins[1].hotUpdate.order).toBe('post');
+		expect(plugins.every((plugin) => plugin.apply === 'serve')).toBe(true);
 	});
 
 	it('passes a template-only .ts change through as a component update', async () => {
@@ -110,9 +115,37 @@ describe('angularHmrPayloadRulesPlugins', () => {
 		expect(channel.sent).toEqual([['angular:component-update', { id: homeId(), timestamp: 2 }]]);
 	});
 
-	it('turns a class body change into a full reload', async () => {
+	it('drops the component update of a class body change', async () => {
 		await saveComponent(HOME_SOURCE.replace('signal(0)', 'signal(10)'));
-		expect(channel.sent).toEqual([[{ type: 'full-reload', path: '*', triggeredBy: homeFile.split(path.sep).join('/') }]]);
+		expect(channel.sent).toEqual([]);
+	});
+
+	it("undoes Analog's self-accept marking for a class change, so Vite propagates to the entry", async () => {
+		const node = { isSelfAccepting: false, importers: new Set() };
+		const ctx = { ...saveContext(homeFile, HOME_SOURCE.replace('signal(0)', 'signal(10)')), modules: [node] };
+		await runHook(ctx);
+		node.isSelfAccepting = true;
+		runPostHook(ctx);
+		expect(node.isSelfAccepting).toBe(false);
+	});
+
+	it('keeps the marking of a template-only change', async () => {
+		const node = { isSelfAccepting: false, importers: new Set() };
+		const ctx = { ...saveContext(homeFile, HOME_SOURCE.replace('text="a"', 'text="b"')), modules: [node] };
+		await runHook(ctx);
+		node.isSelfAccepting = true;
+		runPostHook(ctx);
+		expect(node.isSelfAccepting).toBe(true);
+	});
+
+	it("undoes the marking of the root component's template", async () => {
+		const rootTs = { file: rootFile.split(path.sep).join('/') };
+		const template = { isSelfAccepting: undefined as boolean | undefined, importers: new Set([rootTs]) };
+		const ctx = { ...saveContext(rootFile.replace(/\.ts$/, '.html'), '<GridLayout></GridLayout>'), modules: [template] };
+		await runHook(ctx);
+		template.isSelfAccepting = true;
+		runPostHook(ctx);
+		expect(template.isSelfAccepting).toBeUndefined();
 	});
 
 	it('treats adding or removing in-place metadata as an in-place change', async () => {
@@ -121,39 +154,31 @@ describe('angularHmrPayloadRulesPlugins', () => {
 		expect(channel.sent.map((args) => args[0])).toEqual(['angular:component-update', 'angular:component-update']);
 	});
 
-	it('compares against the last saved version once a full reload refreshed the class', async () => {
+	it('compares against the last saved version once the entry reboot re-evaluated the class', async () => {
 		const changed = HOME_SOURCE.replace('signal(0)', 'signal(10)');
 		await saveComponent(changed);
+		entryUpdate();
 		await saveComponent(changed.replace('text="a"', 'text="b"'));
-		expect(channel.sent[1]).toEqual(['angular:component-update', { id: homeId(), timestamp: 2 }]);
+		expect(channel.sent.map((args) => (args[0] as { type?: string })?.type ?? args[0])).toEqual(['update', 'angular:component-update']);
 	});
 
-	it('keeps a class stale until a full reload goes out', async () => {
+	it('keeps a class stale until an entry update or a page full reload goes out', async () => {
 		const changed = HOME_SOURCE.replace('signal(0)', 'signal(10)');
 		await runHook(saveContext(homeFile, changed));
-		await saveComponent(changed.replace('text="a"', 'text="b"'));
-		expect(channel.sent[0][0]).toMatchObject({ type: 'full-reload', path: '*' });
-		sendHomeUpdate(3);
-		expect(channel.sent[1]).toEqual(['angular:component-update', { id: homeId(), timestamp: 3 }]);
-	});
-
-	it('clears stale classes on any page full reload, not on an .html-path one', async () => {
-		await runHook(saveContext(homeFile, HOME_SOURCE.replace('signal(0)', 'signal(10)')));
 		channel.channel.send({ type: 'full-reload', path: '/index.html' });
 		sendHomeUpdate(3);
-		expect(channel.sent[1][0]).toMatchObject({ type: 'full-reload', path: '*' });
-		await runHook(saveContext(homeFile, HOME_SOURCE));
+		expect(channel.sent.filter((args) => args[0] === 'angular:component-update')).toEqual([]);
 		channel.channel.send({ type: 'full-reload', path: '*' });
 		sendHomeUpdate(4);
-		expect(channel.sent[3]).toEqual(['angular:component-update', { id: homeId(), timestamp: 4 }]);
+		expect(channel.sent.at(-1)).toEqual(['angular:component-update', { id: homeId(), timestamp: 4 }]);
 	});
 
-	it('full-reloads a component whose previous source was never seen', async () => {
+	it('drops the update of a component whose previous source was never seen', async () => {
 		const otherFile = path.join(workspace, 'src/app/other.component.ts');
 		const otherId = encodeURIComponent('src/app/other.component.ts@OtherComponent');
 		await runHook(saveContext(otherFile, HOME_SOURCE));
 		channel.channel.send('angular:component-update', { id: otherId, timestamp: 2 });
-		expect(channel.sent[0][0]).toMatchObject({ type: 'full-reload', path: '*' });
+		expect(channel.sent).toEqual([]);
 	});
 
 	it('passes a component update triggered by its .html or .css file', async () => {
@@ -168,15 +193,15 @@ describe('angularHmrPayloadRulesPlugins', () => {
 		expect(channel.sent[0][0]).toBe('angular:component-update');
 	});
 
-	it('turns a root component update into a full reload', () => {
+	it('drops a root component update', () => {
 		channel.channel.send('angular:component-update', { id: rootId(), timestamp: 2 });
-		expect(channel.sent[0][0]).toMatchObject({ type: 'full-reload', path: '*' });
+		expect(channel.sent).toEqual([]);
 	});
 
 	it('resolves ids built against the workspace root or the cwd', () => {
 		const cwdRelative = encodeURIComponent(`${path.relative(process.cwd(), rootFile).split(path.sep).join('/')}@Root`);
 		channel.channel.send('angular:component-update', { id: cwdRelative, timestamp: 2 });
-		expect(channel.sent[0][0]).toMatchObject({ type: 'full-reload' });
+		expect(channel.sent).toEqual([]);
 	});
 
 	it('leaves non-Angular payloads untouched', () => {

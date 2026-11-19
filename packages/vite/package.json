@@ -59,6 +59,9 @@
 			"import": "./configuration/base.js",
 			"default": "./configuration/base.js"
 		},
+		"./client": {
+			"types": "./client.d.ts"
+		},
 		"./framework": {
 			"types": "./framework.d.ts",
 			"import": "./framework.js",

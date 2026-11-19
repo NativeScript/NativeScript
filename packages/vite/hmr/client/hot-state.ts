@@ -18,3 +18,23 @@ export const hmrClient = new HMRClient({
 export function createHotContext(ownerPath: string): HMRContext {
 	return new HMRContext(hmrClient, ownerPath);
 }
+
+let entryBoundarySettled: (() => unknown) | null = null;
+
+/**
+ * Called by the app entry on every evaluation. `settled` resolves once the
+ * framework has finished booting the re-evaluated entry; a soft reboot awaits
+ * it before `nativescript:afterReboot`.
+ */
+export function registerEntryBoundary(settled?: () => unknown): void {
+	entryBoundarySettled = settled ?? (() => undefined);
+}
+
+/** The provider registered since the last {@link clearEntryBoundary}, if any. */
+export function getEntryBoundarySettled(): (() => unknown) | null {
+	return entryBoundarySettled;
+}
+
+export function clearEntryBoundary(): void {
+	entryBoundarySettled = null;
+}

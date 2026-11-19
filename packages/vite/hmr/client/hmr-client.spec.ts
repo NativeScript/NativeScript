@@ -236,33 +236,6 @@ describe('HMRClient.prunePaths', () => {
 	});
 });
 
-describe('HMRClient.dropContexts', () => {
-	it('forgets callbacks and listeners of the given paths but keeps their data', async () => {
-		const { client } = createClient();
-		const dropped = new HMRContext(client, '/src/a.ts');
-		dropped.data.kept = 1;
-		const droppedListener = vi.fn();
-		dropped.on('e', droppedListener);
-		dropped.accept(() => {});
-		dropped.dispose(() => {});
-		dropped.prune(() => {});
-		const survivor = new HMRContext(client, '/node_modules/lib/index.js');
-		const survivorListener = vi.fn();
-		survivor.on('e', survivorListener);
-
-		client.dropContexts(['/src/a.ts']);
-		await client.notifyListeners('e', 1);
-
-		expect(droppedListener).not.toHaveBeenCalled();
-		expect(survivorListener).toHaveBeenCalledWith(1);
-		expect(client.hotModulesMap.has('/src/a.ts')).toBe(false);
-		expect(client.disposeMap.has('/src/a.ts')).toBe(false);
-		expect(client.pruneMap.has('/src/a.ts')).toBe(false);
-		expect(client.ownerPaths()).toEqual(['/node_modules/lib/index.js']);
-		expect(client.dataMap.get('/src/a.ts')).toEqual({ kept: 1 });
-	});
-});
-
 describe('hot.decline()', () => {
 	it('is tracked per owner path until the module is re-evaluated', () => {
 		const { client } = createClient();
@@ -271,21 +244,18 @@ describe('hot.decline()', () => {
 
 		expect(client.isDeclined('/src/a.ts')).toBe(true);
 		expect(client.isDeclined('/src/b.ts')).toBe(false);
-		expect(client.declinedOwnerPaths()).toEqual(['/src/a.ts']);
 
 		new HMRContext(client, '/src/a.ts');
 		expect(client.isDeclined('/src/a.ts')).toBe(false);
 	});
 
-	it('is forgotten by dropContexts and prunePaths', async () => {
+	it('is forgotten by prunePaths', async () => {
 		const { client } = createClient();
 		new HMRContext(client, '/src/a.ts').decline();
-		new HMRContext(client, '/src/b.ts').decline();
 
-		client.dropContexts(['/src/a.ts']);
-		await client.prunePaths(['/src/b.ts']);
+		await client.prunePaths(['/src/a.ts']);
 
-		expect(client.declinedOwnerPaths()).toEqual([]);
+		expect(client.isDeclined('/src/a.ts')).toBe(false);
 	});
 });
 
@@ -309,18 +279,21 @@ describe('HMRClient.notifyListenersSettled', () => {
 	});
 });
 
-describe('HMRClient.disposePaths', () => {
-	it('runs every dispose callback and returns the ones that failed', async () => {
+describe('HMRClient.notifyOwnerListeners', () => {
+	it('calls only the listeners of the given owner paths, once per context, settling every one', async () => {
 		const { client } = createClient();
-		const ran = vi.fn();
-		new HMRContext(client, '/src/a.ts').dispose(() => {
-			throw new Error('dispose a');
+		const calls: string[] = [];
+		const a = new HMRContext(client, '/src/a.ts');
+		a.on('e', (data) => calls.push(`a ${data}`));
+		a.on('e', () => {
+			throw new Error('sync');
 		});
-		new HMRContext(client, '/src/b.ts').dispose(ran);
+		new HMRContext(client, '/src/b.ts').on('e', (data) => calls.push(`b ${data}`));
+		new HMRContext(client, '/src/c.ts').on('other', () => calls.push('c'));
 
-		const failures = await client.disposePaths(['/src/a.ts', '/src/b.ts']);
+		const results = await client.notifyOwnerListeners('e', 1, ['/src/a.ts', '/src/c.ts', '/src/a.ts', '/src/missing.ts']);
 
-		expect(failures.map(({ path, reason }) => [path, (reason as Error).message])).toEqual([['/src/a.ts', 'dispose a']]);
-		expect(ran).toHaveBeenCalled();
+		expect(calls).toEqual(['a 1']);
+		expect(results.map((r) => r.status)).toEqual(['fulfilled', 'rejected']);
 	});
 });

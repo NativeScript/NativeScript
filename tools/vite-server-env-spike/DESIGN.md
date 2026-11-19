@@ -24,7 +24,7 @@ The inventory behind this is the subagent map in `$CLAUDE_JOB_DIR/tmp/nsvite-map
   - `getCanonicalization` sends empty `stripParams`/`forPathPrefixes`; the runtime only strips under a listed prefix.
   - `preserveQueryFor` (`/@ng/component`) is still sent.
 - A re-imported module therefore has a fresh URL. There are no server-computed eviction sets and no hot-key canonicalization.
-- The cost is the browser's: replaced instances stay in memory until a full reload.
+- The cost is the browser's: replaced instances stay in memory until the app restarts.
 
 ### Transport: Vite's HMR WebSocket
 - The device joins Vite's own HMR socket. Vite accepts the upgrade when two conditions hold:
@@ -36,7 +36,7 @@ The inventory behind this is the subagent map in `$CLAUDE_JOB_DIR/tmp/nsvite-map
   - `wsProtocol: 'vite-hmr'`.
 - `connected`, `update`, `full-reload`, `prune`, `error`, `custom`, `ping` and `vite:invalidate` work natively. Plugins' `server.ws.on` handlers receive device events.
 - The device socket is `@valor/nativescript-websockets`. It supports subprotocols on iOS (`initWithURLRequestProtocols`) and Android (`Sec-WebSocket-Protocol`).
-- **The NS custom events** (`hmr/shared/protocol.ts`) are `ns:restart`/`ns:restart-required` (see "Soft reload vs app restart") and `ns:css-updates` (data `{ updates, reason? }`). Each `ns:css-updates` item carries the generated stylesheet text in `css`, so the device fetches nothing. It is sent with `server.ws.send(event, data)`:
+- **The NS custom events** (`hmr/shared/protocol.ts`) are `ns:restart`/`ns:restart-required` (see "Soft reboot vs app restart"), `ns:rerun` (see "Soft reboot") and `ns:css-updates` (data `{ updates, reason? }`). Each `ns:css-updates` item carries the generated stylesheet text in `css`, so the device fetches nothing. It is sent with `server.ws.send(event, data)`:
   - when the global `app.css`, a CSS partial it imports, or a Tailwind/PostCSS content file changes the generated stylesheet;
   - with `reason: 'connect-sync'` to a client on `vite:client:connect` when the CSS changed since `bundle.mjs` was built.
   - For `app.css` itself the hook returns `[]`, so Vite doesn't also full-reload.
@@ -44,76 +44,116 @@ The inventory behind this is the subagent map in `$CLAUDE_JOB_DIR/tmp/nsvite-map
 
 ### Device client: a port of `vite/dist/client/client.mjs`
 Modules in `hmr/client/`:
-- `hmr-client.ts`: a pure port of `HMRContext`/`HMRClient`/`Queue`.
-- `hot-state.ts`: the singleton `hmrClient` plus `createHotContext`, which `thin-vite-client` re-exports.
+- `hmr-client.ts`: a port of `HMRContext`/`HMRClient`/`Queue`, plus decline tracking, `notifyListenersSettled` and the owner-targeted `notifyOwnerListeners`.
+- `hot-state.ts`: the singleton `hmrClient`, `createHotContext`, and the entry boundary's `registerEntryBoundary`. `thin-vite-client` re-exports the public ones from `/@vite/client`.
 - `vite-transport.ts`: the WebSocket transport, ping and `waitForSuccessfulPing`.
-- `full-reload.ts`.
-- `index.ts`: `start()`, `handleMessage` and overlay driving.
+- `index.ts`: `start()`, `handleMessage`, the reboot and restart sequences, and overlay driving.
+
+Shared with the server:
+- `hmr/shared/protocol.ts`: event names and payload types.
+- `hmr/shared/update-modules.ts`: `createUpdateModules`, the `isRerun`/`isChanged`/`modules` payload lookups.
 
 Behavior:
-- **Bootstrap.** `/__ns_dev__/client` waits for `__NS_HMR_BOOT_COMPLETE__`, then calls `start({ wsUrl, wsProtocol, entryUrl, origin, keepUrlPrefixes })`. The server bakes all of these in, so nothing travels through globals. Contexts exist from boot; the socket attaches at `start()`.
+- **Bootstrap.** `/__ns_dev__/client` waits for `__NS_HMR_BOOT_COMPLETE__`, then calls `start({ wsUrl, wsProtocol, entryUrl, origin })`. The server bakes all of these in, so nothing travels through globals. Contexts exist from boot; the socket attaches at `start()`.
 - **Queue.** A serialized message queue, with awaited listeners (`notifyListeners` = `Promise.allSettled`).
 - **`update`.**
   1. `vite:beforeUpdate`.
-  2. Each `js-update` runs through `queueUpdate(fetchUpdate)` exactly as Vite does:
+  2. If a `js-update` has the app entry as its boundary: `nativescript:beforeReboot` (see "Soft reboot").
+  3. `nativescript:beforeRerun`, targeted to the re-running modules (see "Soft reboot").
+  4. Each `js-update` runs through `queueUpdate(fetchUpdate)` exactly as Vite does:
      - a no-op without a hot entry;
-     - otherwise await dispose(data), then `import(origin + '/ns/v' + path + '?' + (explicitImportRequired ? 'import&' : '') + 't=' + ts + (query ? '&' + query : ''))`;
+     - otherwise await `dispose(data)` of the accepted module only, then `import(origin + '/ns/v' + path + '?' + (explicitImportRequired ? 'import&' : '') + 't=' + ts + (query ? '&' + query : ''))`;
      - accept callbacks get the deps-positional array;
-     - a failure inside a circular import → full reload.
-  3. `css-update` runs listeners only. Stylesheet owners such as the Angular renderer react on `vite:beforeUpdate`.
-  4. `vite:afterUpdate`.
-- **`full-reload`** (the device's `location.reload()`), debounced 20 ms and run through the queue:
-  1. `vite:beforeFullReload`;
-  2. dispose (with `data`) every app-owned module;
-  3. sweep tracked workers;
-  4. drop those modules' contexts: accept callbacks, `on` listeners and dispose/prune callbacks;
-  5. `invalidateModules` for every loaded app-owned URL;
-  6. re-import `entryUrl`.
-  - App-owned means a `/ns/v` URL on the session origin whose Vite URL contains no `/node_modules/`, doesn't start with `/@vite/` or the dev client's and core's package prefixes. `Application.run` is patched (`root-placeholder.ts`) to `resetRootView` on re-entry.
+     - a failure inside a circular import → app restart.
+  5. `css-update` runs listeners only. Stylesheet owners such as the Angular renderer react on `vite:beforeUpdate`.
+  6. For an entry update: await the framework's settle signal, then `nativescript:afterReboot`.
+  7. `vite:afterUpdate`.
+- **`full-reload` is an app restart:**
+  - `vite:beforeFullReload` (best effort), then `nativescript:beforeRestart` (awaited, best effort), then `ns:restart { reason }` to the server.
   - `.html`-path and `ifFallback` reloads are skipped, since the device has no HTML page.
-- **`hot.data` survives a full reload.** This deliberately diverges from the browser, which wipes everything on reload.
-  - The data object stays keyed by the module's exact Vite URL. A module re-evaluated under the same URL reads back what its previous instance's `dispose(data)` wrote. Only `prune` deletes it.
-  - Why: on device, Angular class edits always full-reload, and this lets app code carry state with the standard `dispose(data)`/`hot.data` pattern.
-  - Modules that are not evicted (`node_modules`, the dev client) keep their contexts and listeners. So `@nativescript/angular`'s `import.meta.hot.on(...)` survives every reload.
+  - Nothing is evicted in-process.
+- **`hot.data`** has Vite's semantics: it survives a hot update of the same module, and a restart wipes it.
 - **`prune`.** `vite:beforePrune`, then dispose → prune → delete data.
 - **`error`.** `vite:error`, then the NS overlay's `failed` stage.
-- **`custom`.** Listeners. `ns:css-updates` has an internal listener that applies each item's `css` under its tag (`css-handler.ts`).
+- **`custom`.** Listeners. Internal listeners also handle:
+  - `ns:css-updates`, applying each item's `css` under its tag (`css-handler.ts`);
+  - `ns:rerun`, keeping the module sets for the next `update`;
+  - `ns:restart-required`.
 - **The dev client does its I/O without the app's globals.** It uses no `fetch` or XHR, which Zone.js patches and which failed under it. Modules come through `import()` (the runtime's loader), stylesheets through the socket.
   - What remains is the app's `WebSocket` polyfill, the only socket there is.
-  - `setTimeout`/`setInterval` remain for the reload debounce, the ping and the reconnect backoff. Zone.js patches them too, but they work under it.
+  - `setTimeout`/`setInterval` remain for the ping, the reconnect backoff and the settle/`beforeRestart` timeouts. Zone.js patches them too, but they work under it.
 - **Hot contexts are keyed by the exact Vite URL** given to `createHotContext(ownerPath)`.
   - `hot.send` → `{type:'custom', event, data}`.
   - `hot.invalidate` → `vite:invalidate {path, message, firstInvalidatedBy}` to the server; Vite propagates it.
 - **Disconnect.** `vite:ws:disconnect` → wait for a `vite-ping` socket to open → reconnect with the same `wsUrl`. Nothing else happens.
   - This deliberately deviates from Vite's browser client, which reloads the page once the server is back.
   - The device's modules stay valid while the server is unchanged. A server that restarted asks for an app restart itself when the device reconnects.
-- **After a failed full reload** (the entry re-import threw), the next `update` triggers another full reload instead of applying. The app modules were evicted and their contexts dropped, so nothing could accept it. This is the device's form of Vite's `clearOverlayOrReloadOnFirstUpdate`.
-- **Overlay.** The NS overlay is driven from these events: beforeUpdate/afterUpdate, the full-reload stages and errors.
-- There is no registry-level `on`/`off` and no `__NS_HOT_REGISTRY__`. App-lifetime owners use `import.meta.hot` in their own (never evicted) module.
+- **Overlay.** Driven from these events: the update, reboot and restart stages and errors.
+- There is no registry-level `on`/`off` and no `__NS_HOT_REGISTRY__`. App-lifetime owners use `import.meta.hot` in their own module.
 
-### Soft reload vs app restart
-- **Soft reload** (`full-reload`): in-process, as above. It re-evaluates app-owned modules only: the shared rule `isAppOwnedViteUrl` in `hmr/shared/app-owned.ts`. The non-evictable prefixes come from one server function, `resolveNonEvictableViteUrlPrefixes` (`@nativescript/core`'s and `@nativescript/vite`'s package directories), which the bootstrap passes to the device as `keepUrlPrefixes`.
-- **App restart**: a new process, for changes a soft reload can't apply. iOS can't relaunch itself, so the NativeScript CLI performs it. The dev server asks for it with one function, `requestAppRestart(reason)` (`hmr/server/app-restart.ts`):
+### Soft reboot: an HMR update with the app entry as its boundary
+- **Injection.** For a flavor whose `FrameworkServerStrategy.entryBoundary` names a teardown (Angular: `@nativescript/angular`'s `prepareHmrReboot`/`whenHmrRebootSettled`), `hmr/server/entry-boundary.ts` prepends this to the app entry. It runs after the framework's compile and before Vite's import analysis:
+  ```js
+  import { registerEntryBoundary } from '/@vite/client';
+  import * as framework from '<module>';
+  if (import.meta.hot) {
+    import.meta.hot.accept();
+    import.meta.hot.dispose(() => framework.prepareHmrReboot?.());
+    registerEntryBoundary(() => framework.whenHmrRebootSettled?.());
+  }
+  ```
+- **What Vite does with it.**
+  - The entry is self-accepting, so an edit anywhere below it propagates to `js-update { path: entry, acceptedPath: entry }`, unless a closer boundary accepts it first.
+  - Vite stamps `?t=` on the changed module's importer chain, so the device's `import(entry?t=)` re-evaluates exactly that chain. Unchanged modules are cache hits and keep their instances.
+  - Same idea as webpack's `module.hot.accept()` in `main`.
+- **Without an entry boundary**, which is the case for TS, Solid, React and Vue today, an edit with no closer boundary reaches a dead end. Vite sends `full-reload`, which is an app restart.
+- **Which modules re-run.** `ns:rerun { timestamp, changed, rerun, root }` precedes every `update` with a `js-update`.
+  - `rerun` is each `acceptedPath` plus the imports reachable from it that Vite stamped with this timestamp: exactly what the device's import re-evaluates.
+  - The stamp alone over-counts, because Vite also stamps the importers above a boundary that stops early, such as a template accepted in place.
+  - A custom event carries it because Vite rebuilds its `update` payloads and Analog buffers them.
+- **Events.** All are dispatched client-side through `hot.on` and awaited. `dispose` keeps Vite's semantics: it fires only for each accepted module.
+  - `nativescript:beforeReboot` (entry updates only): `{ entry, changed, rerun, modules, isRerun(id), isChanged(id) }`.
+  - `nativescript:beforeRerun` (every update with `js-update`s): `{ timestamp, changed, rerun, modules, isRerun, isChanged }`.
+    - It is dispatched **only** to the listeners registered by the hot contexts of modules in `rerun`, keyed by owner path. It is never broadcast.
+    - It fires once per module per payload, even with several boundaries, and before any boundary's `dispose`.
+    - Vite disposes only the boundary, so this is how an intermediate module's old instance releases what it holds, e.g. `import.meta.hot?.on('nativescript:beforeRerun', () => off())` for root listeners.
+  - `nativescript:afterReboot`: the `beforeReboot` payload plus `error` when the entry import failed or the settle signal rejected. It fires after the framework's settle signal (Angular: bootstrap plus `ApplicationRef.whenStable()`, capped at 5 s, and participant restore), waited for up to 15 s. It is skipped right away when the entry import failed.
+  - `nativescript:beforeRestart` `{ reason }`: before the device asks for, or is told about, an app restart.
+  - **Order:** `vite:beforeUpdate` → `nativescript:beforeReboot` → `nativescript:beforeRerun` → entry `dispose` (framework teardown) → `import(entry?t=)` → framework bootstrap and restore → `nativescript:afterReboot` → `vite:afterUpdate`.
+- **Payload lookups.** `isRerun(id)`, `isChanged(id)` and `modules` (`'changed'` for an edited file, `'rerun'` for one re-evaluated only because of the chain) accept a module's own `import.meta.url` (`<origin>/ns/v/src/x.ts?t=…`), its Vite URL or owner path, or its absolute file path.
+  - They strip the origin, `/ns/v`, `t` and `import`, and keep identity queries (`hmr/shared/update-modules.ts`). Typical:
+    ```ts
+    import.meta.hot?.on('nativescript:beforeReboot', (e) => { if (e.isRerun(import.meta.url)) cleanup(); });
+    ```
+  - Types ship as `@nativescript/vite/client`, which augments Vite's `CustomEventMap`; add it to `compilerOptions.types`.
+- **Failures.**
+  - An entry import that throws (a syntax error) is recoverable: the `failed` overlay shows, `afterReboot` reports `error`, and the next edit's entry update disposes again and retries.
+  - An entry `dispose` that throws leaves the app half torn down, so the device asks for an app restart.
+- **Workers** spawned by an old app instance are not swept: the tracked set doesn't know its owners, and a module outside `rerun` keeps its workers. The framework's teardown has to terminate its own.
+
+### Soft reboot vs app restart
+- **Soft reboot**: the entry-boundary HMR update above. It re-evaluates app modules only.
+- **App restart**: a new process, for everything a hot update can't apply, including every Vite `full-reload`. iOS can't relaunch itself, so the NativeScript CLI performs it. The dev server asks for it with one function, `requestAppRestart(reason)` (`hmr/server/app-restart.ts`):
   - Requests within 250 ms collapse into one, with deduplicated reasons joined by `; `.
   - **With an IPC channel** (`process.send`), it sends the CLI `{ type: 'nativescript:restart', reason }`.
   - **Without one**, which is today's CLI (`vite serve` spawned with `stdio: 'inherit'`), it logs `[NativeScript] restart the app to apply: <reason>` and sends devices the custom event `ns:restart-required { reason }`.
-  - Either way the app is not soft-reloaded. The device shows a persistent "Restart required" overlay and applies nothing further.
+  - Devices are always sent `ns:restart-required` too, so they run `nativescript:beforeRestart`, show a persistent "Restart required" overlay and apply nothing further.
 - **Triggers:**
-  - **Non-evictable code changed.** A client-environment `pre` `hotUpdate` handles an edit to a file the device loaded as JS (`modules` has a `js` node) whose Vite URL is not app-owned:
+  - **Vite `full-reload`**: no HMR boundary reached (a flavor without an entry boundary), `angular:invalidate`, or anything else Vite reloads for.
+  - **Code that evaluates once per process changed.** A client-environment `pre` `hotUpdate` handles an edit to a file the device loaded as JS (`modules` has a `js` node) whose Vite URL is not app-owned (`isAppOwnedViteUrl` in `hmr/server/app-restart.ts`; the prefixes come from `resolveNonEvictableViteUrlPrefixes`, the `@nativescript/core` and `@nativescript/vite` package directories):
     - anything under `node_modules`, including `/@fs/…/node_modules`;
     - a linked core or `@nativescript/vite` under `/@fs/…`.
 
     It returns `[]`, so Vite sends nothing (no `?t=` second instance next to the live one), and requests a restart. Vite never watches `node_modules`, so in practice this fires for workspace-linked sources under `/@fs/` (toolbox's `packages/core`), or with a user `server.watch.ignored` negation.
   - **Boot bundle changed.** In the `vite build --watch` process (IPC already exists), `helpers/ns-cli-plugins.ts` now sends the existing `emittedFiles` message (`isHMR: false`, `buildType: 'incremental'`) after an HMR rebuild only when `bundle.mjs`'s content hash changed. The CLI already copies those files and restarts the app through livesync. `bundle.mjs` is byte-stable across identical builds (`boot-bundle-hash.mjs`).
-  - **`import.meta.hot.decline()`.** Vite 8.3.8 ignores it on both sides, so this is NativeScript's mapping. The device sends `ns:restart { reason }` instead of soft-reloading in two cases:
-    - a `full-reload` arrives while any loaded app module's current evaluation has declined;
-    - a `js-update` arrives whose boundary or updated module declined.
-  - **A soft reload that fails during teardown.** A `vite:beforeFullReload` listener or a dispose callback throws or rejects, so the app is half torn down: the device sends `ns:restart`. An entry re-import that throws (a syntax error) stays recoverable: the `failed` overlay shows, and the next update reloads again.
+  - **`import.meta.hot.decline()`.** Vite 8.3.8 ignores it on both sides, so this is NativeScript's mapping: a `js-update` whose boundary or updated module declined makes the device send `ns:restart { reason }`.
+  - **A soft reboot whose teardown throws.** The entry `dispose` throwing leaves the app half torn down, so the device sends `ns:restart`. An entry import that throws stays recoverable (see above).
+  - **A participant asks for it.** `@nativescript/angular`'s `requestNativeScriptAppRestart(reason)` sends `ns:restart` through its own `import.meta.hot`.
   - **Vite restarted itself** (`server.restart()`, a config edit). Module state of `@nativescript/vite` survives the in-process restart while plugin instances don't, so a module-level counter detects a second `configureServer`. The first device connection afterwards requests one restart.
     - The pinned `webSocketToken` (see Transport) keeps the device's original `wsUrl` valid, so it simply reconnects.
   - **Not a trigger: `@NativeClass`.** A re-evaluated class gets a new runtime class, and new uses pick it up.
 - **Device → server:** `ns:restart { reason }` arrives through `server.ws.on('ns:restart')` and becomes `requestAppRestart(reason)`.
-  - On the device, `requestRestart(reason)` lives on the runtime and runs once.
+  - On the device, `requestRestart(reason)` lives on the runtime and runs once, after `nativescript:beforeRestart`.
   - It is held while the socket is down and sent on reconnect.
   - From then on, the device drops `update`, `full-reload`, `prune` and `ns:css-updates`; custom events still reach listeners.
 
@@ -130,46 +170,52 @@ Behavior:
 ### Frameworks
 No NS server strategies for updates. Each framework's Vite plugin produces stock payloads, and the device client applies them. `FrameworkServerStrategy` only feeds the import map (`importMapSpecifiers`, `volatilePatterns`, `preserveQueryPaths`).
 
-**Angular** follows Angular CLI's rules. Analog runs in default mode with `liveReload: true`; in the probe, compilation-API mode compiled components without Angular's HMR initializer and full-reloaded even `.html`/`.css` (FINDINGS round 11). An NS plugin in `configuration/angular.ts` (`hmr/frameworks/angular/server/hmr-payload-rules*.ts`) rewrites Analog's payloads:
-- `.html` and `styleUrl` edits update in place, through `angular:component-update` and `css-update`.
-- **`.ts` class edits → full reload.**
-  - A `pre` `hotUpdate` hook compares each component `.ts` save with the previous source, with the `@Component` `template`/`templateUrl`/`styles`/`styleUrl`/`styleUrls` initializers blanked out.
-  - Any other difference marks the class stale.
-  - A `server.ws.send` wrapper turns `angular:component-update` for a stale class into `full-reload`. Any page full-reload clears the stale set.
-  - The decision is state, not per save, because Analog buffers its component update and flushes it after the hot-update hooks settle.
-  - A template/styles-only `.ts` change stays in place.
-- **Root component → full reload.** `page-router-outlet` can't survive `ɵɵreplaceMetadata`.
-- **`angular:invalidate` → full reload**, as Angular CLI does; Analog lacks it.
+**Angular.** Analog runs in default mode with `liveReload: true`. In the probe, compilation-API mode compiled components without Angular's HMR initializer and full-reloaded even `.html`/`.css` (FINDINGS round 11). An NS plugin in `configuration/angular.ts` (`hmr/frameworks/angular/server/hmr-payload-rules*.ts`) adjusts Analog's payloads:
+- **Template and style edits stay in place**: `.html` and `styleUrl` edits through `angular:component-update` and `css-update`, and a `.ts` save that only changes `template`/`templateUrl`/`styles`/`styleUrl`/`styleUrls`.
+- **Class edits reboot.**
+  - A `pre` `hotUpdate` hook compares each component `.ts` save with the previous source, with those `@Component` initializers blanked out. Any other difference marks the class stale.
+  - The `server.ws.send` wrapper drops the stale class's `angular:component-update`.
+  - A `post` `hotUpdate` hook restores the graph nodes' `isSelfAccepting` that Analog set to `true` (it marks the edited component's modules, on the nodes themselves, which stops Vite's propagation at the component). Vite then propagates to the entry boundary.
+  - The stale set clears when an entry update or a page `full-reload` goes out. It is state, not per save, because Analog buffers its component update and flushes it after the hooks settle.
+- **Root component edits reboot** the same way: `page-router-outlet` can't survive `ɵɵreplaceMetadata`.
+- **`angular:invalidate` → `full-reload`**, i.e. an app restart, as Angular CLI full-reloads; Analog lacks it.
 - **`/@ng/component` boot gate.** Every compiled component fetches `/@ng/component?c=<id>&t=<now>` when its module evaluates. Analog answers with a real `_UpdateMetadata` payload whenever that module was invalidated at any point in the server's lifetime.
-  - So after a full reload, every component's metadata is replaced at boot. For the root, that tears down `page-router-outlet` and leaves a blank screen.
-  - The rules plugin records the latest `angular:component-update` timestamp it sent per id. A middleware ahead of Analog's and the thin route lets through only a fetch echoing that exact `(c, t)`. Anything else gets `export default undefined;`, so `m.default && ɵɵreplaceMetadata(...)` does nothing.
-  - The root never gets through, because its updates go out as `full-reload`.
-- **`@nativescript/angular`** uses the literal `import.meta.hot`, which Vite injects into served `node_modules` files too:
-  - `vite:beforeFullReload` → off launch/exit handlers, `disposeLastModules`, `disposePlatform`, `ɵresetCompiledComponents` (clears the component-id map behind NG0912). It is registered once per process; the state lives in the library's module scope, since library modules are never evicted.
-  - The re-evaluated entry bootstraps again (`Application.hasLaunched()`).
+  - Without the gate, a re-evaluated component would replace its own metadata at boot, which for the root tears down `page-router-outlet` and leaves a blank screen.
+  - The rules plugin records the latest `angular:component-update` timestamp it sent per id. A middleware ahead of Analog's and the thin route lets through only a fetch echoing that exact `(c, t)`; anything else gets `export default undefined;`.
+- **`@nativescript/angular`** (literal `import.meta.hot`, which Vite injects into served `node_modules` files too; no globals):
+  - `prepareHmrReboot()`, called from the entry's `dispose`:
+    1. saves HMR participants from the root injector;
+    2. detaches the launch/exit handlers;
+    3. `disposeLastModules`/`disposePlatform`;
+    4. `ɵresetCompiledComponents` (clears the component-id map behind NG0912).
+
+    It is idempotent, and a no-op under webpack or release.
+  - The re-evaluated entry calls `runNativeScriptAngularApp`, which bootstraps right away (`Application.hasLaunched()`, reason `hotreload`). Once bootstrap and `ApplicationRef.whenStable()` (capped at 5 s) settle, participants restore in the new injector, and `whenHmrRebootSettled()` resolves. It never rejects.
+  - **Participant contract:** a multi-provider `NATIVESCRIPT_HMR_PARTICIPANTS` of `{ key; version?; save(): unknown; restore(state): void | Promise<void> }`. Snapshots live in the library's module scope, which is never re-evaluated. Version mismatches and failures are logged and skipped. No participants ship yet (router, dialog and NgRx come later).
   - The renderer listens for `vite:beforeUpdate` for external styles.
   - `NATIVESCRIPT_STYLE_BASE_URL` defaults to the origin of the library's own `import.meta.url` when that is http(s), behind `if (import.meta.hot)`. Webpack compiles that branch to `if (false) {}`, without errors or warnings, and no `file://` path leaks.
 
 **Other flavors:**
 - **Vue:** plugin-vue's `js-update` → `__VUE_HMR_RUNTIME__` (needs nativescript-vue 3 checked).
-- **Solid, React, plain TS:** stock `full-reload` unless the framework's own refresh plugin is enabled.
+- **Solid, React, plain TS:** no entry boundary yet, so an edit without a closer boundary restarts the app. They get the same entry boundary later (remount via `resetRootView`).
 - **Global `app.css`:** still `ns:css-updates` until phase 3. Target: a real Vite module imported by the entry, so `js-update` → `updateStyle` covers it, replacing `virtual:ns-app-css`, `ns:css-updates`, `app-css-state` and connect-sync.
 
 ## Phases
 1. **Thin is the only mode; delete what thin never reaches.** Done (FINDINGS round 10).
-2. **Transport, client port and `?t` identity.** Done in code (FINDINGS round 11); device check pending: Angular `.html`/`.css`/`.ts`/root edits on one pid.
+2. **Transport, client port and `?t` identity.** Done (FINDINGS round 11). 2b: app restarts (FINDINGS round 11). 2c: the entry-boundary soft reboot, the event bus and the Angular reboot API (FINDINGS round 12).
 3. **Vendor bundle out; new import-map key source; `app.css` as a module.** Measure duplicates before and after.
-4. **Flavors.** TS, Solid and React fixtures (full reload); Vue (plugin-vue `js-update`); `./solid-bootstrap`'s remount on full reload.
+4. **Flavors.** An entry boundary for TS, Solid and React (remount via `resetRootView`); Vue (plugin-vue `js-update`).
 5. **Android.**
 
 ## Open
-- **`hot.data` across full reloads.** A module that only expects `data` to be filled when it is accepted could restore invalid state after a full reload. An opt-in or opt-out may be needed later.
+- **A static side-effect gate:** restart when a re-run module has top-level side effects that nothing disposes. Deferred.
+- **Angular participants:** router stack replay, dialogs, NgRx (`provideNgrxHmr`).
+- **Worker ownership:** workers spawned by a rebooted app instance leak unless the framework terminates them.
 - **Globals.** Consolidate what remains into one `Symbol.for('nativescript.dev')`-keyed typed object (inventory in FINDINGS round 11).
 - **Workers:** `workerHmrUrlPlugin` is `/ns/m`-only, so workers need a thin equivalent.
 - **Monorepo Angular ids.** Analog builds `angular:component-update` ids relative to `process.cwd()`, while the NS config comment assumes `workspaceRoot`. The NS rules resolve both, but in-place updates in an Nx workspace are unverified.
 - **Edits while disconnected are not applied.** A disconnect only reconnects, so if backgrounding the app drops the socket, edits made in the meantime don't reach the device. Vite does not replay them. Check on device whether that matters.
-- **Edits inside never-evicted packages served outside `node_modules`** (a workspace-linked core under `/@fs/`): Vite stamps `?t=` on the importer chain, and the device would load those URLs as second instances, which splits core. Not handled.
-- **Analog clears its `classNames` on any non-component `.ts` edit**, so the next template edit of each component becomes a full reload until that component's `.ts` is recompiled.
+- **Analog clears its `classNames` on any non-component `.ts` edit**, so the next template edit of each component reboots the app instead of updating in place, until that component's `.ts` is recompiled.
 - **A declined module between the edited file and its boundary** is neither `path` nor `acceptedPath` of the `js-update`, so the device can't see it. That needs detection on the server.
 - **Restart-required overlay tone:** it uses the existing `warn` tone, which the native iOS and Android overlays draw as the neutral connection panel. A distinct colour needs a new tone in both native renderers.
 - **`?v=` volatile patterns** now re-fetch optimized deps on every import, because `v` is part of the module key. Revisit with phase 3.
