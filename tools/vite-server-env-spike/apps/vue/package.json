@@ -6,7 +6,8 @@
   "dependencies": {
     "@nativescript/core": "file:.local/nativescript-core.tgz",
     "@valor/nativescript-websockets": "^2.0.3",
-    "nativescript-vue": "^3.1.3"
+    "nativescript-vue": "^3.1.3",
+    "ns-cjs-probe": "file:.local/ns-cjs-probe.tgz"
   },
   "devDependencies": {
     "@nativescript/ios": "9.1.2-next.2026-11-18-44312118018",

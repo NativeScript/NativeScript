@@ -2,12 +2,10 @@
  * `css-tree/lib/data-patch.js` runs `import { createRequire } from 'module'`.
  * The base config aliases `module` (`aliasCssTree`) and `node:module`
  * (`resolveConfig.alias`) to local polyfills exporting `createRequire`. The
- * dep optimizer does not apply those aliases, so a pre-bundle that inlined
- * css-tree (an app `optimizeDeps.include` entry) would point the import at
- * `/node_modules/.vite/deps/module.js` and crash on device with
- * `ReferenceError: createRequire is not defined`. Both specifiers therefore
- * stay in `NS_OPTIMIZE_DEPS_EXCLUDE`, and the aliases must keep pointing at
- * the polyfills.
+ * dep optimizer applies those aliases too, so a pre-bundle of css-tree would
+ * inline its own copy of the polyfill. Both specifiers therefore stay in
+ * `NS_OPTIMIZE_DEPS_EXCLUDE`: the pre-bundle keeps a bare import, which
+ * import analysis resolves through the alias to the one served polyfill.
  */
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
@@ -50,8 +48,8 @@ describe('css-tree createRequire polyfill protection', () => {
 		const exclude = extractArrayLiteral(optimizeDepsSource, 'NS_OPTIMIZE_DEPS_EXCLUDE');
 		expect(exclude).toContain('module');
 		expect(exclude).toContain('node:module');
-		// base.ts must consume the shared constant (not re-list it inline).
-		expect(baseSource).toContain('NS_OPTIMIZE_DEPS_EXCLUDE');
+		// The dev optimizeDeps config must consume the shared constant (not re-list it inline).
+		expect(readSource('helpers/dev-optimize-deps.ts')).toContain('NS_OPTIMIZE_DEPS_EXCLUDE');
 	});
 
 	it('aliases the bare `module` specifier to the local css-tree polyfill', () => {

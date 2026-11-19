@@ -120,6 +120,22 @@ describe('nsAppRestartPlugin', () => {
 		expect(request.mock.calls).toEqual([['the Vite dev server restarted']]);
 	});
 
+	it('leaves the app restart to whoever restarted the server for one', () => {
+		const request = vi.fn();
+		const state: { serverStarts: number; nextStartRequestsRestart?: boolean } = { serverStarts: 0 };
+		(nsAppRestartPlugin({ request, state }) as any).configureServer(fakeServer().server);
+		state.nextStartRequestsRestart = true;
+		const owned = fakeServer();
+		(nsAppRestartPlugin({ request, state }) as any).configureServer(owned.server);
+		owned.emit('vite:client:connect');
+		expect(request).not.toHaveBeenCalled();
+
+		const next = fakeServer();
+		(nsAppRestartPlugin({ request, state }) as any).configureServer(next.server);
+		next.emit('vite:client:connect');
+		expect(request.mock.calls).toEqual([['the Vite dev server restarted']]);
+	});
+
 	it('swallows an edit to non-evictable code and requests a restart', async () => {
 		const request = vi.fn();
 		const fake = fakeServer();

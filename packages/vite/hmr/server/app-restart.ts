@@ -94,12 +94,19 @@ function relativeToRoot(file: string, root: string): string {
 	return rel && !rel.startsWith('..') ? rel : file;
 }
 
+interface AppRestartState {
+	serverStarts: number;
+	/** The next server start is followed by an app restart request of its own. */
+	nextStartRequestsRestart?: boolean;
+}
+
 // Module state, not plugin state: `server.restart()` (and a config edit)
 // builds new plugin instances, but this module evaluates once per process.
-const processState = { serverStarts: 0 };
+const processState: AppRestartState = { serverStarts: 0 };
 let currentServer: ViteDevServer | undefined;
+const sendToCli = typeof process.send === 'function' ? (message: NativeScriptRestartMessage) => process.send!(message) : undefined;
 const requester = createAppRestartRequester({
-	send: typeof process.send === 'function' ? (message) => process.send!(message) : undefined,
+	send: sendToCli,
 	notifyDevices: (data) => currentServer?.ws.send(NS_RESTART_REQUIRED_EVENT, data),
 	log: (message) => (currentServer?.config.logger ?? console).warn(message),
 });
@@ -110,12 +117,27 @@ export function requestAppRestart(reason: string): void {
 }
 
 /**
+ * Restarts the dev server for a change the caller follows with
+ * {@link requestAppRestart}, so the first device connection to the new
+ * server doesn't request a second app restart.
+ */
+export async function restartServerBeforeAppRestart(server: ViteDevServer, forceOptimize: boolean): Promise<void> {
+	// Without the CLI nobody restarts the app: a device reconnecting later must still be told.
+	processState.nextStartRequestsRestart = !!sendToCli;
+	try {
+		await server.restart(forceOptimize);
+	} finally {
+		processState.nextStartRequestsRestart = false;
+	}
+}
+
+/**
  * Restart triggers on the dev server: edits to code a soft reload never
  * re-evaluates, a device's `ns:restart`, and the first device connection
  * after Vite restarted itself (the device's modules came from the previous
  * server's graph and plugin state).
  */
-export function nsAppRestartPlugin(options: { request?: (reason: string) => void; state?: { serverStarts: number } } = {}): Plugin {
+export function nsAppRestartPlugin(options: { request?: (reason: string) => void; state?: AppRestartState } = {}): Plugin {
 	const request = options.request ?? requestAppRestart;
 	const state = options.state ?? processState;
 	let keepPrefixes: Promise<string[]> | undefined;
@@ -126,7 +148,8 @@ export function nsAppRestartPlugin(options: { request?: (reason: string) => void
 		configureServer(server) {
 			currentServer = server;
 			state.serverStarts++;
-			let restartPending = state.serverStarts > 1;
+			let restartPending = state.serverStarts > 1 && !state.nextStartRequestsRestart;
+			state.nextStartRequestsRestart = false;
 			server.ws.on(NS_RESTART_EVENT, (data?: Partial<RestartEventData>) => {
 				request(typeof data?.reason === 'string' && data.reason ? data.reason : 'the device requested a restart');
 			});

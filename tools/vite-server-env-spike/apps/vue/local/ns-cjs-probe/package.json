@@ -1,0 +1,7 @@
+{
+  "name": "ns-cjs-probe",
+  "version": "0.0.1",
+  "private": true,
+  "description": "CommonJS package requiring @nativescript/core, for the dev server's require handling",
+  "main": "index.js"
+}

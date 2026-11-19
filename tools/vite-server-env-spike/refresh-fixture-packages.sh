@@ -55,6 +55,11 @@ pack() {
 }
 
 cd "$APP"
+# Local packages (apps/<fixture>/local/<name>/) install from tarballs too: a file:
+# directory dependency is a symlink, which the dev server keeps out of pre-bundling.
+for dir in "$APP"/local/*/; do
+	if [ -f "$dir/package.json" ]; then pack "$dir" "$(basename "$dir").tgz"; fi
+done
 for p in "${PKGS[@]}"; do
 	case "$p" in
 		vite) pack "$REPO/dist/packages/vite" nativescript-vite.tgz ;;

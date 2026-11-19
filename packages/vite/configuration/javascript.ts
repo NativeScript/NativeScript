@@ -4,7 +4,7 @@ import { baseConfig } from './base.js';
 import { getCliFlags, resolvePlatform } from '../helpers/cli-flags.js';
 import { getProjectAppPath, resolveProjectGlobalCssPath } from '../helpers/utils.js';
 import { resolveProjectMainEntryPath } from '../hmr/server/vite-plugin.js';
-import { BUNDLER_CONTEXT_VIRTUAL_ID, type BundlerPlatform, createContextUnregisterCode, createEntryBundlerContextImportPlugin, createXmlLoaderPlugin, shouldExcludePlatformFile, toContextImportSpecifier, walkAppFiles } from '../helpers/bundler-context.js';
+import { BUNDLER_CONTEXT_VIRTUAL_ID, type BundlerPlatform, createContextUnregisterCode, createEntryBundlerContextImportPlugin, createXmlLoaderPlugin, listBundlerContextCodeFiles, shouldExcludePlatformFile, toContextImportSpecifier, walkAppFiles } from '../helpers/bundler-context.js';
 
 /**
  * Registers bundler modules for plain JavaScript apps (no .ts files),
@@ -54,7 +54,11 @@ function createBundlerContextPlugin(opts: { excludeGlobalStylesheet?: boolean } 
 			const styleFiles = enumerate((ext) => styleExtsSet.has(ext)).filter((f) => !shouldExcludeAbsolute(f) && !(globalStylesheet && path.resolve(f) === globalStylesheet));
 			// Served, the entry imports this context: listing the entry here too
 			// would make it its own importer.
-			const jsFiles = enumerate((ext) => ext === 'js').filter((f) => !shouldExcludeAbsolute(f) && !(serve && path.resolve(f) === entryFile));
+			const jsFiles = listBundlerContextCodeFiles(
+				'javascript',
+				enumerate((ext) => ext === 'js').filter((f) => !shouldExcludeAbsolute(f)),
+				serve ? entryFile : undefined,
+			);
 			const importLines: string[] = [];
 			const registryEntries: string[] = [];
 			const moduleMapLines: string[] = [];

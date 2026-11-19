@@ -1,70 +1,81 @@
-import type { Plugin } from 'vite';
+import type { Rolldown } from 'vite';
 
 /**
- * Specifiers kept external to every pre-bundle Vite's dep optimizer builds
- * from `optimizeDeps.include`: a package inlined into a pre-bundle and also
- * served as its own files evaluates twice on device.
+ * Specifiers the dev dep optimizer never pre-bundles: they stay served
+ * source, one instance shared by the dev boot module, the dev client and
+ * every pre-bundle that imports them.
  *
- * - `@nativescript/core`, `@nativescript/vite`, `@valor/nativescript-websockets`:
- *   one instance per app, shared with the dev boot module and the dev client.
- * - `module` / `node:module` / `set-value`: aliased to local shims
- *   (`helpers/css-tree.ts`, `resolveConfig.alias` in `configuration/base.ts`);
- *   the optimizer does not apply those aliases, and css-tree's
- *   `import { createRequire } from 'module'` then crashes on device.
+ * - `@nativescript/core`, `@nativescript/vite`: one instance per app.
+ * - `module` / `node:module` / `set-value`: aliased to shims inside this
+ *   package (`helpers/css-tree.ts`, `resolveConfig.alias` in
+ *   `configuration/base.ts`). The optimizer applies aliases too, so it would
+ *   inline a copy of the shim into each pre-bundle importing them.
  */
-export const NS_OPTIMIZE_DEPS_EXCLUDE = ['@nativescript/core', '@nativescript/vite', '@valor/nativescript-websockets', 'set-value', 'module', 'node:module'] as const;
-
-type OptimizeDepsLike = { noDiscovery?: boolean; entries?: string | string[]; include?: string[] };
-type ConfigWithOptimizeDeps = { optimizeDeps?: OptimizeDepsLike; environments?: Record<string, { optimizeDeps?: OptimizeDepsLike } | undefined> };
-
-/** The `include` entries of the app's own config: top level and the client environment's. */
-export function collectOwnOptimizeDepsInclude(config: ConfigWithOptimizeDeps): string[] {
-	return [...new Set([...(config.optimizeDeps?.include ?? []), ...(config.environments?.client?.optimizeDeps?.include ?? [])])];
-}
+export const NS_OPTIMIZE_DEPS_EXCLUDE = ['@nativescript/core', '@nativescript/vite', 'set-value', 'module', 'node:module'] as const;
 
 /**
- * Applies the dev policy to the resolved client `optimizeDeps` (the object
- * Vite's client environment reads when it decides whether to create a dep
- * optimizer). Returns the include entries it dropped.
+ * `define`s for the dev dep optimizer's Rolldown build. Webpack's
+ * `__non_webpack_require__` becomes a plain `require`, which the pre-bundle
+ * resolves like any other `require()`: bundled, or an ESM import of an
+ * excluded package (see {@link optimizeDepsEsmRequirePlugin}). A call with a
+ * non-literal argument still compiles to Rolldown's `__require`, which falls
+ * back to the runtime's global `require`.
  */
-export function enforceOptimizeDepsPolicy(optimizeDeps: OptimizeDepsLike, include: readonly string[]): string[] {
-	const allowed = new Set(include);
-	const dropped = (optimizeDeps.include ?? []).filter((id) => !allowed.has(id));
-	optimizeDeps.noDiscovery = true;
-	optimizeDeps.entries = [];
-	optimizeDeps.include = [...allowed];
-	return dropped;
-}
-
-/**
- * Dev-server dependency policy: no discovery, and only what the app's config
- * (the flavor config plus the app's own `vite.config`) lists in
- * `optimizeDeps.include` is pre-bundled. With nothing listed, Vite creates no
- * dep optimizer and every dependency is served as its own file at a
- * version-less URL.
- *
- * Includes added by other plugins (Analog adds Angular's) are dropped: the
- * list is captured in a `config` hook ordered before every other plugin's,
- * and enforced again after all `config`/`configEnvironment` hooks ran.
- * The plugin must stay first in the base config's plugin list.
- */
-export function nsOptimizeDepsPolicyPlugin(opts: { verbose?: boolean } = {}): Plugin {
-	let include: string[] = [];
+export function getOptimizeDepsDefine(nodeEnv: 'development' | 'production'): Record<string, string> {
 	return {
-		name: 'ns-optimize-deps-policy',
-		enforce: 'pre',
-		apply: 'serve',
-		config: {
-			order: 'pre',
-			handler(config) {
-				include = collectOwnOptimizeDepsInclude(config as ConfigWithOptimizeDeps);
+		global: 'globalThis',
+		'process.env.NODE_ENV': JSON.stringify(nodeEnv),
+		__non_webpack_require__: 'require',
+	};
+}
+
+/** True when `spec` is one of `names` or a subpath of one. */
+export function isExcludedSpecifier(spec: string, names: readonly string[]): boolean {
+	return names.some((name) => spec === name || spec.startsWith(`${name}/`));
+}
+
+/** A RegExp matching each of `names` and its subpaths. */
+export function excludedSpecifierPattern(names: readonly string[]): RegExp {
+	const alternatives = names.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+	return new RegExp(`^(?:${alternatives.join('|')})(?:/|$)`);
+}
+
+const REQUIRE_FACADE_PREFIX = '\0ns-require-esm:';
+const FACADE_IMPORT_PREFIX = 'ns-require-esm-import:';
+
+/**
+ * The Rolldown plugin that compiles a pre-bundle's `require()` of an excluded
+ * package, or of one of its subpaths, to an ESM import of it; import analysis
+ * then points that import at the served module. Without it Rolldown emits
+ * `__require(...)`, which needs a global `require` the device doesn't have
+ * (Vite's own `cjs-external` facade covers exact package names only).
+ *
+ * `require()` returns what Node's `require()` of an ES module returns: the
+ * `'module.exports'` export when there is one, else the exports, flagged
+ * `__esModule` when one of them is a default export.
+ *
+ * Rolldown's built-in `esmExternalRequirePlugin` does the same, but a
+ * built-in plugin is silently ignored by another Rolldown copy, and the
+ * Vite running the dev server need not be the one this package imports.
+ */
+export function optimizeDepsEsmRequirePlugin(exclude: readonly string[]): Rolldown.Plugin {
+	return {
+		name: 'ns-optimize-deps-esm-require',
+		resolveId: {
+			filter: { id: [excludedSpecifierPattern(exclude), new RegExp(`^${FACADE_IMPORT_PREFIX}`)] },
+			handler(id, _importer, options) {
+				if (id.startsWith(FACADE_IMPORT_PREFIX)) return { id: id.slice(FACADE_IMPORT_PREFIX.length), external: 'absolute' };
+				return options.kind === 'require-call' ? { id: REQUIRE_FACADE_PREFIX + id } : null;
 			},
 		},
-		configResolved(resolved) {
-			const dropped = enforceOptimizeDepsPolicy(resolved.optimizeDeps as OptimizeDepsLike, include);
-			if (dropped.length && opts.verbose) {
-				resolved.logger.info(`[ns-vite] optimizeDeps.include entries added by plugins were dropped: ${dropped.join(', ')}`);
-			}
+		load: {
+			filter: { id: new RegExp(`^${REQUIRE_FACADE_PREFIX}`) },
+			handler(id) {
+				const spec = id.slice(REQUIRE_FACADE_PREFIX.length);
+				return {
+					code: [`import * as m from ${JSON.stringify(FACADE_IMPORT_PREFIX + spec)};`, `module.exports = Object.prototype.hasOwnProperty.call(m, 'module.exports') ? m['module.exports'] : 'default' in m && !('__esModule' in m) ? { __esModule: true, ...m } : { ...m };`].join('\n'),
+				};
+			},
 		},
 	};
 }

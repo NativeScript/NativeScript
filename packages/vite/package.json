@@ -86,7 +86,9 @@
 		"./hmr/shared/runtime/launch-bridge.js": "./hmr/shared/runtime/launch-bridge.js",
 		"./hmr/shared/runtime/dev-globals.js": "./hmr/shared/runtime/dev-globals.js",
 		"./runtime/core-aliases-early": "./runtime/core-aliases-early.js",
-		"./runtime/core-aliases-early.js": "./runtime/core-aliases-early.js"
+		"./runtime/core-aliases-early.js": "./runtime/core-aliases-early.js",
+		"./runtime/module-require.js": "./runtime/module-require.js",
+		"./runtime/strict-global-require.js": "./runtime/strict-global-require.js"
 	},
 	"bin": {
 		"nativescript-vite": "./bin/cli.cjs"

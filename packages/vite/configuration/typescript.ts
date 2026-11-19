@@ -5,7 +5,7 @@ import { getCliFlags, resolvePlatform } from '../helpers/cli-flags.js';
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from '../helpers/project.js';
 import { getProjectAppPath, resolveProjectGlobalCssPath } from '../helpers/utils.js';
 import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
-import { BUNDLER_CONTEXT_VIRTUAL_ID, type BundlerPlatform, createContextUnregisterCode, createEntryBundlerContextImportPlugin, createXmlLoaderPlugin, shouldExcludePlatformFile, toContextImportSpecifier, walkAppFiles } from '../helpers/bundler-context.js';
+import { BUNDLER_CONTEXT_VIRTUAL_ID, type BundlerPlatform, createContextUnregisterCode, createEntryBundlerContextImportPlugin, createXmlLoaderPlugin, listBundlerContextCodeFiles, shouldExcludePlatformFile, toContextImportSpecifier, walkAppFiles } from '../helpers/bundler-context.js';
 
 /**
  * TypeScript + XML NativeScript Vite configuration.
@@ -57,16 +57,8 @@ function createBundlerContextPlugin(opts: { excludeGlobalStylesheet?: boolean } 
 			// as an untagged base stylesheet whose rules no edit can remove.
 			const globalStylesheet = opts.excludeGlobalStylesheet ? resolveProjectGlobalCssPath() : null;
 			const styleFiles = allFiles.filter((f) => /\.(css|scss|less|sass)$/.test(f) && !(globalStylesheet && path.resolve(f) === globalStylesheet));
-			// Import only code-behind files paired with XML (mirrors webpack's contextual resolution)
-			const xmlBases = new Set(xmlFiles.map((x) => x.slice(0, -'.xml'.length)));
-			const codeFiles: string[] = [];
-			for (const base of xmlBases) {
-				const tsCandidate = `${base}.ts`;
-				const jsCandidate = `${base}.js`;
-				if ((!mainEntryRel || tsCandidate !== mainEntryRel) && allFiles.includes(tsCandidate)) codeFiles.push(tsCandidate);
-				else if ((!mainEntryRel || jsCandidate !== mainEntryRel) && allFiles.includes(jsCandidate)) codeFiles.push(jsCandidate);
-			}
-			// Do not include additional modules beyond XML-paired code-behind to avoid early side effects.
+			// Only XML code-behind (webpack's contextual resolution): other modules would run early side effects.
+			const codeFiles = listBundlerContextCodeFiles('typescript', allFiles, mainEntryRel);
 			const importLines: string[] = [];
 			const registryEntries: string[] = [];
 			const moduleMapLines: string[] = [];

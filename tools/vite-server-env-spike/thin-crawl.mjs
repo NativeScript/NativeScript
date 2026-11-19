@@ -23,6 +23,7 @@ import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { FAILURE_KINDS, isHttpUrl, loadableStatus, resolveDeviceImport } from './device-resolve.mjs';
+import { classifyDepRequires, isKnownUncalledGlobalRequire, isStrictGlobalRequireShadow, REQUIRE_TOKEN_RE, scanRequires } from './require-scan.mjs';
 
 const spikeDir = import.meta.dirname;
 const repoRoot = path.resolve(spikeDir, '../..');
@@ -74,6 +75,24 @@ const optimizerState = () => {
 	return { browserHash: md?.browserHash ?? null, hash: md?.hash ?? null, optimized: md ? Object.keys(md.optimized).length : null, discovered: md ? Object.keys(md.discovered ?? {}).length : null, diskBrowserHash };
 };
 const optimizerAtStart = optimizerState();
+// Deps the request path registers (import analysis, the import map's resolver) beyond what the scan found;
+// the scan itself adds its deps without going through registerMissingImport. `phase` says which request did.
+const depsOptimizerRef = server.environments.client.depsOptimizer;
+const registeredMissing = [];
+let crawlPhase = 'startup';
+if (depsOptimizerRef?.registerMissingImport) {
+	const register = depsOptimizerRef.registerMissingImport.bind(depsOptimizerRef);
+	depsOptimizerRef.registerMissingImport = (id, resolved) => {
+		const md = depsOptimizerRef.metadata;
+		const known = !!(md.optimized[id] || md.chunks?.[id] || md.discovered[id]);
+		if (!known) registeredMissing.push({ id, resolved, phase: crawlPhase });
+		return register(id, resolved);
+	};
+}
+let optimizerAfterScan = null;
+const scanDone = Promise.resolve(depsOptimizerRef?.scanProcessing).then(() => {
+	optimizerAfterScan = optimizerState();
+});
 // No device is connected, so a payload sent here would otherwise vanish; a re-optimization shows up as `full-reload`.
 const hotSent = [];
 const channels = new Map();
@@ -111,7 +130,9 @@ const toLocal = (url) => {
 };
 
 const mapUrl = session.runtimeConfigUrl;
+crawlPhase = 'import-map (start)';
 const runtimeConfig = await (await fetch(toLocal(mapUrl))).json();
+crawlPhase = 'crawl';
 const importMap = runtimeConfig.importMap ?? {};
 
 // The client bootstrap is served through Vite; its dynamic import of the HMR client is absolute on the wire.
@@ -489,7 +510,19 @@ for (const [href, body] of bodies) {
 		// Rolldown writes the map next to the output; `sources` resolve against the map file's directory,
 		// independent of the optimizer's cwd. `//#region` comments (relative to its cwd) are the cross-check.
 		const smu = body.match(/\/\/# sourceMappingURL=(\S+)\s*$/);
-		if (smu && !smu[1].startsWith('data:')) {
+		// Vite serves an optimized dep with its map inlined; the map Rolldown wrote sits next to the file on disk.
+		const diskMap = b.file && isFile(`${b.file}.map`) ? `${b.file}.map` : null;
+		if (diskMap) {
+			try {
+				const map = JSON.parse(fs.readFileSync(diskMap, 'utf8'));
+				inputs = newSet();
+				for (const s of map.sources ?? []) collect(inputs, path.resolve(path.dirname(diskMap), map.sourceRoot ?? ''), s);
+				b.source = 'sourcemap (disk)';
+				b.map = diskMap;
+			} catch (e) {
+				b.mapError = String(e?.message || e);
+			}
+		} else if (smu && !smu[1].startsWith('data:')) {
 			const mapHref = new URL(smu[1], href).href;
 			try {
 				const map = await (await fetch(toLocal(mapHref))).json();
@@ -503,7 +536,8 @@ for (const [href, body] of bodies) {
 			}
 		}
 		const regions = newSet();
-		for (const m of body.matchAll(/^\/\/#region (.+)$/gm)) collect(regions, server.config.root, m[1]);
+		// Rolldown marks each module `//#region <path>` (older) or `// <path>` at column 0 (newer).
+		for (const m of body.matchAll(/^\/\/(?:#region)? ((?:\.\.?\/|node_modules\/|\/)\S+)$/gm)) collect(regions, server.config.root, m[1]);
 		if (!inputs) {
 			b.source = 'rolldown region comments';
 			inputs = regions;
@@ -640,8 +674,9 @@ const readText = (file) => {
 const CJS_TOKENS = /(^|[^.\w$'"])(module\.exports|exports\.[A-Za-z_$][\w$]*|require\s*\()/m;
 const hasNoModuleSyntax = (code) => {
 	try {
-		const [imps, exps] = parse(code);
-		return imps.length === 0 && exps.length === 0;
+		// `export {}` has module syntax but no import or export entries.
+		const [imps, exps, , hasModuleSyntax] = parse(code);
+		return hasModuleSyntax === undefined ? imps.length === 0 && exps.length === 0 : !hasModuleSyntax;
 	} catch {
 		return false;
 	}
@@ -707,6 +742,46 @@ for (const file of inlinedIn.keys()) noteRequires(readText(file), `inlined:${fil
 if (bundleCode) noteRequires(bundleCode, 'bundle.mjs');
 const requireBySpec = Object.fromEntries([...requireCallers].sort(([a], [b]) => a.localeCompare(b)).map(([spec, where]) => [spec, [...where].sort()]));
 
+// Static require check (require-scan.mjs).
+const optimizeDepsExclude = server.environments.client.config.optimizeDeps?.exclude ?? [];
+const isExcludedSpec = (spec) => optimizeDepsExclude.some((name) => spec === name || spec.startsWith(`${name}/`));
+const requireCheck = { servedModules: 0, servedFailures: [], servedMemberCalls: [], knownUncalledMemberCalls: [], parseErrors: [], depsDir: null, depFiles: 0, depFailures: [], depInternals: [] };
+const noteDep = (where, scan) => {
+	const { failures, internals } = classifyDepRequires(scan, isExcludedSpec);
+	requireCheck.depFailures.push(...failures.map((f) => ({ where, ...f })));
+	requireCheck.depInternals.push(...internals.map((f) => ({ where, ...f })));
+};
+for (const [href, body] of bodies) {
+	if (!REQUIRE_TOKEN_RE.test(body)) continue;
+	if (isOptimizedDep(new URL(href).pathname)) continue;
+	const scan = scanRequires(body);
+	if (scan.error) {
+		requireCheck.parseErrors.push({ where: href, error: scan.error });
+		continue;
+	}
+	requireCheck.servedModules++;
+	for (const f of scan.free) requireCheck.servedFailures.push({ where: href, ...f });
+	const pathname = new URL(href).pathname;
+	if (!isStrictGlobalRequireShadow(pathname)) {
+		for (const m of scan.memberCalls) (isKnownUncalledGlobalRequire(pathname, m) ? requireCheck.knownUncalledMemberCalls : requireCheck.servedMemberCalls).push({ where: href, ...m });
+	}
+}
+{
+	const depsDir = path.join(server.config.cacheDir, 'deps');
+	if (fs.existsSync(depsDir)) {
+		requireCheck.depsDir = depsDir;
+		for (const f of fs.readdirSync(depsDir).filter((name) => name.endsWith('.js'))) {
+			requireCheck.depFiles++;
+			const code = fs.readFileSync(path.join(depsDir, f), 'utf8');
+			if (!REQUIRE_TOKEN_RE.test(code)) continue;
+			const scan = scanRequires(code);
+			if (scan.error) requireCheck.parseErrors.push({ where: `deps/${f}`, error: scan.error });
+			else noteDep(`deps/${f}`, scan);
+		}
+	}
+}
+const requireCheckFailures = requireCheck.servedFailures.length + requireCheck.servedMemberCalls.length + requireCheck.depFailures.length;
+
 // NativeScript's V8 is built without ICU: a Unicode property escape under the `u`/`v` flag is a
 // SyntaxError (at module compile time for a regex literal, at construction for a RegExp string).
 const UNICODE_PROP = /\\{1,2}[pP]\{[^}\n]{0,40}\}?/g;
@@ -739,6 +814,7 @@ async function settledOptimizerState() {
 	}
 	return JSON.parse(last);
 }
+await scanDone;
 const optimizerAtEnd = await settledOptimizerState();
 const hotSentDuringCrawl = hotSent.slice();
 const fullReloads = hotSentDuringCrawl.filter((p) => p.type === 'full-reload');
@@ -746,13 +822,18 @@ const optimizer = {
 	depsOptimizerPresent: !!server.environments.client.depsOptimizer,
 	config: (({ noDiscovery, include, exclude, entries }) => ({ noDiscovery, include, exclude, entries }))(server.environments.client.config.optimizeDeps ?? {}),
 	start: optimizerAtStart,
+	afterScan: optimizerAfterScan,
 	end: optimizerAtEnd,
+	registeredMissing,
 	changed: optimizerAtStart.browserHash !== optimizerAtEnd.browserHash || optimizerAtStart.hash !== optimizerAtEnd.hash,
 	fullReloads,
 	hotSent: hotSentDuringCrawl,
 };
 
+crawlPhase = 'import-map (end)';
 const mapAtEnd = (await (await fetch(toLocal(mapUrl))).json()).importMap ?? {};
+crawlPhase = 'done';
+optimizer.endAfterMap = await settledOptimizerState();
 const importMapDiff = [];
 for (const k of new Set([...Object.keys(importMap.imports ?? {}), ...Object.keys(mapAtEnd.imports ?? {})])) {
 	const a = importMap.imports?.[k];
@@ -776,7 +857,7 @@ for (const [spec, target] of Object.entries(importMap.imports ?? {})) {
 	const t = new URL(target, mapUrl).href;
 	const analysis = new Set();
 	const info = optimizedMeta?.optimized?.[spec] ?? optimizedMeta?.discovered?.[spec];
-	const expectedOptimized = info?.file ? `${deviceOrigin}/${path.relative(server.config.root, info.file).split(path.sep).join('/')}?v=${optimizedMeta.browserHash}` : null;
+	const expectedOptimized = info?.file ? `${deviceOrigin}/${path.relative(server.config.root, info.file).split(path.sep).join('/')}?v=${info.browserHash ?? optimizedMeta.browserHash}` : null;
 	if (expectedOptimized) analysis.add(expectedOptimized);
 	const key = sameFileKeyOf(t);
 	if (key) for (const href of fetched.keys()) if (requestedByCode(href) && sameFileKeyOf(href) === key) analysis.add(href);
@@ -790,6 +871,9 @@ const importMapVsAnalysisMismatch = importMapVsAnalysis.filter((x) => x.status =
 const importMapVsAnalysisFail = importMapVsAnalysis.filter((x) => x.status === 'fail').length;
 
 const emptyBodies = [...bodies].filter(([, b]) => b.length === 0).map(([u]) => u);
+const statusCounts = {};
+for (const e of fetched.values()) statusCounts[e.status] = (statusCounts[e.status] ?? 0) + 1;
+const nonOk = [...fetched].filter(([, e]) => e.status > 0 && !loadableStatus(e.status)).map(([url, e]) => ({ url, status: e.status }));
 const failureCount = cjsServedRawDevice + sessionFailures.length + Object.values(failures).reduce((n, list) => n + list.length, 0) + nonce.filter((n) => !n.ok).length + (bundle?.originMismatch.length ?? 0) + (bundle?.bareMissing.length ?? 0) + (bundle?.coreUrls.length ?? 0);
 
 const report = {
@@ -811,6 +895,8 @@ const report = {
 	requestsByPrefix,
 	totals,
 	failureCount,
+	statusCounts,
+	nonOk,
 	sessionFailures,
 	failures,
 	nonce,
@@ -824,6 +910,7 @@ const report = {
 	cjsServedRaw: { count: cjsServedRaw.length, device: cjsServedRawDevice, list: cjsServedRaw },
 	nsDepsCoverage,
 	requireCallers: { specifiers: Object.keys(requireBySpec).length, bySpecifier: requireBySpec },
+	requireCheck,
 	importMapVsAnalysis: { mismatches: importMapVsAnalysisMismatch, failures: importMapVsAnalysisFail, entries: importMapVsAnalysis },
 	importMapDiff,
 	optimizer,
@@ -892,6 +979,10 @@ lines.push(
 	`  runtime require() calls (bare specifiers, and any createRequire spec) ${Object.keys(requireBySpec).length}: ${Object.entries(requireBySpec)
 		.map(([k, v]) => `${k}(${v.length})`)
 		.join(' ')}`,
+	`  static require check: served modules with require-like tokens ${requireCheck.servedModules}, free require/__require/__non_webpack_require__ ${requireCheck.servedFailures.length}; pre-bundles ${requireCheck.depFiles} files: requiring an excluded package ${requireCheck.depFailures.length}, other internals ${requireCheck.depInternals.length}${requireCheck.depInternals.length ? ` [${[...new Set(requireCheck.depInternals.map((d) => `${d.via} ${d.spec ?? '<non-literal>'}`))].join(', ')}]` : ''}; parse errors ${requireCheck.parseErrors.length}`,
+	`  global-object require calls (globalThis/global/self.require): fail ${requireCheck.servedMemberCalls.length}, known-uncalled ${requireCheck.knownUncalledMemberCalls.length}${requireCheck.knownUncalledMemberCalls.length ? ' (core globals/index System.import)' : ''}`,
+	...[...requireCheck.servedFailures, ...requireCheck.servedMemberCalls, ...requireCheck.depFailures].slice(0, 10).map((f) => `      [FAIL] ${rel(f.where)} ${f.via ?? `free ${f.name}${f.call ? '()' : ''}`} ${f.spec ?? '<non-literal>'}`),
+	...requireCheck.parseErrors.slice(0, 5).map((e) => `      [parse] ${rel(e.where)}: ${e.error}`),
 	`  import map vs import analysis (every key): fail ${importMapVsAnalysisFail} (map target and another URL both loaded), warn ${importMapVsAnalysisMismatch - importMapVsAnalysisFail}, ok ${importMapVsAnalysis.filter((x) => x.status === 'ok').length}, unused ${importMapVsAnalysis.filter((x) => x.status === 'unused').length} / ${importMapVsAnalysis.length}`,
 	...importMapVsAnalysis.filter((x) => x.status === 'fail' || x.status === 'warn').map((x) => `      [${x.status}] ${x.spec}: map ${rel(x.mapTarget)}${x.mapTargetLoaded ? ' (loaded)' : ' (seed-only)'} vs analysis ${x.differing.map(rel).join(', ')}`),
 	`  unicode property escapes (\\p{ / \\P{; throws on device under u/v) ${unicodePropertyEscapes.length} sources (u/v-flagged or unknown ${report.unicodePropertyEscapes.unicodeFlagged})`,
@@ -899,25 +990,42 @@ lines.push(
 	`  import map changed during crawl ${importMapDiff.length}`,
 	...top(importMapDiff, 5),
 	`  optimizer present ${optimizer.depsOptimizerPresent} (noDiscovery=${optimizer.config.noDiscovery} include=${JSON.stringify(optimizer.config.include)}); browserHash ${optimizerAtStart.browserHash} -> ${optimizerAtEnd.browserHash}${optimizer.changed ? ' CHANGED' : ''}; optimized ${optimizerAtStart.optimized} -> ${optimizerAtEnd.optimized}, discovered ${optimizerAtStart.discovered} -> ${optimizerAtEnd.discovered}; full-reloads sent ${fullReloads.length}; hot payloads ${hotSentDuringCrawl.length}`,
+	`  optimizer after scan: discovered ${optimizerAfterScan?.discovered ?? null}, browserHash ${optimizerAfterScan?.browserHash ?? null}; after end-of-crawl map: browserHash ${optimizer.endAfterMap.browserHash}, optimized ${optimizer.endAfterMap.optimized}, discovered ${optimizer.endAfterMap.discovered}`,
+	`  deps registered by requests beyond the scan ${registeredMissing.length}${registeredMissing.length ? `: ${registeredMissing.map((r) => `${r.id} [${r.phase}]`).join(', ')}` : ''}`,
+	`  responses by status ${Object.entries(statusCounts)
+		.map(([s, n]) => `${s}=${n}`)
+		.join(' ')}; non-2xx ${nonOk.length}${
+		nonOk.length
+			? ` (${nonOk
+					.slice(0, 5)
+					.map((e) => `${e.status} ${rel(e.url)}`)
+					.join(', ')})`
+			: ''
+	}`,
 );
 // Vue: Vite's client-inject substitutes `process.env.NODE_ENV` in served modules (no other define),
 // which selects runtime-core's dev branch that registers `__VUE_HMR_RUNTIME__`; the entry boundary
 // imports the Vue reboot module.
 let vueRuntimeOk = true;
 if (flavor === 'vue') {
-	const runtimeCore = [...bodies].filter(([u]) => new URL(u).pathname.endsWith('/@vue/runtime-core/dist/runtime-core.esm-bundler.js'));
+	// Served on its own, or inlined into an optimized dep (where Rolldown folds the dev guard away).
+	const runtimeCoreFile = /\/@vue\/runtime-core\/dist\/runtime-core\.esm-bundler\.js$/;
+	const servedRuntimeCore = [...bodies].filter(([u]) => runtimeCoreFile.test(new URL(u).pathname));
+	const runtimeCore = servedRuntimeCore.length ? servedRuntimeCore : bundles.filter((b) => b.files.some((f) => runtimeCoreFile.test(f))).map((b) => [b.url, bodies.get(b.url) ?? '']);
 	const body = runtimeCore[0]?.[1] ?? '';
 	const at = body.indexOf('getGlobalThis().__VUE_HMR_RUNTIME__ = {');
 	const guard = at >= 0 ? body.slice(Math.max(0, body.lastIndexOf('\n', at - 2) - 60), at).trim() : '';
-	const devBranch = at >= 0 && !body.includes('process.env.NODE_ENV') && /"development"\s*!==\s*"production"|\(true\)|!!true/.test(guard);
+	const devBranch = at >= 0 && !body.includes('process.env.NODE_ENV') && (/"development"\s*!==\s*"production"|\(true\)|!!true/.test(guard) || (!servedRuntimeCore.length && !/\bif\s*\(/.test(guard)));
 	const rebootLoaded = [...deviceReached].some((u) => new URL(u).pathname.endsWith('/@nativescript/vite/hmr/frameworks/vue/client/reboot.js'));
 	vueRuntimeOk = runtimeCore.length === 1 && devBranch && rebootLoaded;
 	report.vue = { runtimeCoreUrls: runtimeCore.map(([u]) => u), hmrRuntimeGuard: guard, devBranch, rebootLoaded };
 	fs.writeFileSync(outFile, JSON.stringify(report, null, 2));
 	lines.push(`  vue: runtime-core URLs ${runtimeCore.length}; __VUE_HMR_RUNTIME__ guard ${JSON.stringify(guard)} → dev branch ${devBranch}; reboot module loaded ${rebootLoaded} → ${vueRuntimeOk ? 'ok' : 'FAIL'}`);
 }
-const ok = vueRuntimeOk && failureCount === 0 && duplicates.length === 0 && sameFileFailures === 0 && importMapVsAnalysisFail === 0 && nonce.length > 0 && (allowDupInstances || dupInstanceCount === 0);
-lines.push(`${ok ? 'PASS' : 'FAIL'} failures=${failureCount} duplicates=${duplicates.length} sameFileTwoUrls=${sameFileFailures} importMapVsAnalysis=${importMapVsAnalysisFail} duplicateInstanceFiles=${dupInstanceCount}${allowDupInstances ? ' (allowed)' : ''} → ${path.relative(repoRoot, outFile)}`);
+// A cold start that re-optimizes (new deps, browserHash change, full reload) strands the device on stale URLs.
+const optimizerStable = !optimizer.depsOptimizerPresent || (!optimizer.changed && fullReloads.length === 0 && registeredMissing.length === 0);
+const ok = optimizerStable && vueRuntimeOk && requireCheckFailures === 0 && failureCount === 0 && duplicates.length === 0 && sameFileFailures === 0 && importMapVsAnalysisFail === 0 && nonce.length > 0 && (allowDupInstances || dupInstanceCount === 0);
+lines.push(`${ok ? 'PASS' : 'FAIL'} optimizerStable=${optimizerStable} requireCheck=${requireCheckFailures} failures=${failureCount} duplicates=${duplicates.length} sameFileTwoUrls=${sameFileFailures} importMapVsAnalysis=${importMapVsAnalysisFail} duplicateInstanceFiles=${dupInstanceCount}${allowDupInstances ? ' (allowed)' : ''} → ${path.relative(repoRoot, outFile)}`);
 if (!bundle) lines.push(noBundleWarning);
 console.log(lines.join('\n'));
 await server.close();

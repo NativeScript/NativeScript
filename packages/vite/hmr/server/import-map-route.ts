@@ -1,6 +1,7 @@
-import type { Plugin, ViteDevServer } from 'vite';
+import type { DevEnvironment, Plugin, ViteDevServer } from 'vite';
 import { statSync } from 'node:fs';
 import path from 'node:path';
+import { isExcludedSpecifier } from '../../helpers/optimize-deps.js';
 import { getFrameworkServerStrategy } from '../framework-flavors.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { buildRuntimeConfig } from './import-map.js';
@@ -26,11 +27,19 @@ export async function buildImportMap(server: ViteDevServer, specifiers: Iterable
 	const skip = (spec: string, reason: string) => {
 		if (options.verbose) console.info(`[import-map] no entry for ${spec}: ${reason}`);
 	};
+	const pluginContainer = server.environments.client.pluginContainer;
+	// `scan` is the container's untyped option for Vite's dep scanner: the
+	// resolver then neither registers missing deps nor adds `?v=`.
+	const scanResolve = (spec: string) => pluginContainer.resolveId(spec, importer, { scan: true } as Parameters<typeof pluginContainer.resolveId>[2]);
 	const out: Record<string, string> = {};
 	for (const spec of specifiers) {
 		if (spec.endsWith('/')) continue;
 		try {
-			const resolved = await server.environments.client.pluginContainer.resolveId(spec, importer);
+			if (depsOptimizer && (await wouldDiscover(depsOptimizer, spec, scanResolve))) {
+				skip(spec, 'not pre-bundled (resolving it would make the optimizer discover it)');
+				continue;
+			}
+			const resolved = await pluginContainer.resolveId(spec, importer);
 			if (!resolved || resolved.external) {
 				skip(spec, 'unresolved');
 				continue;
@@ -51,6 +60,26 @@ export async function buildImportMap(server: ViteDevServer, specifiers: Iterable
 		}
 	}
 	return out;
+}
+
+type DepsOptimizerLike = Pick<NonNullable<DevEnvironment['depsOptimizer']>, 'metadata' | 'options' | 'scanProcessing'>;
+
+/**
+ * True when resolving bare `spec` from app code would register it as a
+ * newly discovered dependency: the optimizer discovers, doesn't know it yet,
+ * doesn't exclude it, and it resolves into `node_modules`. A discovery
+ * after the first optimizer run re-optimizes, which can change the browser
+ * hash of every pre-bundle and reload the app. `scanResolve` must not
+ * register anything (a `scan` resolve).
+ */
+export async function wouldDiscover(depsOptimizer: DepsOptimizerLike, spec: string, scanResolve: (spec: string) => Promise<{ id: string; external?: boolean | string } | null | undefined>): Promise<boolean> {
+	const { options } = depsOptimizer;
+	if (options.noDiscovery || isExcludedSpecifier(spec, options.exclude ?? [])) return false;
+	await depsOptimizer.scanProcessing;
+	const metadata = depsOptimizer.metadata;
+	if (metadata.optimized[spec] || metadata.discovered[spec] || metadata.chunks[spec]) return false;
+	const resolved = await scanResolve(spec);
+	return !!resolved && !resolved.external && /[\\/]node_modules[\\/]/.test(resolved.id);
 }
 
 function isFile(file: string): boolean {

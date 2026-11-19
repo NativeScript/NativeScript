@@ -33,6 +33,7 @@ export function getGlobalDefines(opts: { platform: string; targetMode: string; v
 		// Android config reader) reference it unguarded. Map it to the runtime's
 		// global require so those plugins work under Vite/Rolldown too. Raw
 		// expression (NOT JSON.stringified) so it substitutes as code, not a string.
+		// The dev server drops it: served modules get their own require (hmr/server/module-require.ts).
 		__non_webpack_require__: 'globalThis.require',
 		__NS_ENV_VERBOSE__: JSON.stringify(!!opts.verbose),
 		// whether to show the HMR in-progress overlay.

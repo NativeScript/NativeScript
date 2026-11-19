@@ -1058,6 +1058,160 @@ Not changed in this round. Investigated with a throwaway fixture of the stock `t
 - Includes (static reading): `react` and `react-reconciler` pre-bundle in one optimizer run; the reconciler's `require('react')` shares react's chunk; `scheduler` is inlined into the reconciler. Not crawled.
 - `@nativescript-community/react` 19.0.0: `startReactApp` → `Application.run({ create: () => { mount(root); return doc; } })` (`src/renderer.js`); `dispose` stays in that closure; `reconciler` is exported, FiberRoots are not. Its tarball carries a nested `nativescript-community-react-0.1.0.tgz`.
 
+## Round 19: phase 5a, a served boot module, Vite's dep optimizer, no global `require`
+
+**What changed.** Five stages; stage 1 is committed (`d1509a553`), stages 2–5 are uncommitted. DESIGN "Serving", "Import map", "Dependencies", "Require" and "Dev globals" describe the result.
+- **Stage 1, boot through a served module.** Under HMR, `bundle.mjs` imports `<origin>/@vite/env` and the served `virtual:ns-dev-boot`, which holds the boot imports as bare specifiers; the client bootstrap is the served `virtual:ns-dev-client`. Vite's import analysis writes every core URL, `?v=` included. `bundle.mjs` drops from about 1 MB to under 1 KB.
+  - **Deleted:** the `bundle.mjs` require shim (release too: Rollup converts CommonJS at build time), the core registration footer with the `coreModules`/`cjsShape` globals, `version-query-guard.ts`, the `/__ns_dev__/client` route, and the dominative two-phase boot (it falls back to `resetRootView`, as release does).
+  - `ns:` builtins stay bare in served responses (`device-imports.ts`); `ns:module` is loaded through a dynamic import (`runtime-host.ts`); the dev overlay imports core as ESM.
+- **Stage 2, Vite's dep optimizer with discovery** (`helpers/dev-optimize-deps.ts`). Scanned `entries`, an `include` rule, a computed `exclude`, a hand-written Rolldown plugin for `require()` of excluded packages, the import map's `wouldDiscover` guard, and the serve-time Angular linker skipping optimized files. `nsOptimizeDepsPolicyPlugin` is deleted.
+- **Stage 3, no global `require`.** A per-module `require` for served code (`hmr/server/module-require.ts`, `runtime/module-require.ts`), the `__non_webpack_require__` handling, and the opt-in `NS_VITE_STRICT_REQUIRE` shadow (`runtime/strict-global-require.ts`). Vue fixture: a CommonJS package `local/ns-cjs-probe` (requires `@nativescript/core/color`), installed from a packed tarball by `refresh-fixture-packages.sh`, and `app/require-probe.ts`.
+- **Stage 4:** crawls, probes and release builds (below).
+- **Stage 5, edits to a pre-bundled dependency** (`hmr/server/prebundle-watch.ts`): a dev server restart with a new optimizer session, then one app restart.
+- **Stage 6, gaps, then everything re-measured on the final tree.** `entries` also scan the entry file of every linked or platform-main package in `dependencies`. The probe checks the `@nativescript/angular` pre-bundle instead of its raw file, fails on a dependency registered during warm-up, and runs the static `require` check on every module body it fetches (`require-scan.mjs`, shared with `thin-crawl`).
+
+**This reverses round 16's decision (a).** Vite's optimizer (b) lost there on two counts:
+- the device evaluated an installed core twice, because `bundle.mjs` named version-less core URLs while Vite stamped `?v=`;
+- a cold Angular boot re-optimized and restarted the app.
+
+Stage 1 removes the first: Vite writes every URL the device loads, so there is no version-less copy. The scanned entries and the include rule remove the second (experiments below).
+
+**Requests** (cold crawls, `--bundle`; stage 1 `out/phase5a-stage1/crawl-*.summary.txt`, after `out/phase5a-after/crawl-*.summary.txt`):
+
+| | ng | vue | toolbox |
+|---|---|---|---|
+| device requests / KiB, stage 1 | 707 / 27,501 | 481 / 13,596 | 566 / 13,666 |
+| device requests / KiB, after | 332 / 17,880 | 327 / 9,050 | 430 / 9,518 |
+| pre-bundled deps (pre-bundle files incl. chunks) | 24 (34) | 13 (16) | 11 (12) |
+| source files inlined into pre-bundles | 398 | 172 | 147 |
+| import-map entries, stage 1 → after | 14 → 14 | 5 → 6 (`ns-cjs-probe`) | 4 → 4 |
+| Vite | 8.3.8 (nested copy) | 8.3.8 | 8.0.2 |
+
+- Every after crawl passes: 0 duplicates, 0 files under two URLs, 0 duplicate instances, 0 non-2xx, 0 deps registered by requests beyond the scan, 0 full reloads, a stable `browserHash` (ng `f56c1593`, vue `11a62675`, toolbox `af2ee7f4`), `requireCheck` 0, and global-object `require` calls: fail 0, known-uncalled 1 (see "Core's `System.import`").
+- ng: raw `/node_modules` requests 695 → 292; 28 requests (12,533 KiB) go to `/node_modules/.vite`. Vite 8.3.8 pre-bundles inline their source map, which is most of those KiB: ng on 8.0.2 (`out/phase5a-stage2/final-ng-vite802/`, stage 2 build) is 332 requests / 9,157 KiB, 3,809 KiB of it pre-bundles, and passes.
+- toolbox: `include` is empty (its app dependencies are core, platform-main or CSS-only). 10 deps come from scanning core's files: `tslib`, `source-map-js`, `emoji-regex`, four `@csstools/*`, `css-what`, `acorn`, `css-tree`. The 11th, `@nativescript-community/perms`, comes from scanning `@nativescript/imagepicker`'s platform entry (stage 6; before, its two files were served raw: 431 / 9,561). Raw `/@fs` (linked core) requests 404 → 258.
+- vue: the 13 are `nativescript-vue`, `vue`, `ns-cjs-probe`, and core's deps as above.
+- css-tree's `createRequire` JSON reads (`mdn-data`, `patch.json`, `package.json`) appear in every crawl, before and after. They go through the `module` shim, not a global `require`.
+
+**Cold and warm optimizer** (ng):
+- Cold (`node_modules/.vite` cleared): the scan finds all 24 deps before the first request, and requests register none. Cold runs: stage 4 `bd5b50dd` and `crawl-ng-cold2.summary.txt` (`2df672c7`), identical otherwise; stage 6 `crawl-ng.summary.txt` (`f56c1593`), same numbers.
+- Warm (stage 4, `crawl-ng-warm.summary.txt`): optimized 24 → 24, nothing discovered, no re-optimization, hash `738635eb`.
+- The cold `browserHash` differs on every cold start and from the one persisted in `_metadata.json`: Vite seeds the session hash with a timestamp. It is stable within a session. So the first warm restart after a cold start serves new `?v=` URLs, which is harmless because a server restart means an app restart.
+- A late discovery still re-optimizes. The stage-5 Angular probes discovered `@angular/animations/browser` in their warm phase, and the dev server requested a restart for the `full-reload`. The probe caused it (stage 6): its `@nativescript/angular` check fetched the raw `fesm2022/nativescript-angular.mjs`, which the device never loads (the package is pre-bundled, and an alias sends deep `fesm2022` imports to the pre-bundle). That file imports `@angular/animations/browser`. Vite's `vite:pre-alias` registers an aliased bare id that resolves into `node_modules` (here the animations stub inside `@nativescript/vite`) for any importer, `node_modules` ones included (8.3.8 `node.js` ~25871). `thin-crawl --seed` of that file reproduces it (registered beyond the scan: 1), while `thin-crawl`, which loads every pre-bundle the device loads, registers none. The probe now fetches the pre-bundle and has 0 registrations.
+
+**Experiments behind `entries` and `include`** (`out/phase5a-stage2/`):
+- **exp-a** (ng; entries = `main`, the boot module's app files and the bundler context; include = the boot module's bare imports plus `tslib`): 467 requests / 20,271 KiB. The import-map request at startup registered 7 deps the scan missed (`@angular/animations`, `common`, `forms`, `platform-browser`, `platform-browser-dynamic`, `router`, `zone.js`). They made the first commit, so the hash held, but the crawl flags them. → the `wouldDiscover` guard: the map skips a key whose resolve would register a new dep.
+- **exp-a2** (guard added, platform-main packages excluded):
+  - ng: requests discovered `@angular/common` and `@angular/router`, imported by `src/app/home/home.component.ts`'s compiled output. The Angular compiler adds template-dependency imports the scanner never sees. Vite re-optimized: `browserHash` `b99c5e88` → `203249c6`, 1 `full-reload`, 2 × 504 (stale `?v=` for `@angular_router.js` and `rxjs.js`), 224 files under two URLs, 689 requests. → `include` gets the import map's package keys.
+  - vue: the scan found `nativescript-vue` (and `tslib`); stable.
+  - toolbox (linked core): requests discovered core's deps (`@csstools/*` × 4, `emoji-regex`, `css-what`, `acorn`, `css-tree`, `source-map-js`). A linked core lies outside `node_modules`, so its imports are discoverable. A rerun, no reload. An installed core's imports come from a `node_modules` importer and are served raw instead. → `entries` get the files behind the boot module's and the dev client's excluded imports.
+- **exp-b** (both rules): ng 332 / 17,913, vue 323 / 9,037 (before `ns-cjs-probe`), toolbox 431 / 9,561; nothing registered beyond the scan.
+- **exp-d-no-shared:** an explicit `tslib` include changed no optimized set on any app, so it is gone. `tslib` comes from scanning core's files.
+- Risk of the rule: a declared dependency that Rolldown can't bundle fails the cold start, even if the app never imports it.
+
+**`require()` inside pre-bundles** (scratch fixture `/tmp/p5a/facade-test`, script `/tmp/p5a/facade-run.mjs`; a CommonJS dep requiring `@nativescript/core`, `@nativescript/core/ui/core/view` and a file with a default export; core excluded):
+- Vite alone (8.0.2 and 8.3.8): the exact name goes through `vite:cjs-external-facade` (`{ ...m }`); both subpaths compile to Rolldown's `__require("…")`, which falls back to the global `require`.
+- `vite.esmExternalRequirePlugin` (exported by both versions; a Rolldown built-in): all three become `import * as m`. The shape differs: 8.0.2 `{ ...m }`, 8.3.8 the `module.exports` convention.
+- **A built-in plugin from another Vite/Rolldown copy is silently ignored**: `__require` comes back on both cross pairings. The CLI resolves Vite from the project, and `@nativescript/vite` may import a nested copy; the ng fixture does (its `@nativescript/vite` carries Vite 8.3.8, while Analog resolves the root's 8.0.2).
+- → `optimizeDepsEsmRequirePlugin`, hand-written. On 8.0.2 and 8.3.8: no `__require`, and served pre-bundle imports carry the same `?v=` as the app resolver's ids. Its vitest spec runs a real optimizer on 8.0.2.
+- Deps scans: 0 `__require(` and 0 free `require` in every pre-bundle (`out/phase5a-stage2/deps-scan-*.txt`, `out/phase5a-stage3/deps-scan-*.txt`).
+
+**Aliases and `exclude`** (scratch `/tmp/p5a/alias-run.mjs`, both Vite versions):
+- Not excluded, the optimizer applies `resolve.alias` and inlines the shim into the pre-bundle. Excluded, the bare import stays and resolves to the one served shim. The older claim that the optimizer doesn't apply aliases was wrong. So `module`, `node:module` and `set-value` stay excluded.
+- Two excluded-package files are still inlined, each once: ng's `@nativescript/vite/shims/angular-animations-stub.js` (the `@angular/animations` alias target, so it *is* that pre-bundle's entry) and core's nested `emoji-regex` copy.
+- `@valor/nativescript-websockets` left the hard-coded list for the platform-main rule. In exp-a it was pre-bundled but never used: `nativescript-package-resolver` (`enforce: 'pre'`) resolved it to its raw platform file.
+
+**Angular pre-bundling.** Analog 2.9.7 adds a Rolldown plugin to `optimizeDeps` that runs Angular's `JavaScriptTransformer` (linker, `jit: true`) on every `.[cm]?js` optimizer input. Pre-bundles carry `ɵɵdefine*` and no `ɵɵngDeclare*` call; `ngDeclare` appears only in the 8 definitions inside `@angular/core`. `@angular/compiler` is one instance. The serve-time linker re-linked the optimized core chunk (seen with `VITE_DEBUG_LOGS`), so it now skips optimized dep files. Stage 1's serve-time linker linked in AOT mode; JIT-mode linking (`linkerJitMode: true`) has not run on a device.
+
+**Require transform and interop.**
+- Import analysis rewrites an import of a `needsInterop` pre-bundle to `interopHelper(m, isNodeMode)`, `interopHelper = (m, n) => n || !m.__esModule ? { ...m, default: m } : m`. `isNodeMode` is `isFilePathESM(importer)` unless `legacy.inconsistentCjsInterop`. `needsInterop` comes from the dep's metadata, else `optimizeDeps.needsInterop` or `!exportsData.hasModuleSyntax`. Same in 8.0.2 and 8.3.8. The transform mirrors this per dependency.
+- Served code: a `.ts` importer gets `interopHelper(…, 0)` and kind `interop`; an `.mjs` importer gets flag 1 and kind `default` (checked with a temporary file).
+- Vue crawl: one URL for core's `color` module; `ns-cjs-probe` is the 13th dep; the runtime `require` list shows `@nativescript/core/color` and `ns-cjs-probe`.
+- `out/phase5a-stage3/exp-scan-require/`: with `ns-cjs-probe` removed from `dependencies` (so not in `include`), the scan still finds it through the app's `require()`: 13 optimized, nothing registered, PASS.
+- `/@vite/env` (toolbox, 8.0.2) has no `__non_webpack_require__`.
+- The crawl's static check flags unbound `require`, `__non_webpack_require__` and `typeof require`, and `globalThis`/`global`/`self.require(` calls; bound and injected ones pass (negative control `/tmp/p5a/scan-negative.mjs`; against the shared `require-scan.mjs`, `/tmp/p5a/stage6/scan-negative.mjs`). 0 in every after crawl. The probe runs the same check on every JavaScript body it fetches, update modules included (stage 6).
+- **The transform on Vite 8.0.2** (stage 6, toolbox): a temporary `export const __nsRequireProbe = require('@nativescript/core/color');` at the end of `src/main.ts`. Served, `main.ts` gets `import { createModuleRequire as __nsCreateModuleRequire } from "/node_modules/@nativescript/vite/runtime/module-require.js?v=…"; import * as __nsRequireDep0 from "/@fs/…/packages/core/color/index.ios.ts"; const require = __nsCreateModuleRequire("src/main.ts", {"@nativescript/core/color": [__nsRequireDep0, "esm"]});`, and the crawl passes with 0 free `require`. File restored; the toolbox crawl above ran after.
+- Nx gotcha: a literal `require('toString')` in a spec made Nx's dependency scan add a `toString` dependency; the task runner then crashed (`dependency.push is not a function`) and silently skipped the build.
+
+**Strict `require` evidence** (runtimes read-only):
+- iOS: `ns-module.js`'s `createRequire` calls the native `binding.createRequire` and never reads `globalThis.require`. `ModuleInternal.mm` reads it in `RunModule` for a CommonJS entry (throws when it isn't a function) and in `RunScript` (an `IsFunction` check), so the shadow must be a function that throws only when called. The main entry is `.mjs` and takes the ES branch. `JsV8InspectorClient.mm:1297-1313` prefers `inspector_modules.mjs` and falls back to `.js` through `require` (would fail, caught).
+- Android: `ModuleInternal.cpp:591-605` sends every non-`.mjs`, non-http path through `globalThis.require`. Callers: `JsV8InspectorClient.cpp:1235` loads `inspector_modules` by bare name on debugger connect (fails, caught and logged); `Runtime.java:961` `createJSInstance` runs `@JavaScriptImplementation` classes' files, which fail if the binding generator emits `.js` (unverified).
+- Workers have their own isolate and their own global `require`, and get no shadow.
+- `out/phase5a-stage3/exp-strict/` (ng cold, `NS_VITE_STRICT_REQUIRE=1`): the shadow is the boot module's first import, under one URL; 333 / 17,881, hash stable, PASS.
+- Hence default off. Proposal: on for iOS after a device run with the flag.
+
+**`__non_webpack_require__`.** As a define, `/@vite/env` turned it into a global holding the native `require` at env time. Dev now drops the define (`nsModuleRequirePlugin`'s `config` hook), and the transform maps free references to the module's `require`. The optimizer defines it as `require` (`getOptimizeDepsDefine`); its spec runs a real optimizer: a literal excluded specifier becomes `import * as`, a literal relative one is bundled, a non-literal one stays `__require(name)`. Builds keep `globalThis.require`, so release hashes don't move.
+
+**Core's `System.import`.** `packages/core/globals/index.ts:200` calls `global.require(path)`; nothing calls `System.import`. The crawl matches that one site (a member call inside the `import` property of an object assigned to `<x>.System`, in core's `globals/index`) and reports it as known-uncalled. Other `global.require(` calls still fail.
+
+**Served packages' third-party imports** (stage 6).
+- The scanner doesn't follow an import of an excluded package, so before stage 6 only the files behind the boot module's and the dev client's excluded imports were scanned. Vite then decides by the importer's path (8.3.8 `node.js` 29421–29480 `tryNodeResolve`; 8.0.2 `finalizeBareSpecifier`): an importer under `node_modules` gets the dep served raw with `?v=`, no discovery; an importer outside `node_modules` registers it at request time.
+- Repro (vue fixture, scratch `/tmp/p5a/stage6/gap-fixture.sh`, fixture restored by checksum): a linked package (realpath in `/tmp`) importing an undeclared CommonJS package, and a platform-main package (`main: "index"`, `index.ios.js`) importing another; both declared, both imported by `app.ts`. Stage-5 build: `cjs served raw 2` (`/node_modules/ns-gap-cjs-{a,b}/index.js?v=…`), FAIL; with `preserveSymlinks` the linked importer is under `node_modules` too, so nothing is discovered. With the rule: both pre-bundled by the scan (15 optimized), raw CommonJS 0, PASS, 331 requests.
+- **One unresolvable bare import in a scanned file turns pre-bundling off.** With `import 'ns-gap-missing'` added to the platform entry: `(!) Failed to run dependency scan. Skipping dependency pre-bundling.`, 3 optimized (the `include`s), 464 requests. `discoverProjectDependencies` throws on any missing import (8.3.8 ~28546), and its caller logs and skips (~35907). That holds for every scanned file, so scanning declared but unused packages widens the exposure (DESIGN "Open").
+- Toolbox: `@nativescript/imagepicker` (platform-main, in `dependencies`) imports `@nativescript-community/perms`, whose `main: "./index"` the package resolvers don't treat as platform-main, so Vite resolves it. It used to be served raw (2 files); now it is the 11th pre-bundle. The `dependencies`-only restriction keeps build tooling out of the scan; no fixture exercises it (the toolbox's only linked `devDependency`, `@nativescript/vite`, is skipped as an `NS_OPTIMIZE_DEPS_EXCLUDE` name).
+- `dev-optimize-deps.spec.ts`: `resolvePackageEntryFile` cases, the entries rule (a linked `devDependency` is excluded but not scanned), and a real optimizer (8.0.2) in which the scan finds both CommonJS deps and the served linked and platform files import `/node_modules/.vite/deps/<dep>.js?v=`. With the rule disabled, both tests fail.
+
+**`@nativescript/angular` hot context** (stage 6): the on-disk pre-bundle keeps 4 literal `import.meta.hot` (the fesm has 8), and the served pre-bundle starts with `import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/node_modules/.vite/deps/@nativescript_angular.js?v=…")`. Import analysis does not skip optimized dep files. Printed by every Angular probe run.
+
+**Edits to a pre-bundled dependency** (stage 5).
+- Vite facts (8.3.8 `vue/node_modules/vite`, 8.0.2 at the repo root):
+  - `fileHash = hash(metadata.hash + file + JSON.stringify(chunk.imports))`, no content. A content-only edit reruns with `needsReload = false`, and the commit carries the old `browserHash` forward (8.3.8 `node.js` ~35976–35985; 8.0.2 ~23179).
+  - `runOptimizeDeps` sets `browserHash = getOptimizedBrowserHash(metadata.hash, deps)` with no timestamp (8.3.8 ~28581; 8.0.2 ~31274), so even a forced reload repeats the same hash on a second edit.
+  - `metadata.hash` covers the lockfile and the config. Only a new optimizer session, seeded with a timestamp, gives a new `browserHash`, hence `server.restart(true)`. On 8.3.8 a `restart` called mid-restart is queued; on 8.0.2 it returns the in-flight promise and drops the force flag.
+  - `resolveChokidarOptions` ignores `**/node_modules/**`. `server.watcher.add(<node_modules file>)` plus a real append gave 0 events on both versions (scratch `/tmp/p5a/stage5/watch-test.mjs`). Hence the plugin's own `fs.watch`.
+- Map cost (ng deps dir): 27 maps, 6.5 MiB, read and parsed in 13 ms; 400 sources, realpath filter 9 ms; 45 watched directories.
+- Probes (scratch `/tmp/p5a/stage5/`, `all-probes4.log` and `probe-f-*.txt`; not copied into `out/`):
+  - vue c1–c4, ng c1/c4 (8.3.8, also with fresh plugin instances), ng c1/c4 on 8.0.2: the server restarts about 200–300 ms after the edit, one IPC restart goes out with the file as the reason, the `browserHash` is new, the edit is served, 0 failed imports, and no pre-edit hash remains among the boot's dep URLs.
+  - c2/c3 (the old app reconnects at 0 s / 1.5 s): it gets `ns:restart-required` before the IPC. c1 (no socket): the IPC goes out about 2.5 s after the restart. c4 (a burst): 2–3 server restarts, 1 IPC, the final content served.
+  - `--no-ipc` c3: 0 IPC; the old app received `ns:restart-required` after its 1.5 s late reconnect.
+  - ng c4 on 8.0.2, second run: 2 IPCs. The last write's event arrived after the loop had requested the app restart, so a third server restart and a second app restart followed; the content was right. A residual race.
+  - toolbox b4 (an edit of linked core): `ns:restart-required` plus IPC, no server restart.
+- An edit to an installed (not linked) core under `node_modules` is not seen: Vite's watcher ignores `node_modules`, and core isn't pre-bundled. Stage-4 probe r1 covers it only with a synthetic watcher event. This predates phase 5a.
+
+**Probes** (`out/phase5a-after/`, re-run in stage 6 on the final build): Angular full 18/18 (`probe-angular-full.txt`), toolbox 17/17 (`probe-toolbox-full.txt`), Vue 13/13 (`probe-vue-full.txt`), Angular `--only r4,r5,r6,r7,r8 --fresh-plugins` 5/5 (`probe-angular-r4-r8-fresh.txt`), toolbox r5/r6 2/2 (`probe-toolbox-r5-r6.txt`). `--fresh-plugins` is Angular-only (`probe-toolbox-fresh-attempt.txt` is that crash, stage 4), and Vue has no r-cases.
+- Every run: warm-up discovery PASS (0 registered beyond the scan, `browserHash` unchanged), 0 imports the device could not load, and the static `require` check PASS: 0 free `require`/`__require`/`__non_webpack_require__`, 0 global-object calls, 0 parse errors. JavaScript bodies scanned (with `?t=`; with require-like tokens): Angular full 153 (92; 1), toolbox full 1,759 (59; 0), Vue full 53 (39; 6), Angular r4–r8 66 (16; 1), toolbox r5/r6 702 (4; 0). The probe fetches app modules, update modules and pre-bundles, not core, so the known-uncalled `System.import` site doesn't show.
+- Negative control (scratch copy fetching the raw `fesm2022` file before the verdict, `--only a`): warm-up discovery FAIL, `@angular/animations/browser` registered, `browserHash` `1c126859` → `4b01b332`.
+
+**Builds** (stage 6, `out/phase5a-after/release-*.sha256.txt`).
+- Release: iOS and Android for ng and the toolbox are byte-identical to stage 1 (`out/phase5a-stage1/release-*.sha256.txt`).
+- Dev (non-HMR) builds differ in `bundle.mjs` and its map (ng, toolbox) and `vendor.mjs` and its map (toolbox). Against a scratch build whose hashes equal stage 1's (`/tmp/p5a/rel-final`), the only differences are the `sourceMappingURL` line (absolute output path) and the maps' relative `sources`, which resolve to the same absolute files (scratch `/tmp/p5a/stage6/dev-compare.mjs`).
+- The HMR `bundle.mjs` the ng crawl used is byte-identical between stage 1 and after (`out/phase5a-*/bundle-ng/bundle.mjs`).
+
+**Checked:**
+- vitest 928 tests in 89 files.
+- `tsc -p tsconfig.lib.json`: 261 errors, all under `../core`.
+- nx build and prettier pass.
+- The crawls, probes and release comparisons above, every run sequential, on the final build.
+
+**Not checked:**
+- anything on a device;
+- Android since stage 1, including app components with an installed core (DESIGN "Open");
+- Solid and React (no fixtures);
+- a NativeClass dependency inside a pre-bundle;
+- that the `@nativescript/angular` hooks run through the pre-bundle's hot context on a device (the server side is checked above).
+
+**Device checklist:**
+1. **Angular fixture, iOS simulator, cold** (`node_modules/.vite` cleared): boot through the lazy home route; a template, a style and a class edit. The JIT-linked Angular pre-bundles must behave as the AOT-linked served files did.
+2. **Warm restart:** stop and restart the dev server. The app restarts once and boots, and Vite logs no re-optimization.
+3. **Vue fixture:** the log shows `[ns-require-probe] cjs=true esm-require=true`, i.e. core's `Color` is one class through the pre-bundled CommonJS package, a served `require` and an import.
+4. **`NS_VITE_STRICT_REQUIRE=1` on iOS:** boot and one edit per kind, with no `require` error. Then decide the iOS default.
+5. **Pre-bundled dependency edit:** append to a file of an installed, pre-bundled package (e.g. `nativescript-vue`'s dist). Expect a dev server restart, one app restart and the edit visible.
+6. **Android:** an app with a custom `Activity` and core installed from npm. Check that core is single.
+
+**Open** (also in DESIGN "Open"):
+- **Android app components** import core at URLs without `?v=`, while an installed core is served with `?v=`: possibly two cores. Unmeasured.
+- **Installed core edits** under `node_modules` go unnoticed (predates 5a).
+- **Strict `require` default:** off; on for iOS after a device run?
+- **Core's `System.import`:** use `import(path)` or remove it (a core change).
+- **Angular JIT-mode linking** of pre-bundles, and the `@nativescript/angular` hot context, on a device.
+- **Declared dependencies Rolldown can't bundle** fail the cold start through `include`.
+- **An unresolvable bare import in any scanned file** turns pre-bundling off for the session; the stage-6 rule scans every linked or platform-main package in `dependencies`, imported or not.
+- **Served packages the entries miss:** a subpath of a linked or platform-main package that its entry doesn't reach, and an undeclared platform-main package that a pre-resolver serves raw.
+- **A non-literal `require` inside a pre-bundle** still compiles to `__require` and reaches the global `require`.
+- **`@JavaScriptImplementation` on Android:** the extension the binding generator emits decides whether strict mode breaks it. Unverified.
+- **Pre-bundle edit bursts on Vite 8.0.2:** a second app restart when the last event lands after the request; and 8.0.2's `server.restart` called mid-restart returns the in-flight promise and drops the force flag.
+- **Deep imports of an included package** next to its pre-bundle: unmeasured.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

@@ -22,7 +22,7 @@ vi.mock('./server-origin.js', () => ({
 	getServerOrigin: (...args: unknown[]) => mockGetServerOrigin(...(args as [])),
 }));
 
-import { buildImportMap, IMPORT_MAP_PATH, nsImportMapPlugin, registerImportMapRoute, type RegisterImportMapRouteOptions } from './import-map-route.js';
+import { buildImportMap, IMPORT_MAP_PATH, nsImportMapPlugin, registerImportMapRoute, wouldDiscover, type RegisterImportMapRouteOptions } from './import-map-route.js';
 
 type FakeRes = {
 	statusCode: number;
@@ -201,7 +201,7 @@ describe('buildImportMap', () => {
 			optimized: '/app/node_modules/.vite/deps/optimized.js?v=dep5678',
 		};
 		const isOptimizedDepFile = vi.fn((file: string) => file.includes('/.vite/deps/'));
-		const server = { config: { root: '/app' }, environments: { client: { depsOptimizer: { isOptimizedDepFile }, pluginContainer: { resolveId: async (spec: string) => ({ id: ids[spec] }) } } } } as any;
+		const server = { config: { root: '/app' }, environments: { client: { depsOptimizer: { isOptimizedDepFile, options: { noDiscovery: true } }, pluginContainer: { resolveId: async (spec: string) => ({ id: ids[spec] }) } } } } as any;
 		expect(await buildImportMap(server, ['excluded', 'optimized'], TRUSTED_ORIGIN)).toEqual({
 			excluded: `${TRUSTED_ORIGIN}/node_modules/excluded/index.js?v=meta1234`,
 			optimized: `${TRUSTED_ORIGIN}/node_modules/.vite/deps/optimized.js?v=dep5678`,
@@ -211,7 +211,7 @@ describe('buildImportMap', () => {
 	it('maps an optimized dependency whose file the optimizer has not written yet', async () => {
 		const server = {
 			config: { root: '/app' },
-			environments: { client: { depsOptimizer: { isOptimizedDepFile: () => true }, pluginContainer: { resolveId: async () => ({ id: '/app/node_modules/.vite/deps/fresh.js?v=abcd' }) } } },
+			environments: { client: { depsOptimizer: { isOptimizedDepFile: () => true, options: { noDiscovery: true } }, pluginContainer: { resolveId: async () => ({ id: '/app/node_modules/.vite/deps/fresh.js?v=abcd' }) } } },
 		} as any;
 		expect(await buildImportMap(server, ['fresh'], TRUSTED_ORIGIN)).toEqual({ fresh: `${TRUSTED_ORIGIN}/node_modules/.vite/deps/fresh.js?v=abcd` });
 	});
@@ -236,5 +236,45 @@ describe('buildImportMap', () => {
 		const server = { config: { root: '/app', safeModulePaths }, environments: { client: { pluginContainer: { resolveId: async (spec: string) => ({ id: ids[spec] }) } } } } as any;
 		await buildImportMap(server, ['hoisted', 'css-only'], TRUSTED_ORIGIN);
 		expect([...safeModulePaths]).toEqual(['/repo/node_modules/hoisted/index.js']);
+	});
+
+	it('leaves out a dependency resolving it would register with a discovering optimizer, and resolves every other key normally', async () => {
+		const resolveId = vi.fn(async (spec: string, _importer: string, options?: { scan?: boolean }) => ({ id: `/app/node_modules/${spec}/index.js${options?.scan ? '' : '?v=abcd'}` }));
+		const depsOptimizer = { options: { exclude: ['excluded'] }, metadata: { optimized: {}, discovered: {}, chunks: {} }, isOptimizedDepFile: () => false };
+		const server = { config: { root: '/app' }, environments: { client: { depsOptimizer, pluginContainer: { resolveId } } } } as any;
+		expect(await buildImportMap(server, ['excluded', 'unscanned'], TRUSTED_ORIGIN)).toEqual({ excluded: `${TRUSTED_ORIGIN}/node_modules/excluded/index.js?v=abcd` });
+		expect(resolveId.mock.calls.filter(([spec, , options]) => spec === 'unscanned' && !options?.scan)).toEqual([]);
+	});
+});
+
+describe('wouldDiscover', () => {
+	const metadata = { optimized: { known: {} }, discovered: { pending: {} }, chunks: {} };
+	const optimizer = (options: Record<string, unknown> = {}) => ({ options: { exclude: ['@nativescript/core'], ...options }, metadata, scanProcessing: undefined }) as any;
+	const scanResolve = vi.fn(async (spec: string) => ({ id: spec === 'linked' ? '/repo/packages/linked/index.js' : `/app/node_modules/${spec}/index.js` }));
+
+	it('is true only for a dependency the optimizer does not know yet that resolves into node_modules', async () => {
+		expect(await wouldDiscover(optimizer(), 'unknown', scanResolve)).toBe(true);
+		expect(await wouldDiscover(optimizer(), 'known', scanResolve)).toBe(false);
+		expect(await wouldDiscover(optimizer(), 'pending', scanResolve)).toBe(false);
+		expect(await wouldDiscover(optimizer(), 'linked', scanResolve)).toBe(false);
+	});
+
+	it('is false for an excluded package or subpath and for an optimizer without discovery, without resolving', async () => {
+		scanResolve.mockClear();
+		expect(await wouldDiscover(optimizer(), '@nativescript/core', scanResolve)).toBe(false);
+		expect(await wouldDiscover(optimizer(), '@nativescript/core/ui', scanResolve)).toBe(false);
+		expect(await wouldDiscover(optimizer({ noDiscovery: true }), 'unknown', scanResolve)).toBe(false);
+		expect(scanResolve).not.toHaveBeenCalled();
+	});
+
+	it('reads what the optimizer knows only once its scan is done', async () => {
+		const md = { optimized: {} as Record<string, unknown>, discovered: {}, chunks: {} };
+		const scanProcessing = new Promise<void>((resolve) =>
+			setTimeout(() => {
+				md.optimized.scanned = {};
+				resolve();
+			}, 5),
+		);
+		expect(await wouldDiscover({ options: {}, metadata: md, scanProcessing } as any, 'scanned', scanResolve)).toBe(false);
 	});
 });

@@ -43,6 +43,28 @@ export function shouldExcludePlatformFile(p: string, platform: BundlerPlatform):
 	return false;
 }
 
+/**
+ * The code files the bundler context imports from `files` (an app walk,
+ * already platform-filtered): every `.js` file for JavaScript apps, each XML
+ * file's code-behind (`.ts`, else `.js`) for TypeScript apps. `entryFile` is
+ * left out: the entry would become its own importer.
+ */
+export function listBundlerContextCodeFiles(flavor: 'typescript' | 'javascript', files: string[], entryFile?: string): string[] {
+	const isEntry = (f: string) => !!entryFile && path.resolve(f) === path.resolve(entryFile);
+	if (flavor === 'javascript') {
+		return files.filter((f) => f.endsWith('.js') && !isEntry(f));
+	}
+	const all = new Set(files);
+	const codeFiles: string[] = [];
+	for (const xml of files) {
+		if (!xml.endsWith('.xml')) continue;
+		const base = xml.slice(0, -'.xml'.length);
+		const code = [`${base}.ts`, `${base}.js`].find((candidate) => all.has(candidate) && !isEntry(candidate));
+		if (code) codeFiles.push(code);
+	}
+	return codeFiles.sort((a, b) => a.localeCompare(b));
+}
+
 /** Absolute app path → root-anchored import specifier the dev server can serve. */
 export function toContextImportSpecifier(abs: string): string {
 	return '/' + abs.replace(/^\/+/, '');

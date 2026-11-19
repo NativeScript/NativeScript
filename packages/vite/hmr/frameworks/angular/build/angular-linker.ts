@@ -1,10 +1,18 @@
-import type { Plugin } from 'vite';
+import type { DevEnvironment, Plugin } from 'vite';
 import { runAngularLinker } from './shared-linker.js';
 import { containsRealNgDeclare } from './util.js';
 import { recordLinkerHit } from './linker-stats.js';
 
 function normalizeAngularLinkerId(id: string): string {
 	return id.split('?', 1)[0].replace(/\\/g, '/');
+}
+
+// Pre-bundles leave the dep optimizer linked (Analog's optimizer plugin runs
+// the linker). Linking one again regenerates the whole chunk, and a `load`
+// result would replace Vite's own loading of optimized deps, which waits for
+// the optimizer run and rejects stale `?v=` requests.
+function isOptimizedDep(ctx: { environment?: unknown }, id: string): boolean {
+	return !!(ctx.environment as DevEnvironment | undefined)?.depsOptimizer?.isOptimizedDepFile(id);
 }
 
 function isDebug(): boolean {
@@ -32,6 +40,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 		enforce: 'pre',
 		async load(id) {
 			const cleanId = normalizeAngularLinkerId(id);
+			if (isOptimizedDep(this, cleanId)) return null;
 			if (!strictAll && !FILTER.test(cleanId)) {
 				if (!NODE_MODULES_FILTER.test(cleanId)) return null;
 				try {
@@ -58,6 +67,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 		},
 		async transform(code, id) {
 			const cleanId = normalizeAngularLinkerId(id);
+			if (isOptimizedDep(this, cleanId)) return null;
 			if (!strictAll && !FILTER.test(cleanId)) {
 				if (!NODE_MODULES_FILTER.test(cleanId) || !code || !containsRealNgDeclare(code)) return null;
 			}
@@ -86,6 +96,7 @@ export function angularLinkerVitePluginPost(projectRoot?: string): Plugin {
 		enforce: 'post',
 		async transform(code, id) {
 			if (!/\.(m?js)(\?|$)/.test(id)) return null;
+			if (isOptimizedDep(this, normalizeAngularLinkerId(id))) return null;
 			if (!code || !containsRealNgDeclare(code)) return null;
 			try {
 				const filename = id.split('?', 1)[0];

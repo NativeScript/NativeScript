@@ -19,12 +19,16 @@
 // --keep-ns-strategy  keep the `nativescript-hmr-websocket` plugin if the installed package still has one
 // --fresh-plugins     the (r4)-(r7) restarts build new plugin instances, as reloading vite.config.mts does
 // --content-css       the global stylesheet depends on the app's templates (Tailwind v3 style); only the content cases run
+// Also checks, printed at the end: every JavaScript body the probe fetches (crawl, update modules, metadata
+// modules, pre-bundles) passes the static require check (require-scan.mjs), and the warm-up crawl registers
+// no dependency beyond the optimizer's scan (a cold-boot re-optimization would reload the app).
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { FAILURE_KINDS, isHttpUrl, loadableStatus, resolveDeviceImport } from './device-resolve.mjs';
+import { classifyDepRequires, isKnownUncalledGlobalRequire, isStrictGlobalRequireShadow, REQUIRE_TOKEN_RE, scanRequires } from './require-scan.mjs';
 
 const spikeDir = import.meta.dirname;
 const args = process.argv.slice(2);
@@ -343,6 +347,47 @@ if (contentCss) {
 }
 const port = server.config.server.port;
 const local = `http://localhost:${port}`;
+
+// Deps registered beyond the scan while the device boots (the scan adds its own without registerMissingImport).
+const warmOptimizer = server.environments.client.depsOptimizer;
+const warmRegistered = [];
+if (warmOptimizer?.registerMissingImport) {
+	const register = warmOptimizer.registerMissingImport.bind(warmOptimizer);
+	warmOptimizer.registerMissingImport = (id, resolved) => {
+		const md = warmOptimizer.metadata;
+		if (!(md.optimized[id] || md.chunks?.[id] || md.discovered[id])) warmRegistered.push(id);
+		return register(id, resolved);
+	};
+}
+await warmOptimizer?.scanProcessing;
+const warmHashAfterScan = warmOptimizer?.metadata.browserHash;
+
+// Static require check on every JavaScript body fetched from the dev server.
+const requireScan = { bodies: 0, urls: new Set(), updateBodies: 0, withTokens: 0, skippedNonJs: 0, parseErrors: [], free: [], memberCalls: [], knownUncalled: [], depFailures: [] };
+const isExcludedDepSpec = (spec) => (server.environments.client.config.optimizeDeps?.exclude ?? []).some((name) => spec === name || spec.startsWith(`${name}/`));
+function noteRequireScan(url, body) {
+	const where = url.pathname + url.search;
+	requireScan.bodies++;
+	requireScan.urls.add(where);
+	if (url.searchParams.has('t')) requireScan.updateBodies++;
+	if (!REQUIRE_TOKEN_RE.test(body)) return;
+	requireScan.withTokens++;
+	const scan = scanRequires(body);
+	if (scan.error) return void requireScan.parseErrors.push({ where, error: scan.error });
+	if (url.pathname.includes('/.vite/deps/')) return void requireScan.depFailures.push(...classifyDepRequires(scan, isExcludedDepSpec).failures.map((f) => ({ where, ...f })));
+	requireScan.free.push(...scan.free.map((f) => ({ where, via: `free ${f.name}${f.call ? '()' : ''}`, spec: f.spec })));
+	if (isStrictGlobalRequireShadow(url.pathname)) return;
+	for (const m of scan.memberCalls) (isKnownUncalledGlobalRequire(url.pathname, m) ? requireScan.knownUncalled : requireScan.memberCalls).push({ where, ...m });
+}
+const serverFetch = globalThis.fetch;
+globalThis.fetch = async (input, init) => {
+	const res = await serverFetch(input, init);
+	const url = new URL(typeof input === 'string' ? input : input.url);
+	if (url.origin !== local || !res.ok) return res;
+	if (/javascript/.test(res.headers.get('content-type') ?? '')) noteRequireScan(url, await res.clone().text());
+	else requireScan.skippedNonJs++;
+	return res;
+};
 const log = [];
 const short = (v, n = 220) => {
 	const s = typeof v === 'string' ? v : JSON.stringify(v);
@@ -479,8 +524,6 @@ if (hasWorker) await crawl(new URL(WORKER_URL, deviceOrigin).href);
 if (isAngular) {
 	const home = await (await fetch(`${local}/src/app/home/home.component.ts`)).text();
 	console.log(`home.component.ts compiled with HMR listener: ${home.includes('angular:component-update')}`);
-	const lib = await (await fetch(`${local}/node_modules/@nativescript/angular/fesm2022/nativescript-angular.mjs`)).text();
-	console.log(`@nativescript/angular prelude: ${lib.slice(0, 200).replace(/\n/g, ' ')}`);
 }
 // The renderer fetches each component's external styles once Angular hands them out (round 8/9).
 const STYLE_FEATURE_RE = /ExternalStylesFeature\(\s*\[([^\]]*)\]/g;
@@ -585,6 +628,20 @@ async function settle() {
 }
 await settle();
 log.length = 0;
+// The device loads the @nativescript/angular pre-bundle, never its raw fesm file; its HMR hooks need a hot context.
+if (isAngular) {
+	const info = warmOptimizer?.metadata.optimized['@nativescript/angular'];
+	if (!info) console.log('@nativescript/angular: NOT pre-bundled');
+	else {
+		const onDisk = fs.readFileSync(info.file, 'utf8');
+		const served = await (await fetch(`${local}/${path.relative(appRoot, info.file).split(path.sep).join('/')}?v=${info.browserHash}`)).text();
+		const hot = served.startsWith('import { createHotContext as __vite__createHotContext }');
+		console.log(`@nativescript/angular pre-bundle: on-disk import.meta.hot x${onDisk.match(/import\.meta\.hot/g)?.length ?? 0}; served ${hot ? 'starts with' : 'LACKS'} __vite__createHotContext: ${served.slice(0, 200).replace(/\n/g, ' ')}`);
+	}
+}
+const warmHashAfter = warmOptimizer?.metadata.browserHash;
+const warmOk = !warmRegistered.length && warmHashAfter === warmHashAfterScan;
+console.log(`warm-up discovery: ${warmOk ? 'PASS' : 'FAIL'} registered beyond the scan ${warmRegistered.length}${warmRegistered.length ? ` [${warmRegistered.join(', ')}]` : ''}; browserHash after scan ${warmHashAfterScan} -> after warm-up ${warmHashAfter}`);
 
 const results = [];
 const checks = [];
@@ -829,4 +886,10 @@ if (checks.length) {
 	console.log(`expectations: ${checks.length - failed.length}/${checks.length} ok${failed.length ? ` (failed: ${failed.join(', ')})` : ''}`);
 }
 console.log(`crawl: ${crawlFailures.size} imports the device could not load${crawlFailures.size ? `\n${[...crawlFailures].map((f) => `    ${f}`).join('\n')}` : ''}`);
+{
+	const r = requireScan;
+	const failures = [...r.free, ...r.memberCalls, ...r.depFailures, ...r.parseErrors];
+	console.log(`static require check: ${failures.length ? 'FAIL' : 'PASS'} JS bodies ${r.bodies} (${r.urls.size} URLs, ${r.updateBodies} with ?t=), with require-like tokens ${r.withTokens}, parse errors ${r.parseErrors.length}; free require/__require/__non_webpack_require__ ${r.free.length}; global-object require calls fail ${r.memberCalls.length}, known-uncalled ${r.knownUncalled.length}; pre-bundle __require(excluded) ${r.depFailures.length}; non-JS responses skipped ${r.skippedNonJs}`);
+	for (const f of failures.slice(0, 10)) console.log(`    [FAIL] ${f.where} ${f.error ?? `${f.via}${f.spec != null ? ` '${f.spec}'` : ''}`}`);
+}
 process.exit(0);

@@ -42,7 +42,8 @@ import { appComponentsPlugin } from '../helpers/app-components.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { normalizeModuleId } from '../helpers/normalize-id.js';
 import { getHmrWatchIgnoreGlobs } from '../helpers/hmr-scope.js';
-import { NS_OPTIMIZE_DEPS_EXCLUDE, nsOptimizeDepsPolicyPlugin } from '../helpers/optimize-deps.js';
+import { getDevOptimizeDeps } from '../helpers/dev-optimize-deps.js';
+import { getOptimizeDepsDefine, optimizeDepsEsmRequirePlugin } from '../helpers/optimize-deps.js';
 import { sbgClassNamesPlugin } from '../helpers/sbg-class-names.js';
 import { chunkFileNames } from '../helpers/chunk-file-names.js';
 import { nativescriptBuiltinModules } from '../helpers/builtin-modules.js';
@@ -240,29 +241,20 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		staticCopyTargets.push({ src: `${fontsDir}/**/*`.replace(/\\/g, '/'), dest: 'fonts', rename: { stripBase: fontsStripBase } });
 	}
 
-	// Dev (serve) only; builds never read it. Discovery stays off and
-	// `nsOptimizeDepsPolicyPlugin` keeps `include` to what the flavor and the
-	// app list, so without includes no dep optimizer exists and every
-	// dependency is served at a version-less file URL. An include list
-	// pre-bundles CommonJS packages; the options below apply to those builds.
+	// Dev (serve) only; builds never read it.
 	const [nativeClassTransform] = createNativeClassTransformerPlugin();
+	const devOptimizeDeps = isDevMode ? getDevOptimizeDeps({ projectRoot, flavor, platform, verbose, extensions: platformExtensions, packageDirs: { '@nativescript/core': NS_CORE_ROOT } }) : undefined;
 	const optimizeDepsConfig = {
-		noDiscovery: true,
-		entries: [],
-		include: [],
-		exclude: [...NS_OPTIMIZE_DEPS_EXCLUDE],
+		...devOptimizeDeps,
 		rolldownOptions: {
 			resolve: {
 				conditionNames: ['module', 'react-native', 'import', 'browser', 'default'],
 				extensions: platformExtensions as any,
 			},
 			transform: {
-				define: {
-					global: 'globalThis',
-					'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
-				},
+				define: getOptimizeDepsDefine(debug ? 'development' : 'production'),
 			},
-			plugins: [nativescriptBuiltinModules(), optimizeDepsPlatformResolver({ platform, verbose }), { name: 'ns-nativeclass-optimize-deps', transform: nativeClassTransform.transform as any }],
+			plugins: [...(devOptimizeDeps ? [optimizeDepsEsmRequirePlugin(devOptimizeDeps.exclude)] : []), nativescriptBuiltinModules(), optimizeDepsPlatformResolver({ platform, verbose }), { name: 'ns-nativeclass-optimize-deps', transform: nativeClassTransform.transform as any }],
 		},
 	};
 
@@ -280,8 +272,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		define: defineConfig,
 		optimizeDeps: optimizeDepsConfig,
 		plugins: [
-			// Must stay ahead of every plugin with a `config` hook (see the plugin).
-			nsOptimizeDepsPolicyPlugin({ verbose }),
 			// Must be the first resolver: Vite stubs `node:` builtins for the browser otherwise.
 			nativescriptBuiltinModules(),
 			// Merge any dependency-provided `nativescript.vite.mjs` configs. Runs
