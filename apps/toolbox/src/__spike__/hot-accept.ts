@@ -1,3 +1,4 @@
+/// <reference types="@nativescript/vite/client" />
 import { Observable } from '@nativescript/core';
 import { helper } from './helper';
 

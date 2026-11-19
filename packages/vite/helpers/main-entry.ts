@@ -1,15 +1,13 @@
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from './project.js';
 import fs from 'fs';
 import path from 'path';
-import { preprocessCSS, type ResolvedConfig, type ViteDevServer } from 'vite';
+import { preprocessCSS, type ResolvedConfig } from 'vite';
 import { parseCssAst as parseCssToAst } from './css-ast.js';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath, resolveProjectGlobalCssPath } from './utils.js';
 import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
-import { setAppCssState } from './app-css-state.js';
-import { createAppCssRefresher } from './app-css-refresh.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
 import { NS_DEV_EXPR } from '../hmr/shared/runtime/dev-globals.js';
 import { BUNDLE_CSS_AST_SENTINEL, inlineBundleCss } from './bundle-css.js';
@@ -97,98 +95,6 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				if (opts.verbose) console.warn('[ns-entry] bundle CSS injection failed:', e?.message || e);
 			}
 		},
-		// Warm chokidar with `app.css`'s @import dependency tree at
-		// server startup. Without this, the FIRST save to a workspace
-		// `@import` dep (e.g. `<repo>/libs/.../index.css`) is silently
-		// dropped: nothing in the cold-boot path causes the dev server
-		// to transform `app.css`, so `vite:css` never registers
-		// `@import`-resolved deps with the watcher. Eagerly resolving
-		// them here breaks the chicken-and-egg.
-		//
-		// We ALSO stash the resolved dep set on the server itself so
-		// the HMR websocket handler can recognize when a non-CSS edit
-		// (e.g. a `.html` template or `.ts` file scanned by Tailwind's
-		// content config) should trigger a fresh `app.css` fetch. The
-		// `preprocessCSS` deps include every file PostCSS reported as
-		// a `dependency` message — for Tailwind 3 with content globs,
-		// Vite's `compileCSS` expands the `dir-dependency` glob into
-		// the individual file paths, so we get the full content set.
-		//
-		// `app.css` is NEVER a real Vite module in NS HMR (the virtual
-		// `:ns-app-css` module re-runs `preprocessCSS` in its load
-		// hook), so the standard moduleGraph `addWatchFile` →
-		// `_addedImports` → file-only-entry-importer chain doesn't
-		// populate, and `ctx.modules` for a content-file edit never
-		// links back to a CSS module. The dep set fills that gap.
-		configureServer(server: ViteDevServer) {
-			if (server.config.command !== 'serve') return;
-			// Prefer `app.css`, fall back to `styles.css` (common in web projects).
-			const appCssPath = resolveProjectGlobalCssPath(projectRoot);
-			if (!appCssPath) return;
-
-			const normalizeFsPath = (p: string): string => path.resolve(p).replace(/\\/g, '/');
-			const normalizedAppCssPath = normalizeFsPath(appCssPath);
-			const watchedDeps = new Set<string>([normalizedAppCssPath]);
-
-			// The refresher owns serialization, previous-output comparison, and the
-			// startup baseline (see helpers/app-css-refresh.ts). This thunk owns the
-			// generation itself plus the watcher/dep-set side effects of a scan.
-			const generate = async (): Promise<string> => {
-				const rawCode = fs.readFileSync(appCssPath, 'utf-8');
-				// Same platform @import rewrite as the virtual:ns-app-css load hook —
-				// this raw read also bypasses the ns-css-platform transform.
-				const code = rewritePlatformCssImports(rawCode, path.dirname(appCssPath), opts.platform) ?? rawCode;
-				const result = await preprocessCSS(code, appCssPath, server.config);
-				server.watcher.add(appCssPath);
-				const next = new Set<string>([normalizedAppCssPath]);
-				for (const dep of result?.deps ?? []) {
-					if (typeof dep === 'string' && dep) {
-						server.watcher.add(dep);
-						next.add(normalizeFsPath(dep));
-					}
-				}
-				// Atomic-ish replace: clear + repopulate the existing
-				// Set so any concurrent reader sees a consistent view
-				// when iterating with `.has()`.
-				watchedDeps.clear();
-				for (const f of next) watchedDeps.add(f);
-				return result?.code ?? '';
-			};
-			const refresh = createAppCssRefresher({ generate, verbose: opts.verbose });
-
-			setAppCssState(server, { path: normalizedAppCssPath, deps: watchedDeps, refresh });
-
-			void refresh();
-
-			// Re-scan when `app.css` itself or a Tailwind config file
-			// changes — Tailwind's content list and utility definitions
-			// can both shift, so the dep set has to follow. Debounced
-			// because watcher events for the same edit can fire in
-			// quick succession (chokidar's atomic save handling).
-			let pendingRefresh: NodeJS.Timeout | null = null;
-			const scheduleRefresh = (): void => {
-				if (pendingRefresh) clearTimeout(pendingRefresh);
-				pendingRefresh = setTimeout(() => {
-					pendingRefresh = null;
-					void refresh();
-				}, 50);
-			};
-			const isAppCssOrTailwindConfig = (file: string): boolean => {
-				const normalized = normalizeFsPath(file);
-				if (normalized === normalizedAppCssPath) return true;
-				return /\/tailwind\.config\.[mc]?[jt]s$/.test(normalized);
-			};
-			server.watcher.on('change', (file) => {
-				if (isAppCssOrTailwindConfig(file)) scheduleRefresh();
-			});
-			// `add`/`unlink` cover Tailwind's content set growing or
-			// shrinking — new template files, deleted partials, etc.
-			// Re-running `preprocessCSS` is the safest way to keep the
-			// glob expansion accurate without re-implementing the
-			// match.
-			server.watcher.on('add', scheduleRefresh);
-			server.watcher.on('unlink', scheduleRefresh);
-		},
 		resolveId(id: string) {
 			if (id === VIRTUAL_ID) return RESOLVED;
 			if (id === APP_CSS_VIRTUAL_ID) return APP_CSS_RESOLVED;
@@ -204,29 +110,16 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				return sub ? `@nativescript/core/${sub}` : '@nativescript/core';
 			};
 
-			// Virtual module that processes app.css through PostCSS/Tailwind and emits a
-			// JS module that BOTH applies the CSS as a side-effect AND exports the raw
-			// CSS string as default.
+			// Virtual module that processes app.css through PostCSS/Tailwind, applies
+			// the result as a rework AST under the `app.css` tag before any view is
+			// created, and default-exports the processed CSS text. Not used under
+			// HMR, where the app entry imports the stylesheet as a Vite CSS module
+			// (`hmr/server/app-css-module.ts`).
 			//
 			// Background: Vite's default `?inline` CSS handling collides with
 			// @analogjs/vite-plugin-angular's load hook in Vite 8 (it converts ?inline
 			// CSS to JS without setting moduleType:'js', so vite:css still tries to run
 			// PostCSS on the JS output). This virtual module sidesteps that.
-			//
-			// The default export is the raw CSS text: the served entry runtime's
-			// fallback when no AST is available (`appCss` on the dev globals).
-			//
-			// We always pre-parse with rework `css` and either:
-			//   - non-HMR: call `addTaggedAdditionalCSS(astJson, 'app.css')` directly
-			//     so the bundled `style-scope` realm gets the styles before any view
-			//     is created.
-			//   - HMR: publish the AST as the dev globals' `appCssAst` so
-			//     `installHttpCoreCssSupport` applies it via the SAME AST path in
-			//     the served-core realm. Applying the raw text there goes through
-			//     `cssTreeParse`, which renders differently from the rework AST
-			//     (e.g. `.text-sm { line-height: 20 }` gains extra line spacing).
-			//     Live HMR edits still arrive as raw text over the dev-server
-			//     WebSocket, so `installHttpCoreCssSupport` keeps the raw-text path.
 			if (id === APP_CSS_RESOLVED) {
 				// Same resolver as the entry generator (app.css → styles.css fallback)
 				// so both always pick the same file. Only reached when a global
@@ -248,13 +141,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				// use it, and stripping it ~halves the inlined JSON size — same
 				// thing webpack's css2json-loader does.
 				const astJson = JSON.stringify(ast, (key, value) => (key === 'position' ? undefined : value));
-				const lines: string[] = [];
-				if (opts.hmrActive) {
-					lines.push(`try { ${NS_DEV_EXPR}.appCssAst = ${astJson}; } catch {}`);
-				} else {
-					lines.push(`import { addTaggedAdditionalCSS } from ${JSON.stringify(coreSpec('ui/styling/style-scope'))};`, `addTaggedAdditionalCSS(${astJson}, 'app.css');`);
-				}
-				lines.push(`export default ${JSON.stringify(result.code)};`);
+				const lines = [`import { addTaggedAdditionalCSS } from ${JSON.stringify(coreSpec('ui/styling/style-scope'))};`, `addTaggedAdditionalCSS(${astJson}, 'app.css');`, `export default ${JSON.stringify(result.code)};`];
 				return {
 					code: lines.join('\n'),
 					moduleType: 'js',
@@ -510,7 +397,8 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			if (effectiveFlavor === 'typescript' || effectiveFlavor === 'javascript') {
 				imports += "import 'virtual:ns-ui-registration';\n";
 			}
-			if (effectiveFlavor === 'typescript') {
+			// Under HMR the served app entry imports it instead.
+			if (effectiveFlavor === 'typescript' && !opts.hmrActive) {
 				// Statically import bundler context synchronously before app code
 				imports += "import 'virtual:ns-bundler-context';\n";
 			}
@@ -562,27 +450,19 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				}
 			}
 
-			// ---- Global CSS injection (always-needed if file exists) ----
+			// ---- Global CSS injection (non-HMR, if the file exists) ----
 			// Prefer `app.css`, fall back to `styles.css` (common in web projects).
-			const appCssPath = resolveProjectGlobalCssPath(projectRoot);
-			const hasAppCss = !!appCssPath;
+			// Under HMR the app entry imports it as a Vite CSS module instead.
+			const hasAppCss = !opts.hmrActive && !!resolveProjectGlobalCssPath(projectRoot);
 
 			// Import Application statically if needed for CSS or Android activity defer
 			if (hasAppCss || needsAndroidActivityDefer) {
 				if (hasAppCss) {
-					// The virtual module's body either:
-					//   - non-HMR: calls `addTaggedAdditionalCSS(ast, 'app.css')`
-					//     as an import-time side-effect, landing CSS in NS's
-					//     selector tables before any view is created.
-					//   - HMR: publishes the rework AST as the dev globals'
-					//     `appCssAst` for `installHttpCoreCssSupport` in the
-					//     served-core realm. The raw CSS text (the default export)
-					//     goes to `appCss` as the fallback when no AST is present.
+					// The virtual module's body calls `addTaggedAdditionalCSS(ast,
+					// 'app.css')` as an import-time side effect, landing the CSS in
+					// NS's selector tables before any view is created.
 					imports += `// Apply global CSS before app bootstrap (AST under non-HMR; AST published for HMR cold boot)\n`;
 					imports += `import appCssContent from '${APP_CSS_VIRTUAL_ID}';\n`;
-					if (opts.hmrActive) {
-						imports += `try { ${NS_DEV_EXPR}.appCss = appCssContent; } catch {}\n`;
-					}
 					if (opts.verbose) {
 						imports += `console.info('[ns-entry] app.css applied as AST');\n`;
 					}

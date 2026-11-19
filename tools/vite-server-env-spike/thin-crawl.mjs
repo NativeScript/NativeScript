@@ -327,7 +327,7 @@ for (const [identity, urls] of byIdentity) {
 	const k = [...urls].sort().join('\n');
 	if (!dupeGroups.has(k)) dupeGroups.set(k, { identity, urls: [...urls].sort() });
 }
-const duplicates = [...dupeGroups.values()];
+const identityDuplicates = [...dupeGroups.values()];
 
 // What the device would really load: the closure of the session, bundle.mjs and --seed roots.
 // Import-map targets are seeded only to exercise them; one that nothing imports stays hypothetical.
@@ -342,6 +342,42 @@ const loaded = new Set();
 		stack.push(...(fetched.get(href).imports ?? []));
 	}
 }
+
+// A worker runs in its own isolate with its own module registry: the closure of a `?worker_file`
+// seed is a realm of its own. A group whose URLs are each loaded in a different realm only
+// evaluates once per realm, as expected; any realm loading two of them still fails.
+const realmsByUrl = new Map();
+{
+	const isWorkerSeed = (from) => from.startsWith('--seed ') && new URL(from.slice('--seed '.length), deviceOrigin).searchParams.has('worker_file');
+	for (const [root, froms] of requesters) {
+		const rootFroms = [...froms].filter(isRootRequest);
+		if (!rootFroms.length) continue;
+		const realm = rootFroms.every(isWorkerSeed) ? `worker ${root}` : 'main';
+		const stack = [root];
+		while (stack.length) {
+			const href = stack.pop();
+			if (!fetched.has(href)) continue;
+			if (!realmsByUrl.has(href)) realmsByUrl.set(href, new Set());
+			if (realmsByUrl.get(href).has(realm)) continue;
+			realmsByUrl.get(href).add(realm);
+			stack.push(...(fetched.get(href).imports ?? []));
+		}
+	}
+}
+const crossRealmOnly = (urls) => {
+	const seenRealms = new Set();
+	for (const u of urls) {
+		const realms = realmsByUrl.get(u);
+		if (!realms) return false;
+		for (const r of realms) {
+			if (seenRealms.has(r)) return false;
+			seenRealms.add(r);
+		}
+	}
+	return urls.length > 1;
+};
+const crossRealm = [];
+const duplicates = identityDuplicates.filter((d) => (crossRealmOnly(d.urls) ? (crossRealm.push({ check: 'duplicate modules', identity: d.identity, urls: d.urls.map((u) => ({ url: u, realms: [...realmsByUrl.get(u)] })) }), false) : true));
 
 // One real file under two URL strings evaluates twice on device (the runtime keys modules by URL).
 // Only `t` (HMR stamp), `v` (optimizer browserHash) and `import` (explicit-import marker) pick an
@@ -375,6 +411,10 @@ const sameFileTwoUrls = [];
 for (const [key, urls] of sameFileGroups) {
 	if (urls.size < 2) continue;
 	const loadedUrls = [...urls].filter((u) => loaded.has(u)).sort();
+	if (crossRealmOnly([...urls])) {
+		crossRealm.push({ check: 'same file under 2+ URL strings', identity: key, urls: [...urls].sort().map((u) => ({ url: u, realms: [...realmsByUrl.get(u)] })) });
+		continue;
+	}
 	const deviceUrls = [...urls].filter((u) => deviceReached.has(u));
 	sameFileTwoUrls.push({
 		file: key,
@@ -766,6 +806,7 @@ const report = {
 	nonce,
 	duplicateCount: duplicates.length,
 	duplicates,
+	crossRealm,
 	loadedModules: loaded.size,
 	sameFileTwoUrls: { failures: sameFileFailures, warnings: sameFileTwoUrls.length - sameFileFailures, excluded: sameFileExcluded, groups: sameFileTwoUrls },
 	unicodePropertyEscapes: { files: unicodePropertyEscapes.length, unicodeFlagged: unicodePropertyEscapes.filter((u) => u.hits.some((h) => h.unicodeFlag !== false)).length, list: unicodePropertyEscapes },
@@ -820,6 +861,7 @@ lines.push(`  nonce ${nonce.map((n) => `${n.ok ? 'ok' : 'FAIL'} status=${n.statu
 lines.push(`  duplicate modules ${duplicates.length}`, ...top(duplicates, 5));
 {
 	const relU = (u) => (u.startsWith(deviceOrigin) ? u.slice(deviceOrigin.length) : u);
+	lines.push(`  cross-realm groups (one URL per isolate, not failures) ${crossRealm.length}`, ...crossRealm.map((c) => `      [${c.check}] ${c.urls.map((x) => `${relU(x.url)} (${x.realms.map((r) => (r === 'main' ? 'main' : `worker ${relU(r.slice('worker '.length))}`)).join(', ')})`).join(' | ')}`));
 	lines.push(`  same file under 2+ URL strings: fail ${sameFileFailures} (both loaded), warn ${sameFileTwoUrls.length - sameFileFailures} (one only via an import-map seed); loaded modules ${loaded.size}; excluded non-script ${sameFileExcluded.nonScript}, virtual ${sameFileExcluded.virtual}`, ...sameFileTwoUrls.slice(0, 12).map((d) => `      [${d.severity}/${d.scope}] ${path.relative(repoRoot, d.file)}: ${d.urls.map((x) => `${relU(x.url)}${x.loaded ? '' : '(seed-only)'}`).join(' | ')}`));
 }
 if (bundle) lines.push(`  bundle.mjs ${bundle.urls.length} URLs, origin mismatches ${bundle.originMismatch.length}; bare specifiers via import map ${bundle.bareSpecifiers.length}${bundle.bareSpecifiers.length ? ` [${bundle.bareSpecifiers.map((b) => b.spec).join(' ')}]` : ''}; bare missing from map ${bundle.bareMissing.length}${bundle.bareMissing.length ? ` [${bundle.bareMissing.join(' ')}]` : ''}; local imports ${bundle.localImports}; non-literal dynamic ${bundle.nonLiteralDynamic.length}`, ...top(bundle.originMismatch));

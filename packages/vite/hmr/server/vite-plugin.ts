@@ -48,7 +48,6 @@ async function resolveBootstrapUrls(server: ViteDevServer, origin: string): Prom
 	return {
 		client: urlFor(runtimeFile('../client/index.js')),
 		moduleUrls: {
-			entryRuntime: urlFor(runtimeFile('../entry-runtime.js')),
 			launchBridge: urlFor(runtimeFile('../shared/runtime/launch-bridge.js')),
 			coreBridge: urlFor(coreFile),
 		},
@@ -126,30 +125,17 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; ori
 
 /** Absolute device URLs for the bootstrap's own imports. */
 export interface NsDevBootstrapModuleUrls {
-	entryRuntime: string;
 	/** The `@nativescript/core` entry at the URL the app graph loads it from, so the bootstrap shares its module record. */
 	coreBridge: string;
 	launchBridge: string;
 }
 
-export function createNsDevClientBootstrapCode(options: { clientImport: string; verbose?: boolean; moduleUrls: NsDevBootstrapModuleUrls; start: NsHmrStartOptions }) {
+export function createNsDevClientBootstrapCode(options: { clientImport: string; moduleUrls: NsDevBootstrapModuleUrls; start: NsHmrStartOptions }) {
 	const urls = options.moduleUrls;
-	const verbose = options.verbose ? 'true' : 'false';
 
 	return `
 import { installLaunchNotificationBridge as __nsInstallLaunchBridge } from ${JSON.stringify(urls.launchBridge)};
 import * as __nsCoreBridge from ${JSON.stringify(urls.coreBridge)};
-import { installHttpCoreCssSupport as __nsInstallHttpCoreCssSupport } from ${JSON.stringify(urls.entryRuntime)};
-
-// Seeded app.css must land in the core realm before the app entry
-// evaluates, as it does in non-HMR builds. Views mounted unstyled are
-// restyled later, but anything that caches measurements on first layout
-// (iOS ListView row heights) keeps the unstyled sizes.
-try {
-	__nsInstallHttpCoreCssSupport(__nsCoreBridge, ${verbose});
-} catch (cssErr) {
-	console.warn('[ns-dev-client] pre-entry app.css install failed', cssErr);
-}
 
 // The session bootstrap imports this module before the app entry, which makes
 // it the one deterministic point to wrap Application's launch observers
@@ -327,7 +313,6 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 						const bootstrap = await resolveBootstrapUrls(server, origin);
 						const code = createNsDevClientBootstrapCode({
 							clientImport: bootstrap.client,
-							verbose: opts.verbose,
 							moduleUrls: bootstrap.moduleUrls,
 							start: {
 								wsUrl: session.wsUrl,

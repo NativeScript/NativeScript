@@ -11,7 +11,7 @@ import { ENV_VERBOSE } from './utils.js';
 export const hmrClient = new HMRClient({
 	error: (err) => console.error('[vite]', err),
 	debug: (...msg) => {
-		if (ENV_VERBOSE) console.debug('[vite]', ...msg);
+		if (ENV_VERBOSE) console.log('[vite]', ...msg);
 	},
 });
 

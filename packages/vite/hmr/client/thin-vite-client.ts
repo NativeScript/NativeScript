@@ -9,16 +9,19 @@
  */
 import { addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from '@nativescript/core';
 import { nsDev } from '../shared/runtime/dev-globals.js';
+import { scheduleRestyle } from './restyle.js';
 
 export { createHotContext, registerEntryBoundary } from './hot-state.js';
 
 export function updateStyle(id: string, css: string): void {
 	removeTaggedAdditionalCSS(id);
 	addTaggedAdditionalCSS(css, id);
+	scheduleRestyle();
 }
 
 export function removeStyle(id: string): void {
 	removeTaggedAdditionalCSS(id);
+	scheduleRestyle();
 }
 
 export function injectQuery(url: string, queryToInject: string): string {

@@ -10,7 +10,7 @@
  * });
  * ```
  */
-/// <reference types="vite/client" />
+/// <reference types="vite/client" preserve="true" />
 import type { BeforeRerunEventData, RebootEventData, RestartEventData } from './hmr/shared/protocol.js';
 
 export type { BeforeRerunEventData, RebootEventData, RestartEventData } from './hmr/shared/protocol.js';

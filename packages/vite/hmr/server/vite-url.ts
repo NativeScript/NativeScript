@@ -21,3 +21,13 @@ export function transformIdForViteUrl(viteUrl: string): string {
 	if (!viteUrl.startsWith('/@id/')) return viteUrl;
 	return viteUrl.slice('/@id/'.length).replace(/^__x00__/, '\0');
 }
+
+/**
+ * The URL the device requests for a client module-graph URL: a graph URL that
+ * isn't a path (a virtual or bare id) is served under `/@id/`, with a leading
+ * `\0` encoded as `__x00__`, as Vite's import analysis writes it.
+ */
+export function deviceUrlForGraphUrl(graphUrl: string): string {
+	if (graphUrl.startsWith('/') || graphUrl.startsWith('.')) return graphUrl;
+	return `/@id/${graphUrl.replace(/^\0/, '__x00__')}`;
+}

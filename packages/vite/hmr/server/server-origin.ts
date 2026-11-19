@@ -19,10 +19,8 @@ import { getCliFlags } from '../../helpers/cli-flags.js';
 // `resolveDeviceReachableOrigin`). Keyed by `server.config` (NOT the server
 // object): Vite 8 hands hot-update hooks a compat WRAPPER over the dev server
 // whose object identity differs from the `configureServer` instance, while
-// `server.config` stays the same ResolvedConfig through any wrapper. Keying
-// by the server object made every hot-update call a cache miss (harmless for
-// this pure recompute, but wasteful — and the same identity split was an
-// outright correctness bug for app-css-state; see helpers/app-css-state.ts).
+// `server.config` stays the same ResolvedConfig through any wrapper. Keyed by
+// the server object, every hot-update call would miss the cache.
 const ORIGIN_CACHE = new WeakMap<object, string>();
 
 export function getServerOrigin(server: ViteDevServer): string {

@@ -80,7 +80,6 @@ describe('corePackageDir', () => {
 
 const ORIGIN = 'http://192.168.1.5:5173';
 const MODULE_URLS: NsDevBootstrapModuleUrls = {
-	entryRuntime: `${ORIGIN}/@fs/pkg/vite/hmr/entry-runtime.js`,
 	launchBridge: `${ORIGIN}/@fs/pkg/vite/hmr/shared/runtime/launch-bridge.js`,
 	coreBridge: `${ORIGIN}/node_modules/@nativescript/core/index.js`,
 };
@@ -91,10 +90,9 @@ const START = {
 	origin: ORIGIN,
 };
 
-function bootstrapCode(verbose = false) {
+function bootstrapCode() {
 	return createNsDevClientBootstrapCode({
 		clientImport: `${ORIGIN}/@fs/pkg/vite/hmr/client/index.js`,
-		verbose,
 		moduleUrls: MODULE_URLS,
 		start: START,
 	});
@@ -116,26 +114,20 @@ describe('createNsDevClientBootstrapCode', () => {
 		expect(code).not.toContain('ns:angular-update');
 	});
 
-	it('installs app.css and the launch bridge before the HMR client', () => {
+	it('installs the launch bridge before the HMR client, and no stylesheet', () => {
 		const code = bootstrapCode();
 		expect(code).toContain(`import * as __nsCoreBridge from "${MODULE_URLS.coreBridge}";`);
-		const cssAt = code.indexOf('__nsInstallHttpCoreCssSupport(__nsCoreBridge, false);');
 		const bridgeAt = code.indexOf('__nsInstallLaunchBridge(__nsCoreNs && __nsCoreNs.Application);');
 		const clientAt = code.indexOf('__nsStartHmrClientAfterBoot();\n');
-		expect(cssAt).toBeGreaterThan(-1);
-		expect(cssAt).toBeLessThan(bridgeAt);
+		expect(bridgeAt).toBeGreaterThan(-1);
 		expect(bridgeAt).toBeLessThan(clientAt);
+		expect(code).not.toContain('Css');
 	});
 
 	it('imports only absolute URLs, so the device never consults the import map for it', () => {
 		const imports = [...bootstrapCode().matchAll(/^import .* from "([^"]+)";$/gm)].map((m) => m[1]);
 		expect(imports.length).toBeGreaterThan(0);
 		expect(imports.every((url) => url.startsWith(`${ORIGIN}/`))).toBe(true);
-	});
-
-	it('passes the verbose flag to the boot helpers', () => {
-		const code = bootstrapCode(true);
-		expect(code).toContain('__nsInstallHttpCoreCssSupport(__nsCoreBridge, true);');
 	});
 });
 

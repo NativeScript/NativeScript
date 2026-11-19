@@ -110,24 +110,16 @@ describe('HMR dev overlay runtime API', () => {
 		});
 	});
 
-	// Regression guard for the 2026-05-10 monotonic-ratchet contract in
-	// `setBootStage`. Boot stages are *supposed* to fire in increasing
-	// order, but in practice the http-bootloader fallback (`entry-runtime.ts`)
-	// fires `installing-css` (70) before `importing-main`, while the new
-	// 'importing-main' base is 30. Without the ratchet the placeholder bar
-	// would visibly drop from 70 → 30 every cold boot, which the user reads
-	// as "the boot started over". The ratchet keeps the higher previous
-	// value AND lets the snippet/heartbeat continue climbing from there
-	// toward the 92 cap.
+	// Stages can arrive out of progress order; the bar must never move backwards.
 	it('clamps a lower boot-stage progress to the previous value (monotonic ratchet)', () => {
 		const api = ensureHmrDevOverlayRuntimeInstalled(true);
 
-		api.setBootStage('installing-css', { detail: 'Applying app stylesheet' });
-		expect(api.getSnapshot().progress).toBe(70);
+		api.setBootStage('preloading-style-scope', { detail: 'Preparing the shared style scope' });
+		expect(api.getSnapshot().progress).toBe(62);
 
 		api.setBootStage('importing-main', { detail: '/src/main.ts' });
-		// 'importing-main' base is 30; ratchet preserves the previous 70.
-		expect(api.getSnapshot().progress).toBe(70);
+		// 'importing-main' base is 30; ratchet preserves the previous 62.
+		expect(api.getSnapshot().progress).toBe(62);
 		// Phase still reflects the new stage so the user sees the right label.
 		expect(api.getSnapshot().phase).toContain('Importing the app entry');
 	});
@@ -159,8 +151,8 @@ describe('HMR dev overlay runtime API', () => {
 	it('does not ratchet across modes (connection / update reset cleanly)', () => {
 		const api = ensureHmrDevOverlayRuntimeInstalled(true);
 
-		api.setBootStage('installing-css', { detail: 'Applying app stylesheet' });
-		expect(api.getSnapshot().progress).toBe(70);
+		api.setBootStage('preloading-style-scope', { detail: 'Preparing the shared style scope' });
+		expect(api.getSnapshot().progress).toBe(62);
 
 		// Switching to a connection snapshot is a fresh visual state — the
 		// ratchet must NOT carry the boot progress over.

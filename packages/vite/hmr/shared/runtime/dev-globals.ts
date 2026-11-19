@@ -14,11 +14,7 @@ export const NS_DEV_SYMBOL_KEY = 'nativescript.dev';
 export interface NativeScriptDevGlobals {
 	/** Set by `bundle.mjs` once the first app root is up. The `/__ns_dev__/client` bootstrap waits for it before starting the HMR client. */
 	bootComplete?: boolean;
-	/** The global `app.css` text baked into `bundle.mjs`, applied by the served entry runtime. */
-	appCss?: string;
-	/** Rework AST of the same stylesheet, so the served core applies it without re-parsing. */
-	appCssAst?: unknown;
-	/** Every `Application` instance the boot placeholder's run wrapper saw. The served entry runtime restyles their root views. */
+	/** Every `Application` instance the boot placeholder's run wrapper saw. */
 	knownApplications?: unknown[];
 	/** The dev overlay installed by `bundle.mjs` and driven by the served HMR client. */
 	overlay?: HmrOverlayApi;

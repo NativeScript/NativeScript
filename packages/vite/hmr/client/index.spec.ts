@@ -5,7 +5,7 @@ vi.mock('@nativescript/core', () => ({ Application: undefined, addTaggedAddition
 import { HMRClient, HMRContext } from './hmr-client.js';
 import { registerEntryBoundary } from './hot-state.js';
 import { createNsHmrRuntime, type DeviceHotPayload } from './index.js';
-import { NS_AFTER_REBOOT_EVENT, NS_BEFORE_REBOOT_EVENT, NS_BEFORE_RERUN_EVENT, NS_BEFORE_RESTART_EVENT, NS_CSS_UPDATES_EVENT, NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT, NS_UPDATE_RERUN_EVENT, type BeforeRerunEventData, type RebootEventData, type UpdateRerunEventData } from '../shared/protocol.js';
+import { NS_AFTER_REBOOT_EVENT, NS_BEFORE_REBOOT_EVENT, NS_BEFORE_RERUN_EVENT, NS_BEFORE_RESTART_EVENT, NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT, NS_UPDATE_RERUN_EVENT, type BeforeRerunEventData, type RebootEventData, type UpdateRerunEventData } from '../shared/protocol.js';
 
 const ORIGIN = 'http://192.168.1.5:5173';
 const ENTRY_PATH = '/src/main.ts';
@@ -103,7 +103,6 @@ function setup(options: SetupOptions = {}) {
 			}),
 	);
 	const overlay = { setUpdateStage: vi.fn(), setConnectionStage: vi.fn(), hide: vi.fn() };
-	const applyCssUpdates = vi.fn(async () => {});
 	const devHost = { invalidateModules: vi.fn() };
 	const runtime = createNsHmrRuntime(
 		{ wsUrl: WS_URL, wsProtocol: 'vite-hmr', entryUrl: ENTRY, origin: ORIGIN, root: options.root },
@@ -112,7 +111,6 @@ function setup(options: SetupOptions = {}) {
 			createSocket,
 			importModule,
 			overlay,
-			applyCssUpdates,
 			devHost,
 			pingRetryMs: 1,
 			rebootSettledTimeoutMs: options.rebootSettledTimeoutMs ?? 1000,
@@ -127,7 +125,7 @@ function setup(options: SetupOptions = {}) {
 		return hmrSockets().at(-1)!;
 	};
 	const stages = () => overlay.setUpdateStage.mock.calls.map(([stage]) => stage);
-	return { runtime, client, logger, sockets, hmrSockets, connect, imports, importModule, overlay, applyCssUpdates, devHost, stages };
+	return { runtime, client, logger, sockets, hmrSockets, connect, imports, importModule, overlay, devHost, stages };
 }
 
 function restartsSent(socket: FakeSocket): unknown[] {
@@ -820,24 +818,6 @@ describe('the Restart app action', () => {
 	});
 });
 
-describe(NS_CSS_UPDATES_EVENT, () => {
-	const item = { type: 'css-update' as const, path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: 7, css: '.a { color: red; }' };
-
-	it('applies the stylesheets the event carries and drives the overlay', async () => {
-		const t = setup();
-		await send(t.runtime, { type: 'custom', event: NS_CSS_UPDATES_EVENT, data: { updates: [item] } });
-		expect(t.applyCssUpdates).toHaveBeenCalledWith([item]);
-		expect(t.stages()).toEqual(['received', 'complete']);
-	});
-
-	it('applies connect-sync without the overlay', async () => {
-		const t = setup();
-		await send(t.runtime, { type: 'custom', event: NS_CSS_UPDATES_EVENT, data: { updates: [item], reason: 'connect-sync' } });
-		expect(t.applyCssUpdates).toHaveBeenCalledWith([item]);
-		expect(t.overlay.setUpdateStage).not.toHaveBeenCalled();
-	});
-});
-
 describe('transport', () => {
 	it('opens Vite’s HMR socket with the vite-hmr subprotocol and emits vite:ws:connect', async () => {
 		const t = setup();
@@ -948,14 +928,12 @@ describe('app restart', () => {
 		await send(t.runtime, update(jsUpdate('/src/a.ts')));
 		await send(t.runtime, { type: 'full-reload' });
 		await send(t.runtime, { type: 'prune', paths: ['/src/a.ts'] });
-		await send(t.runtime, { type: 'custom', event: NS_CSS_UPDATES_EVENT, data: { updates: [{ type: 'css-update', path: '/app.css', acceptedPath: '/app.css', timestamp: 1, css: '' }] } });
 		await send(t.runtime, { type: 'custom', event: 'server:hello', data: 'hi' });
 
 		expect(order).toEqual(['beforeRestart no CLI attached', 'restart-required']);
 		expect(t.overlay.setUpdateStage.mock.calls).toEqual([['restart-required', { detail: 'no CLI attached' }]]);
 		expect(accept).not.toHaveBeenCalled();
 		expect(t.importModule).not.toHaveBeenCalled();
-		expect(t.applyCssUpdates).not.toHaveBeenCalled();
 		expect(t.client.hotModulesMap.has('/src/a.ts')).toBe(true);
 		expect(listener).toHaveBeenCalledWith('hi');
 		expect(restartsSent(socket)).toEqual([]);

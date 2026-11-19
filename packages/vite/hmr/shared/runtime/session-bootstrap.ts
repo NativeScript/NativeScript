@@ -4,7 +4,6 @@ import { formatBootTimeline, type BootTrace } from './boot-timeline.js';
 import { applyMonotonicBootProgress, BOOT_IMPORT_DETAIL, clearBootProgressState, computeBootImportProgress } from './boot-progress.js';
 import { getGlobalScope } from './global-scope.js';
 import { nsDev } from './dev-globals.js';
-import { installWorkerConstructorTracking } from './worker-tracking.js';
 import { restorePlaceholder } from './placeholder-hooks.js';
 
 let importMapConfigured = false;
@@ -175,12 +174,6 @@ function applyDevSessionGlobals(session: NsDevSessionDescriptor) {
 
 export async function startBrowserRuntimeSession(defaultSessionUrl: string, verbose?: boolean) {
 	ensureHmrDevOverlayRuntimeInstalled(verbose);
-	// Track every `Worker` construction from here on. Must run before the
-	// dev client and the app entry graph evaluate so no spawn — framework,
-	// app, or vendor — escapes the session-wide tracked set the HMR client
-	// sweeps during a full reload. Worker teardown is fully userland;
-	// the runtime exposes no native member for it.
-	installWorkerConstructorTracking(getGlobalScope(), { verbose });
 	const sessionUrl = getSessionUrl(defaultSessionUrl);
 	setHmrBootStage('probing-origin', {
 		detail: sessionUrl,
@@ -233,7 +226,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			runtimeApi.setDevBootComplete?.(false);
 		} catch {}
 
-		setHmrBootStage('loading-entry-runtime', {
+		setHmrBootStage('loading-client', {
 			detail: session.clientUrl,
 		});
 

@@ -4,7 +4,7 @@ import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { NS_UPDATE_RERUN_EVENT, type UpdateRerunEventData } from '../shared/protocol.js';
 import { requestAppRestart } from './app-restart.js';
 import { getServedModules, type ServedModules } from './served-modules.js';
-import { transformIdForViteUrl, viteUrlForFile } from './vite-url.js';
+import { deviceUrlForGraphUrl, transformIdForViteUrl, viteUrlForFile } from './vite-url.js';
 import { resolveProjectMainEntryPath } from './vite-plugin.js';
 
 interface GraphNodeLike {
@@ -252,7 +252,7 @@ export function nsRerunPlugin(opts: { flavor?: string } = {}): Plugin {
 					release();
 					const changed = takeChanged([...failedSaves, ...timestamps]);
 					failedSaves.clear();
-					originalSend(NS_UPDATE_RERUN_EVENT, { timestamp: jsUpdates[0].timestamp!, changed, rerun, root: server.config.root } satisfies UpdateRerunEventData);
+					originalSend(NS_UPDATE_RERUN_EVENT, { timestamp: jsUpdates[0].timestamp!, changed: changed.map(deviceUrlForGraphUrl), rerun: rerun.map(deviceUrlForGraphUrl), root: server.config.root } satisfies UpdateRerunEventData);
 					originalSend(...args);
 				};
 
@@ -354,7 +354,7 @@ export async function sendCatchUp(server: Pick<ViteDevServer, 'config' | 'enviro
 		client.send({ type: 'error', err: failure });
 		return 'error';
 	}
-	client.send(NS_UPDATE_RERUN_EVENT, { timestamp, changed: missed, rerun, root: server.config.root } satisfies UpdateRerunEventData);
+	client.send(NS_UPDATE_RERUN_EVENT, { timestamp, changed: missed.map(deviceUrlForGraphUrl), rerun: rerun.map(deviceUrlForGraphUrl), root: server.config.root } satisfies UpdateRerunEventData);
 	client.send({ type: 'update', updates: [update] });
 	return 'reboot';
 }

@@ -30,7 +30,6 @@ declare global {
 	// ── Native / framework / registry objects (intentionally `any`) ──
 	var __NS_DEV_PLACEHOLDER_ROOT_VIEW__: any;
 	var __NS_DEV_PLACEHOLDER_ROOT_EARLY__: any;
-	var __NS_HMR_WORKERS__: any;
 }
 
 export {};

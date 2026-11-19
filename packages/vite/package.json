@@ -68,7 +68,8 @@
 			"default": "./framework.js"
 		},
 		"./hmr/client/index.js": "./hmr/client/index.js",
-		"./hmr/entry-runtime.js": "./hmr/entry-runtime.js",
+		"./hmr/frameworks/core/client/reboot": "./hmr/frameworks/core/client/reboot.js",
+		"./hmr/frameworks/core/client/reboot.js": "./hmr/frameworks/core/client/reboot.js",
 		"./hmr/shared/runtime/root-placeholder": "./hmr/shared/runtime/root-placeholder.js",
 		"./hmr/shared/runtime/root-placeholder.js": "./hmr/shared/runtime/root-placeholder.js",
 		"./hmr/shared/runtime/boot-complete": "./hmr/shared/runtime/boot-complete.js",

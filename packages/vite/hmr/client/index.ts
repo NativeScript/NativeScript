@@ -3,9 +3,8 @@
  * (`vite/dist/client/client.mjs`) on Vite's own HMR WebSocket. Where a
  * browser reloads the page, the device asks the dev server for an app
  * restart. NativeScript adds the soft reboot (an update whose boundary is the
- * app entry, wrapped in `nativescript:beforeReboot`/`afterReboot`), the dev
- * overlay, and `ns:css-updates` for stylesheets that are not Vite modules on
- * the device.
+ * app entry, wrapped in `nativescript:beforeReboot`/`afterReboot`) and the dev
+ * overlay.
  *
  * Importing this module has no side effects. The `/__ns_dev__/client`
  * bootstrap calls `start()` once the app has booted.
@@ -16,9 +15,7 @@ import { clearEntryBoundary, getEntryBoundarySettled, hmrClient } from './hot-st
 import { createViteSocketTransport, waitForSuccessfulPing, type ViteSocketTransport, type WebSocketFactory } from './vite-transport.js';
 import { overlayDriver, type HmrOverlayDriver, type HmrOverlayInfo } from './overlay-driver.js';
 import { describeRuntimeError, describeServerError, deviceModuleUrlsInStack, type ErrorOverlayText } from './error-overlay.js';
-import { handleCssUpdates } from './css-handler.js';
-import { buildCssAppliedDetail, buildCssApplyingDetail } from './css-update-overlay.js';
-import { NS_AFTER_REBOOT_EVENT, NS_BEFORE_REBOOT_EVENT, NS_BEFORE_RERUN_EVENT, NS_BEFORE_RESTART_EVENT, NS_CSS_UPDATES_EVENT, NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT, NS_UPDATE_RERUN_EVENT, type BeforeRerunEventData, type CssUpdateItem, type CssUpdatesEventData, type RebootEventData, type RestartEventData, type UpdateRerunEventData } from '../shared/protocol.js';
+import { NS_AFTER_REBOOT_EVENT, NS_BEFORE_REBOOT_EVENT, NS_BEFORE_RERUN_EVENT, NS_BEFORE_RESTART_EVENT, NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT, NS_UPDATE_RERUN_EVENT, type BeforeRerunEventData, type RebootEventData, type RestartEventData, type UpdateRerunEventData } from '../shared/protocol.js';
 import { createUpdateModules, viteUrlCandidates, type UpdateModules } from '../shared/update-modules.js';
 import { readNsRuntimeDevHostApi, type NsRuntimeDevHostApi } from '../shared/runtime/browser-runtime-contract.js';
 import { ENV_VERBOSE } from './utils.js';
@@ -43,7 +40,6 @@ export interface NsHmrRuntimeDeps {
 	createSocket?: WebSocketFactory;
 	importModule?: (url: string) => Promise<any>;
 	overlay?: HmrOverlayDriver;
-	applyCssUpdates?: (updates: CssUpdateItem[]) => Promise<void>;
 	pingRetryMs?: number;
 	/** How long a soft reboot waits for the entry's `settled` provider before moving on. */
 	rebootSettledTimeoutMs?: number;
@@ -110,7 +106,6 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 	const importModule = deps.importModule ?? defaultImportModule;
 	const createSocket = deps.createSocket ?? defaultCreateSocket;
 	const rawOverlay = deps.overlay ?? overlayDriver;
-	const applyCssUpdates = deps.applyCssUpdates ?? handleCssUpdates;
 	const pingRetryMs = deps.pingRetryMs ?? 1000;
 	const rebootSettledTimeoutMs = deps.rebootSettledTimeoutMs ?? 15_000;
 	const beforeRestartTimeoutMs = deps.beforeRestartTimeoutMs ?? 5_000;
@@ -402,22 +397,6 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 		if (outsideChain) await requestRestart(`the app failed to reload: ${message}`);
 	}
 
-	async function handleNsCssUpdates(data: CssUpdatesEventData | undefined): Promise<void> {
-		const updates = Array.isArray(data?.updates) ? data!.updates : [];
-		if (!updates.length) return;
-		const silent = data!.reason === 'connect-sync';
-		if (!silent) {
-			overlay.setUpdateStage('received', { detail: buildCssApplyingDetail(updates.length) });
-		}
-		try {
-			await applyCssUpdates(updates);
-			if (!silent) overlay.setUpdateStage('complete', { detail: buildCssAppliedDetail(updates.length) });
-		} catch (err) {
-			console.warn('[ns-hmr] CSS update failed:', errorMessage(err));
-			if (!silent) showFailed({ detail: errorMessage(err) });
-		}
-	}
-
 	async function handleFullReload(payload: DeviceFullReloadPayload): Promise<void> {
 		try {
 			await client.notifyListeners('vite:beforeFullReload', payload);
@@ -462,7 +441,7 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 	async function handleMessage(payload: DeviceHotPayload): Promise<unknown> {
 		switch (payload.type) {
 			case 'connected':
-				if (ENV_VERBOSE) console.debug('[vite] connected.');
+				if (ENV_VERBOSE) console.log('[vite] connected.');
 				if (connectionOverlayShown) {
 					connectionOverlayShown = false;
 					overlay.hide('healthy');
@@ -490,10 +469,7 @@ export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntim
 			}
 			case 'custom':
 				await client.notifyListeners(payload.event, payload.data);
-				if (payload.event === NS_CSS_UPDATES_EVENT) {
-					if (restartReason !== undefined) ignoreWhileRestartRequired(NS_CSS_UPDATES_EVENT);
-					else await handleNsCssUpdates(payload.data);
-				} else if (payload.event === NS_UPDATE_RERUN_EVENT) {
+				if (payload.event === NS_UPDATE_RERUN_EVENT) {
 					const data = payload.data as UpdateRerunEventData | undefined;
 					if (typeof data?.root === 'string' && data.root) projectRoot = data.root;
 					if (typeof data?.timestamp === 'number') {

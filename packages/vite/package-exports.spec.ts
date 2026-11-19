@@ -11,5 +11,7 @@ describe('@nativescript/vite package exports', () => {
 
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/root-placeholder');
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/root-placeholder.js');
+		expect(exportsMap).toHaveProperty('./hmr/frameworks/core/client/reboot');
+		expect(exportsMap).toHaveProperty('./hmr/frameworks/core/client/reboot.js');
 	});
 });

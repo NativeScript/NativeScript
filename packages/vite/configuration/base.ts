@@ -333,10 +333,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Handle custom Android Activity/Application components (auto-detected or configured)
 			appComponentsPlugin({ platform, verbose }),
 			dynamicImportPlugin(),
-			// Dev/HMR only: rewrite `new Worker(new URL('./foo', import.meta.url))`
-			// to a dev-server URL string before Vite's built-in worker plugin
-			// produces a `?worker_file&type=classic` URL that the NS runtime can't
-			// load (see `workerHmrUrlPlugin` for the full rationale).
+			// Dev only: points `new Worker(new URL(...))` at the worker's module URL on the dev origin.
 			...(hmrActive ? [workerHmrUrlPlugin({ verbose })] : []),
 			// `vite build` only (production / `--no-hmr`): neutralize Angular's
 			// internal TS transformer so it stops blanking the worker URL.

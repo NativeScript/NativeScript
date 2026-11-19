@@ -15,7 +15,7 @@ type HmrOverlayMode = 'hidden' | 'boot' | 'connection' | 'update';
 // `setHmrDevOverlayPosition()`.
 export type HmrOverlayPosition = 'top' | 'bottom' | 'center';
 
-export type HmrBootStage = 'placeholder' | 'probing-origin' | 'loading-entry-runtime' | 'configuring-import-map' | 'loading-runtime-bridge' | 'loading-core-bridge' | 'preloading-style-scope' | 'installing-css' | 'importing-main' | 'waiting-for-app' | 'app-root-committed' | 'ready' | 'error';
+export type HmrBootStage = 'placeholder' | 'probing-origin' | 'loading-client' | 'configuring-import-map' | 'loading-runtime-bridge' | 'loading-core-bridge' | 'preloading-style-scope' | 'importing-main' | 'waiting-for-app' | 'app-root-committed' | 'ready' | 'error';
 
 export type HmrConnectionStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline' | 'healthy';
 
@@ -111,12 +111,12 @@ export function createBootOverlaySnapshot(stage: HmrBootStage, info?: HmrOverlay
 			blocking: true,
 			tone: 'info',
 		},
-		'loading-entry-runtime': {
+		'loading-client': {
 			visible: true,
 			mode: 'boot',
 			badge: 'BOOT',
 			title: BOOT_TITLE,
-			phase: 'Loading the entry runtime bridge',
+			phase: 'Loading the HMR client',
 			progress: 16,
 			busy: true,
 			blocking: true,
@@ -162,17 +162,6 @@ export function createBootOverlaySnapshot(stage: HmrBootStage, info?: HmrOverlay
 			title: BOOT_TITLE,
 			phase: 'Preparing the shared style scope',
 			progress: 62,
-			busy: true,
-			blocking: true,
-			tone: 'info',
-		},
-		'installing-css': {
-			visible: true,
-			mode: 'boot',
-			badge: 'BOOT',
-			title: BOOT_TITLE,
-			phase: 'Applying the app stylesheet',
-			progress: 70,
 			busy: true,
 			blocking: true,
 			tone: 'info',

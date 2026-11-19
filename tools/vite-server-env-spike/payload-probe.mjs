@@ -10,10 +10,14 @@
 //
 // Usage (from anywhere):
 //   node --preserve-symlinks tools/vite-server-env-spike/payload-probe.mjs [--compilation-api] [--keep-ns-strategy] [--only a,b,c]
+//   node --preserve-symlinks tools/vite-server-env-spike/payload-probe.mjs --flavor typescript --app ../../apps/toolbox
+// --flavor            the flavor config to boot (default angular); a non-Angular flavor runs its own case table
+// --app               app root, relative to this directory (default apps/ng)
 // --compilation-api   Analog `experimental.useAngularCompilationAPI: true` (default: Analog default mode)
 // --no-ipc            run without a parent IPC channel (default: a stubbed `process.send`, as under the CLI)
 // --keep-ns-strategy  keep the `nativescript-hmr-websocket` plugin if the installed package still has one
 // --fresh-plugins     the (r4)-(r7) restarts build new plugin instances, as reloading vite.config.mts does
+// --content-css       the global stylesheet depends on the app's templates (Tailwind v3 style); only the content cases run
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -38,11 +42,15 @@ const keepNsStrategy = flag('--keep-ns-strategy');
 const noIpc = flag('--no-ipc');
 const noNsRules = flag('--no-ns-rules');
 const freshPlugins = flag('--fresh-plugins');
+const contentCss = flag('--content-css');
 const only = take('--only', '')
 	.split(',')
 	.map((s) => s.trim())
 	.filter(Boolean);
 const appRoot = path.resolve(spikeDir, take('--app', 'apps/ng'));
+const flavor = take('--flavor', 'angular');
+const isAngular = flavor === 'angular';
+if (!isAngular && (compilationApi || freshPlugins || noNsRules)) throw new Error('--compilation-api, --fresh-plugins and --no-ns-rules apply to --flavor angular only');
 
 process.chdir(appRoot);
 process.argv.splice(2);
@@ -107,11 +115,18 @@ for (const [signal, code] of [
 
 const INLINE_DIR = 'src/app/probe-inline';
 const INLINE_TS = `${INLINE_DIR}/probe-inline.component.ts`;
-fs.mkdirSync(P(INLINE_DIR), { recursive: true });
-created.push(INLINE_DIR);
-fs.writeFileSync(
-	P(INLINE_TS),
-	`import { Component, NO_ERRORS_SCHEMA, signal } from '@angular/core';
+const SERVICE_TS = 'src/app/probe.service.ts';
+const CONTENT_HTML = isAngular ? 'src/app/probe-content.html' : 'src/probe-content.html';
+if (contentCss) {
+	fs.writeFileSync(P(CONTENT_HTML), `<Label class="probe-${isAngular ? 'cb' : 'cy'}0"></Label>\n`);
+	created.push(CONTENT_HTML);
+}
+if (isAngular) {
+	fs.mkdirSync(P(INLINE_DIR), { recursive: true });
+	created.push(INLINE_DIR);
+	fs.writeFileSync(
+		P(INLINE_TS),
+		`import { Component, NO_ERRORS_SCHEMA, signal } from '@angular/core';
 
 @Component({
 	selector: 'ProbeInline',
@@ -123,13 +138,13 @@ export class ProbeInlineComponent {
 	readonly count = signal(0);
 }
 `,
-);
-const SERVICE_TS = 'src/app/probe.service.ts';
-fs.writeFileSync(P(SERVICE_TS), `export class ProbeService {\n\tgreeting() {\n\t\treturn 'hello';\n\t}\n}\n`);
-created.push(SERVICE_TS);
-replaceIn('src/app/app.routes.ts', `export const routes: Routes = [`, `export { ProbeService } from './probe.service';\nexport const PROBE_MARKER = 'a';\n\nexport const routes: Routes = [\n\t{ path: 'probe-inline', loadComponent: () => import('./probe-inline/probe-inline.component').then((m) => m.ProbeInlineComponent) },`);
+	);
+	fs.writeFileSync(P(SERVICE_TS), `export class ProbeService {\n\tgreeting() {\n\t\treturn 'hello';\n\t}\n}\n`);
+	created.push(SERVICE_TS);
+	replaceIn('src/app/app.routes.ts', `export const routes: Routes = [`, `export { ProbeService } from './probe.service';\nexport const PROBE_MARKER = 'a';\n\nexport const routes: Routes = [\n\t{ path: 'probe-inline', loadComponent: () => import('./probe-inline/probe-inline.component').then((m) => m.ProbeInlineComponent) },`);
+}
 
-const EDITS = [
+const ANGULAR_EDITS = [
 	{ key: 'a', label: '(a) external home.component.html text', file: 'src/app/home/home.component.html', from: `'Hot taps: '`, to: `'Hot taps!: '` },
 	{ key: 'a2', label: '(a) external home.component.html text #2', file: 'src/app/home/home.component.html', from: `'Hot taps!: '`, to: `'Hot taps!!: '` },
 	{ key: 'b1', label: '(b) home.component.css color #1', file: 'src/app/home/home.component.css', from: 'color: red;', to: 'color: blue;' },
@@ -140,7 +155,7 @@ const EDITS = [
 	{ key: 'e', label: '(e) non-component .ts (app.routes.ts)', file: 'src/app/app.routes.ts', from: `PROBE_MARKER = 'a'`, to: `PROBE_MARKER = 'b'` },
 	{ key: 's', label: '(s) service class body (probe.service.ts)', file: SERVICE_TS, from: `'hello'`, to: `'hello again'` },
 	{ key: 'f', label: '(f) root app.component.html', file: 'src/app/app.component.html', from: '<GridLayout>', to: '<GridLayout class="probe">' },
-	{ key: 'g', label: '(g) global app.css', file: 'src/app.css', append: '\n.probe-global { color: red; }\n' },
+	{ key: 'g', label: '(g) global app.css', file: 'src/app.css', append: '\n.probe-global { color: red; }\n', expect: { error: false, reboot: 0, selfUpdate: '/src/app.css', fullReload: false, cssUpdatesEvent: false } },
 	{ key: 'i', label: '(i) device sends angular:invalidate', send: { type: 'custom', event: 'angular:invalidate', data: { id: 'probe', message: 'probe: replaceMetadata threw' } } },
 	{ key: 'e1a', label: '(e1) syntax error in home.component.ts', file: 'src/app/home/home.component.ts', from: '(n) => n + 1);', to: '(n) => n + 1;', expect: { error: true, update: false } },
 	{ key: 'e1b', label: '(e1) fix the syntax error', file: 'src/app/home/home.component.ts', from: '(n) => n + 1;', to: '(n) => n + 1);', expect: { error: false, reboot: 1, rerunIncludes: '/src/app/home/home.component.ts' } },
@@ -171,15 +186,71 @@ const EDITS = [
 	// the entry, so the app.routes.ts it gets must lazy-load home.component.ts by an absolute URL carrying
 	// home.component.ts's new `?t=`; anything else re-runs a stale home.component.ts or fails to load it.
 	{ key: 'r8', label: '(r8) helper imported by the lazy home.component.ts edited: app.routes.ts lazy import re-stamped', stampProbe: true, expect: { stamped: true } },
-].filter((e) => !only.length || only.includes(e.key) || only.includes(e.key[0]));
+];
+
+// Toolbox (`apps/toolbox`): a page, its code-behind, a util, the global stylesheet and a worker.
+const WORKER_URL = '/src/__spike__/spike.worker.ts?worker_file&type=module';
+const ADDED_PAGE = 'src/probe-added-page.xml';
+const CONTEXT_PATH = '/@id/__x00__virtual:ns-bundler-context';
+const IN_PLACE_CSS = { error: false, reboot: 0, selfUpdate: '/src/app.css', fullReload: false, restart: false, cssUpdatesEvent: false };
+const WORKER_RESTART = { error: false, reboot: 0, fullReload: true, restart: true, restartBootFailures: 0 };
+const TS_EDITS = [
+	{ key: 'x1', label: '(x1) page XML main-page.xml', file: 'src/main-page.xml', from: 'text="worker-spike"', to: 'text="worker-spike!"', expect: { error: false, reboot: 1, rerunIncludes: '/src/main-page.xml?raw', fullReload: false, restart: false } },
+	{ key: 'x2', label: '(x2) code-behind main-page.ts', file: 'src/main-page.ts', from: `'Supports multiple scenes:'`, to: `'Supports multiple scenes!:'`, expect: { error: false, reboot: 1, rerunIncludes: '/src/main-page.ts', fullReload: false, restart: false } },
+	{ key: 'x3', label: '(x3) util main-view-model.ts', file: 'src/main-view-model.ts', from: 'args.inset.top += 10;', to: 'args.inset.top += 11;', expect: { error: false, reboot: 1, rerunIncludes: '/src/main-view-model.ts', fullReload: false, restart: false } },
+	{ key: 'c1', label: '(c1) global app.css', file: 'src/app.css', append: '\n.probe-global { color: red; }\n', expect: { ...IN_PLACE_CSS, inPlaceHas: '.probe-global' } },
+	{ key: 'c2', label: '(c2) partial _app-platform.ios.css imported by app.css', file: 'src/_app-platform.ios.css', append: '\n.probe-partial { color: red; }\n', expect: { ...IN_PLACE_CSS, inPlaceHas: '.probe-partial' } },
+	{ key: 'c3a', label: '(c3) syntax error in app.css', file: 'src/app.css', append: '\n.probe-broken { color: red;\n', expect: { error: true, update: false, reboot: 0, fullReload: false } },
+	{ key: 'c3b', label: '(c3) fix the app.css syntax error', file: 'src/app.css', from: '.probe-broken { color: red;\n', to: '.probe-broken { color: red; }\n', expect: { ...IN_PLACE_CSS, inPlaceHas: '.probe-broken { color: red; }' } },
+	{ key: 'e1a', label: '(e1) syntax error in main-page.ts', file: 'src/main-page.ts', from: 'new HelloWorldModel();', to: 'new HelloWorldModel(;', expect: { error: true, update: false, fullReload: false } },
+	{ key: 'e1b', label: '(e1) fix the syntax error', file: 'src/main-page.ts', from: 'new HelloWorldModel(;', to: 'new HelloWorldModel();', expect: { error: false, reboot: 1, rerunIncludes: '/src/main-page.ts', fullReload: false } },
+	// A page added while the app runs joins the bundler context with the next reboot.
+	{ key: 'p1a', label: '(p1) page XML added', createFile: { file: ADDED_PAGE, text: '<Page><Label text="probe added page" /></Page>\n' }, expect: { error: false, fullReload: false, restart: false } },
+	{ key: 'p1b', label: '(p1) next reboot registers the added page', file: 'src/main-page.xml', from: 'text="worker-spike', to: 'text="probe-p1 worker-spike', expect: { error: false, reboot: 1, servedIncludes: [CONTEXT_PATH, 'probe-added-page.xml'] } },
+	{ key: 'p1c', label: '(p1) page XML removed', removeFile: ADDED_PAGE, expect: { error: false, reboot: 0, fullReload: true, restart: true, restartBootFailures: 0 } },
+	{ key: 'w1', label: '(w1) spawner worker-spawner.ts', file: 'src/__spike__/worker-spawner.ts', from: 'current.postMessage(n);', to: 'current.postMessage(n + 0);', expect: { error: false, reboot: 1, rerunIncludes: '/src/__spike__/worker-spawner.ts', fullReload: false, restart: false } },
+	{ key: 'w2', label: '(w2) worker entry spike.worker.ts', file: 'src/__spike__/spike.worker.ts', from: 'square: square(event.data),', to: 'square: square(event.data) + 0,', expect: WORKER_RESTART },
+	{ key: 'w3', label: '(w3) worker helper worker-helper.ts', file: 'src/__spike__/worker-helper.ts', from: 'n * n', to: 'n * n + 0', expect: WORKER_RESTART },
+	// Mirrors (r5)/(r6): Vite restarts and app.css is saved while the app boots.
+	{ key: 'r5', label: '(r5) server.restart(), app.css saved mid-boot before /src/app.css is fetched', bootRace: 'before-home', raceUrl: '/src/app.css', raceFile: 'src/app.css', stylesheet: true, expect: { fresh: true } },
+	{ key: 'r6', label: '(r6) server.restart(), app.css saved mid-boot after /src/app.css is fetched', bootRace: 'after-home', raceUrl: '/src/app.css', raceFile: 'src/app.css', stylesheet: true, expect: { fresh: true, reboot: 1 } },
+];
+
+// --content-css: the stand-in emits a rule per class found in the content files, so a fresh stylesheet carries the edited class.
+const CONTENT_CSS_EXPECT = { error: false, reboot: 0, selfUpdate: '/src/app.css', fullReload: false, restart: false };
+const ANGULAR_CONTENT_EDITS = [
+	{ key: 'ca', label: '(ca) content: loaded home.component.html gains a class', file: 'src/app/home/home.component.html', from: 'class="title"', to: 'class="title probe-ca"', expect: { ...CONTENT_CSS_EXPECT, inPlace: true, inPlaceHas: '.probe-ca' } },
+	{ key: 'cb', label: '(cb) content: unused probe-content.html gains a class', file: CONTENT_HTML, from: 'probe-cb0', to: 'probe-cb', expect: { ...CONTENT_CSS_EXPECT, inPlace: false, inPlaceHas: '.probe-cb ' } },
+];
+const TS_CONTENT_EDITS = [
+	{ key: 'cx', label: '(cx) content: page XML main-page.xml gains a class', file: 'src/main-page.xml', from: 'class="page"', to: 'class="page probe-cx"', expect: { error: false, reboot: 1, fullReload: false, restart: false, servedIncludes: ['/src/app.css', '.probe-cx'] } },
+	{ key: 'cy', label: '(cy) content: unused probe-content.html gains a class', file: CONTENT_HTML, from: 'probe-cy0', to: 'probe-cy', expect: { ...CONTENT_CSS_EXPECT, inPlaceHas: '.probe-cy ' } },
+];
+const CONTENT_GLOB = isAngular ? '**/*.html' : '**/*.{xml,html}';
+const contentDependencyPlugin = {
+	postcssPlugin: 'probe-content-dependency',
+	Once(root, { result }) {
+		const from = result.opts.from?.split('?')[0];
+		if (!from || path.resolve(from) !== P('src/app.css')) return;
+		result.messages.push({ type: 'dir-dependency', plugin: 'probe-content-dependency', dir: P('src'), glob: CONTENT_GLOB, parent: result.opts.from });
+		const classes = new Set();
+		for (const rel of fs.globSync(CONTENT_GLOB, { cwd: P('src') })) {
+			for (const m of fs.readFileSync(path.join(P('src'), rel), 'utf8').matchAll(/class="([^"]*)"/g)) for (const c of m[1].split(/\s+/)) if (/^[A-Za-z][\w-]*$/.test(c)) classes.add(c);
+		}
+		for (const c of [...classes].sort()) root.append(`.${c} { }`);
+	},
+};
+
+const EDITS = (contentCss ? (isAngular ? ANGULAR_CONTENT_EDITS : TS_CONTENT_EDITS) : isAngular ? ANGULAR_EDITS : TS_EDITS).filter((e) => !only.length || only.includes(e.key) || only.includes(e.key[0]));
 
 // ---- server ----------------------------------------------------------------
 let server;
 // Set before a restart that should resolve new plugin instances.
 let rebuildPlugins = false;
 try {
-	const { angularConfig } = await import(pathToFileURL(path.join(nsViteDir, 'configuration/angular.js')).href);
-	const config = angularConfig({ mode: 'development' });
+	const flavorModule = await import(pathToFileURL(path.join(nsViteDir, `configuration/${flavor}.js`)).href);
+	const flavorConfig = flavorModule[`${flavor}Config`];
+	const config = await flavorConfig({ mode: 'development' });
 	const nsPlugins = (cfg) => {
 		let list = cfg.plugins.flat(Infinity).filter(Boolean);
 		if (!keepNsStrategy) list = list.filter((p) => p.name !== 'nativescript-hmr-websocket');
@@ -210,6 +281,10 @@ try {
 		plugins.splice(at, 0, ...replacement);
 	}
 	const inline = { ...config, plugins, root: appRoot, configFile: false, mode: 'development', logLevel: 'warn' };
+	if (contentCss) {
+		const postcss = typeof config.css?.postcss === 'object' ? config.css.postcss : {};
+		inline.css = { ...config.css, postcss: { ...postcss, plugins: [...(postcss.plugins ?? []), contentDependencyPlugin] } };
+	}
 	if (freshPlugins) {
 		if (compilationApi) throw new Error('--fresh-plugins supports the default Analog mode only');
 		// Vite's restart re-resolves `server.config.inlineConfig`, this object.
@@ -218,7 +293,7 @@ try {
 			get() {
 				if (rebuildPlugins) {
 					rebuildPlugins = false;
-					plugins = nsPlugins(angularConfig({ mode: 'development' }));
+					plugins = nsPlugins(flavorConfig({ mode: 'development' }));
 				}
 				return plugins;
 			},
@@ -231,6 +306,15 @@ try {
 	throw e;
 }
 
+if (contentCss) {
+	// Vite's `getSortedPluginsByHotUpdateHook`: `hotUpdate` wins over `handleHotUpdate`, then pre/normal/post.
+	const rank = (p) => {
+		const h = p.hotUpdate ?? p.handleHotUpdate;
+		return typeof h === 'object' && h.order === 'pre' ? 0 : typeof h === 'object' && h.order === 'post' ? 2 : 1;
+	};
+	const sorted = server.environments.client.plugins.filter((p) => p.hotUpdate ?? p.handleHotUpdate).sort((a, b) => rank(a) - rank(b));
+	console.log(`client hot-update order: ${sorted.map((p) => `${p.name}${p.hotUpdate ? '' : '(handleHotUpdate)'}`).join(' > ')}`);
+}
 const port = server.config.server.port;
 const local = `http://localhost:${port}`;
 const log = [];
@@ -302,6 +386,12 @@ async function openSocket(reuseUrl) {
 		}
 		log.push({ via: 'wire', text: summarize(payload), payload, at: Date.now() });
 		if (payload?.type === 'custom' && payload.event === 'angular:component-update') void emulateComponentUpdate(payload.data);
+		// The device client answers a `full-reload` with a restart request (`hmr/client/index.ts`).
+		if (payload?.type === 'full-reload' && !payload.ifFallback && !String(payload.path ?? '').endsWith('.html')) {
+			const reason = payload.triggeredBy ? `full reload: ${payload.triggeredBy}` : payload.path && payload.path !== '*' ? `full reload: ${payload.path}` : 'full reload requested by the dev server';
+			socket.send(JSON.stringify({ type: 'custom', event: 'ns:restart', data: { reason } }));
+			log.push({ via: 'device', text: `sent ns:restart (${reason})`, at: Date.now() });
+		}
 	});
 	await new Promise((resolve, reject) => {
 		socket.addEventListener('open', resolve, { once: true });
@@ -316,7 +406,10 @@ await init;
 const seen = new Set();
 // Imports the device could not load: non-2xx, dynamic literals that are not absolute, unmapped bare specifiers.
 const crawlFailures = new Set();
+// Counts repeats too, so a reboot that hits an already reported failure still shows up.
+let crawlFailureCount = 0;
 function crawlFailure(text) {
+	crawlFailureCount++;
 	if (crawlFailures.has(text)) return;
 	crawlFailures.add(text);
 	console.warn(`  crawl FAIL ${text}`);
@@ -348,11 +441,14 @@ async function crawl(url, opts = {}) {
 		const target = new URL(r.url);
 		if (target.origin !== deviceOrigin) crawlFailure(`foreign origin '${r.url}' in ${key}`);
 		// App modules only: node_modules never import app code, so they add no importer edges.
-		else if (target.pathname.startsWith('/src/')) await crawl(r.url, opts);
+		// Virtual modules (the bundler context) do.
+		else if (target.pathname.startsWith('/src/') || target.pathname.startsWith('/@id/__x00__virtual:')) await crawl(r.url, opts);
 	}
 }
 await crawl(session.entryUrl);
-{
+// The device spawns the toolbox worker on a tap; spawn it now so its modules are in the graph.
+if (!isAngular) await crawl(new URL(WORKER_URL, deviceOrigin).href);
+if (isAngular) {
 	const home = await (await fetch(`${local}/src/app/home/home.component.ts`)).text();
 	console.log(`home.component.ts compiled with HMR listener: ${home.includes('angular:component-update')}`);
 	const lib = await (await fetch(`${local}/node_modules/@nativescript/angular/fesm2022/nativescript-angular.mjs`)).text();
@@ -402,6 +498,7 @@ const BOOT_COMPONENTS = [
 ];
 async function bootMetadataFetches() {
 	const out = [];
+	if (!isAngular) return out;
 	for (const [file, cls] of BOOT_COMPONENTS) {
 		const ownerUrl = `${deviceOrigin}/${file}`;
 		const url = new URL(`./@ng/component?c=${encodeURIComponent(`${file}@${cls}`)}&t=${Date.now()}`, ownerUrl).href;
@@ -493,9 +590,9 @@ try {
 			await server.restart();
 			if (freshPlugins) log.push({ via: 'device', text: `restart resolved ${rebuildPlugins ? 'the SAME' : 'new'} plugin instances`, at: Date.now() });
 			hook(server.ws, 'server.ws');
-			const homeUrl = '/src/app/home/home.component.ts';
+			const homeUrl = edit.raceUrl ?? '/src/app/home/home.component.ts';
 			const marker = edit.stylesheet ? `probe-${edit.key}` : `taps ${edit.key}`;
-			const templateFile = edit.stylesheet ? 'src/app/home/home.component.css' : 'src/app/home/home.component.html';
+			const templateFile = edit.raceFile ?? (edit.stylesheet ? 'src/app/home/home.component.css' : 'src/app/home/home.component.html');
 			const graphState = () => {
 				const g = server.environments.client.moduleGraph;
 				const nodes = [...(g.getModulesByFile(P(templateFile)) ?? [])];
@@ -548,7 +645,11 @@ try {
 			edit.stampBefore = g.getModuleById(P(HOME_TS))?.lastHMRTimestamp ?? 0;
 			log.push({ via: 'device', text: `${STAMP_TS} in graph: ${helper ? `importers=[${[...helper.importers].map((i) => i.url).join(',')}]` : 'NO'}; ${HOME_TS} lastHMRTimestamp=${edit.stampBefore}`, at: Date.now() });
 			replaceIn(STAMP_TS, `'a'`, `'b'`);
-		} else if (edit.append) write(edit.file, fs.readFileSync(P(edit.file), 'utf8') + edit.append);
+		} else if (edit.createFile) {
+			created.push(edit.createFile.file);
+			fs.writeFileSync(P(edit.createFile.file), edit.createFile.text);
+		} else if (edit.removeFile) fs.rmSync(P(edit.removeFile), { force: true });
+		else if (edit.append) write(edit.file, fs.readFileSync(P(edit.file), 'utf8') + edit.append);
 		else replaceIn(edit.file, edit.from, edit.to);
 		const editedAt = Date.now();
 		await settle();
@@ -566,6 +667,18 @@ try {
 			}
 		}
 		const entries = log.splice(0);
+		// The device client imports each accepted module of an in-place update at `?[import&]t=` (`hmr/client/index.ts`).
+		if (!isAngular || contentCss) {
+			for (const p of entries.filter((e) => e.via === 'wire' && e.payload?.type === 'update').map((e) => e.payload)) {
+				for (const u of p.updates.filter((x) => x.type === 'js-update' && x.path !== ENTRY_PATH && (!isAngular || x.path === '/src/app.css'))) {
+					const url = `${deviceOrigin}${u.acceptedPath}?${u.explicitImportRequired ? 'import&' : ''}t=${u.timestamp}`;
+					const res = await fetch(toLocal(url));
+					const body = await res.text();
+					edit.inPlaceBodies = [...(edit.inPlaceBodies ?? []), body];
+					entries.push({ via: 'device', text: `imported ${new URL(url).pathname}${new URL(url).search}: ${res.status} ${body.length}b` });
+				}
+			}
+		}
 		// A device re-imports the entry on a soft reboot, which re-transforms the changed chain.
 		const reboot = entries.find((e) => e.via === 'wire' && e.payload?.type === 'update' && e.payload.updates.some((u) => u.type === 'js-update' && u.path === ENTRY_PATH));
 		if (reboot) {
@@ -573,6 +686,7 @@ try {
 			seen.clear();
 			const bodies = new Map();
 			await crawl(`${session.entryUrl}?t=${ts}`, { bodies });
+			edit.rebootBodies = bodies;
 			if (edit.bootRace && bodies.has(edit.homeUrl)) {
 				edit.fresh = await servesMarker(bodies.get(edit.homeUrl), edit.marker);
 				entries.push({ via: 'device', text: `catch-up re-fetched ${edit.homeUrl}: ${edit.fresh ? 'has the new template' : 'has the OLD template'}` });
@@ -587,6 +701,25 @@ try {
 			entries.push({ via: 'device', text: check.text });
 		}
 		entries.push(...ipcMessages.splice(0).map((message) => ({ via: 'ipc', text: short(message), payload: message })));
+		// The CLI restarts the app: it boots from the entry again, opens a new socket, and the worker is spawned again.
+		if (!isAngular && entries.some((e) => e.via === 'ipc' && e.payload?.type === 'nativescript:restart')) {
+			ws.close();
+			await sleep(300);
+			log.length = 0;
+			const failuresBefore = crawlFailureCount;
+			const boot = await (await fetch(`${local}/__ns_dev__/session`)).json();
+			await loadImportMap(boot);
+			seen.clear();
+			const bodies = new Map();
+			await crawl(boot.entryUrl, { bodies });
+			await crawl(new URL(WORKER_URL, deviceOrigin).href, { bodies });
+			edit.restartBootFailures = crawlFailureCount - failuresBefore;
+			ws = await openSocket();
+			await settle();
+			entries.push({ via: 'device', text: `app restarted: booted ${bodies.size} app modules, ${edit.restartBootFailures} failed import(s)` });
+			entries.push(...log.splice(0).map((e) => ({ ...e, via: `restart:${e.via}`, at: undefined })));
+			entries.push(...ipcMessages.splice(0).map((message) => ({ via: 'restart:ipc', text: short(message), payload: message })));
+		}
 		results.push({ edit, entries });
 		console.log(`\n--- ${edit.label}`);
 		if (!entries.length) console.log('    (nothing sent)');
@@ -608,12 +741,27 @@ try {
 				rerunIncludes: rerun?.data?.rerun ?? [],
 				fresh: edit.fresh,
 				stamped: edit.stamped,
+				restartBootFailures: edit.restartBootFailures,
+				inPlaceHas: edit.expect.inPlaceHas ? !!edit.inPlaceBodies?.some((b) => b.includes(edit.expect.inPlaceHas)) : undefined,
+				fullReload: wire.some((p) => p?.type === 'full-reload'),
+				restart: entries.some((e) => e.via === 'ipc' && e.payload?.type === 'nativescript:restart'),
+				cssUpdatesEvent: wire.some((p) => p?.type === 'custom' && p.event === 'ns:css-updates'),
+				// `path>acceptedPath` of every js-update the device received.
+				selfUpdate: wire.flatMap((p) => (p?.type === 'update' ? p.updates.filter((u) => u.type === 'js-update').map((u) => `${u.path}>${u.acceptedPath}`) : [])),
+				servedIncludes: edit.expect.servedIncludes ? [edit.expect.servedIncludes[0], !!edit.rebootBodies?.get(edit.expect.servedIncludes[0])?.includes(edit.expect.servedIncludes[1])] : undefined,
 			};
-			const failures = Object.entries(edit.expect).filter(([k, v]) => (k === 'rerunIncludes' ? !facts.rerunIncludes.includes(v) : facts[k] !== v));
+			const met = (k, v) => {
+				if (k === 'rerunIncludes') return facts.rerunIncludes.includes(v);
+				if (k === 'selfUpdate') return facts.selfUpdate.includes(`${v}>${v}`);
+				if (k === 'servedIncludes') return facts.servedIncludes[1] === true;
+				if (k === 'inPlaceHas') return facts.inPlaceHas;
+				return facts[k] === v;
+			};
+			const failures = Object.entries(edit.expect).filter(([k, v]) => !met(k, v));
 			const verdict = failures.length ? `FAIL ${failures.map(([k, v]) => `${k}: expected ${JSON.stringify(v)}, got ${JSON.stringify(facts[k])}`).join('; ')}` : 'ok';
 			checks.push({ key: edit.key, verdict });
 			console.log(`    expect           ${verdict}`);
-			if (edit.bootRace) console.log(`    verdict          ${verdict === 'ok' ? 'PASS' : 'FAIL'}: last served home.component.ts ${edit.fresh ? 'has the new template' : 'has the OLD template'}, ${reboots.length} catch-up reboot(s)${rerun ? ` (rerun ${JSON.stringify(facts.rerunIncludes)})` : ''}`);
+			if (edit.bootRace) console.log(`    verdict          ${verdict === 'ok' ? 'PASS' : 'FAIL'}: last served ${edit.homeUrl} ${edit.fresh ? 'has the new template' : 'has the OLD template'}, ${reboots.length} catch-up reboot(s)${rerun ? ` (rerun ${JSON.stringify(facts.rerunIncludes)})` : ''}`);
 		}
 	}
 } finally {
@@ -622,7 +770,7 @@ try {
 	await server.close();
 }
 
-const mode = compilationApi ? 'compilation-api' : 'default';
+const mode = `${!isAngular ? flavor : compilationApi ? 'compilation-api' : 'default'}${contentCss ? '-content-css' : ''}`;
 fs.mkdirSync(path.join(spikeDir, 'out'), { recursive: true });
 const outFile = path.join(spikeDir, 'out', `payload-probe-${mode}.json`);
 fs.writeFileSync(

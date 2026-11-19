@@ -1,4 +1,5 @@
 import { Observable, Frame, StackLayout, AndroidOverflowInsetData } from '@nativescript/core';
+import { pingSpikeWorker } from './__spike__/worker-spawner';
 
 export class HelloWorldModel extends Observable {
 	viewDemo(args) {
@@ -6,6 +7,13 @@ export class HelloWorldModel extends Observable {
 		Frame.topmost().navigate({
 			moduleName: `pages/${args.object.text}`,
 		});
+	}
+
+	pingSpikeWorker() {
+		pingSpikeWorker(7).then(
+			(reply) => console.log('[worker-spike] reply', JSON.stringify(reply)),
+			(error) => console.error('[worker-spike] failed', error),
+		);
 	}
 
 	onInset(args: AndroidOverflowInsetData) {

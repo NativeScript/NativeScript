@@ -70,14 +70,18 @@ const angularServerStrategy: FrameworkServerStrategy = {
 	gatedEvents: ['angular:component-update'],
 };
 
+// The entry calls `Application.run(entry)` on every evaluation; the reboot
+// module turns that call into `Application.resetRootView(entry)`.
+const coreEntryBoundary: FrameworkEntryBoundary = { module: '@nativescript/vite/hmr/frameworks/core/client/reboot.js', dispose: 'prepareHmrReboot', settled: 'whenHmrRebootSettled' };
+
 const BUILT_IN_STRATEGIES = new Map<string, FrameworkServerStrategy>([
 	['angular', angularServerStrategy],
 	// Key order is significant for the import map.
 	['vue', { flavor: 'vue', importMapSpecifiers: () => ['nativescript-vue', 'vue'] }],
 	['solid', { flavor: 'solid', importMapSpecifiers: () => ['solid-js'] }],
 	['react', { flavor: 'react' }],
-	['typescript', { flavor: 'typescript' }],
-	['javascript', { flavor: 'javascript' }],
+	['typescript', { flavor: 'typescript', entryBoundary: coreEntryBoundary }],
+	['javascript', { flavor: 'javascript', entryBoundary: coreEntryBoundary }],
 ]);
 
 export function getBuiltInServerStrategy(flavor: string): FrameworkServerStrategy | undefined {

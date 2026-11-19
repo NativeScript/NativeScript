@@ -802,6 +802,114 @@ The toolbox's 135 extra requests are css-tree, `@csstools` and source-map-js ser
 6. **Physical device on `NS_HMR_HOST`:** boot only.
 7. **Optional: a React app,** to check that `react`/`react-reconciler` load through the pre-bundle and that `react-jsx-runtime`'s named imports resolve.
 
+## Round 17: phase 4a, TS/JS soft reboot, `app.css` as a Vite module, workers
+
+DESIGN.md (as built after phase 4a) has the model: "Soft reboot", "Global `app.css`: a Vite CSS module", "Workers" and "Frameworks" → "TypeScript and JavaScript".
+
+**What changed.**
+- **TS/JS entry boundary.** The typescript and javascript strategies name `@nativescript/vite/hmr/frameworks/core/client/reboot.js`.
+  - Its dispose closes modals and arms a one-shot `Application.run` → `resetRootView` redirect, at dispose time, because the boot placeholder restores the original `run`.
+  - Its settle resolves once the new root view is loaded, or with `{ error }`.
+  - `restorePageAfterHmrReboot()` is an opt-in re-navigation to the previous page.
+- **The bundler context is served in dev.** The entry imports `virtual:ns-bundler-context`, and the HMR `bundle.mjs` no longer bundles it, so XML, code-behind and util edits reach the entry boundary. The context unregisters its names before registering again. Release is unchanged.
+- **`app.css` is a CSS module of the entry, in every flavor.**
+  - `updateStyle`/`removeStyle` restyle the root and modals, batched per microtask.
+  - The dev bundler context leaves out the global stylesheet, so core's launch-time `loadAppCss` no longer applies an untagged raw copy.
+  - An NS hot-update hook undoes Analog's swap of an edited `.css` for its importer (the entry).
+  - Deleted: `ns:css-updates`, connect-sync, `virtual:ns-app-css` in the HMR bundle, `app-css-state`, `app-css-refresh`, `css-updates.ts`, `css-handler.ts`, `css-update-overlay.ts`, `app-css-applier.ts`, `entry-runtime.ts` (and its package export), and `appCss`/`appCssAst`.
+- **Workers.**
+  - The dev rewrite keeps Vite's `?worker_file&type=module` on the dev origin, so Vite prepends `import "/@vite/env"`: the worker realm gets the defines.
+  - The constructing module owns its workers and terminates them on `nativescript:beforeRerun` and `hot.prune`.
+  - A worker-graph edit is a `full-reload` (app restart).
+  - Deleted: `worker-tracking.ts` and `__NS_HMR_WORKERS__`.
+  - Toolbox demo: `__spike__/spike.worker.ts`, `worker-helper.ts` and `worker-spawner.ts`, plus a "worker-spike" button.
+- **`ns:rerun` uses device URLs** for virtual modules (`/@id/__x00__…`, `deviceUrlForGraphUrl`). `isRerun` didn't match the served context before.
+- **Boot stages:** `loading-entry-runtime` → `loading-client`; `installing-css` removed.
+- **Size:** 52 files against HEAD, +889/−2184 in tracked files (15 deleted, −1421, including docs and probe scripts), plus 1060 lines in new files (specs: 807).
+
+**`payload-probe.mjs` additions.**
+- **Flags and device emulation:** `--flavor` (default `angular`). The device emulation replies `ns:restart` to `full-reload`, re-boots TS after a restart request, and imports `acceptedPath?t=` after an in-place TS update.
+- **New expectation facts:** `fullReload`, `restart`, `cssUpdatesEvent`, `selfUpdate`, `servedIncludes`, `restartBootFailures`, `inPlaceHas`.
+- **Run:** `node --preserve-symlinks tools/vite-server-env-spike/payload-probe.mjs --flavor typescript --app ../../apps/toolbox`.
+
+**`thin-crawl.mjs`:** a `?worker_file` seed roots its own realm. A file loaded under one URL per realm (the worker's `/@fs/…/vite/dist/client/env.mjs` next to the main realm's `/@vite/env`) is reported on a "cross-realm" line and doesn't fail. Seeding the `/@fs` `env.mjs` into the main realm still fails.
+
+**Probe, TypeScript (toolbox): 17/17.**
+| case | edit | result |
+|---|---|---|
+| x1 | `main-page.xml` | reboot; `rerun` = entry, `/@id/__x00__virtual:ns-bundler-context`, `/src/main-page.xml?raw` |
+| x2, x3 | `main-page.ts`, `main-view-model.ts` | reboot, edited file in `rerun` |
+| c1, c2, c3b | `app.css`, `_app-platform.ios.css`, fix | in place: `js-update /src/app.css`, `rerun ["/src/app.css"]`, new rule in the re-import |
+| c3a | `app.css` syntax error | `error` (`[postcss] Unclosed block`), nothing applied |
+| e1a, e1b | code-behind syntax error, fix | `error` (`vite:oxc`), then reboot |
+| p1a, p1b, p1c | page added, next save, page removed | nothing; the next reboot registers it; `full-reload` → restart, clean re-boot |
+| w1 | `worker-spawner.ts` | reboot, spawner in `rerun` |
+| w2, w3 | `spike.worker.ts`, `worker-helper.ts` | `full-reload` → restart, clean re-boot |
+| r5, r6 | `app.css` saved before / after it was fetched at boot | served fresh / catch-up reboot (`rerun [main.ts, app.css]`) |
+
+**Probe, Angular: 18/18.**
+- Cases without expectations are identical to round 16 after normalization, so component `styleUrl` edits (b1/b2) still update in place.
+- `g` (`src/app.css`) is a `js-update /src/app.css` in place, and the connect-time `ns:css-updates` resyncs are gone.
+
+**Content-driven CSS** (`--content-css`). A stand-in PostCSS plugin on `src/app.css` emits a `dir-dependency` on the templates (`src/**/*.html`; TS: `src/**/*.{xml,html}`) and appends one rule per `class="…"` found.
+- **Before the hook's dependency branch:**
+  - ng `ca` (loaded `home.component.html`) and `cb` (an unused `.html`) already passed with Analog 2.9.7: its `.html` handling leaves a JS module among the edit's modules.
+  - TS `cx` (`.xml`) passed: a reboot that re-fetches the new `app.css`.
+  - TS `cy` (`.html`) failed: `full-reload` (Vite's `isClientHtmlChange`), i.e. an app restart.
+- **After** (the hook appends the stylesheet's module when the edited file is its dependency): ng 2/2 and TS 2/2. `cy` is `js-update /src/app.css` with the new rule in the served body.
+- The default ng run stays 18/18, and TS 17/17.
+- `--compilation-api` fails its compile check on `.html` edits with or without the flag. That predates this round.
+
+**Runtime `Accept` header:** `application/javascript, text/javascript, */*;q=0.1`, on iOS (`HttpLoader.mm:677`) and Android (`HttpLoader.cpp:720`). Vite rewrites a CSS request to `?direct` only for `text/css`, so the runtime gets the JS module.
+
+**F1 (minor).** After a removed page, a save made while the app was not restarted (no IPC parent) gets an `error` (`ENOENT …probe-added-page.xml`).
+- The cause: the update gate checks the stale context edges before the context re-transforms.
+- With a restart in between, the save is clean.
+- On a device the client ignores updates while a restart is required, but still shows the `error` overlay.
+
+**Builds** (the baseline harness at HEAD vs after):
+- **Release, ng:** all files byte-identical.
+- **Release, toolbox:**
+  - `bundle.mjs` grows by 414 bytes and `assets/spike.worker-*.js` (179 B) is new: the toolbox's own demo.
+  - The `app.css` AST passed to the tagged-CSS call is identical (sha256 `8e60ab21…`), and the release context still registers `/src/app.css?raw`.
+  - HEAD toolbox sources built with the new package give all files byte-identical to baseline.
+- **HMR `bundle.mjs`:**
+  - toolbox 574,488 → 140,111 bytes (−76%): no app.css rules, no context, no page code;
+  - ng 1,047,271 → 1,044,535 (the `app.css` rules are gone).
+
+**Crawls** (`--bundle` with the fresh HMR bundle, `NS_HMR_PORT=5173`, the origin it bakes):
+| | round 16 | after |
+|---|---|---|
+| ng requests | 683 | 680 (−5 removed client modules, +`restyle.js`, +`/src/app.css`) |
+| toolbox requests | 425 | 541 (+114 `/src`: 55 page XML, about 59 code-behinds and their imports, `app.css`; +1 `/@id` context; +5 `/node_modules`: `reboot.js` and 4 imagepicker/perms files; −4 `/@fs` client) |
+
+Both pass with 0 failures, 0 duplicates and 0 duplicate instances. The toolbox crawl seeds the worker entry and finds 1 cross-realm group (`env.mjs`).
+
+**Checked** (the final build synced into the fixture; every run sequential):
+- vitest 869/869 in 82 files.
+- `tsc -p tsconfig.lib.json`: 261 errors, all under `../core`.
+- nx build passes, and prettier is clean on 46 changed files.
+- The probes and crawls above.
+- The release comparison above.
+
+**Not checked:**
+- anything on a device;
+- Vue, Solid and React;
+- the JavaScript flavor (no fixture);
+- real Tailwind (a stand-in PostCSS plugin only);
+- Android.
+
+**Device checklist** (iOS simulator):
+1. **Toolbox cold boot.** App styling is right before and after the placeholder: theme, `color-mix`, `.ios` partial rules, `ListView` row heights. There are no `app.css` warnings, and no styling rule appears twice.
+2. **Toolbox `app.css` edit** (change `.btn-view-demo` `border-radius`): it applies in place, with no reboot overlay. Delete a rule: it disappears. Open a modal (dialogs page) and edit again: the modal restyles too.
+3. **Toolbox `main-page.xml` edit** (button text): a soft reboot on the root page, with no app restart and no modal left behind. Then a `main-page.ts` edit and a `main-view-model.ts` edit.
+4. **Navigate to a page, then edit its `.xml`.** The app lands on the root page; this is expected. With the opt-in `restorePageAfterHmrReboot` snippet in `main.ts`, it returns to that page.
+5. **Broken XML** (unclosed tag in `main-page.xml`): an overlay error and a still-usable app; the fix reboots cleanly. A TS syntax error shows the compile-check overlay and changes nothing.
+6. **Worker:** tap "worker-spike". The log shows `[worker-spike] reply {"square":49,"platform":"apple","dev":true,"core":true}`.
+   - Edit `worker-spawner.ts`, reboot, tap again: one reply, from a fresh worker.
+   - Edit `spike.worker.ts`: a restart is requested.
+7. **Angular fixture:** a `src/app.css` edit applies in place (no reboot), component `styleUrl` and template edits still update in place, and cold-boot global styling is right.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

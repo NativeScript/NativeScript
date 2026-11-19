@@ -8,6 +8,7 @@ import { normalizeModuleId } from './normalize-id.js';
 import { sbgClassNamesPlugin } from './sbg-class-names.js';
 import { nativescriptBuiltinModules } from './builtin-modules.js';
 import { NS_DEV_EXPR } from '../hmr/shared/runtime/dev-globals.js';
+import { NS_BEFORE_RERUN_EVENT } from '../hmr/shared/protocol.js';
 
 export interface WorkerPluginsOptions {
 	platform: string;
@@ -171,28 +172,27 @@ export function getWorkerPlugins(platformOrOpts: string | WorkerPluginsOptions) 
 	return plugins;
 }
 
-// In dev/HMR mode, Vite's `workerImportMetaUrlPlugin` rewrites
-// `new Worker(new URL('./foo.worker', import.meta.url))` into
-// `new Worker(new URL(/* @vite-ignore */"/src/.../foo.worker.ts?worker_file&type=classic", '' + import.meta.url))`.
-// That output breaks under NativeScript for two independent reasons:
-//
-//   1. Some device runtimes have reported an HTTP-served module's
-//      `import.meta.url` as `file://http://…`, a malformed base for
-//      `new URL(spec, '' + import.meta.url)`, and the worker creation site
-//      has no try/catch.
-//   2. Vite serves a `?worker_file&type=classic` module with an
-//      `importScripts('/@vite/env')` prelude, a browser classic-worker API.
-//      The file's plain Vite URL serves it as an ordinary module.
-//
-// The rewrite prefixes the dev globals' `httpOrigin` (set by
-// `hmr/shared/runtime/session-bootstrap.ts`) so non-localhost origins work. Production counterpart: `workerUrlPlugin()`.
+// Vite's `workerImportMetaUrlPlugin` serves `new Worker(new URL('./x', import.meta.url))`
+// in dev as
+//   new Worker(new URL(/* @vite-ignore */ "/src/x.ts?worker_file&type=classic", '' + import.meta.url))
+// which the dev rewrite below turns into an absolute URL on the dev origin:
+//   - Some device runtimes have reported an HTTP-served module's
+//     `import.meta.url` as `file://http://…`, a malformed base for `new URL`.
+//   - NativeScript always evaluates an HTTP worker entry as an ES module, so
+//     the URL asks for `type=module`. For it Vite's worker plugin prepends
+//     `import "/@vite/env"` to the entry: the worker realm has no `bundle.mjs`,
+//     and that module is what installs `config.define` on its `globalThis`
+//     before served core reads the defines. `type=classic` would prepend
+//     `importScripts(...)`, a browser classic-worker API.
+//   - The URL is a string, not an import, so the worker entry has no importer in
+//     Vite's module graph. An edit to it, or to anything it imports, dead-ends
+//     there and becomes a `full-reload`, i.e. an app restart: the device's HMR
+//     client lives on the main realm and can't update a worker isolate.
+// Production counterpart: `workerUrlPlugin()`.
 
-// Matches Vite-emitted dev shape:
-//   new Worker(new URL(/* @vite-ignore */ "/src/.../foo.worker.ts?worker_file&type=classic", '' + import.meta.url))
-// The `/* @vite-ignore */` and `'' +` coercion are constants Vite always emits
-// (see `workerImportMetaUrlPlugin` in vite/dist/node/chunks/node.js), so we
-// match them as fixed structure rather than as optional fragments. The asset
-// path can use single, double, or template-literal quotes.
+// The `/* @vite-ignore */` comment and the `'' +` coercion are constants Vite
+// always emits, so they are matched as fixed structure. The URL can use single,
+// double or template-literal quotes.
 const WORKER_VITE_DEV_RE = /new\s+Worker\s*\(\s*new\s+URL\s*\(\s*\/\*\s*@vite-ignore\s*\*\/\s*(['"`])([^'"`]+)\1\s*,\s*(?:'\s*'|"\s*"|`\s*`)\s*\+\s*import\.meta\.url\s*\)\s*(,\s*\{[^}]*\})?\s*\)/g;
 
 const SKIP_TRANSFORM_ID_RE = /(?:^|\/)(?:node_modules|\.vite)\//;
@@ -202,82 +202,42 @@ export interface WorkerHmrUrlPluginOptions {
 }
 
 /**
- * The plain Vite URL (root-relative, or `/@fs/…` outside the root, extension
- * kept) of a worker asset path Vite emitted with a `worker_file` query, or
- * `null` for any other URL.
+ * The module-worker form (`?worker_file&type=module`) of a root-relative
+ * worker URL Vite emitted in dev, or `null` for any other URL.
  */
-export function viteWorkerAssetPathToViteUrl(assetPath: string): string | null {
-	if (typeof assetPath !== 'string' || !assetPath) {
+export function toModuleWorkerUrl(assetPath: string): string | null {
+	if (typeof assetPath !== 'string' || !assetPath.startsWith('/')) {
 		return null;
 	}
 	const queryIdx = assetPath.indexOf('?');
-	const cleanPath = queryIdx === -1 ? assetPath : assetPath.slice(0, queryIdx);
-	const query = queryIdx === -1 ? '' : assetPath.slice(queryIdx);
-
-	// Leaves non-worker URLs (e.g. asset URLs from `assetImportMetaUrlPlugin`) alone.
-	if (!/[?&]worker_file(?:&|=|$)/.test(query)) {
+	if (queryIdx === -1) {
 		return null;
 	}
-	return cleanPath.startsWith('/') ? cleanPath : null;
+	const params = assetPath.slice(queryIdx + 1).split('&');
+	// Leaves non-worker URLs (e.g. asset URLs from `assetImportMetaUrlPlugin`) alone.
+	if (!params.includes('worker_file')) {
+		return null;
+	}
+	const rest = params.filter((p) => p !== 'worker_file' && !p.startsWith('type='));
+	return `${assetPath.slice(0, queryIdx)}?${['worker_file', 'type=module', ...rest].join('&')}`;
 }
 
-// Runtime helper injected (only) into HMR-transformed modules that
-// instantiate a Worker. Wraps each `new Worker(...)` in
-// `__nsHmrTrackWorker(...)`, registering a per-module
-// `import.meta.hot.dispose(cb)` (Vite spec): when the module is replaced,
-// the disposer terminates exactly the workers this module spawned.
-//
-// Session-wide cleanup for spawns that re-run WITHOUT their module being
-// replaced (e.g. an Angular reboot re-running `AppComponent`'s constructor)
-// is NOT this helper's job: the dev session's global `Worker` constructor
-// interception (`hmr/shared/runtime/worker-tracking.ts`) records every
-// construction — including these wrapped ones — in
-// `globalThis.__NS_HMR_WORKERS__`, and the HMR client sweeps that set
-// before framework reboots.
-//
-// `terminate()` is the only cleanup primitive (guarded by try/catch so an
-// already-dead worker can't break the HMR cycle); both paths are idempotent.
-// A `terminated` event listener would be cleaner than a Set of references,
-// but iOS Worker doesn't fire that event reliably.
-const HMR_WORKER_DISPOSE_HELPER = [
-	'/* Injected by @nativescript/vite workerHmrUrlPlugin (HMR worker auto-dispose) */',
-	'const __nsHmrTrackWorker = /* @__PURE__ */ (function () {',
-	// Per-module Set so `import.meta.hot.dispose` only terminates workers
-	// SPAWNED BY THIS MODULE (Vite spec semantics).
-	'\tconst __nsModuleWorkers = new Set();',
-	'\tlet __nsDisposeRegistered = false;',
-	'\treturn function __nsHmrTrackWorker(w) {',
-	'\t\tif (!w) return w;',
-	// Dispose callbacks are consumed when they fire (drained per HMR cycle),
-	// so the disposer re-arms itself by resetting `__nsDisposeRegistered` —
-	// exactly one registration per cycle, not per spawn.
-	'\t\t__nsModuleWorkers.add(w);',
-	'\t\tif (!__nsDisposeRegistered && typeof import.meta !== "undefined" && import.meta && import.meta.hot && typeof import.meta.hot.dispose === "function") {',
-	'\t\t\t__nsDisposeRegistered = true;',
-	'\t\t\timport.meta.hot.dispose(function () {',
-	'\t\t\t\tfor (const __nsW of __nsModuleWorkers) {',
-	'\t\t\t\t\ttry { typeof __nsW.terminate === "function" && __nsW.terminate(); } catch (_e) {}',
-	'\t\t\t\t}',
-	'\t\t\t\t__nsModuleWorkers.clear();',
-	'\t\t\t\t__nsDisposeRegistered = false;',
-	'\t\t\t});',
-	'\t\t}',
-	'\t\treturn w;',
-	'\t};',
-	'})();',
-	'',
-].join('\n');
+// Injected into each served module that constructs a worker. The workers belong
+// to this module instance and are terminated when it is re-evaluated
+// (`nativescript:beforeRerun`, which reaches every re-run module, accepted
+// boundaries included) or pruned. `hot.dispose` is deliberately unused: a module
+// has one dispose slot, and the module's own callback (the app entry's is the
+// framework teardown) must keep it. A module's own `hot.prune` replaces this one.
+const HMR_WORKER_OWNER_HELPER = ['const __nsHmrTrackWorker = (function () {', '\tconst workers = new Set();', '\tconst terminateAll = () => {', '\t\tfor (const w of workers) {', '\t\t\ttry { w.terminate(); } catch (_e) {}', '\t\t}', '\t\tworkers.clear();', '\t};', '\tif (import.meta.hot) {', `\t\timport.meta.hot.on(${JSON.stringify(NS_BEFORE_RERUN_EVENT)}, terminateAll);`, '\t\timport.meta.hot.prune(terminateAll);', '\t}', '\treturn (w) => (workers.add(w), w);', '})();', ''].join('\n');
 
 export function workerHmrUrlPlugin(opts?: WorkerHmrUrlPluginOptions): Plugin {
 	const { verbose } = opts || {};
 
 	return {
 		name: 'nativescript-worker-hmr-url-transform',
-		// Run AFTER Vite's built-in `workerImportMetaUrlPlugin` (and AFTER
-		// the Angular plugin, which discards upstream `code` by re-compiling
-		// from disk), so the dev shape above is what this sees.
+		// After Vite's `workerImportMetaUrlPlugin`, and after the Angular plugin,
+		// which re-compiles from disk and discards upstream `code`.
 		enforce: 'post',
-		// Dev/HMR only — `workerUrlPlugin()` below handles the production build.
 		apply: 'serve',
 
 		transform(code, id) {
@@ -285,53 +245,35 @@ export function workerHmrUrlPlugin(opts?: WorkerHmrUrlPluginOptions): Plugin {
 				return null;
 			}
 
-			// `id` may carry a Vite query suffix (`?vue&type=script`, `?used`, …);
-			// strip it so path matching works against real fs paths.
 			const cleanId = id.split('?', 1)[0];
 			if (!cleanId || SKIP_TRANSFORM_ID_RE.test(cleanId)) {
 				return null;
 			}
 
-			let modified = false;
 			let workerWraps = 0;
-			let newCode = code.replace(WORKER_VITE_DEV_RE, (match, _quote, assetPath: string, options: string | undefined) => {
-				const viteUrl = viteWorkerAssetPathToViteUrl(assetPath);
-				if (!viteUrl) {
+			const newCode = code.replace(WORKER_VITE_DEV_RE, (match, _quote, assetPath: string, options: string | undefined) => {
+				const workerUrl = toModuleWorkerUrl(assetPath);
+				if (!workerUrl) {
 					if (verbose) {
 						// eslint-disable-next-line no-console
-						console.warn(`[ns-worker-hmr] worker asset path ${JSON.stringify(assetPath)} in ${cleanId} has no Vite URL; leaving Vite's default behavior in place`);
+						console.warn(`[ns-worker-hmr] worker URL ${JSON.stringify(assetPath)} in ${cleanId} is not a Vite worker URL; left as is`);
 					}
 					return match;
 				}
-
-				modified = true;
 				workerWraps++;
-				const optionsTail = options ? options : '';
-				// `__nsHmrTrackWorker` registers the worker for HMR cleanup and
-				// returns the instance unchanged, so the wrap is transparent.
-				return `__nsHmrTrackWorker(new Worker((${NS_DEV_EXPR}.httpOrigin || "").replace(/\\/+$/, "") + ${JSON.stringify(viteUrl)}${optionsTail}))`;
+				return `__nsHmrTrackWorker(new Worker((${NS_DEV_EXPR}.httpOrigin || "").replace(/\\/+$/, "") + ${JSON.stringify(workerUrl)}${options ?? ''}))`;
 			});
 
-			if (!modified) {
+			if (!workerWraps) {
 				return null;
 			}
 
-			// Inject the helper prelude exactly once at the top of the
-			// module. The helper closure self-tracks workers and lazily
-			// registers the `import.meta.hot.dispose()` callback on the
-			// first wrap, so injecting it unconditionally (whether or not
-			// HMR is wired up at module-eval time) is safe.
-			newCode = HMR_WORKER_DISPOSE_HELPER + newCode;
-
 			if (verbose) {
 				// eslint-disable-next-line no-console
-				console.log(`[ns-worker-hmr] rewrote ${workerWraps} Vite worker URL${workerWraps === 1 ? '' : 's'} → plain Vite URL in ${cleanId} (with per-module HMR auto-dispose)`);
+				console.log(`[ns-worker-hmr] rewrote ${workerWraps} worker URL${workerWraps === 1 ? '' : 's'} in ${cleanId}`);
 			}
 
-			// Returning null for the source map keeps Vite's downstream sourcemap
-			// composition simple; the per-Worker line shift is small and the
-			// frame is rarely the one a developer is debugging.
-			return { code: newCode, map: null };
+			return { code: HMR_WORKER_OWNER_HELPER + newCode, map: null };
 		},
 	};
 }

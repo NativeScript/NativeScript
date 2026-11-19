@@ -20,7 +20,7 @@ describe('createEntryBoundaryCode', () => {
 	});
 
 	it('is only built for a flavor that declares an entry boundary', () => {
-		expect(nsEntryBoundaryPlugin({ flavor: 'typescript' })).toBeUndefined();
+		expect(nsEntryBoundaryPlugin({ flavor: 'react' })).toBeUndefined();
 	});
 });
 
