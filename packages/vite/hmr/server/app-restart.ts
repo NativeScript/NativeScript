@@ -1,4 +1,4 @@
-import type { EnvironmentModuleNode, HotUpdateOptions, Plugin, ViteDevServer } from 'vite';
+import type { DevEnvironment, HotUpdateOptions, Plugin, ViteDevServer } from 'vite';
 import * as path from 'path';
 import { NS_RESTART_EVENT, NS_RESTART_REQUIRED_EVENT, type RestartEventData } from '../shared/protocol.js';
 import { viteUrlForFile } from './vite-url.js';
@@ -64,29 +64,77 @@ export function createAppRestartRequester(options: AppRestartRequesterOptions): 
 }
 
 /**
- * True for a module a soft reboot can re-evaluate. `@nativescript/core` and
- * other `node_modules` packages evaluate once per process: core re-evaluated
- * in place would mint a second `View` hierarchy the live native views fail
- * `instanceof` against. The dev client keeps its identity because it is the
- * code running the update. `keepPrefixes` are Vite URL prefixes of such
- * packages served from outside `node_modules` (`/@fs/…`).
+ * True for a module of a package that evaluates once per process, which a
+ * soft reboot can't re-evaluate: `@nativescript/core` re-evaluated in place
+ * would mint a second `View` hierarchy the live native views fail
+ * `instanceof` against, and the dev client keeps its identity because it is
+ * the code running the update. `keepPrefixes` are the Vite URL prefixes of
+ * both packages as the app resolves them (`/node_modules/…` or `/@fs/…`).
  */
-export function isAppOwnedViteUrl(viteUrl: string, keepPrefixes: readonly string[]): boolean {
+export function isOncePerProcessViteUrl(viteUrl: string, keepPrefixes: readonly string[]): boolean {
 	const path = viteUrl.replace(/[?#].*$/, '');
-	if (!path.startsWith('/') || path.includes('/node_modules/') || path.startsWith('/@vite/')) {
-		return false;
+	if (!path.startsWith('/') || path.startsWith('/@vite/') || ONCE_PER_PROCESS_PACKAGE_RE.test(path)) {
+		return true;
 	}
-	return !keepPrefixes.some((prefix) => path.startsWith(prefix));
+	return keepPrefixes.some((prefix) => path.startsWith(prefix));
+}
+
+// The prefixes name the copies this process resolved; the device may load the
+// same package through another path (a linked install's symlink, a nested copy).
+const ONCE_PER_PROCESS_PACKAGE_RE = /\/node_modules\/@nativescript\/(?:core|vite)\//;
+
+/** The module graph fields Vite's update propagation reads. */
+export interface PropagationNode {
+	url: string;
+	isSelfAccepting?: boolean;
+	importers: Set<PropagationNode>;
+	acceptedHmrDeps: Set<PropagationNode>;
+}
+
+/**
+ * True when propagating an update of `modules` re-evaluates a module for
+ * which `isOncePerProcess` holds. Mirrors Vite's walk up the importers: a
+ * chain ends at a self-accepting module or at an importer that accepts it.
+ */
+export function updateReachesOncePerProcessModule(modules: Iterable<PropagationNode>, isOncePerProcess: (url: string) => boolean): boolean {
+	const seen = new Set<PropagationNode>();
+	const pending = [...modules];
+	while (pending.length) {
+		const node = pending.pop()!;
+		if (seen.has(node)) continue;
+		seen.add(node);
+		if (isOncePerProcess(node.url)) return true;
+		if (node.isSelfAccepting) continue;
+		for (const importer of node.importers) {
+			if (!importer.acceptedHmrDeps.has(node)) pending.push(importer);
+		}
+	}
+	return false;
+}
+
+export interface AppRestartEditOptions {
+	root: string;
+	keepPrefixes: readonly string[];
+	/** True for a dependency pre-bundle's URL: one instance shared by every importer. */
+	isOptimizedDepUrl?: (url: string) => boolean;
 }
 
 /**
  * True when an edit to `file` must restart the app: the device loaded it as
- * JavaScript and it evaluates once per process (`isAppOwnedViteUrl`). Vite's
- * `?t=` update for such a file would load a second instance next to the live one.
+ * JavaScript, and it or a module its update re-evaluates evaluates once per
+ * process. Vite's `?t=` update would load a second instance next to the live one.
+ *
+ * A package served from `node_modules` re-evaluates like app code unless its
+ * update climbs into a pre-bundle (an excluded package that a pre-bundled one
+ * imports) or core. Neither ever imports an app file.
  */
-export function needsAppRestartForEdit(file: string, modules: readonly Pick<EnvironmentModuleNode, 'type'>[], root: string, keepPrefixes: readonly string[]): boolean {
-	if (!modules.some((mod) => mod.type === 'js')) return false;
-	return !isAppOwnedViteUrl(viteUrlForFile(file, root), keepPrefixes);
+export function needsAppRestartForEdit(file: string, modules: readonly (PropagationNode & { type: string })[], options: AppRestartEditOptions): boolean {
+	const jsModules = modules.filter((mod) => mod.type === 'js');
+	if (!jsModules.length) return false;
+	const isOncePerProcess = (url: string) => isOncePerProcessViteUrl(url, options.keepPrefixes) || !!options.isOptimizedDepUrl?.(url);
+	const url = viteUrlForFile(file, options.root);
+	if (isOncePerProcess(url)) return true;
+	return url.includes('/node_modules/') && updateReachesOncePerProcessModule(jsModules, isOncePerProcess);
 }
 
 function relativeToRoot(file: string, root: string): string {
@@ -162,9 +210,14 @@ export function nsAppRestartPlugin(options: { request?: (reason: string) => void
 		hotUpdate: {
 			order: 'pre',
 			async handler(ctx: HotUpdateOptions) {
-				if (this.environment.name !== 'client' || ctx.type !== 'update') return;
+				// Chokidar reports an edit as `create` for a file it never registered
+				// (macOS FSEvents reports paths it did not walk), and Vite propagates
+				// it like an `update`.
+				if (this.environment.name !== 'client' || ctx.type === 'delete') return;
 				keepPrefixes ??= resolveNonEvictableViteUrlPrefixes(ctx.server).catch(() => []);
-				if (!needsAppRestartForEdit(ctx.file, ctx.modules, ctx.server.config.root, await keepPrefixes)) return;
+				const optimizer = (this.environment as DevEnvironment).depsOptimizer;
+				const isOptimizedDepUrl = optimizer && ((url: string) => optimizer.isOptimizedDepUrl(url));
+				if (!needsAppRestartForEdit(ctx.file, ctx.modules, { root: ctx.server.config.root, keepPrefixes: await keepPrefixes, isOptimizedDepUrl })) return;
 				request(`${relativeToRoot(ctx.file, ctx.server.config.root)} changed`);
 				return [];
 			},

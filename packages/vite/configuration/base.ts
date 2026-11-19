@@ -10,7 +10,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import NativeScriptPlugin from '../helpers/resolver.js';
 import nsConfigAsJsonPlugin from '../helpers/config-as-json.js';
-import { getDevServerFsAllow, getProjectRootPath } from '../helpers/project.js';
+import { getDevServerFsAllow, getPackageJson, getProjectRootPath } from '../helpers/project.js';
 import { aliasCssTree } from '../helpers/css-tree.js';
 import { getGlobalDefines } from '../helpers/global-defines.js';
 import { getWorkerPlugins, workerHmrUrlPlugin, workerUrlPlugin, nativescriptWorkerLoaderStubPlugin } from '../helpers/workers.js';
@@ -41,7 +41,7 @@ import { getProjectAppPath, getProjectAppRelativePath } from '../helpers/utils.j
 import { appComponentsPlugin } from '../helpers/app-components.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { normalizeModuleId } from '../helpers/normalize-id.js';
-import { getHmrWatchIgnoreGlobs } from '../helpers/hmr-scope.js';
+import { getHmrWatchIgnoreGlobs, getNodeModulesWatchGlobs } from '../helpers/hmr-scope.js';
 import { getDevOptimizeDeps } from '../helpers/dev-optimize-deps.js';
 import { getOptimizeDepsDefine, optimizeDepsEsmRequirePlugin } from '../helpers/optimize-deps.js';
 import { sbgClassNamesPlugin } from '../helpers/sbg-class-names.js';
@@ -295,7 +295,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Ensure explicit keep markers are honored
 			preserveImportsPlugin(),
 			// HMR plugins (source streaming replaces prior exploded source plugin when enabled)
-			...(hmrActive ? [...getHMRPlugins({ platform, flavor, verbose, watchNodeModules: !!cliFlags.watchNodeModules })] : []),
+			...(hmrActive ? [...getHMRPlugins({ platform, flavor, verbose })] : []),
 			// TODO: make flavor plugins dynamic
 			// ...flavorPlugins,
 			...commonjsPlugins,
@@ -407,7 +407,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					},
 					cors: true,
 					watch: {
-						ignored: getHmrWatchIgnoreGlobs(distOutputFolder),
+						// `--env.watchNodeModules` (webpack's flag) watches the app's direct dependencies.
+						ignored: [...getHmrWatchIgnoreGlobs(distOutputFolder), ...(cliFlags.watchNodeModules ? getNodeModulesWatchGlobs(Object.keys(getPackageJson().dependencies ?? {})) : [])],
 					},
 					// Widen `fs.allow` to the detected monorepo workspace root.
 					//

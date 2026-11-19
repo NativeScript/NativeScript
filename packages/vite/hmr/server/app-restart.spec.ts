@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createAppRestartRequester, isAppOwnedViteUrl, needsAppRestartForEdit, nsAppRestartPlugin } from './app-restart.js';
+import { createAppRestartRequester, isOncePerProcessViteUrl, needsAppRestartForEdit, nsAppRestartPlugin, updateReachesOncePerProcessModule, type PropagationNode } from './app-restart.js';
 import { NS_RESTART_EVENT } from '../shared/protocol.js';
 
 describe('createAppRestartRequester', () => {
@@ -44,38 +44,90 @@ describe('createAppRestartRequester', () => {
 	});
 });
 
-describe('isAppOwnedViteUrl', () => {
+interface FakeNode extends PropagationNode {
+	type: string;
+	importers: Set<FakeNode>;
+	acceptedHmrDeps: Set<FakeNode>;
+}
+
+function node(url: string, opts: { type?: string; selfAccepting?: boolean; importers?: FakeNode[] } = {}): FakeNode {
+	return { url, type: opts.type ?? 'js', isSelfAccepting: opts.selfAccepting, importers: new Set(opts.importers), acceptedHmrDeps: new Set() };
+}
+
+describe('isOncePerProcessViteUrl', () => {
 	const keep = ['/@fs/repo/packages/core/'];
 	it.each([
-		['/src/app/home.ts?t=1', true],
-		['/@fs/repo/libs/shared/x.ts', true],
-		['/@id/__x00__virtual:app', true],
-		['/node_modules/@nativescript/core/index.js', false],
+		['/src/app/home.ts?t=1', false],
+		['/@fs/repo/libs/shared/x.ts', false],
+		['/@id/__x00__virtual:app', false],
+		['/node_modules/some-lib/index.js?v=1', false],
 		['/@fs/repo/node_modules/lib/x.js', false],
-		['/@vite/client', false],
-		['/@fs/repo/packages/core/ui/index.ts', false],
-		['relative.ts', false],
+		['/node_modules/@nativescript/core/index.js', true],
+		['/@fs/repo/node_modules/@nativescript/vite/hmr/client/index.js', true],
+		['/node_modules/some-lib/node_modules/@nativescript/core/index.js', true],
+		['/@vite/client', true],
+		['/@fs/repo/packages/core/ui/index.ts', true],
+		['relative.ts', true],
 	])('%s → %s', (url, expected) => {
-		expect(isAppOwnedViteUrl(url, keep)).toBe(expected);
+		expect(isOncePerProcessViteUrl(url, keep)).toBe(expected);
+	});
+});
+
+describe('updateReachesOncePerProcessModule', () => {
+	const once = (url: string) => url.startsWith('/node_modules/.vite/');
+
+	it('stops at a self-accepting module and at an importer that accepts the module', () => {
+		const prebundle = node('/node_modules/.vite/deps/x.js');
+		const entry = node('/src/app.ts', { selfAccepting: true, importers: [prebundle] });
+		const accepting = node('/src/accepting.ts', { importers: [prebundle] });
+		const lib = node('/node_modules/lib/index.js', { importers: [entry, accepting] });
+		accepting.acceptedHmrDeps.add(lib);
+		expect(updateReachesOncePerProcessModule([lib], once)).toBe(false);
+	});
+
+	it('finds a once-per-process importer below the boundary, across import cycles', () => {
+		const entry = node('/src/app.ts', { selfAccepting: true });
+		const prebundle = node('/node_modules/.vite/deps/ui-kit.js', { importers: [entry] });
+		const lib = node('/node_modules/lib/index.js', { importers: [entry, prebundle] });
+		const cyclic = node('/node_modules/lib/b.js', { importers: [lib] });
+		lib.importers.add(cyclic);
+		expect(updateReachesOncePerProcessModule([cyclic], once)).toBe(true);
 	});
 });
 
 describe('needsAppRestartForEdit', () => {
 	const root = '/app';
-	const keep = ['/@fs/repo/packages/core/', '/@fs/repo/packages/vite/'];
-	const js = [{ type: 'js' as const }];
+	const keep = ['/node_modules/@nativescript/core/', '/@fs/repo/packages/core/', '/@fs/repo/packages/vite/'];
+	const options = { root, keepPrefixes: keep, isOptimizedDepUrl: (url: string) => url.startsWith('/node_modules/.vite/deps/') };
+	const entry = () => node('/src/app.ts', { selfAccepting: true });
 
 	it.each([
-		['/app/node_modules/@nativescript/core/ui/core/view/index.js', js, true],
-		['/repo/node_modules/some-lib/index.js', js, true],
-		['/repo/packages/core/ui/core/view/index.ts', js, true],
-		['/repo/packages/vite/hmr/client/index.js', js, true],
-		['/app/src/app/home/home.component.ts', js, false],
-		['/repo/libs/shared/src/util.ts', js, false],
-		['/app/node_modules/@nativescript/theme/core.css', [{ type: 'css' as const }], false],
-		['/app/node_modules/unloaded/index.js', [], false],
-	])('%s → %s', (file, modules, expected) => {
-		expect(needsAppRestartForEdit(file, modules, root, keep)).toBe(expected);
+		['/app/node_modules/@nativescript/core/ui/core/view/index.js', true],
+		['/repo/packages/core/ui/core/view/index.ts', true],
+		['/repo/packages/vite/hmr/client/index.js', true],
+		['/repo/node_modules/some-lib/index.js', false],
+		['/app/node_modules/some-lib/index.js', false],
+		['/app/src/app/home/home.component.ts', false],
+		['/repo/libs/shared/src/util.ts', false],
+	])('%s → %s (imported only by the entry boundary)', (file, expected) => {
+		expect(needsAppRestartForEdit(file, [node('/any', { importers: [entry()] })], options)).toBe(expected);
+	});
+
+	it('ignores files the device did not load as JavaScript', () => {
+		expect(needsAppRestartForEdit('/app/node_modules/@nativescript/theme/core.css', [node('/node_modules/@nativescript/theme/core.css', { type: 'css' })], options)).toBe(false);
+		expect(needsAppRestartForEdit('/app/node_modules/@nativescript/core/index.js', [], options)).toBe(false);
+	});
+
+	it('restarts for a served package whose update climbs into a pre-bundle or core', () => {
+		const prebundle = node('/node_modules/.vite/deps/ui-kit.js?v=1', { importers: [entry()] });
+		expect(needsAppRestartForEdit('/app/node_modules/plugin/index.ios.js', [node('/node_modules/plugin/index.ios.js?v=1', { importers: [prebundle] })], options)).toBe(true);
+		const core = node('/node_modules/@nativescript/core/index.js?v=1');
+		expect(needsAppRestartForEdit('/app/node_modules/helper/index.js', [node('/node_modules/helper/index.js?v=1', { importers: [core] })], options)).toBe(true);
+	});
+
+	it('leaves an app file to Vite whatever imports it', () => {
+		const core = node('/node_modules/@nativescript/core/index.js');
+		expect(needsAppRestartForEdit('/app/src/app.ts', [node('/src/app.ts', { importers: [core] })], options)).toBe(false);
 	});
 });
 
@@ -140,11 +192,16 @@ describe('nsAppRestartPlugin', () => {
 		const request = vi.fn();
 		const fake = fakeServer();
 		const plugin: any = nsAppRestartPlugin({ request, state: { serverStarts: 0 } });
-		const run = (file: string) => plugin.hotUpdate.handler.call({ environment: { name: 'client' } }, { type: 'update', file, modules: [{ type: 'js' }], server: fake.server });
+		const entry = node('/src/app.ts', { selfAccepting: true });
+		const run = (file: string, type = 'update') => plugin.hotUpdate.handler.call({ environment: { name: 'client' } }, { type, file, modules: [node(file.replace('/app', ''), { importers: [entry] })], server: fake.server });
 
 		expect(await run('/app/node_modules/@nativescript/core/ui/core/view/index.js')).toEqual([]);
 		expect(request).toHaveBeenCalledWith('node_modules/@nativescript/core/ui/core/view/index.js changed');
+		expect(await run('/app/node_modules/@nativescript/core/index.js', 'create')).toEqual([]);
+		expect(await run('/app/node_modules/@nativescript/core/index.js', 'delete')).toBeUndefined();
+		request.mockClear();
 		expect(await run('/app/src/app/app.component.ts')).toBeUndefined();
-		expect(request).toHaveBeenCalledTimes(1);
+		expect(await run('/app/node_modules/plugin/index.ios.js')).toBeUndefined();
+		expect(request).not.toHaveBeenCalled();
 	});
 });

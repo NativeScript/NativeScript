@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { DepOptimizationMetadata, DevEnvironment, OptimizedDepInfo, Plugin, ViteDevServer } from 'vite';
+import type { DepOptimizationMetadata, DevEnvironment, HotUpdateOptions, Plugin, ViteDevServer } from 'vite';
 import { requestAppRestart, restartServerBeforeAppRestart } from './app-restart.js';
+
+const toPosix = (file: string) => file.replace(/\\/g, '/');
 
 /** The installed package directory holding `file`, through its last `node_modules` segment. */
 export function installedPackageDir(file: string, sep: string = path.sep): string | undefined {
@@ -20,74 +22,72 @@ export function preBundleSourceFiles(map: { sources?: readonly (string | null)[]
 	return (map.sources ?? []).filter((source): source is string => !!source && !source.includes('\0') && !/^[a-z][a-z0-9+.-]+:/i.test(source)).map((source) => path.resolve(base, source));
 }
 
-/**
- * True for a pre-bundle source inside an installed package. A linked
- * package's files resolve outside `node_modules`: Vite's watcher sees those,
- * and never anything under `node_modules`.
- */
-export function isInstalledPackageFile(file: string, realpath: (file: string) => string): boolean {
-	if (!installedPackageDir(file)) return false;
-	try {
-		return !!installedPackageDir(realpath(file));
-	} catch {
-		return false;
+/** Pre-bundle inputs, as POSIX paths (Vite's watcher and module graph use them on every OS). */
+export interface PreBundleSources {
+	files: Set<string>;
+	/** The installed packages the files belong to. */
+	packageDirs: Set<string>;
+}
+
+export function collectPreBundleSources(files: Iterable<string>): PreBundleSources {
+	const sources: PreBundleSources = { files: new Set(), packageDirs: new Set() };
+	for (const file of files) {
+		const posix = toPosix(file);
+		sources.files.add(posix);
+		const dir = installedPackageDir(posix, '/');
+		if (dir) sources.packageDirs.add(dir);
 	}
+	return sources;
 }
 
-export interface PreBundleSourceWatchOptions {
-	onChange(file: string): void;
-	realpath?: (file: string) => string;
-	watchDir?: (dir: string, listener: (filename: string | null) => void) => { close(): void };
+const CODE_FILE_RE = /\.(?:[cm]?[jt]sx?|json)$/;
+
+/**
+ * True when an edit to `file` can change a pre-bundle: a file its sourcemap
+ * lists, or any code file of a package it bundles. A module the bundler
+ * folded away entirely (a re-exported constant) leaves no trace in the map.
+ */
+export function isPreBundleSource(file: string, sources: PreBundleSources): boolean {
+	const posix = toPosix(file);
+	if (sources.files.has(posix)) return true;
+	const dir = installedPackageDir(posix, '/');
+	return !!dir && sources.packageDirs.has(dir) && CODE_FILE_RE.test(posix);
 }
 
-export interface PreBundleSourceWatch {
-	/** Watches the installed package files among `files`. */
-	track(files: readonly string[]): void;
-	close(): void;
+function readPreBundleSources(metadata: DepOptimizationMetadata): Promise<PreBundleSources> {
+	return Promise.all(
+		metadata.depInfoList.map((info) =>
+			fs.promises
+				.readFile(`${info.file}.map`, 'utf-8')
+				.then((text) => preBundleSourceFiles(JSON.parse(text), `${info.file}.map`))
+				.catch(() => (info.src ? [info.src] : [])),
+		),
+	).then((lists) => collectPreBundleSources(lists.flat()));
 }
 
-function watchDirectory(dir: string, listener: (filename: string | null) => void): { close(): void } {
-	const watcher = fs.watch(dir, { persistent: false }, (_event, filename) => listener(filename ? String(filename) : null));
-	watcher.on('error', () => watcher.close());
-	return watcher;
+// Vite replaces the metadata object on every optimizer commit.
+const sourcesByMetadata = new WeakMap<DepOptimizationMetadata, Promise<PreBundleSources>>();
+
+function preBundleSources(metadata: DepOptimizationMetadata): Promise<PreBundleSources> {
+	let sources = sourcesByMetadata.get(metadata);
+	if (!sources) {
+		sources = readPreBundleSources(metadata);
+		sourcesByMetadata.set(metadata, sources);
+	}
+	return sources;
 }
 
 /**
- * Watches the source files of Vite's dependency pre-bundles. Directories, not
- * files: an editor's atomic save replaces the file a file watcher holds.
+ * Vite's watcher walks only the root and the module graph's files, and a
+ * pre-bundle's inputs are never graph files. A package hoisted above the root
+ * is added explicitly; `server.watch.ignored` still decides whether its
+ * events are reported.
  */
-export function createPreBundleSourceWatch(options: PreBundleSourceWatchOptions): PreBundleSourceWatch {
-	const realpath = options.realpath ?? fs.realpathSync;
-	const watchDir = options.watchDir ?? watchDirectory;
-	const sources = new Set<string>();
-	const watchers = new Map<string, { close(): void }>();
-
-	return {
-		track(files) {
-			for (const file of files) {
-				if (sources.has(file) || !isInstalledPackageFile(file, realpath)) continue;
-				sources.add(file);
-				const dir = path.dirname(file);
-				if (watchers.has(dir)) continue;
-				try {
-					watchers.set(
-						dir,
-						watchDir(dir, (filename) => {
-							const changed = filename && path.join(dir, filename);
-							if (changed && sources.has(changed)) options.onChange(changed);
-						}),
-					);
-				} catch {
-					// Unwatchable directory: its edits wait for the next forced re-optimization.
-				}
-			}
-		},
-		close() {
-			for (const watcher of watchers.values()) watcher.close();
-			watchers.clear();
-			sources.clear();
-		},
-	};
+function watchPackagesOutsideRoot(server: ViteDevServer, sources: PreBundleSources): void {
+	const root = `${toPosix(server.config.root).replace(/\/+$/, '')}/`;
+	for (const dir of sources.packageDirs) {
+		if (!dir.startsWith(root)) server.watcher.add(dir);
+	}
 }
 
 function relativeToRoot(file: string, root: string): string {
@@ -102,6 +102,7 @@ let restarting: Promise<void> | undefined;
 let debounce: ReturnType<typeof setTimeout> | undefined;
 let lastRestartAt = 0;
 const changedFiles = new Set<string>();
+const watchedMetadata = new WeakSet<DepOptimizationMetadata>();
 
 function modifiedAt(file: string): number {
 	try {
@@ -111,16 +112,13 @@ function modifiedAt(file: string): number {
 	}
 }
 
-const sourceWatch = createPreBundleSourceWatch({
-	onChange(file) {
-		// A late or repeated event for a write that a restarted optimizer has already read.
-		if (modifiedAt(file) < lastRestartAt) return;
-		changedFiles.add(file);
-		if (debounce) clearTimeout(debounce);
-		debounce = setTimeout(() => void restartForChangedSources(), 100);
-	},
-});
-const trackedMetadata = new WeakSet<DepOptimizationMetadata>();
+function onPreBundleSourceChange(file: string): void {
+	// A late or repeated event for a write that a restarted optimizer has already read.
+	if (modifiedAt(file) < lastRestartAt) return;
+	changedFiles.add(file);
+	if (debounce) clearTimeout(debounce);
+	debounce = setTimeout(() => void restartForChangedSources(), 100);
+}
 
 // The device client pings a lost server every second. An app that has not
 // reconnected by then is presumed gone, such as crashed by the edit.
@@ -167,18 +165,14 @@ async function restartForChangedSources(): Promise<void> {
 		});
 }
 
-function trackPreBundle(info: OptimizedDepInfo): void {
-	fs.promises
-		.readFile(`${info.file}.map`, 'utf-8')
-		.then((text) => preBundleSourceFiles(JSON.parse(text), `${info.file}.map`))
-		.catch(() => (info.src ? [info.src] : []))
-		.then((files) => sourceWatch.track(files));
-}
+const NODE_MODULES_RE = /[\\/]node_modules[\\/]/;
 
 /**
- * Rebuilds a dependency pre-bundle when one of its source files changes, and
- * restarts the app so it boots against the new pre-bundle URLs. Vite neither
- * watches `node_modules` nor keeps pre-bundled files in the module graph.
+ * Rebuilds the dependency pre-bundles when Vite's watcher reports an edit to
+ * one of their inputs, and restarts the app so it boots against the new
+ * pre-bundle URLs. Vite itself ignores such an edit: pre-bundle inputs are not
+ * in the module graph. Inert while `server.watch.ignored` keeps ignoring
+ * `node_modules`, as it does by default.
  */
 export function nsPreBundleWatchPlugin(): Plugin {
 	return {
@@ -189,16 +183,29 @@ export function nsPreBundleWatchPlugin(): Plugin {
 		},
 		transform(_code, id) {
 			const optimizer = (this.environment as DevEnvironment).depsOptimizer;
-			if (this.environment.name !== 'client' || !optimizer?.isOptimizedDepFile(id) || trackedMetadata.has(optimizer.metadata)) return;
-			// Serving a pre-bundle waits for its commit, so every file this metadata lists is on disk.
-			trackedMetadata.add(optimizer.metadata);
-			for (const info of optimizer.metadata.depInfoList) trackPreBundle(info);
+			if (this.environment.name !== 'client' || !optimizer?.isOptimizedDepFile(id) || watchedMetadata.has(optimizer.metadata)) return;
+			// Serving a pre-bundle waits for its commit, so every map this metadata lists is on disk.
+			watchedMetadata.add(optimizer.metadata);
+			const server = currentServer;
+			void preBundleSources(optimizer.metadata).then((sources) => server && watchPackagesOutsideRoot(server, sources));
+		},
+		hotUpdate: {
+			// Ahead of `nsAppRestartPlugin`: a rebuilt pre-bundle supersedes an update of the same file.
+			order: 'pre',
+			async handler(ctx: HotUpdateOptions) {
+				const environment = this.environment as DevEnvironment;
+				if (environment.name !== 'client' || !environment.depsOptimizer) return;
+				// An app file in the graph is never a pre-bundle input: skip reading the maps.
+				if (!NODE_MODULES_RE.test(ctx.file) && environment.moduleGraph.getModulesByFile(ctx.file)?.size) return;
+				if (!isPreBundleSource(ctx.file, await preBundleSources(environment.depsOptimizer.metadata))) return;
+				onPreBundleSourceChange(ctx.file);
+				return [];
+			},
 		},
 		closeBundle() {
 			// A restart configures the next server before closing this one's environments.
 			if (currentServer?.environments.client !== this.environment) return;
 			currentServer = undefined;
-			sourceWatch.close();
 			changedFiles.clear();
 		},
 	};
