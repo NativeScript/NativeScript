@@ -213,18 +213,4 @@ describe('angular-template-deps watch invalidation', () => {
 			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
 		}
 	});
-
-	it('does not instrument components with Windows-form node_modules ids', () => {
-		const plugins = getAngularPlugins();
-		const discover = plugins.find((plugin) => plugin?.name === 'ns-component-hmr-register');
-		const inject = plugins.find((plugin) => plugin?.name === 'ns-component-hmr-register-post');
-		if (!discover || !inject) {
-			throw new Error('component registration plugins not found');
-		}
-		const windowsNodeModulesId = 'C:\\repo\\node_modules\\component-pkg\\example.component.ts';
-
-		discover.transform?.('@Component({})\nexport class ExampleComponent {}', windowsNodeModulesId);
-
-		expect(inject.transform?.('export class ExampleComponent {}', windowsNodeModulesId)).toBeNull();
-	});
 });

@@ -331,6 +331,112 @@ The strategy interface lost every member only `/ns/m` called. Kept for phase 3: 
 
 **Known degraded until phases 2–4:** Vue/Solid/TS/React updates (the client still re-imports `/ns/m`/`/ns/sfc` URLs, which now 404), worker HMR URLs (`/ns/m`), and Angular `.ts` edits (the reboot needs hooks released `@nativescript/angular` doesn't have).
 
+## Round 11: phase 2 — Vite's HMR protocol on the device
+
+**Step 1: which Analog mode.** `payload-probe.mjs` (it replaces `hmr-probe.mjs`):
+- It boots the fixture's dev server in-process and warms Vite's graph by crawling `/ns/v` from the session entry.
+- It emulates the device renderer: after an `angular:component-update` it fetches `/@ng/component` and its external styles with `Accept: text/css`.
+- It logs every payload twice: as handed to `server.ws.send` (raw), and as received on Vite's HMR socket with `vite-hmr` + token (wire).
+- `--compilation-api` swaps in Analog with `experimental.useAngularCompilationAPI: true`.
+- Output: `out/payload-probe-*.json`.
+
+Wire payloads with phase 1's NS strategy plugin removed:
+
+| Edit | Analog default mode (`liveReload: true`) | Compilation-API mode |
+|---|---|---|
+| (a) `home.component.html` text | `angular:component-update` + `update[js-update …html]` | `full-reload` |
+| (b) `home.component.css` color, 1st and 2nd | `update[css-update /<hash>.css?direct&ngcomp=…]` + `update[js-update …css]`; component-update until the device fetched its external style (round 9) | `full-reload` |
+| (c) class body `signal(0)`→`signal(10)` | `angular:component-update` + `js-update …ts`: **wrong**, class changes never apply | `full-reload` |
+| (d) inline `styles` / `template` in a component `.ts` | `angular:component-update` + `js-update …ts` | `full-reload` |
+| (e) non-component `.ts` (`app.routes.ts`) | `full-reload` | `full-reload` |
+| (f) root `app.component.html` (run alone) | `angular:component-update` (AppComponent): **wrong for NS** | `full-reload` |
+
+- In the combined run (f) also showed `full-reload`, but only because Analog clears its `classNames` on a non-component `.ts` edit (e).
+- Compilation-API mode was re-run after making the probe re-crawl the entry after every `full-reload`, as a device re-imports it, and with the `.html` edit applied twice. Every edit was still a `full-reload`. The served `home.component.ts` contains no `angular:component-update` listener: Analog 2.9.7 in this mode, with the NS options, compiles components without Angular's HMR initializer.
+- **Decision:** keep Analog's default mode and add NS rules in the Angular config (DESIGN.md).
+
+**Analog buffers its own sends.** Analog 2.9.7 wraps `server.ws.send` (`hot-update-batch.js`): it buffers `angular:component-update`/`update` and flushes them in a `setTimeout(0)` after the hot-update promises settle. So an NS decision made in `hotUpdate` must not be dropped by a later `post` hook. The NS rule keeps a "stale class" set, cleared by any page full reload.
+
+**Final payloads** (rules in place, fresh build synced into the fixture):
+
+| Edit | Wire |
+|---|---|
+| (a) `.html` | `angular:component-update` + `update[js-update …html]` |
+| (b) `.css` ×2 | `update[css-update /<hash>.css?direct&ngcomp=…]` + `update[js-update …css]` |
+| (c) class body | **`full-reload`** (triggeredBy `home.component.ts`) + `update[js-update …ts]` (no-op on device: Angular components don't `hot.accept`) |
+| (d) inline styles / template | `angular:component-update` + `js-update …ts` |
+| (e) non-component `.ts` | `full-reload` |
+| (f) root `.html` (alone) | **`full-reload`** (triggeredBy `app.component.ts`) + `js-update …html` |
+
+The probe connects with the session's `wsUrl` (`ws://<lan-ip>:<port>/vite-hmr?token=…`, `wsProtocol: 'vite-hmr'`): Vite accepted the upgrade.
+
+**Device check (iOS simulator).**
+- Working: template edits in place with state kept, CSS ×2 in place, and class edits ×2, each one full reload on the same pid with no NG0912 and no stacked launch handlers.
+- **Bug:** a root `.html` edit full-reloads, Angular re-bootstraps, and then the screen is blank.
+
+The cause is the Phase-1 deletion of the `/@ng/component` boot gate:
+- Each component's `_HmrLoad(Date.now())` boot fetch gets Analog's real payload, because `lastInvalidationTimestamp` lives for the server's lifetime.
+- `ɵɵreplaceMetadata` on the root then removes `page-router-outlet`.
+
+`payload-probe.mjs` now emulates those boot fetches after every reload:
+- **Before the fix** (`--only a,f`): `AppComponent` 1388 b and `HomeComponent` 3380 b, both real update payloads.
+- **After the fix**: 26 b each (`export default undefined;`). Live updates still get the real payload: (a) 3378 b, (d) 1524 b.
+
+The gate is a per-id ledger of the latest sent `angular:component-update`, plus a middleware ahead of Analog and the thin route (DESIGN.md).
+
+**Verified off device:**
+- Vite 8.3.8's import analysis injects `import.meta.hot = createHotContext("/node_modules/…")` into a served `node_modules` file when it is used and `optimizeDeps` is disabled.
+- Webpack 5.99.7 compiles `import.meta.hot` in a library to `undefined` (`if (import.meta.hot)` → `if (false) {}`), with no errors and no warnings. `new URL('/', import.meta.url)` becomes an asset import, and `new URL(import.meta.url)` leaks a `file://` build path unless it sits behind `if (import.meta.hot)`.
+- `ɵresetCompiledComponents` (Angular 22) clears `GENERATED_COMP_IDS`, the map behind NG0912.
+
+**Globals inventory** (`packages/vite`; native runtimes read none of them; B = `bundle.mjs`, V = `/ns/v`, N = node):
+
+*Crossing the B ↔ V boundary:*
+- `__NS_HMR_BOOT_COMPLETE__` (B writes, `boot-complete.ts`; read by the `/__ns_dev__/client` bootstrap and `entry-runtime`)
+- `__NS_HMR_APP_CSS__` and `__NS_HMR_APP_CSS_AST__` (main-entry → entry-runtime)
+- `__NS_DEV_KNOWN_APPLICATIONS__` (root-placeholder → entry-runtime)
+- `__NS_HMR_DEV_OVERLAY__` (dev-overlay → `overlay-driver`)
+- `__NS_HTTP_ORIGIN__` (session-bootstrap → generated worker code)
+- `__NS_CORE_MODULES__` (thin-route core footer → main-entry require shim, vendor-device-shim)
+- `__NS_CJS_SHAPE__` and `__NS_CJS_SHAPE_CACHE__` (both sides)
+- `__nsVendorRegistry`, `__nsRequire` and `__nsVendorRequire` (vendor-bootstrap → root-placeholder, core-aliases-early, vendor-resolve; phase 3)
+- `__NS_HMR_WORKERS__` (B installs, V sweeps on full reload)
+- `__NS_ENV_VERBOSE__` and the seeded defines `__DEV__`, `__ANDROID__`, `__IOS__`, `__VISIONOS__`, `__APPLE__` and others (seeded in B, read by raw-served core and `@nativescript/angular` for `__APPLE__`)
+- `__NS_DEV_PLACEHOLDER_ROOT_VIEW__` and `__NS_DEV_PLACEHOLDER_ROOT_EARLY__` (root-placeholder → core `application.ios.ts:724`)
+
+*B-only:*
+- `__NS_DEV_BOOT_*` (5), `__NS_DEV_ORIGINAL_APP_RUN__`, `__NS_DEV_PATCHED_*` (3), `__NS_DEV_PLACEHOLDER_{APPLICATION,LAUNCH_HANDLER,RESTORE_TIMER}__`, `__NS_DEV_RESTORE_PLACEHOLDER__`
+- `__NS_HMR_DEV_OVERLAY_STATE__`, `__NS_HMR_OVERLAY_POSITION__`, `__NS_HMR_ANDROID_SAFE_INSETS__`, `__NS_HMR_PROGRESS_OVERLAY_ENABLED__`
+- `__NS_HMR_BOOT_LAST_PROGRESS__`, `__NS_IMPORT_MAP_CONFIGURED__`, `__NS_PLACEHOLDER_DIAG_LAST_FINALIZE__`, `__NS_TELEMETRY__`
+- seams with no writer: `__NS_DEV_TELEMETRY__`, `__NS_HMR_IMPORT__`
+
+*V-only:*
+- `__NS_HMR_APPLY_CSS__`, `__NS_HMR_HTTP_APP_CSS_APPLIED__`, `__NS_DEPS_MODULES__`, `__NS_DOCUMENTS_PATH__`
+- `__nsBaseRequire`, `__nsVendorHash`
+
+*Node:* `__NS_VENDOR_MANIFEST__` (write-only), `__NS_BRIDGE_NONCANON__` (`websocket-core-bridge.ts`, a diagnostic).
+
+*Read only from core:* `__NS_LAST_XML_ERROR__`.
+
+*Dead:* `__NS_ENTRY_TRACE__`, `__NS_HMR_BOOT_LAST_PROGRESS_AT__`, `__NS_HMR_BOOT_LAST_YIELD_AT__`.
+
+*Read with no writer left:*
+- `__NS_HMR_BOOT_MODULE_COUNT__` and `__NS_HMR_BOOT_LAST_MODULE__` (the boot heartbeat's count is always 0)
+- `__NS_RECORD_MODULE_PROVENANCE__`
+- `__NS_ANGULAR_APP_REF__` and `__reboot_ng_modules__` (root-placeholder diagnostics)
+
+*Write-only:*
+- `__NS_APP_ROOT_DIR__`, `__NS_APP_ROOT_VIRTUAL__`, `__NS_TARGET_FLAVOR__`, `__NS_WEBPACK__`, `__TEST__`, `__CI__`
+- `__NS_ENTRY_ERROR__`, `__NS_BOOT_TRACE__`, `__NS_HMR_BOOT_IMPORT_STARTED_AT__`, `__NS_ORIG_{GET_REGISTERED_MODULES,MODULE_EXISTS,LOAD_MODULE}__`
+- `__nsVendorAliases`, `__nsResolveVendor`, `__nsRequireIsShim`, `__nsVendorManifest`
+
+*Deleted in phase 2:* `__NS_HOT_REGISTRY__`, `__NS_DEV_ENTRY_URL__`, `__NS_DEV_ORIGIN__`, `__NS_HMR_WS_URL__`, `__NS_DEV_SESSION__`, `__NS_DEV_INSTALL_LAUNCH_BRIDGE__`, `__NS_REGISTER_CSS__`, `__NS_PENDING_CSS__`, `__NS_CLIENT_STRATEGY_URL__`, `__NS_CLIENT_STRATEGY_READY__`/`RESOLVE`, `__NS_HMR_ON_UPDATE__`, `__NS_HMR_REGISTER_COMPONENT__`, the `__NS_HMR_BROWSER_RUNTIME_*` flags, `__NS_HMR_IMPORT_NONCE__`, `__NS_DEV_RESET_IN_PROGRESS__`.
+
+*`@nativescript/angular`:*
+- It reads `__APPLE__` (define) and the runtime's `__drainMicrotaskQueue`, and keeps `__ngRegisteredViews` as an internal guard.
+- It writes the webpack-only `__reboot_ng_modules__` family and `__onLiveSyncCore` only under `import.meta['webpackHot']`.
+- It no longer reads `__NS_HOT_REGISTRY__` or `__NS_DEV_ORIGIN__`.
+
 ## Next
 
 1. A device route: `/ns/e/*` → `environments.nativescript.transformRequest(unwrap(url))` → `thinPostStep`.

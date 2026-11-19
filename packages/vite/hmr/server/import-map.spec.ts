@@ -22,8 +22,6 @@ vi.mock('../../helpers/project.js', () => ({
 }));
 
 import { collectImportMapSpecifiers, getCanonicalization } from './import-map.js';
-// Type-only (erased at emit): importing the concrete framework strategies here
-// would pull the SFC/babel pipeline into this fs-mocked spec.
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 
 function strategyWithImportMapSpecifiers(specifiers: string[]): FrameworkServerStrategy {
@@ -147,20 +145,45 @@ describe('vendor specifiers', () => {
 	});
 });
 
-describe('getCanonicalization', () => {
-	it('supplies the base vocabulary and merges the strategy preserve-query paths', () => {
-		// This object is the runtime's ENTIRE canonicalization vocabulary —
-		// the native side applies the mechanism (fragment strip, param drop,
-		// sort) but carries no URL strings of its own. Renaming a dev route
-		// or a cache-buster param means updating THIS function, never the
-		// runtimes.
-		expect(getCanonicalization()).toEqual({
-			stripParams: ['t', 'v', 'import'],
-			forPathPrefixes: ['/ns/', '/node_modules/.vite/', '/@id/', '/@fs/'],
-			preserveQueryFor: [],
-		});
+/**
+ * The query decision of the iOS runtime's `CanonicalizeHttpUrlKey`
+ * (HttpLoader.mm): a `preserveQueryFor` substring keeps the query verbatim,
+ * a `forPathPrefixes` prefix drops `stripParams` and sorts the rest, any
+ * other path keeps the query verbatim.
+ */
+function runtimeKey(url: string, canon: ReturnType<typeof getCanonicalization>): string {
+	const u = new URL(url);
+	const base = `${u.origin}${u.pathname}`;
+	const query = u.search.slice(1);
+	if (canon.preserveQueryFor.some((p) => p && u.pathname.includes(p))) return url;
+	if (!canon.forPathPrefixes.some((p) => p && u.pathname.startsWith(p))) return url;
+	const kept = query
+		.split('&')
+		.filter(Boolean)
+		.filter((pair) => !canon.stripParams.includes(pair.split('=')[0]))
+		.sort();
+	return kept.length ? `${base}?${kept.join('&')}` : base;
+}
 
-		const strategy = { preserveQueryPaths: () => ['/@ng/component'] } as unknown as FrameworkServerStrategy;
-		expect(getCanonicalization(strategy).preserveQueryFor).toEqual(['/@ng/component']);
+describe('getCanonicalization', () => {
+	const angular = { flavor: 'angular', preserveQueryPaths: () => ['/@ng/component'] } as FrameworkServerStrategy;
+
+	it('keys /ns/v module URLs like a browser: t and import stay part of the identity', () => {
+		const canon = getCanonicalization(angular);
+		expect(runtimeKey(`${ORIGIN}/ns/v/src/app/home.component.ts?t=1700000000000`, canon)).toBe(`${ORIGIN}/ns/v/src/app/home.component.ts?t=1700000000000`);
+		expect(runtimeKey(`${ORIGIN}/ns/v/src/data.json?import&t=1700000000000`, canon)).toBe(`${ORIGIN}/ns/v/src/data.json?import&t=1700000000000`);
+		expect(runtimeKey(`${ORIGIN}/ns/v/src/main.ts`, canon)).not.toBe(runtimeKey(`${ORIGIN}/ns/v/src/main.ts?t=1700000000000`, canon));
+	});
+
+	it("preserves Angular's /@ng/component query under /ns/v", () => {
+		const canon = getCanonicalization(angular);
+		expect(canon.preserveQueryFor).toEqual(['/@ng/component']);
+		const url = `${ORIGIN}/ns/v/src/app/@ng/component?c=src%2Fapp%2Fhome.component.ts%40HomeComponent&t=1700000000000`;
+		expect(canon.preserveQueryFor.some((p) => new URL(url).pathname.includes(p))).toBe(true);
+		expect(runtimeKey(url, canon)).toBe(url);
+	});
+
+	it('declares no query-normalizing dev prefix', () => {
+		expect(getCanonicalization()).toEqual({ stripParams: [], forPathPrefixes: [], preserveQueryFor: [] });
 	});
 });

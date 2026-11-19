@@ -232,11 +232,10 @@ function createOverlayApi(): HmrOverlayApi {
 			// Stamp the cycle start on 'received', but distinguish
 			// between two cases:
 			//
-			//   (a) Re-assertion of the SAME cycle (e.g., the server
-			//       emits both `ns:hmr-pending` AND `ns:angular-update`,
-			//       both of which call `setUpdateStage('received')`).
-			//       We must PRESERVE the original timestamp so the
-			//       minimum-visible-window math measures the FIRST
+			//   (a) Re-assertion of the SAME cycle (a second
+			//       `setUpdateStage('received')` before the cycle
+			//       ends). We must PRESERVE the original timestamp so
+			//       the minimum-visible-window math measures the FIRST
 			//       'received' the user actually saw.
 			//
 			//   (b) Genuinely-new cycle starting either from a hidden
@@ -246,12 +245,12 @@ function createOverlayApi(): HmrOverlayApi {
 			//       new cycle's auto-hide math is sane.
 			//
 			// We treat the previous snapshot as "in-progress for the
-			// same cycle" iff mode==='update' AND progress!==100.
-			// 'complete' frames are a sign that the cycle finished;
-			// any subsequent 'received' is a NEW cycle.
+			// same cycle" iff mode==='update' AND progress!==100 AND
+			// it isn't a 'failed' frame. 'complete' and 'failed' frames
+			// end a cycle; any subsequent 'received' is a NEW cycle.
 			if (stage === 'received') {
 				const prev = state.snapshot;
-				const isMidCycleReassertion = prev.mode === 'update' && prev.progress !== 100;
+				const isMidCycleReassertion = prev.mode === 'update' && prev.progress !== 100 && prev.tone !== 'error';
 				if (!isMidCycleReassertion) {
 					state.updateCycleStartedAt = Date.now();
 				}

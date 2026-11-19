@@ -124,7 +124,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	}
 
 	// Filtered logger to suppress noisy warnings
-	const filteredLogger = createFilteredViteLogger({ hmrActive });
+	const filteredLogger = createFilteredViteLogger();
 
 	// Create TypeScript aliases with platform support
 	const tsConfig = getTsConfigData({ platform, verbose });
@@ -553,7 +553,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			sourcemap: debug,
 			// Disable module preloading to avoid browser APIs
 			modulePreload: false,
-			// Under HMR, avoid rebuilds on app root changes — device consumes updates via /ns-hmr
+			// Under HMR, avoid rebuilds on app root changes — the device takes updates from the dev server
 			...(hmrActive && {
 				watch: {
 					exclude: [appGlobPattern],
@@ -655,7 +655,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					},
 				},
 				// When HMR is active, prevent Vite's build watcher from reacting to source folder changes.
-				// The device will get updates via socket /ns-hmr instead.
+				// The device takes updates from the dev server instead.
 				...(hmrActive
 					? {
 							watch: {

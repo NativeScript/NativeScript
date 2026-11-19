@@ -7,8 +7,8 @@
 // or vendor code evaluates, so every main-realm spawn — including plugin
 // `dist` code and hand-written `new Worker(...)` calls the transform
 // pipeline never saw — lands in the session-wide tracked set
-// (`globalThis.__NS_HMR_WORKERS__`). The HMR client sweeps that set before
-// framework reboots.
+// (`globalThis.__NS_HMR_WORKERS__`). The HMR client sweeps that set during a
+// full reload.
 //
 // Nested workers need no tracking here: `worker.terminate()` tears down the
 // worker's native runtime, whose destructor terminates that realm's child

@@ -7,8 +7,8 @@ import { synthesizeMissingInjectableFactories } from '../hmr/frameworks/angular/
 import { getAngularLinkerFactory, runAngularLinker } from '../hmr/frameworks/angular/build/shared-linker.js';
 import { recordLinkerHit, reportLinkerLayerStats } from '../hmr/frameworks/angular/build/linker-stats.js';
 import { inlineDecoratorComponentTemplates } from '../hmr/frameworks/angular/build/inline-decorator-component-templates.js';
-import { appendComponentHmrRegistration, findComponentClassNames, INJECTION_MARKER as HMR_REGISTER_MARKER } from '../hmr/frameworks/angular/build/inject-component-hmr-registration.js';
 import { injectAngularHmrViteIgnore } from '../hmr/frameworks/angular/build/inject-hmr-vite-ignore.js';
+import { angularHmrPayloadRulesPlugins } from '../hmr/frameworks/angular/server/hmr-payload-rules-plugin.js';
 import { synthesizeDecoratorCtorParameters } from '../hmr/frameworks/angular/build/synthesize-decorator-ctor-parameters.js';
 import { containsRealNgDeclare, stripJsComments } from '../hmr/frameworks/angular/build/util.js';
 import { baseConfig } from './base.js';
@@ -73,14 +73,11 @@ const isDevEnv = process.env.NODE_ENV !== 'production';
 const hmrActive = isDevEnv && !!cliFlags.hmr;
 
 /**
- * Web-style template HMR opt-out (`NS_VITE_ANGULAR_LIVE_RELOAD=0`).
+ * In-place component HMR opt-out (`NS_VITE_ANGULAR_LIVE_RELOAD=0`).
  *
- * With HMR active we default to the in-place template-replacement pipeline
- * (see the `liveReload` option below). If a project hits a regression
- * (broken styling, unresolved `?ngcomp=` imports), this env flag rolls back
- * to the legacy reboot pipeline without an upstream patch. `0`, `false`,
- * `off`, and `no` (case-insensitive) mean "off"; anything else — including
- * unset — keeps the new path on. Read once at module load, like `hmrActive`.
+ * Off means no in-place updates: every Angular edit becomes Vite's full
+ * reload. `0`, `false`, `off` and `no` (case-insensitive) turn it off;
+ * anything else, including unset, keeps it on. Read once at module load.
  */
 const angularLiveReloadDisabledByEnv: boolean = (() => {
 	const raw = process.env.NS_VITE_ANGULAR_LIVE_RELOAD;
@@ -195,15 +192,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 	const assetToComponents = new Map<string, Set<string>>();
 	const componentToAssets = new Map<string, Set<string>>();
 	const pendingComponentInvalidations = new Set<string>();
-
-	// Shared state between the `enforce: 'pre'` discovery plugin and the
-	// `enforce: 'post'` injection plugin. Maps a clean (no-querystring)
-	// .ts file id to the list of `@Component`-decorated class names found
-	// in its RAW TypeScript source. The pre plugin populates this map;
-	// the post plugin reads it to know which class names to register
-	// against the compiled output. Cleared on each pre-plugin invocation
-	// so renames or `@Component` removals don't leave stale entries.
-	const componentsByCleanId = new Map<string, string[]>();
+	const analogWorkspaceRoot = opts.workspaceRoot ?? getMonorepoWorkspaceRoot(process.cwd()) ?? process.cwd();
 
 	const untrackComponentAssets = (componentPath: string) => {
 		const previousAssets = componentToAssets.get(componentPath);
@@ -235,93 +224,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 		}
 	};
 
-	const isCandidateComponentTs = (cleanId: string): boolean => {
-		if (!cleanId.endsWith('.ts')) return false;
-		if (cleanId.includes('/node_modules/')) return false;
-		if (cleanId.endsWith('.d.ts')) return false;
-		if (cleanId.endsWith('.spec.ts') || cleanId.endsWith('.test.ts')) return false;
-		return true;
-	};
-
 	return [
-		// HMR self-registration runs in two steps:
-		//
-		//   1. (this plugin, `enforce: 'pre'`) Record the names of
-		//      `@Component`-decorated classes from the RAW TypeScript source
-		//      into `componentsByCleanId` — discovery must happen pre-compile
-		//      because the Analog plugin rewrites the textual decorator away.
-		//   2. (`ns-component-hmr-register-post`, `enforce: 'post'`) Append the
-		//      `__NS_HMR_REGISTER_COMPONENT__` calls to the COMPILED output.
-		//
-		// The split is mandatory: Analog's `transform` returns its own compiled
-		// output (from its `outputFiles` cache), silently discarding any code
-		// modification made earlier in the pipeline — appending in the pre
-		// plugin leaves the HMR class registry empty.
-		//
-		// `apply: 'serve'` (registry hook is dev-only) but intentionally NOT
-		// gated on `hmrActive`: the injected snippet self-guards on
-		// `typeof globalThis.__NS_HMR_REGISTER_COMPONENT__ === 'function'`, and
-		// gating the transform itself left `--no-hmr` users with an empty
-		// registry.
-		{
-			name: 'ns-component-hmr-register',
-			enforce: 'pre',
-			apply: 'serve',
-			transform(code, id) {
-				const cleanId = normalizeAngularWatchPath(id);
-				if (!isCandidateComponentTs(cleanId)) return null;
-
-				const componentNames = findComponentClassNames(code);
-				if (componentNames.length === 0) {
-					// Drop any stale entry from a previous transform
-					// pass; the file may have lost its `@Component`
-					// decorator across a rename/refactor.
-					componentsByCleanId.delete(cleanId);
-					return null;
-				}
-
-				componentsByCleanId.set(cleanId, componentNames);
-
-				if (verbose) {
-					console.info(`[ns-hmr][ns-component-hmr-register] discovered ${componentNames.length} component(s) in ${cleanId} (${componentNames.join(', ')})`);
-				}
-
-				// Discovery only — never modify the raw TS source. Any
-				// modification here is discarded by the Analog Angular
-				// plugin downstream; the actual snippet append happens
-				// in `ns-component-hmr-register-post`.
-				return null;
-			},
-		},
-		// Step 2: append the HMR registration snippet to the compiled output
-		// (post-Analog), keyed by the names recorded in step 1.
-		{
-			name: 'ns-component-hmr-register-post',
-			enforce: 'post',
-			apply: 'serve',
-			transform(code, id) {
-				const cleanId = normalizeAngularWatchPath(id);
-				if (!isCandidateComponentTs(cleanId)) return null;
-
-				const componentNames = componentsByCleanId.get(cleanId);
-				if (!componentNames || componentNames.length === 0) return null;
-
-				// Idempotency: Vite may replay transforms on cached modules; the
-				// marker guards against double-injection.
-				if (code.includes(HMR_REGISTER_MARKER)) return null;
-
-				const result = appendComponentHmrRegistration(code, componentNames);
-				if (!result.code) return null;
-
-				if (verbose) {
-					console.info(`[ns-hmr][ns-component-hmr-register-post] appended registrations for ${result.componentNames.length} component(s) in ${cleanId} (${result.componentNames.join(', ')})`);
-				}
-
-				// map: null is fine for dev — the appended snippet sits after the
-				// original body, so upstream line mappings stay valid.
-				return { code: result.code, map: null };
-			},
-		},
 		// Allow external html template changes to trigger hot reload: Make .ts files depend on their .html templates
 		{
 			name: 'angular-template-deps',
@@ -400,27 +303,12 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 			experimental: {
 				useAngularCompilationAPI: opts.useAngularCompilationAPI,
 			},
-			// `liveReload` enables Angular's web-style in-place template HMR:
-			//   1. `_enableHmr = true` on the TS compiler — each compiled component
-			//      `.mjs` emits `<ClassName>_HmrLoad` plus an
-			//      `import.meta.hot.on('angular:component-update', ...)` listener.
-			//   2. A `/@ng/component?c=<id>` middleware serving recompiled
-			//      `_UpdateMetadata` sources on demand.
-			//   3. `angular:component-update` broadcasts on `.html`/style edits so
-			//      the runtime calls `ɵɵreplaceMetadata` on the live class — views
-			//      recreate in-place with NO reboot and NO route navigation (the
-			//      reboot path via `__reboot_ng_modules__` remains for `.ts` edits).
-			//
-			// Load-bearing interactions:
-			//   - Analog's middleware matches `req.url.includes('/@ng/component')`
-			//     (substring), so the `/ns/m/`-prefixed device fetch still hits it.
-			//   - The device client (`hmr/client/protocol-dispatch.ts`) forwards
-			//     `{ type: 'custom', event, data }` to `import.meta.hot.on`
-			//     listeners and short-circuits before the reboot path for
-			//     `angular:component-update`.
-			//   - `hmr/server/websocket.ts` skips its own `ns:angular-update`
-			//     broadcast for `.html`/component-style edits to avoid double-fire.
-			//   - Rollback to reboot-only: set `NS_VITE_ANGULAR_LIVE_RELOAD=0`.
+			// `liveReload` turns on Angular's in-place component HMR: compiled
+			// components listen for `angular:component-update` and fetch their new
+			// metadata from Analog's `/@ng/component?c=` middleware, which matches
+			// `req.url.includes('/@ng/component')`, so any device URL prefix still
+			// reaches it. `ns-angular-hmr-rules` turns the updates Angular can't
+			// apply in place into full reloads.
 			liveReload: hmrAngularLiveReload,
 			// NativeScript can't consume `externalRuntimeStyles` (runtime-loaded
 			// `<hash>.css` URLs need a browser CSSOM/`<link>` pipeline), so keep
@@ -451,8 +339,9 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 			// edits dispatch cleanly but visually apply nothing. Default to the
 			// monorepo root when one exists so all three id producers agree;
 			// standalone apps (no monorepo root) keep the cwd behavior.
-			workspaceRoot: opts.workspaceRoot ?? getMonorepoWorkspaceRoot(process.cwd()) ?? process.cwd(),
+			workspaceRoot: analogWorkspaceRoot,
 		}),
+		...(hmrAngularLiveReload ? angularHmrPayloadRulesPlugins({ workspaceRoot: analogWorkspaceRoot }) : []),
 		// Post-phase linker to catch any declarations introduced after other transforms (including project code)
 		angularLinkerVitePluginPost(process.cwd()),
 		// Re-inject `/* @vite-ignore */` onto Angular's HMR initializer dynamic

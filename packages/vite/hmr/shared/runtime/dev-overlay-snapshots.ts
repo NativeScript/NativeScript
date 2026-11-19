@@ -20,9 +20,9 @@ export type HmrBootStage = 'placeholder' | 'probing-origin' | 'loading-entry-run
 export type HmrConnectionStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline' | 'healthy';
 
 // HMR apply stages, in chronological order (received → evicting → reimporting →
-// rebooting → complete). Progress percentages are deliberately non-linear so the
+// rebooting → complete, or failed). Progress percentages are deliberately non-linear so the
 // bar keeps moving through the long re-import + reboot tail.
-export type HmrUpdateStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete';
+export type HmrUpdateStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete' | 'failed';
 
 export type HmrOverlayStageInfo = {
 	detail?: string;
@@ -62,6 +62,7 @@ export const DEFAULT_SNAPSHOT: HmrOverlaySnapshot = {
 
 const HMR_UPDATE_TITLE = 'HMR update applying...';
 const HMR_UPDATE_DONE_TITLE = 'HMR update applied';
+const HMR_UPDATE_FAILED_TITLE = 'HMR update failed';
 
 function describeAttempt(info?: HmrOverlayStageInfo): string {
 	const attempt = Number(info?.attempt || 0);
@@ -346,7 +347,7 @@ export function createUpdateOverlaySnapshot(stage: HmrUpdateStage, info?: HmrOve
 			mode: 'update',
 			badge: 'HMR',
 			title: HMR_UPDATE_TITLE,
-			phase: 'Rebooting Angular',
+			phase: 'Reloading app',
 			detail: '',
 			progress: 90,
 			busy: true,
@@ -364,6 +365,18 @@ export function createUpdateOverlaySnapshot(stage: HmrUpdateStage, info?: HmrOve
 			busy: false,
 			blocking: false,
 			tone: 'success',
+		},
+		failed: {
+			visible: true,
+			mode: 'update',
+			badge: 'HMR',
+			title: HMR_UPDATE_FAILED_TITLE,
+			phase: 'See the terminal for details',
+			detail: '',
+			progress: null,
+			busy: false,
+			blocking: false,
+			tone: 'error',
 		},
 	};
 

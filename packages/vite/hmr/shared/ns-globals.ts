@@ -37,15 +37,6 @@ declare global {
 	var __NS_HMR_BOOT_COMPLETE__: boolean | undefined;
 	var __NS_HMR_HTTP_APP_CSS_APPLIED__: boolean | undefined;
 	var __NS_IMPORT_MAP_CONFIGURED__: boolean | undefined;
-	var __NS_DEV_RESET_IN_PROGRESS__: boolean | undefined;
-	var __NS_ANGULAR_HMR_CLIENT_INSTALLED__: boolean | undefined;
-	var __NS_HMR_CLIENT_ACTIVE__: boolean | undefined;
-	var __NS_HMR_CLIENT_SOCKET_READY__: boolean | undefined;
-	var __NS_HMR_INITIAL_MOUNT_IN_PROGRESS__: boolean | undefined;
-	var __NS_HMR_RESCUE_SCHEDULED__: boolean | undefined;
-	var __NS_HMR_BACK_WRAPPED__: boolean | undefined;
-	var __NS_HMR_DISABLE_ASM__: boolean | undefined;
-	var __NS_HMR_ASM_DIAG__: boolean | undefined;
 
 	// ── Boot-import progress (entry-runtime + boot-progress) ──
 	var __NS_HMR_BOOT_MODULE_COUNT__: number | undefined;
@@ -54,34 +45,17 @@ declare global {
 	var __NS_HMR_BOOT_LAST_PROGRESS_AT__: number | undefined;
 	var __NS_HMR_BOOT_IMPORT_STARTED_AT__: number | undefined;
 
-	// ── Origins / realms / counters / hosts ──
+	// ── Origins ──
 	var __NS_HTTP_ORIGIN__: string | undefined;
-	var __NS_HMR_HOST: string | undefined;
-	var __NS_HMR_REALM__: string | undefined;
-	var __NS_RT_REALM__: string | undefined;
-	var __NS_HMR_BROWSER_RUNTIME_TARGET_FLAVOR__: string | undefined;
-	var __NS_CLIENT_STRATEGY_URL__: string | undefined;
-	var __NS_HMR_GRAPH_VERSION__: number | undefined;
-	var __NS_HMR_IMPORT_NONCE__: number | undefined;
 
 	// ── CSS (entry-runtime ↔ css-handler) ──
 	var __NS_HMR_APPLY_CSS__: ((cssText: string, refreshRoot?: boolean) => void) | undefined;
 	var __NS_HMR_APP_CSS__: string | undefined;
 	var __NS_HMR_APP_CSS_AST__: any;
-	// Device CSS bridge: CSS-bearing modules register under a per-source tag via the following:
-	// - (installed at client boot), or queue in
-	var __NS_REGISTER_CSS__: ((tag: string, cssText: string) => void) | undefined;
-	// - (keyed by tag) until it's installed, then drained.
-	var __NS_PENDING_CSS__: Record<string, string> | null | undefined;
 
 	// ── Function hooks (typed where the signature is stable; `any` otherwise) ──
 	var __NS_HMR_IMPORT__: ((url: string) => Promise<unknown>) | undefined;
-	var __NS_HMR_ON_UPDATE__: ((payload: { type: 'full-graph' | 'delta'; version: number; changedIds: string[]; raw: any }) => void) | undefined;
-	var __NS_HMR_ON_NAVIGATE_BACK: (() => void) | undefined;
 	var __NS_DEV_RESTORE_PLACEHOLDER__: ((reason?: string) => void) | undefined;
-	var __nsAttemptBackRemount: (() => unknown) | undefined;
-	var __nsGetModuleExports: ((id: string) => any) | undefined;
-	var __ns_solid_hmr_subscribe: ((fn: (ev: { kind: 'solid'; changedFiles: string[]; boundaries: string[]; ancestors?: string[] }) => void) => () => void) | undefined;
 
 	// ── Native / framework / registry objects (intentionally `any`) ──
 	var __NS_HMR_DEV_OVERLAY__: any;
@@ -91,25 +65,11 @@ declare global {
 	var __NS_DEV_PLACEHOLDER_APPLICATION__: any;
 	var __NS_DEV_PLACEHOLDER_ROOT_VIEW__: any;
 	var __NS_DEV_PLACEHOLDER_ROOT_EARLY__: any;
-	var __NS_HMR_PINIA__: any;
-	var __NS_PINIA_SYMBOL__: symbol | undefined;
-	var __NS_VUE_APP__: any;
-	var __NS_HMR_CREATE_APP__: any;
-	var __NS_HMR_INSTALL_PLUGINS__: any;
-	var __NS_HMR_ORIG_ROOT_COMPONENT__: any;
-	var __NS_HMR_VUE_SFC_REGISTRY__: any;
 	var __NS_HMR_WORKERS__: any;
 	var __NS_HMR_WORKER_TRACKING_INSTALLED__: boolean | undefined;
-	var __NS_UPDATE_ANGULAR_APP_OPTIONS__: any;
-	var __nsNavigateUsingApp: any;
-	var __NS_VUE_ROOT_APP__: any;
-	var __NS_CLIENT_STRATEGY_READY__: Promise<void> | undefined;
-	var __NS_CLIENT_STRATEGY_RESOLVE__: (() => void) | undefined;
 	var __nsRequire: any;
 	var __nsVendorRequire: any;
 	var __nsVendorRegistry: any;
-	var __ns_router: any;
-	var __ns_solid_hmr_listener_set: any;
 }
 
 export {};

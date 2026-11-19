@@ -1,40 +1,20 @@
-import { createRequire } from 'node:module';
-import { existsSync, readFileSync, realpathSync } from 'node:fs';
-import * as path from 'node:path';
 import type { FrameworkServerStrategy } from './server/framework-strategy.js';
-import { getProjectRootPath } from '../helpers/project.js';
-import { THIN_PREFIX, viteUrlForFile } from './server/thin/thin-mode.js';
+import { getBuiltInServerStrategy } from './server/framework-strategy.js';
 
 /**
- * A framework flavor contributed from outside this package.
- *
- * The built-in flavors (`angular`, `vue`, `react`, `solid`, `typescript`,
- * `javascript`) are wired by name inside `@nativescript/vite`. Everything a
- * flavor needs beyond a name is expressed here, so a framework can ship its
- * own HMR support as a package: the server half runs in the dev server
- * process; the client half is a module the device fetches and evaluates next
- * to the shared HMR client.
+ * A framework flavor contributed from outside this package. HMR itself comes
+ * from the framework's own Vite plugin; a flavor only adds what the
+ * NativeScript dev server must know about it.
  */
 export interface FrameworkFlavorDefinition {
 	/**
 	 * The flavor name. It is what the config helper declares through
-	 * `baseConfig({ flavor })`, what the device receives as `__NS_TARGET_FLAVOR__`,
-	 * and what selects both strategies. Must not collide with a built-in name.
+	 * `baseConfig({ flavor })` and what the device receives as
+	 * `__NS_TARGET_FLAVOR__`. Must not collide with a built-in name.
 	 */
 	flavor: string;
-	/**
-	 * The dev-server half. Most frameworks start from `typescriptServerStrategy`
-	 * (the generic device-module pipeline) and override `handleHotUpdate`.
-	 */
-	server: FrameworkServerStrategy;
-	/**
-	 * The device half: a module specifier resolvable from the app's root —
-	 * usually a package subpath such as `@my-framework/nativescript-vite/client`.
-	 * It must import shared client helpers only from
-	 * `@nativescript/vite/hmr/client/framework.js`, and exports the strategy as
-	 * `default`, `clientStrategy`, or `<flavor>ClientStrategy`.
-	 */
-	client: string;
+	/** Device loader configuration for this flavor (import-map entries, query identity). */
+	server?: FrameworkServerStrategy;
 	/**
 	 * Dev-session vendor policy. `exclude` names package roots the vendor
 	 * collection must not seed even though the app lists them in
@@ -55,9 +35,7 @@ const flavors = new Map<string, FrameworkFlavorDefinition>();
 
 /**
  * Register a flavor. Call it before `baseConfig({ flavor })` runs — from the
- * top of the framework's config helper is the natural place — so the HMR
- * plugins the base config installs can find the server strategy, and the
- * device bundle is seeded with the client strategy's URL. Registering the
+ * top of the framework's config helper is the natural place. Registering the
  * same flavor again replaces the previous definition.
  */
 export function registerFrameworkFlavor(definition: FrameworkFlavorDefinition): void {
@@ -66,14 +44,13 @@ export function registerFrameworkFlavor(definition: FrameworkFlavorDefinition): 
 	if (BUILT_IN_FLAVORS.has(flavor)) {
 		throw new Error(`[@nativescript/vite] registerFrameworkFlavor: "${flavor}" is a built-in flavor and cannot be replaced.`);
 	}
-	if (!definition.server || typeof definition.server.matchesFile !== 'function' || typeof definition.server.processFile !== 'function' || typeof definition.server.buildRegistry !== 'function') {
-		throw new TypeError(`[@nativescript/vite] registerFrameworkFlavor("${flavor}"): \`server\` must be a FrameworkServerStrategy.`);
-	}
-	if (typeof definition.client !== 'string' || !definition.client.trim()) {
-		throw new TypeError(`[@nativescript/vite] registerFrameworkFlavor("${flavor}"): \`client\` must be a module specifier.`);
-	}
-	if (definition.server.flavor !== flavor) {
-		throw new Error(`[@nativescript/vite] registerFrameworkFlavor("${flavor}"): the server strategy declares flavor "${definition.server.flavor}".`);
+	if (definition.server !== undefined) {
+		if (!definition.server || typeof definition.server !== 'object') {
+			throw new TypeError(`[@nativescript/vite] registerFrameworkFlavor("${flavor}"): \`server\` must be a FrameworkServerStrategy.`);
+		}
+		if (definition.server.flavor !== flavor) {
+			throw new Error(`[@nativescript/vite] registerFrameworkFlavor("${flavor}"): the server strategy declares flavor "${definition.server.flavor}".`);
+		}
 	}
 	if (definition.vendor !== undefined) {
 		const exclude = definition.vendor?.exclude;
@@ -89,14 +66,9 @@ export function getFrameworkFlavor(flavor: string): FrameworkFlavorDefinition | 
 	return flavors.get(flavor);
 }
 
-/** Package names that ship a registered flavor's client strategy. */
-export function getFlavorClientPackages(): ReadonlySet<string> {
-	const names = new Set<string>();
-	for (const definition of flavors.values()) {
-		const name = packageNameOfSpecifier(definition.client);
-		if (name) names.add(name);
-	}
-	return names;
+/** The server strategy of a built-in or registered flavor. */
+export function getFrameworkServerStrategy(flavor: string): FrameworkServerStrategy | undefined {
+	return getBuiltInServerStrategy(flavor) ?? flavors.get(flavor)?.server;
 }
 
 /** Package roots a registered flavor keeps out of the dev vendor collection. */
@@ -105,75 +77,6 @@ export function getFlavorVendorExcludes(flavor: string | undefined): ReadonlySet
 	return new Set((exclude ?? []).map((name) => name.trim()).filter(Boolean));
 }
 
-function packageNameOfSpecifier(specifier: string): string | null {
-	if (!specifier || specifier.startsWith('.') || path.isAbsolute(specifier)) return null;
-	const parts = specifier.split('/');
-	return specifier.startsWith('@') ? (parts.length >= 2 ? `${parts[0]}/${parts[1]}` : null) : parts[0];
-}
-
 export function isBuiltInFlavor(flavor: string): boolean {
 	return BUILT_IN_FLAVORS.has(flavor);
-}
-
-/**
- * The device-side URL path of a registered flavor's client strategy module —
- * `/ns/v<vite-url>`, without origin — or `''` for a built-in / unknown flavor.
- * The specifier is resolved from the app root like any import. The dev config
- * sets `resolve.preserveSymlinks`, so the Vite URL uses the
- * `node_modules/<package>` spelling Node's lookup reaches from the app root,
- * not the symlink target of a linked package.
- */
-export function getClientStrategyDevicePath(flavor: string, projectRoot: string = getProjectRootPath()): string {
-	const definition = flavors.get(flavor);
-	if (!definition) return '';
-	const resolved = resolveFromProject(definition.client, projectRoot);
-	const pkg = findPackageRoot(resolved);
-	if (!pkg) {
-		throw new Error(`[@nativescript/vite] flavor "${flavor}": client module ${definition.client} resolved to ${resolved}, which is not inside a package.`);
-	}
-	const inside = path.relative(pkg.dir, resolved);
-	return `${THIN_PREFIX}${viteUrlForFile(unresolvedPackageFile(pkg.name, inside, resolved, projectRoot), projectRoot)}`;
-}
-
-function unresolvedPackageFile(pkgName: string, inside: string, resolved: string, projectRoot: string): string {
-	let real = resolved;
-	try {
-		real = realpathSync(resolved);
-	} catch {}
-	let dir = path.resolve(projectRoot);
-	for (;;) {
-		const candidate = path.join(dir, 'node_modules', pkgName, inside);
-		try {
-			if (realpathSync(candidate) === real) return candidate;
-		} catch {}
-		const parent = path.dirname(dir);
-		if (parent === dir) return resolved;
-		dir = parent;
-	}
-}
-
-function resolveFromProject(specifier: string, projectRoot: string): string {
-	if (path.isAbsolute(specifier)) return specifier;
-	const require = createRequire(path.join(projectRoot, 'package.json'));
-	try {
-		return require.resolve(specifier);
-	} catch (error) {
-		throw new Error(`[@nativescript/vite] cannot resolve client strategy module ${JSON.stringify(specifier)} from ${projectRoot}: ${(error as Error).message}`);
-	}
-}
-
-function findPackageRoot(file: string): { dir: string; name: string } | null {
-	let dir = path.dirname(file);
-	for (;;) {
-		const manifest = path.join(dir, 'package.json');
-		if (existsSync(manifest)) {
-			try {
-				const name = JSON.parse(readFileSync(manifest, 'utf8')).name;
-				if (typeof name === 'string' && name) return { dir, name };
-			} catch {}
-		}
-		const parent = path.dirname(dir);
-		if (parent === dir) return null;
-		dir = parent;
-	}
 }

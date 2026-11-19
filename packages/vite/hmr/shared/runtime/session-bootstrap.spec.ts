@@ -10,8 +10,9 @@ const SESSION_DESCRIPTOR = {
 	// The dev-server descriptor emits the CANONICAL (untagged) entry
 	// URL — boot-progress instrumentation is injected self-gating on the
 	// server side, so no path decoration is involved.
-	entryUrl: 'http://localhost:5173/ns/m/src/main.ts',
-	wsUrl: 'ws://localhost:5173/ns-hmr',
+	entryUrl: 'http://localhost:5173/ns/v/src/main.ts',
+	wsUrl: 'ws://localhost:5173/vite-hmr?token=abc',
+	wsProtocol: 'vite-hmr',
 	platform: 'ios',
 } as const;
 
@@ -40,10 +41,7 @@ describe('browser runtime session bootstrap', () => {
 		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
 		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
 		delete getGlobalScope().__NS_HTTP_ORIGIN__;
-		delete getGlobalScope().__NS_HMR_WS_URL__;
 		delete getGlobalScope().__NS_HMR_BOOT_COMPLETE__;
-		delete getGlobalScope().__NS_DEV_ENTRY_URL__;
-		delete getGlobalScope().__NS_DEV_SESSION__;
 		delete getGlobalScope().__NS_HMR_IMPORT__;
 		delete getGlobalScope().__NS_DEV_RESTORE_PLACEHOLDER__;
 		// clear the shared dedup flag between tests so each case
@@ -67,8 +65,6 @@ describe('browser runtime session bootstrap', () => {
 		const importMock = vi.fn().mockImplementation(async (url: string) => {
 			// Session globals must be visible to the imported client/entry.
 			expect(getGlobalScope().__NS_HTTP_ORIGIN__).toBe(SESSION_DESCRIPTOR.origin);
-			expect(getGlobalScope().__NS_HMR_WS_URL__).toBe(SESSION_DESCRIPTOR.wsUrl);
-			expect(getGlobalScope().__NS_DEV_ENTRY_URL__).toBe(SESSION_DESCRIPTOR.entryUrl);
 			importedUrls.push(url);
 			return {};
 		});
@@ -84,8 +80,6 @@ describe('browser runtime session bootstrap', () => {
 		expect(importedUrls).toEqual([SESSION_DESCRIPTOR.clientUrl, SESSION_DESCRIPTOR.entryUrl]);
 		expect(restorePlaceholder).toHaveBeenCalledWith('session-active');
 		expect(getGlobalScope().__NS_HTTP_ORIGIN__).toBe('http://localhost:5173');
-		expect(getGlobalScope().__NS_HMR_WS_URL__).toBe('ws://localhost:5173/ns-hmr');
-		expect(getGlobalScope().__NS_DEV_SESSION__).toMatchObject({ sessionId: 'session-1' });
 		expect(api.getSnapshot()).toMatchObject({
 			visible: true,
 			mode: 'boot',

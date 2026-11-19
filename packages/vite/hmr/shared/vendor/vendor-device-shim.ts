@@ -100,7 +100,7 @@ function normalizeCoreSubLocal(s) {
 
 // Invariant D: shape ESM namespaces before returning to CJS callers.
 //
-// The /ns/core handler's registration footer (see websocket.ts) and the
+// The /ns/v core registration footer (see hmr/server/thin/thin-route.ts) and the
 // main-entry require shim (see helpers/main-entry.ts) both install the
 // shape function on globalThis. In practice, entries stored in
 // __NS_CORE_MODULES__ are ALREADY shaped, so this pass-through is a

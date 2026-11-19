@@ -1,4 +1,5 @@
 import type { ViteDevServer } from 'vite';
+import { isCSSRequest } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -76,10 +77,44 @@ export function coreRequireKeys(fileAbs: string, coreRoot: string): string[] {
 }
 
 // Sync `require()` of core (NS plugins, HMR runtime helpers) must return the
-// module instance already loaded at its one device URL; otherwise the native
-// loader resolves the bare name itself and evaluates a second core.
-function coreRegistrationFooter(selfUrl: string, keys: string[]): string {
-	return `\nimport * as __ns_thin_self__ from ${JSON.stringify(selfUrl)};\n` + `try { const g = globalThis; const t = g.__NS_CORE_MODULES__ || (g.__NS_CORE_MODULES__ = {}); ` + `const v = typeof g.__NS_CJS_SHAPE__ === 'function' ? g.__NS_CJS_SHAPE__(__ns_thin_self__) : __ns_thin_self__; ` + `for (const k of ${JSON.stringify(keys)}) if (!t[k]) t[k] = v; } catch {}\n`;
+// module instance already loaded at its device URL; otherwise the native
+// loader resolves the bare name itself and evaluates a second core. A
+// timestamped (`?t=`) instance is a newer copy of the same file and replaces
+// the registered one; otherwise the first file to claim a key keeps it.
+export function coreRegistrationFooter(selfUrl: string, keys: string[], replace: boolean): string {
+	const assign = replace ? 't[k] = v;' : 'if (!t[k]) t[k] = v;';
+	return `\nimport * as __ns_thin_self__ from ${JSON.stringify(selfUrl)};\n` + `try { const g = globalThis; const t = g.__NS_CORE_MODULES__ || (g.__NS_CORE_MODULES__ = {}); ` + `const v = typeof g.__NS_CJS_SHAPE__ === 'function' ? g.__NS_CJS_SHAPE__(__ns_thin_self__) : __ns_thin_self__; ` + `for (const k of ${JSON.stringify(keys)}) ${assign} } catch {}\n`;
+}
+
+// Vite's own query regexes (`removeTimestampQuery`, `removeImportQuery`,
+// `isDirectRequest`); URLSearchParams would reorder params and rewrite a bare
+// `?direct` as `?direct=`.
+const timestampRE = /(\?|&)t=\d{13}(?:&|$)/;
+const importQueryRE = /(\?|&)import=?(?:&|$)/;
+const directRequestRE = /(\?|&)direct=?(?:&|$)/;
+const trailingSeparatorRE = /[?&]$/;
+
+/**
+ * The module a Vite URL names, as Vite's transform middleware derives it:
+ * without the `t` stamp and the `import` marker, every other param kept in
+ * order. One file then has one graph node however the device stamps its URL.
+ */
+export function normalizeThinViteUrl(viteUrl: string): string {
+	return viteUrl.replace(timestampRE, '$1').replace(trailingSeparatorRE, '').replace(importQueryRE, '$1').replace(trailingSeparatorRE, '');
+}
+
+// The device loader appends `__ns_dev_nonce` to re-fetches of evicted modules
+// to defeat OS HTTP caches. It is transport-only: never part of the device's
+// module key, so it must not reach Vite's graph or a self-import URL either.
+const devNonceRE = /(\?|&)__ns_dev_nonce=[^&]*(?:&|$)/;
+
+export function stripDevNonce(url: string): string {
+	return url.replace(devNonceRE, '$1').replace(trailingSeparatorRE, '');
+}
+
+/** A stylesheet request (`Accept: text/css` or `?direct`): Vite serves it as CSS text, not a module. */
+export function isThinStylesheetRequest(viteUrl: string, accept: string | undefined): boolean {
+	return isCSSRequest(viteUrl) && (!!accept?.includes('text/css') || directRequestRE.test(viteUrl));
 }
 
 let coreRootCache: string | null | undefined;
@@ -124,13 +159,19 @@ export function registerThinRoute(server: ViteDevServer, getOrigin: () => string
 		const rawUrl = req.url || '';
 		if (!rawUrl.startsWith(`${THIN_PREFIX}/`)) return next();
 		const origin = getOrigin();
-		let viteUrl = rawUrl.slice(THIN_PREFIX.length);
+		let viteUrl = stripDevNonce(rawUrl.slice(THIN_PREFIX.length));
+		if (isThinStylesheetRequest(viteUrl, req.headers.accept)) {
+			// Vite's transform middleware adds `direct` and answers `text/css`.
+			req.url = viteUrl;
+			return next();
+		}
 		if (viteUrl.split('?')[0] === VITE_CLIENT_URL) {
 			viteUrl = viteUrlForFile(THIN_VITE_CLIENT_FILE, server.config.root);
 		}
+		const moduleUrl = normalizeThinViteUrl(viteUrl);
 		let result: Awaited<ReturnType<typeof server.environments.client.transformRequest>> = null;
 		try {
-			result = await server.environments.client.transformRequest(transformIdForViteUrl(viteUrl));
+			result = await server.environments.client.transformRequest(transformIdForViteUrl(moduleUrl));
 		} catch {
 			result = null;
 		}
@@ -146,10 +187,11 @@ export function registerThinRoute(server: ViteDevServer, getOrigin: () => string
 		try {
 			let code = await rewriteThinSpecifiers(result.code, origin);
 			const coreRoot = getCoreRoot(server.config.root);
-			const filePath = viteUrl.startsWith('/@fs/') ? viteUrl.slice('/@fs'.length) : viteUrl.startsWith('/@') ? null : path.join(server.config.root, viteUrl);
-			if (coreRoot && filePath && !viteUrl.includes('?')) {
-				const keys = coreRequireKeys(filePath, coreRoot);
-				if (keys.length) code += coreRegistrationFooter(thinDeviceUrl(origin, viteUrl), keys);
+			if (coreRoot && !moduleUrl.includes('?')) {
+				const filePath = moduleUrl.startsWith('/@fs/') ? moduleUrl.slice('/@fs'.length) : moduleUrl.startsWith('/@') ? null : path.join(server.config.root, moduleUrl);
+				const keys = filePath ? coreRequireKeys(filePath, coreRoot) : [];
+				// The self-import is the URL as requested: `t` is part of the module's identity.
+				if (keys.length) code += coreRegistrationFooter(thinDeviceUrl(origin, viteUrl), keys, timestampRE.test(viteUrl));
 			}
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'application/javascript; charset=utf-8');

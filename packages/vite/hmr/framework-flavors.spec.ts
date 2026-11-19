@@ -1,85 +1,47 @@
-import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { getClientStrategyDevicePath, getFlavorVendorExcludes, getFrameworkFlavor, registerFrameworkFlavor } from './framework-flavors.js';
-import { typescriptServerStrategy } from './frameworks/typescript/server/strategy.js';
+import { getFlavorVendorExcludes, getFrameworkFlavor, getFrameworkServerStrategy, registerFrameworkFlavor } from './framework-flavors.js';
 
-function fakeProject(): { root: string } {
-	const root = mkdtempSync(path.join(tmpdir(), 'ns-vite-flavor-'));
-	writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'app', dependencies: { '@acme/vite-fw': '*' } }));
-	const pkg = path.join(root, 'node_modules', '@acme', 'vite-fw');
-	mkdirSync(path.join(pkg, 'client'), { recursive: true });
-	writeFileSync(path.join(pkg, 'package.json'), JSON.stringify({ name: '@acme/vite-fw', type: 'module', exports: { './client': './client/strategy.js' } }));
-	writeFileSync(path.join(pkg, 'client', 'strategy.js'), 'export default { flavor: "fw", install() {} };');
-	return { root };
-}
-
-const server = { ...typescriptServerStrategy, flavor: 'fw' };
+const server = { flavor: 'fw', importMapSpecifiers: () => ['fw-runtime'] };
 
 describe('registerFrameworkFlavor', () => {
-	it('rejects a built-in name, a mismatched server flavor, and a missing client', () => {
-		expect(() => registerFrameworkFlavor({ flavor: 'vue', server: { ...server, flavor: 'vue' }, client: 'x' })).toThrow(/built-in/);
-		expect(() => registerFrameworkFlavor({ flavor: 'fw', server: typescriptServerStrategy, client: 'x' })).toThrow(/declares flavor "typescript"/);
-		expect(() => registerFrameworkFlavor({ flavor: 'fw', server, client: '' })).toThrow(/module specifier/);
+	it('rejects a built-in name and a mismatched server flavor', () => {
+		expect(() => registerFrameworkFlavor({ flavor: 'vue', server: { ...server, flavor: 'vue' } })).toThrow(/built-in/);
+		expect(() => registerFrameworkFlavor({ flavor: 'fw', server: { flavor: 'typescript' } })).toThrow(/declares flavor "typescript"/);
 	});
 
 	it('registers and looks up a flavor', () => {
-		registerFrameworkFlavor({ flavor: 'fw', server, client: '@acme/vite-fw/client' });
+		registerFrameworkFlavor({ flavor: 'fw', server });
 		expect(getFrameworkFlavor('fw')?.server).toBe(server);
 		expect(getFrameworkFlavor('nope')).toBeUndefined();
 	});
+
+	it('accepts a flavor without a server strategy', () => {
+		registerFrameworkFlavor({ flavor: 'bare' });
+		expect(getFrameworkServerStrategy('bare')).toBeUndefined();
+	});
 });
 
-describe('getClientStrategyDevicePath', () => {
-	it('is empty for a built-in or unknown flavor', () => {
-		expect(getClientStrategyDevicePath('vue', '/nowhere')).toBe('');
-		expect(getClientStrategyDevicePath('unknown', '/nowhere')).toBe('');
-	});
-
-	it('resolves a package subpath through the app root to its /ns/v Vite URL', () => {
-		const { root } = fakeProject();
-		registerFrameworkFlavor({ flavor: 'fw', server, client: '@acme/vite-fw/client' });
-		expect(getClientStrategyDevicePath('fw', root)).toBe('/ns/v/node_modules/@acme/vite-fw/client/strategy.js');
-	});
-
-	it('expresses a linked (symlinked) package through its node_modules spelling, not the real path', () => {
-		const { root } = fakeProject();
-		const real = mkdtempSync(path.join(tmpdir(), 'ns-vite-linked-'));
-		mkdirSync(path.join(real, 'client'), { recursive: true });
-		writeFileSync(path.join(real, 'package.json'), JSON.stringify({ name: '@acme/linked-fw', type: 'module', exports: { './client': './client/index.js' } }));
-		writeFileSync(path.join(real, 'client', 'index.js'), 'export default { flavor: "linked", install() {} };');
-		symlinkSync(real, path.join(root, 'node_modules', '@acme', 'linked-fw'), 'dir');
-		registerFrameworkFlavor({ flavor: 'linked', server: { ...server, flavor: 'linked' }, client: '@acme/linked-fw/client' });
-		expect(getClientStrategyDevicePath('linked', root)).toBe('/ns/v/node_modules/@acme/linked-fw/client/index.js');
-	});
-
-	it('serves a package hoisted above the app root through /@fs', () => {
-		const workspace = mkdtempSync(path.join(tmpdir(), 'ns-vite-hoisted-'));
-		const root = path.join(workspace, 'apps', 'app');
-		mkdirSync(root, { recursive: true });
-		writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'app' }));
-		const pkg = path.join(workspace, 'node_modules', '@acme', 'hoisted-fw');
-		mkdirSync(path.join(pkg, 'client'), { recursive: true });
-		writeFileSync(path.join(pkg, 'package.json'), JSON.stringify({ name: '@acme/hoisted-fw', type: 'module', exports: { './client': './client/index.js' } }));
-		writeFileSync(path.join(pkg, 'client', 'index.js'), 'export default { flavor: "hoisted", install() {} };');
-		registerFrameworkFlavor({ flavor: 'hoisted', server: { ...server, flavor: 'hoisted' }, client: '@acme/hoisted-fw/client' });
-		expect(getClientStrategyDevicePath('hoisted', root)).toBe(`/ns/v/@fs${workspace}/node_modules/@acme/hoisted-fw/client/index.js`);
+describe('getFrameworkServerStrategy', () => {
+	it('returns built-in strategies before registered ones', () => {
+		expect(getFrameworkServerStrategy('angular')?.flavor).toBe('angular');
+		registerFrameworkFlavor({ flavor: 'fw', server });
+		expect(getFrameworkServerStrategy('fw')).toBe(server);
+		expect(getFrameworkServerStrategy('unknown')).toBeUndefined();
 	});
 });
 
 describe('vendor policy', () => {
 	it('rejects a malformed vendor.exclude', () => {
-		expect(() => registerFrameworkFlavor({ flavor: 'fw', server, client: 'x', vendor: { exclude: 'octane' as unknown as string[] } })).toThrow(/vendor\.exclude/);
-		expect(() => registerFrameworkFlavor({ flavor: 'fw', server, client: 'x', vendor: { exclude: [''] } })).toThrow(/vendor\.exclude/);
+		expect(() => registerFrameworkFlavor({ flavor: 'fw', server, vendor: { exclude: 'octane' as unknown as string[] } })).toThrow(/vendor\.exclude/);
+		expect(() => registerFrameworkFlavor({ flavor: 'fw', server, vendor: { exclude: [''] } })).toThrow(/vendor\.exclude/);
 	});
 
 	it('exposes the excluded package roots of the registered flavor only', () => {
-		registerFrameworkFlavor({ flavor: 'fw', server, client: 'x', vendor: { exclude: [' octane ', 'react-dom'] } });
+		registerFrameworkFlavor({ flavor: 'fw', server, vendor: { exclude: [' octane ', 'react-dom'] } });
 		expect([...getFlavorVendorExcludes('fw')]).toEqual(['octane', 'react-dom']);
 		expect(getFlavorVendorExcludes('vue').size).toBe(0);
 		expect(getFlavorVendorExcludes(undefined).size).toBe(0);
-		registerFrameworkFlavor({ flavor: 'fw', server, client: 'x' });
+		registerFrameworkFlavor({ flavor: 'fw', server });
 		expect(getFlavorVendorExcludes('fw').size).toBe(0);
 	});
 });

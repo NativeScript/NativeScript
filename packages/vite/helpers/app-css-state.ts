@@ -10,7 +10,7 @@ export interface AppCssState {
 	 * NEVER rejects; conservative on failure (see `createAppCssRefresher`,
 	 * the only production implementation — test stubs must honor the same
 	 * contract). `changedSinceStartup` drives the connect-time stylesheet
-	 * sync (see hmr/server/css-connect-sync.ts).
+	 * sync (see hmr/server/css-updates.ts).
 	 */
 	refresh: () => Promise<AppCssRefreshResult>;
 }

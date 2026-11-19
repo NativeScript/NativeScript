@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createVendorBundleRuntimeModule } from './manifest.js';
 import { collectVendorModules } from './manifest-collect.js';
 import { registerFrameworkFlavor } from '../../framework-flavors.js';
-import { typescriptServerStrategy } from '../../frameworks/typescript/server/strategy.js';
 
 describe('collectVendorModules', () => {
 	const tempRoots: string[] = [];
@@ -188,7 +187,7 @@ describe('collectVendorModules', () => {
 		mkdirSync(join(root, 'node_modules', 'octane'), { recursive: true });
 		writeFileSync(join(root, 'node_modules', 'octane', 'package.json'), JSON.stringify({ name: 'octane', version: '1.0.0' }, null, 2));
 		writeFileSync(join(root, 'node_modules', 'octane', 'index.js'), 'module.exports = {};\n');
-		registerFrameworkFlavor({ flavor: 'acme', server: { ...typescriptServerStrategy, flavor: 'acme' }, client: '@acme/octane-ns/client', vendor: { exclude: ['octane'] } });
+		registerFrameworkFlavor({ flavor: 'acme', vendor: { exclude: ['octane'] } });
 
 		expect(collectVendorModules(root, 'ios', 'acme').entries).toEqual(['@acme/octane-ns']);
 		// The policy belongs to the flavor that declared it.

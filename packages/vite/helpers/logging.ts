@@ -104,14 +104,10 @@ export function clearVerboseCache(): void {
 // All matching uses `.includes()` (never `.startsWith()`) because Vite wraps
 // some warnings in picocolors ANSI escape sequences before handing them to
 // the logger, which would defeat `startsWith`-style probes on TTY output.
-export function createFilteredViteLogger(options: { hmrActive?: boolean } = {}): Logger {
+export function createFilteredViteLogger(): Logger {
 	const baseLogger = createLogger(undefined, { allowClearScreen: true });
 	return {
 		...baseLogger,
-		info(message: any, opts?: any) {
-			if (options.hmrActive && shouldSuppressViteInfo(String(message || ''))) return;
-			return baseLogger.info(message, opts);
-		},
 		warn(message: any, options?: any) {
 			const msg = String(message || '');
 			if (shouldSuppressViteWarning(msg)) return;
@@ -123,17 +119,6 @@ export function createFilteredViteLogger(options: { hmrActive?: boolean } = {}):
 			return baseLogger.warnOnce(message);
 		},
 	};
-}
-
-/**
- * Vite's stock HMR client never connects under device HMR — the device talks
- * to `/ns-hmr` — so Vite's own verdicts about that client are noise, and one
- * of them misleads: `page reload <file>` is what Vite decides for any module
- * it cannot hot-accept on the web, printed while the device is applying the
- * same save in place through a framework strategy.
- */
-export function shouldSuppressViteInfo(msg: string): boolean {
-	return /\bpage reload\b/.test(msg) || /\bhmr update\b/.test(msg);
 }
 
 // Exported for unit tests. Keep this function pure so the test suite can

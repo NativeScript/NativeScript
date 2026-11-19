@@ -6,7 +6,10 @@ export const NS_HOST_RUNTIME_MODULE_ID = 'ns-host://runtime' as const;
 export const NS_HOST_STYLE_ADAPTER_MODULE_ID = 'ns-host://style-adapter' as const;
 export const NS_DEFAULT_HOST_MODULES = [NS_HOST_RUNTIME_MODULE_ID, NS_HOST_STYLE_ADAPTER_MODULE_ID] as const satisfies readonly NsHostModuleId[];
 
-export const NS_DEV_SESSION_REQUIRED_FIELDS = ['sessionId', 'origin', 'entryUrl', 'clientUrl', 'wsUrl', 'platform'] as const;
+export const NS_DEV_SESSION_REQUIRED_FIELDS = ['sessionId', 'origin', 'entryUrl', 'clientUrl', 'wsUrl', 'wsProtocol', 'platform'] as const;
+
+/** WebSocket subprotocol Vite's HMR server accepts upgrades for. */
+export const VITE_HMR_WS_PROTOCOL = 'vite-hmr' as const;
 
 export interface NsDevFeatureFlags {
 	fullReload?: boolean;
@@ -25,7 +28,10 @@ export interface NsDevSessionDescriptor {
 	origin: string;
 	entryUrl: string;
 	clientUrl: string;
+	/** Vite's HMR WebSocket (`base` + `server.ws.path`), with `?token=<webSocketToken>`. */
 	wsUrl: string;
+	/** Subprotocol to open {@link wsUrl} with. */
+	wsProtocol: typeof VITE_HMR_WS_PROTOCOL;
 	platform: NsDevPlatform;
 	runtimeConfigUrl?: string;
 	hostModules?: NsHostModuleId[];
@@ -44,9 +50,9 @@ export interface NsRuntimeImportMap {
  * next to the server code that defines the routes it names.
  */
 export interface NsRuntimeCanonicalizationConfig {
-	/** Query param names that are pure cache busters and are dropped for dev endpoints (e.g. `t`, `v`, `import`). */
+	/** Query param names dropped for URLs under {@link forPathPrefixes}. `/ns/v` URLs keep every param: Vite's `t`/`import` are module identity, as in a browser. */
 	stripParams?: string[];
-	/** Path prefixes (StartsWith) identifying dev endpoints whose query may be normalized (e.g. `/ns/`, `/@id/`). */
+	/** Path prefixes (StartsWith) whose query {@link stripParams} applies to. */
 	forPathPrefixes?: string[];
 	/** Path substrings whose query IS the module identity and must be preserved verbatim (e.g. `/@ng/component`). */
 	preserveQueryFor?: string[];
@@ -67,7 +73,7 @@ export interface NsRuntimeConfigurePayload {
  * CSS apply, worker teardown, WebSocket protocol) lives in JS inside
  * @nativescript/vite. Worker teardown in particular is fully userland: the
  * session bootstrap intercepts the global `Worker` constructor and the
- * client sweeps tracked instances before framework reboots
+ * client sweeps tracked instances during a full reload
  * (`worker.terminate()` cascades to nested workers natively).
  *
  * Every member is optional: a non-dev environment (or a test) may expose

@@ -83,7 +83,7 @@ describe('HMR dev overlay runtime API', () => {
 		const api = ensureHmrDevOverlayRuntimeInstalled(true);
 
 		api.setConnectionStage('offline', {
-			detail: 'Waiting for ws://localhost:5173/ns-hmr',
+			detail: 'Waiting for ws://localhost:5173/vite-hmr',
 		});
 		expect(api.getSnapshot()).toMatchObject({
 			visible: true,
@@ -538,7 +538,7 @@ describe('HMR apply overlay snapshots', () => {
 
 		const rebooting = createUpdateOverlaySnapshot('rebooting');
 		expect(rebooting.progress).toBe(90);
-		expect(rebooting.phase).toBe('Rebooting Angular');
+		expect(rebooting.phase).toBe('Reloading app');
 		expect(rebooting.tone).toBe('success');
 	});
 
@@ -552,6 +552,15 @@ describe('HMR apply overlay snapshots', () => {
 		// supported surfaces stops spinning.
 		expect(snapshot.busy).toBe(false);
 		expect(snapshot.detail).toContain('Total 412ms');
+	});
+
+	it("emits a 'failed' frame with the error tone and the failure detail", () => {
+		const snapshot = createUpdateOverlaySnapshot('failed', { detail: 'Transform failed' });
+		expect(snapshot.title).toBe('HMR update failed');
+		expect(snapshot.tone).toBe('error');
+		expect(snapshot.busy).toBe(false);
+		expect(snapshot.progress).toBeNull();
+		expect(snapshot.detail).toBe('Transform failed');
 	});
 
 	// Progress must monotonically increase across stages so the bar
@@ -757,14 +766,9 @@ describe('HMR apply overlay runtime API', () => {
 		expect(getGlobalScope().__NS_HMR_DEV_OVERLAY__).toBeDefined();
 	});
 
-	// The server emits `ns:hmr-pending` IMMEDIATELY when
-	// `handleHotUpdate` fires, then later emits `ns:angular-update`
-	// once it has done graph upserts and chosen an eviction set.
-	// Both messages call setUpdateStage('received'). The cycle clock
-	// — used by the auto-hide minimum-visible window — must be
-	// stamped against the FIRST 'received' frame, not the second;
-	// otherwise the early-overlay UX is defeated because the second
-	// 'received' resets the clock to ~now.
+	// The cycle clock — used by the auto-hide minimum-visible window —
+	// must be stamped against the FIRST 'received' frame of a cycle,
+	// not a later re-assertion.
 	it("preserves updateCycleStartedAt when 'received' fires twice in the same cycle", () => {
 		vi.useFakeTimers();
 		try {

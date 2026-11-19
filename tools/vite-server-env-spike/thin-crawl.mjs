@@ -147,9 +147,10 @@ const report = {
 	bareUsed: Object.fromEntries(bareUsed),
 	cjsLike,
 	dupes,
+	urls: [...seen.keys()],
 };
 fs.mkdirSync(path.join(spikeDir, 'out'), { recursive: true });
 fs.writeFileSync(path.join(spikeDir, 'out', `thin-crawl-${path.basename(appRoot)}.json`), JSON.stringify(report, null, 2));
-console.log(JSON.stringify({ ...report, failed: failed.slice(0, 8), leaks: leaks.slice(0, 8), dupes: dupes.slice(0, 5) }, null, 2));
+console.log(JSON.stringify({ ...report, urls: undefined, failed: failed.slice(0, 8), leaks: leaks.slice(0, 8), dupes: dupes.slice(0, 5) }, null, 2));
 await server.close();
 process.exit(0);

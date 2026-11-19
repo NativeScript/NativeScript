@@ -122,20 +122,13 @@ export function getVolatilePatterns(strategy?: FrameworkServerStrategy): string[
 
 /**
  * The URL canonicalization vocabulary handed to the runtime via
- * `configureLoader({ canonicalization })`. The runtime owns the *mechanism*
- * (fragment strip, cache-buster param drop, param sort — it keys the module
- * registry inside the engine's synchronous resolve walk); this server owns
- * the *vocabulary*, because every name in it is a route this server defines:
- *
- * - `stripParams`: Vite's `import` marker and `t`/`v` cache stamps — pure
- *   cache busters that must not create distinct module identities.
- * - `forPathPrefixes`: the dev endpoints under which query normalization is
- *   safe. Everything else (public/remote URLs) keeps its query verbatim,
- *   since for general HTTP modules the query can be identity (auth,
- *   content versioning, routing).
- * - `preserveQueryFor`: strategy-owned paths whose query IS the module
- *   identity (e.g. Angular's `/@ng/component?c=<id>&t=<ts>` — each `t` is a
- *   distinct metadata recompile).
+ * `configureLoader({ canonicalization })`. Every device module URL is
+ * `/ns/v<vite-url>`, keyed exactly as a browser keys it: `t` and `import` are
+ * part of the identity, so a `?t=` re-import is a fresh module. No path is a
+ * query-normalizing dev endpoint, which leaves `stripParams` with nothing to
+ * apply. `preserveQueryFor` carries the strategy's query-is-identity paths
+ * (Angular's `/@ng/component?c=…&t=…`); the runtime checks it before any
+ * prefix, so it holds even if a normalizing prefix is added back.
  */
 export function getCanonicalization(strategy?: FrameworkServerStrategy): {
 	stripParams: string[];
@@ -143,8 +136,8 @@ export function getCanonicalization(strategy?: FrameworkServerStrategy): {
 	preserveQueryFor: string[];
 } {
 	return {
-		stripParams: ['t', 'v', 'import'],
-		forPathPrefixes: ['/ns/', '/node_modules/.vite/', '/@id/', '/@fs/'],
+		stripParams: [],
+		forPathPrefixes: [],
 		preserveQueryFor: strategy?.preserveQueryPaths?.() ?? [],
 	};
 }

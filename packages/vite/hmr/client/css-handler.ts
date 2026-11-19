@@ -90,17 +90,18 @@ export function applyCssText(cssText: string, tag: string = APP_CSS_TAG): void {
 	}
 }
 
-// Fetch helper
-export async function fetchText(url: string): Promise<string> {
+// Vite answers a `.css` URL with its CSS-as-JS module unless the request asks
+// for a stylesheet, as a browser `<link>` does.
+async function fetchCssText(url: string): Promise<string> {
 	try {
 		const g = getGlobalScope();
 		if (typeof g.fetch === 'function') {
-			const res = await g.fetch(url);
+			const res = await g.fetch(url, { headers: { Accept: 'text/css' } });
 			return await res.text();
 		}
 		const Http = g.Http;
 		if (Http && Http.getString) {
-			return await Http.getString(url);
+			return await Http.getString({ url, method: 'GET', headers: { Accept: 'text/css' } });
 		}
 		if (VERBOSE) console.warn('[ns-hmr] No fetch method available');
 		return '';
@@ -110,7 +111,7 @@ export async function fetchText(url: string): Promise<string> {
 	}
 }
 
-// Handle CSS updates from Vite
+/** Fetches each stylesheet from `httpOrigin` (`t` busts caches) and replaces it under its tag, `app.css` when it has none. */
 export async function handleCssUpdates(cssUpdates: any[], httpOrigin: string): Promise<void> {
 	if (VERBOSE) console.info('[ns-hmr] handleCssUpdates called, updates:', cssUpdates?.length, 'origin:', httpOrigin);
 	for (const update of cssUpdates) {
@@ -118,29 +119,18 @@ export async function handleCssUpdates(cssUpdates: any[], httpOrigin: string): P
 			const cssPath = update.path || update.acceptedPath || '';
 			if (!cssPath || !httpOrigin) continue;
 
-			// Build URL: origin + path + ?direct=1&t=<timestamp>
 			const timestamp = update.timestamp || Date.now();
 			const sep = cssPath.includes('?') ? '&' : '?';
-			const url = `${httpOrigin}${cssPath}${sep}direct=1&t=${timestamp}`;
+			const url = `${httpOrigin.replace(/\/$/, '')}${cssPath}${sep}t=${timestamp}`;
 
 			if (VERBOSE) console.info('[ns-hmr] Fetching CSS:', url);
-			const cssText = await fetchText(url);
+			const cssText = await fetchCssText(url);
 			if (cssText) {
-				// `tag` scopes the replace: app entry CSS (no tag) uses the
-				// default `app.css` tag; component `styleUrls` edits carry their
-				// own path so they replace independently of the global stylesheet.
 				const tag = typeof update.tag === 'string' && update.tag ? update.tag : undefined;
 				applyCssText(cssText, tag);
 			}
 		} catch (e) {
 			console.warn('[ns-hmr] CSS update fetch/apply failed:', e?.message || String(e));
 		}
-	}
-}
-
-// Handle custom CSS events
-export function handleCustomCss(cssText: string): void {
-	if (typeof cssText === 'string' && cssText.length) {
-		applyCssText(cssText);
 	}
 }

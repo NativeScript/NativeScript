@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { APP_CSS_TAG, applyCssText } from './css-handler.js';
+import { APP_CSS_TAG, applyCssText, handleCssUpdates } from './css-handler.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 describe('css-handler', () => {
@@ -126,5 +126,18 @@ describe('css-handler', () => {
 
 		expect(addCss).not.toHaveBeenCalled();
 		expect(addTaggedAdditionalCSS).not.toHaveBeenCalled();
+	});
+
+	it('fetches each stylesheet as raw CSS with a t cache-buster and applies it', async () => {
+		const realmApplier = vi.fn();
+		getGlobalScope().__NS_HMR_APPLY_CSS__ = realmApplier;
+		const fetch = vi.fn(async () => ({ text: async () => '.a { color: red; }' }));
+		vi.stubGlobal('fetch', fetch);
+
+		await handleCssUpdates([{ type: 'css-update', path: '/src/app.css', acceptedPath: '/src/app.css', timestamp: 7 }], 'http://127.0.0.1:5173/');
+
+		expect(fetch).toHaveBeenCalledWith('http://127.0.0.1:5173/src/app.css?t=7', { headers: { Accept: 'text/css' } });
+		expect(realmApplier).toHaveBeenCalledWith('.a { color: red; }', true);
+		vi.unstubAllGlobals();
 	});
 });

@@ -64,11 +64,7 @@
 			"import": "./framework.js",
 			"default": "./framework.js"
 		},
-		"./hmr/client/framework": "./hmr/client/framework.js",
-		"./hmr/client/framework.js": "./hmr/client/framework.js",
 		"./hmr/client/index.js": "./hmr/client/index.js",
-		"./hmr/client/hot-context": "./hmr/client/hot-context.js",
-		"./hmr/client/hot-context.js": "./hmr/client/hot-context.js",
 		"./hmr/entry-runtime.js": "./hmr/entry-runtime.js",
 		"./hmr/shared/runtime/vendor-bootstrap": "./hmr/shared/runtime/vendor-bootstrap.js",
 		"./hmr/shared/runtime/vendor-bootstrap.js": "./hmr/shared/runtime/vendor-bootstrap.js",
@@ -82,8 +78,6 @@
 		"./hmr/shared/runtime/browser-runtime-contract.js": "./hmr/shared/runtime/browser-runtime-contract.js",
 		"./hmr/shared/runtime/session-bootstrap": "./hmr/shared/runtime/session-bootstrap.js",
 		"./hmr/shared/runtime/session-bootstrap.js": "./hmr/shared/runtime/session-bootstrap.js",
-		"./hmr/shared/runtime/hooks": "./hmr/shared/runtime/hooks.js",
-		"./hmr/shared/runtime/hooks.js": "./hmr/shared/runtime/hooks.js",
 		"./runtime/core-aliases-early": "./runtime/core-aliases-early.js",
 		"./runtime/core-aliases-early.js": "./runtime/core-aliases-early.js"
 	},
@@ -112,8 +106,7 @@
 		"minimist": "^1.2.8",
 		"sass": ">=1.70.0 <2",
 		"vite": "^8.0.0",
-		"vite-plugin-static-copy": "^4.0.1",
-		"ws": "^8.18.0"
+		"vite-plugin-static-copy": "^4.0.1"
 	},
 	"peerDependencies": {
 		"@analogjs/vite-plugin-angular": "^2.0.0",

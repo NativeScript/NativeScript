@@ -1,137 +1,285 @@
 /**
- * HMR client entry for NativeScript devices.
+ * Device HMR client: a port of Vite's browser client
+ * (`vite/dist/client/client.mjs`) on Vite's own HMR WebSocket. NativeScript
+ * adds what a browser has and the device lacks: an in-process full reload
+ * (`full-reload.ts`), the dev overlay, and `ns:css-updates` for stylesheets
+ * that are not Vite modules on the device.
  *
- * Avoid importing from '@nativescript/core' and other framework modules here to prevent creating a second module realm via HTTP ESM.
- * Always resolve core classes and Application from the vendor realm or globalThis at runtime.
- * The HMR client is evaluated via HTTP ESM on device; static imports would create secondary instances.
- *
- * This entry owns boot-time side effects (core aliases, launch-notification
- * bridge, CSS register) and wires the seams together:
- * - `ws-transport.ts` — socket connect/reconnect + connection overlay
- * - `protocol-dispatch.ts` — routes parsed wire messages
- * - `update-pipeline.ts` — graph state + evict-then-reimport queue
- * - `root-reset.ts` — root-view replacement
- * - `strategy-loader.ts` — flavor detection + framework strategy loading
+ * Importing this module has no side effects. The `/__ns_dev__/client`
+ * bootstrap calls `start()` once the app has booted.
  */
+import type { ConnectedPayload, CustomPayload, ErrorPayload, FullReloadPayload, PrunePayload, Update, UpdatePayload } from 'vite';
+import { Queue, type HMRClient, type ModuleNamespace } from './hmr-client.js';
+import { hmrClient } from './hot-state.js';
+import { createViteSocketTransport, waitForSuccessfulPing, type ViteSocketTransport, type WebSocketFactory } from './vite-transport.js';
+import { performFullReload, THIN_PREFIX, viteUrlPrefixFromDeviceUrl } from './full-reload.js';
+import { overlayDriver, type HmrOverlayDriver } from './overlay-driver.js';
+import { handleCssUpdates } from './css-handler.js';
+import { buildCssAppliedDetail, buildCssApplyingDetail } from './css-update-overlay.js';
+import { NS_CSS_UPDATES_EVENT, type CssUpdateItem, type CssUpdatesEventData } from '../shared/protocol.js';
+import { readNsRuntimeDevHostApi, type NsRuntimeDevHostApi } from '../shared/runtime/browser-runtime-contract.js';
+import { sweepTrackedWorkers } from '../shared/runtime/worker-tracking.js';
+import { ENV_VERBOSE } from './utils.js';
 
-import { setHMRWsUrl, getHMRWsUrl, getCore, ENV_VERBOSE } from './utils.js';
-import { applyCssText } from './css-handler.js';
-import { getGlobalScope } from '../shared/runtime/global-scope.js';
-import { installLaunchNotificationBridge } from '../shared/runtime/launch-bridge.js';
-import { connectHmr, setHmrMessageHandler } from './ws-transport.js';
-import { handleHmrMessage } from './protocol-dispatch.js';
-import { ensureCoreAliasesOnGlobalThis, performResetRoot } from './root-reset.js';
-import { CLIENT_STRATEGY_READY, getClientStrategy } from './strategy-loader.js';
+type DeviceFullReloadPayload = FullReloadPayload & { ifFallback?: boolean };
+export type DeviceHotPayload = ConnectedPayload | { type: 'ping' } | UpdatePayload | DeviceFullReloadPayload | CustomPayload | ErrorPayload | PrunePayload;
 
-const VERBOSE = ENV_VERBOSE;
+export interface NsHmrStartOptions {
+	/** Vite's HMR WebSocket URL, token included. */
+	wsUrl: string;
+	wsProtocol: string;
+	/** Session entry, re-imported by a full reload. */
+	entryUrl: string;
+	/** Dev-server origin every `/ns/v` module URL starts with. */
+	origin: string;
+	/** Device URL prefixes of packages a full reload must not re-evaluate even when served from outside `node_modules`. */
+	keepUrlPrefixes?: string[];
+}
 
-// Apply once on module evaluation, before the app graph evaluates.
-ensureCoreAliasesOnGlobalThis();
+export interface NsHmrRuntimeDeps {
+	client?: HMRClient;
+	createSocket?: WebSocketFactory;
+	importModule?: (url: string) => Promise<any>;
+	devHost?: NsRuntimeDevHostApi;
+	overlay?: HmrOverlayDriver;
+	applyCssUpdates?: (updates: CssUpdateItem[], origin: string) => Promise<void>;
+	sweepWorkers?: () => void;
+	/** Device URL of this package's directory; derived from `import.meta.url` by default. */
+	clientPackageUrl?: string;
+	reloadDebounceMs?: number;
+	pingRetryMs?: number;
+}
 
-// Late-registration bridge for one-shot iOS launch notifications
-// (see shared/runtime/launch-bridge.ts).
-//
-// Under a webpack (or non-HMR vite) build the app bundle evaluates BEFORE
-// `UIApplicationMain` finishes launching, so
-// `Application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, cb)`
-// registers in time. Under the HTTP dev session UIKit is fully launched long
-// before the app graph evaluates — those observers register AFTER the
-// notification fired and are never called, so apps that gate SDK init (auth,
-// Firebase, Sentry) behind didFinishLaunching silently never initialize. The
-// bridge wraps `addNotificationObserver` so a post-launch registration for
-// Did/WillFinishLaunching still registers normally AND has its callback
-// invoked on the next macrotask with a synthesized NSNotification.
-//
-// The DETERMINISTIC install happens in the /__ns_dev__/client bootstrap
-// wrapper, which runs before the app entry. This module-eval attempt and the
-// global hook are belt-and-braces for exotic boot paths — this client
-// evaluates async and can lose the race against the entry graph, so it must
-// never be the only wrap.
-function tryInstallLaunchNotificationBridge(attempts: number, explicitApplication?: any) {
-	let wrappedAny = false;
+export interface NsHmrRuntime {
+	readonly client: HMRClient;
+	readonly transport: ViteSocketTransport;
+	/** Queues a payload behind every earlier one, as it arrives from the socket. */
+	onMessage(payload: DeviceHotPayload): Promise<unknown>;
+	connect(): Promise<void>;
+}
+
+const defaultCreateSocket: WebSocketFactory = (url, protocol) => new (globalThis as any).WebSocket(url, protocol);
+
+const defaultImportModule = (url: string): Promise<any> => import(/* @vite-ignore */ url);
+
+function ownPackageUrl(): string | undefined {
 	try {
-		wrappedAny = installLaunchNotificationBridge(explicitApplication, [getCore('Application')]);
-	} catch {}
-	if (!wrappedAny && attempts > 0) {
-		setTimeout(() => tryInstallLaunchNotificationBridge(attempts - 1, explicitApplication), 100);
+		return new URL('../../', import.meta.url).href;
+	} catch {
+		return undefined;
 	}
 }
-tryInstallLaunchNotificationBridge(100);
-try {
-	(globalThis as any).__NS_DEV_INSTALL_LAUNCH_BRIDGE__ = (explicitApplication?: any) => tryInstallLaunchNotificationBridge(100, explicitApplication);
-} catch {}
 
-// Install the device CSS applier. CSS-bearing modules call
-// `__NS_REGISTER_CSS__(tag, css)`, or queue in `__NS_PENDING_CSS__` if they ran
-// first; the drain below covers that.
-// Routes through the shared `applyCssText` (tagged remove+add + root restyle),
-// the same path app.css and live `.css` edits use.
-function installCssRegister(): void {
-	const g: any = getGlobalScope();
-	if (typeof g.__NS_REGISTER_CSS__ === 'function') {
-		return;
+function describePaths(paths: string[]): string {
+	const unique = Array.from(new Set(paths.map((p) => p.split('?')[0])));
+	return unique.length > 2 ? `${unique.slice(0, 2).join(', ')} and ${unique.length - 2} more` : unique.join(', ');
+}
+
+function errorMessage(err: unknown): string {
+	return String((err as any)?.message ?? err);
+}
+
+export function createNsHmrRuntime(options: NsHmrStartOptions, deps: NsHmrRuntimeDeps = {}): NsHmrRuntime {
+	const client = deps.client ?? hmrClient;
+	const origin = options.origin.replace(/\/$/, '');
+	const importModule = deps.importModule ?? defaultImportModule;
+	const createSocket = deps.createSocket ?? defaultCreateSocket;
+	const devHost = deps.devHost ?? readNsRuntimeDevHostApi(globalThis);
+	const overlay = deps.overlay ?? overlayDriver;
+	const applyCssUpdates = deps.applyCssUpdates ?? handleCssUpdates;
+	const sweepWorkers = deps.sweepWorkers ?? (() => void sweepTrackedWorkers(globalThis));
+	const reloadDebounceMs = deps.reloadDebounceMs ?? 20;
+	const pingRetryMs = deps.pingRetryMs ?? 1000;
+	const pingUrl = options.wsUrl.split('?')[0];
+	const keepPrefixes = [deps.clientPackageUrl ?? ownPackageUrl(), ...(options.keepUrlPrefixes ?? [])].map((url) => viteUrlPrefixFromDeviceUrl(url, origin)).filter((prefix): prefix is string => !!prefix);
+
+	const transport = createViteSocketTransport({ url: options.wsUrl, protocol: options.wsProtocol, createSocket });
+	const queue = new Queue();
+	let connectionOverlayShown = false;
+
+	const onMessage = (payload: DeviceHotPayload) =>
+		queue
+			.enqueue(() => handleMessage(payload))
+			.catch((err) => {
+				client.logger.error(err);
+			});
+
+	client.attach(transport, async function importUpdatedModule({ acceptedPath, timestamp, explicitImportRequired, isWithinCircularImport }: Update): Promise<ModuleNamespace> {
+		const [acceptedPathWithoutQuery, query] = acceptedPath.split('?');
+		const importPromise = importModule(`${origin}${THIN_PREFIX}${acceptedPathWithoutQuery}?${explicitImportRequired ? 'import&' : ''}t=${timestamp}${query ? `&${query}` : ''}`);
+		if (isWithinCircularImport) {
+			importPromise.catch(() => {
+				console.info(`[hmr] ${acceptedPath} failed to apply HMR as it's within a circular import. Reloading the app to reset the execution order.`);
+				pageReload({ type: 'full-reload' });
+			});
+		}
+		return await importPromise;
+	});
+
+	// After a failed full reload the app modules are evicted and their hot
+	// contexts dropped, so nothing is left to apply an update: the next one
+	// reloads instead (Vite's `clearOverlayOrReloadOnFirstUpdate`).
+	let lastReloadFailed = false;
+
+	async function reloadNow(payload: DeviceFullReloadPayload): Promise<void> {
+		overlay.setUpdateStage('received');
+		overlay.setUpdateStage('rebooting');
+		const result = await performFullReload(payload, {
+			client,
+			origin,
+			entryUrl: options.entryUrl,
+			keepPrefixes,
+			getLoadedModuleUrls: devHost.getLoadedModuleUrls,
+			invalidateModules: devHost.invalidateModules,
+			importModule,
+			beforeEvict: sweepWorkers,
+		});
+		lastReloadFailed = !!result.error;
+		if (result.error) {
+			console.error('[vite] full reload failed:', errorMessage(result.error));
+			overlay.setUpdateStage('failed', { detail: errorMessage(result.error) });
+		} else {
+			if (ENV_VERBOSE) console.debug(`[vite] full reload: re-evaluated ${result.evicted.length} modules`);
+			overlay.setUpdateStage('complete', { detail: 'App reloaded' });
+		}
 	}
-	const apply = (tag: string, cssText: string) => {
-		if (typeof cssText !== 'string' || !cssText.length) {
-			return;
+
+	let reloadTimer: ReturnType<typeof setTimeout> | undefined;
+	let pendingReload: DeviceFullReloadPayload = { type: 'full-reload' };
+	// Debounced like Vite's `pageReload`, then run through the message queue:
+	// a browser reload ends the page, but here later updates keep arriving
+	// and must not interleave with the re-import.
+	function pageReload(payload: DeviceFullReloadPayload): void {
+		pendingReload = payload;
+		if (reloadTimer) clearTimeout(reloadTimer);
+		reloadTimer = setTimeout(() => {
+			reloadTimer = undefined;
+			const next = pendingReload;
+			queue.enqueue(() => reloadNow(next)).catch((err) => client.logger.error(err));
+		}, reloadDebounceMs);
+	}
+
+	async function handleUpdate(payload: UpdatePayload): Promise<void> {
+		const paths = describePaths(payload.updates.map((u) => u.path));
+		overlay.setUpdateStage('received', { detail: paths });
+		try {
+			await client.notifyListeners('vite:beforeUpdate', payload);
+			overlay.setUpdateStage('reimporting', { detail: paths });
+			// A `css-update` has no `<link>` to swap on the device; whoever loaded
+			// the stylesheet reloads it from `vite:beforeUpdate`.
+			await Promise.all(payload.updates.map((update) => (update.type === 'js-update' ? client.queueUpdate(update) : undefined)));
+			await client.notifyListeners('vite:afterUpdate', payload);
+			overlay.setUpdateStage('complete', { detail: `Updated ${paths}` });
+		} catch (err) {
+			client.logger.error(err);
+			overlay.setUpdateStage('failed', { detail: errorMessage(err) });
+		}
+	}
+
+	async function handleNsCssUpdates(data: CssUpdatesEventData | undefined): Promise<void> {
+		const updates = Array.isArray(data?.updates) ? data!.updates : [];
+		if (!updates.length) return;
+		const silent = data!.reason === 'connect-sync';
+		if (!silent) {
+			overlay.setUpdateStage('received', { detail: buildCssApplyingDetail(updates.length) });
 		}
 		try {
-			applyCssText(cssText, tag);
-		} catch (cssErr: any) {
-			if (VERBOSE) console.warn('[ns-hmr] CSS register/apply failed for', tag, cssErr?.message || cssErr);
+			await applyCssUpdates(updates, typeof data!.origin === 'string' && data!.origin ? data!.origin : origin);
+			if (!silent) overlay.setUpdateStage('complete', { detail: buildCssAppliedDetail(updates.length) });
+		} catch (err) {
+			console.warn('[ns-hmr] CSS update failed:', errorMessage(err));
+			if (!silent) overlay.setUpdateStage('failed', { detail: errorMessage(err) });
 		}
-	};
-	g.__NS_REGISTER_CSS__ = apply;
-	try {
-		const pending = g.__NS_PENDING_CSS__;
-		if (pending && typeof pending === 'object') {
-			for (const tag of Object.keys(pending)) {
-				apply(tag, pending[tag]);
+	}
+
+	function showConnectionStage(stage: 'reconnecting' | 'offline', detail: string): void {
+		connectionOverlayShown = true;
+		overlay.setConnectionStage(stage, { detail });
+	}
+
+	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+	async function connect(): Promise<void> {
+		for (;;) {
+			try {
+				await transport.connect({ onMessage, onDisconnection() {} });
+				return;
+			} catch (err) {
+				console.error(`[vite] failed to connect to websocket (${errorMessage(err)}).`);
+				showConnectionStage('offline', `Retrying ${pingUrl}`);
+				await wait(pingRetryMs);
+				await waitForSuccessfulPing(pingUrl, createSocket, pingRetryMs);
 			}
-			g.__NS_PENDING_CSS__ = null;
 		}
-	} catch {}
-}
-installCssRegister();
-
-// Route incoming socket messages through the protocol dispatcher.
-setHmrMessageHandler(handleHmrMessage);
-
-export function initHmrClient(opts?: { wsUrl?: string }) {
-	if (opts?.wsUrl) {
-		setHMRWsUrl(opts.wsUrl);
 	}
-	if (VERBOSE) console.log('[hmr-client] Initializing HMR client', getHMRWsUrl() ? `(ws: ${getHMRWsUrl()})` : '');
-	// Prevent duplicate client initialization across re-evaluations
-	const g = globalThis;
-	if (g.__NS_HMR_CLIENT_ACTIVE__) {
-		if (VERBOSE) console.log('[hmr-client] HMR client already active; skipping duplicate init');
-		return;
+
+	async function handleDisconnect(): Promise<void> {
+		console.log('[vite] server connection lost. Polling for restart...');
+		showConnectionStage('reconnecting', `Waiting for ${pingUrl}`);
+		await waitForSuccessfulPing(pingUrl, createSocket, pingRetryMs);
+		await reloadNow({ type: 'full-reload' });
+		await connect();
 	}
-	g.__NS_HMR_CLIENT_ACTIVE__ = true;
-	ensureCoreAliasesOnGlobalThis();
-	// Defer WebSocket connection until boot completes to avoid native V8 crashes
-	// caused by concurrent WebSocket message handling + HTTP fetch during early startup.
-	// The WebSocket is only needed for HMR updates, not the initial boot sequence.
-	if (g.__NS_HMR_BOOT_COMPLETE__) {
-		connectHmr();
-	} else {
-		const waitForBoot = () => {
-			if (globalThis.__NS_HMR_BOOT_COMPLETE__) {
-				if (VERBOSE) console.log('[hmr-client] boot complete, connecting HMR WebSocket');
-				connectHmr();
-			} else {
-				setTimeout(waitForBoot, 100);
+
+	async function handleMessage(payload: DeviceHotPayload): Promise<unknown> {
+		switch (payload.type) {
+			case 'connected':
+				if (ENV_VERBOSE) console.debug('[vite] connected.');
+				if (connectionOverlayShown) {
+					connectionOverlayShown = false;
+					overlay.hide('healthy');
+				}
+				break;
+			case 'update':
+				if (lastReloadFailed) {
+					pageReload({ type: 'full-reload', path: '*' });
+					break;
+				}
+				await handleUpdate(payload);
+				break;
+			case 'custom':
+				await client.notifyListeners(payload.event, payload.data);
+				if (payload.event === NS_CSS_UPDATES_EVENT) {
+					await handleNsCssUpdates(payload.data);
+				} else if (payload.event === 'vite:ws:disconnect') {
+					await handleDisconnect();
+				}
+				break;
+			case 'full-reload':
+				if (payload.ifFallback) break;
+				// Vite reloads for an `.html` path only when it is the open page; the device has no HTML page.
+				if (payload.path && payload.path.endsWith('.html')) break;
+				pageReload(payload);
+				break;
+			case 'prune':
+				await client.notifyListeners('vite:beforePrune', payload);
+				await client.prunePaths(payload.paths);
+				break;
+			case 'error': {
+				await client.notifyListeners('vite:error', payload);
+				const err = payload.err;
+				console.error(`[vite] Internal Server Error\n${err.message}\n${err.stack}`);
+				overlay.setUpdateStage('failed', { detail: err.message });
+				break;
 			}
-		};
-		if (VERBOSE) console.log('[hmr-client] deferring WebSocket connection until boot completes');
-		setTimeout(waitForBoot, 100);
+			case 'ping':
+				break;
+			default:
+				return payload;
+		}
 	}
-	// Best-effort: install back wrapper even before first remount; original root may be captured later.
-	// Deferred until the dynamically-imported strategy resolves.
-	void CLIENT_STRATEGY_READY.then(() => getClientStrategy()?.installBackWrapper?.(performResetRoot, getCore));
+
+	return { client, transport, onMessage, connect };
 }
-export default function startViteHMR(opts?: { wsUrl?: string }) {
-	if (VERBOSE) console.log('[hmr-client] Starting HMR client', opts);
-	initHmrClient(opts);
+
+let active: NsHmrRuntime | undefined;
+
+/** Connects the device to Vite's HMR server. Later calls return the running client. */
+export function start(options: NsHmrStartOptions): NsHmrRuntime {
+	if (active) return active;
+	active = createNsHmrRuntime(options);
+	void active.connect();
+	return active;
 }
+
+export default start;

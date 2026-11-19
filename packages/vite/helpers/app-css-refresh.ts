@@ -5,7 +5,7 @@ export interface AppCssRefreshResult {
 	/**
 	 * True when the output differs from the baseline captured by the first
 	 * successful generation at dev-server startup. Drives the connect-time
-	 * stylesheet sync — see hmr/server/css-connect-sync.ts for the rationale.
+	 * stylesheet sync — see hmr/server/css-updates.ts for the rationale.
 	 */
 	changedSinceStartup: boolean;
 }

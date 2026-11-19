@@ -114,8 +114,7 @@ export function applyMonotonicBootProgress(candidate: number): number {
 }
 
 /**
- * Reset every boot-progress global so a re-bootstrapped session (e.g.
- * after `__reboot_ng_modules__`) starts a fresh ratchet rather than
+ * Reset every boot-progress global so a re-bootstrapped session starts a fresh ratchet rather than
  * inheriting the previous cycle's terminal values.
  */
 export function clearBootProgressState(): void {

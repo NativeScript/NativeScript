@@ -184,18 +184,6 @@ function applyDevSessionGlobals(session: NsDevSessionDescriptor) {
 	try {
 		g.__NS_HTTP_ORIGIN__ = session.origin;
 	} catch {}
-	try {
-		g.__NS_HMR_WS_URL__ = session.wsUrl;
-	} catch {}
-	try {
-		g.__NS_DEV_ENTRY_URL__ = session.entryUrl;
-	} catch {}
-	try {
-		g.__NS_DEV_SESSION__ = { sessionId: session.sessionId, origin: session.origin, entryUrl: session.entryUrl, clientUrl: session.clientUrl, wsUrl: session.wsUrl, platform: session.platform };
-	} catch {}
-	// Documented contract for frameworks resolving dev-server-relative URLs
-	// (e.g. @nativescript/angular's NATIVESCRIPT_STYLE_BASE_URL default).
-	g.__NS_DEV_ORIGIN__ = session.origin;
 }
 
 export async function startBrowserRuntimeSession(defaultSessionUrl: string, verbose?: boolean) {
@@ -203,7 +191,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 	// Track every `Worker` construction from here on. Must run before the
 	// dev client and the app entry graph evaluate so no spawn — framework,
 	// app, or vendor — escapes the session-wide tracked set the HMR client
-	// sweeps before framework reboots. Worker teardown is fully userland;
+	// sweeps during a full reload. Worker teardown is fully userland;
 	// the runtime exposes no native member for it.
 	installWorkerConstructorTracking(getGlobalScope(), { verbose });
 	const sessionUrl = getSessionUrl(defaultSessionUrl);
@@ -266,7 +254,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			detail: session.entryUrl,
 		});
 		// Reset boot-progress globals so a re-bootstrapped session
-		// (`__reboot_ng_modules__`, dev-server restart) starts a fresh
+		// starts a fresh
 		// ratchet, then stamp the time origin both the snippet and the
 		// heartbeat share for elapsed-ms math.
 		clearBootProgressState();
@@ -280,8 +268,8 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			// discovers and fetches the transitive closure itself (concurrent
 			// NSURLSession fetches overlapped with on-device compile), which
 			// measured faster than any server-computed closure/archive seeding.
-			// JS boot orchestration: dev client first (installs the hot
-			// registry + fallback socket), then the app entry graph.
+			// The dev client bootstrap runs first: it installs what must
+			// precede app code (launch-notification bridge, seeded app.css).
 			if (verbose) {
 				console.info('[ns-entry] importing dev client + entry', {
 					clientUrl: session.clientUrl,
@@ -289,21 +277,6 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 				});
 			}
 			await importModule(session.clientUrl);
-			// Deterministic point for the client's launch-notification bridge:
-			// core is loaded (the boot placeholder uses Application) and the
-			// app entry has NOT evaluated yet — app code registering
-			// launch-time observers (UIApplicationDidFinishLaunchingNotification
-			// gates around SDK init are common) is guaranteed to hit the
-			// wrapped addNotificationObserver and get the missed one-shot
-			// notification replayed. The client's own module-eval attempt can
-			// lose this race (the vendor registry it resolves core through is
-			// only populated by the client bootstrap).
-			try {
-				const installLaunchBridge = (getGlobalScope() as any).__NS_DEV_INSTALL_LAUNCH_BRIDGE__;
-				if (typeof installLaunchBridge === 'function') {
-					installLaunchBridge();
-				}
-			} catch {}
 			await importModule(session.entryUrl);
 		} finally {
 			stopBootImportHeartbeat();
