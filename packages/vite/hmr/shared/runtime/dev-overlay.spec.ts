@@ -376,12 +376,10 @@ describe('Android toast margin', () => {
 
 describe('HMR overlay position config', () => {
 	beforeEach(() => {
-		delete getGlobalScope().__NS_HMR_OVERLAY_POSITION__;
 		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	afterEach(() => {
-		delete getGlobalScope().__NS_HMR_OVERLAY_POSITION__;
 		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
@@ -389,29 +387,29 @@ describe('HMR overlay position config', () => {
 		expect(getHmrDevOverlayPosition()).toBe('top');
 	});
 
-	it('reads a stored override from the global flag', () => {
-		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 'bottom';
+	it('reads a stored override from the dev object', () => {
+		nsDev().overlayPosition = 'bottom';
 		expect(getHmrDevOverlayPosition()).toBe('bottom');
-		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 'center';
+		nsDev().overlayPosition = 'center';
 		expect(getHmrDevOverlayPosition()).toBe('center');
 	});
 
 	it('falls back to the default when an unknown value is stored', () => {
-		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 'left';
+		nsDev().overlayPosition = 'left' as any;
 		expect(getHmrDevOverlayPosition()).toBe('top');
-		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 42;
+		nsDev().overlayPosition = 42 as any;
 		expect(getHmrDevOverlayPosition()).toBe('top');
 	});
 
-	it('setHmrDevOverlayPosition updates the global and ignores invalid values', () => {
+	it('setHmrDevOverlayPosition updates the dev object and ignores invalid values', () => {
 		setHmrDevOverlayPosition('bottom');
-		expect(getGlobalScope().__NS_HMR_OVERLAY_POSITION__).toBe('bottom');
+		expect(nsDev().overlayPosition).toBe('bottom');
 		setHmrDevOverlayPosition('center');
-		expect(getGlobalScope().__NS_HMR_OVERLAY_POSITION__).toBe('center');
+		expect(nsDev().overlayPosition).toBe('center');
 		// Invalid input must NOT clobber a previously-set value, so a
 		// typo in dev code can't accidentally reset the position.
 		setHmrDevOverlayPosition('elsewhere' as any);
-		expect(getGlobalScope().__NS_HMR_OVERLAY_POSITION__).toBe('center');
+		expect(nsDev().overlayPosition).toBe('center');
 	});
 });
 
@@ -834,7 +832,7 @@ describe('iOS overlay touch pass-through', () => {
 
 describe('iOS overlay window — action button', () => {
 	beforeEach(() => {
-		delete getGlobalScope().__NS_HMR_OVERLAY_POSITION__;
+		delete nsDev().overlayPosition;
 	});
 
 	function fakeIosRefs(passThrough: boolean) {
@@ -901,7 +899,7 @@ describe('iOS overlay window — action button', () => {
 
 describe('in-tree overlay — action button', () => {
 	beforeEach(() => {
-		delete getGlobalScope().__NS_HMR_OVERLAY_POSITION__;
+		delete nsDev().overlayPosition;
 	});
 
 	function fakeLiveRefs() {

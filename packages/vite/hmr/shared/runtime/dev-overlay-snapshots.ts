@@ -10,7 +10,7 @@ type HmrOverlayMode = 'hidden' | 'connection' | 'update';
 
 // Where the live (connection/update) overlay renders. 'top'/'bottom' slide in a
 // safe-area toast chip with a transparent backdrop; 'center' is the dimmed modal.
-// Override per-session via `globalThis.__NS_HMR_OVERLAY_POSITION__` or
+// Override per session through the dev object's `overlayPosition` or
 // `setHmrDevOverlayPosition()`.
 export type HmrOverlayPosition = 'top' | 'bottom' | 'center';
 

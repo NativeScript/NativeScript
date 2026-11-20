@@ -108,45 +108,17 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 			if (!proto) return;
 			const orig = proto.init;
 			if (typeof orig !== 'function') return;
-			const telemetryEnabled = !!g['__NS_DEV_TELEMETRY__'] || !!verbose;
-			function __ns_getTelemetry() {
-				if (!telemetryEnabled) return null as any;
-				try {
-					if (!g['__NS_TELEMETRY__']) {
-						g['__NS_TELEMETRY__'] = {};
-					}
-					const root = g['__NS_TELEMETRY__'];
-					if (!root.androidInit) {
-						root.androidInit = { calls: 0, fallbackSuccess: 0, nullDefers: 0, duplicates: 0, resolvedBy: { nativeScriptApp: 0, applicationHolder: 0, activityThread: 0 } };
-					}
-					return root.androidInit;
-				} catch {
-					return null as any;
-				}
-			}
 			function __ns_tryResolveAndroidApp() {
 				try {
 					if (g.com?.tns?.NativeScriptApplication?.getInstance) {
 						const inst = g.com.tns.NativeScriptApplication.getInstance();
-						if (inst) {
-							try {
-								const t = __ns_getTelemetry();
-								if (t) t.resolvedBy.nativeScriptApp++;
-							} catch {}
-							return inst;
-						}
+						if (inst) return inst;
 					}
 				} catch {}
 				try {
 					if (g.com?.tns?.embedding?.ApplicationHolder?.getInstance) {
 						const inst = g.com.tns.embedding.ApplicationHolder.getInstance();
-						if (inst) {
-							try {
-								const t = __ns_getTelemetry();
-								if (t) t.resolvedBy.applicationHolder++;
-							} catch {}
-							return inst;
-						}
+						if (inst) return inst;
 					}
 				} catch {}
 				try {
@@ -155,13 +127,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 						const method = clazz.getMethod('currentApplication', null);
 						if (method) {
 							const inst = method.invoke(null, null);
-							if (inst) {
-								try {
-									const t = __ns_getTelemetry();
-									if (t) t.resolvedBy.activityThread++;
-								} catch {}
-								return inst;
-							}
+							if (inst) return inst;
 						}
 					}
 				} catch {}
@@ -169,32 +135,18 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 			}
 			proto.init = function __ns_safe_android_init(nativeApp: any) {
 				try {
-					try {
-						__ns_getTelemetry() && __ns_getTelemetry().calls++;
-					} catch {}
 					let appArg = nativeApp;
 					if (!appArg) appArg = __ns_tryResolveAndroidApp();
 					if (!appArg) {
-						try {
-							__ns_getTelemetry() && __ns_getTelemetry().nullDefers++;
-						} catch {}
 						if (verbose) {
 							console.warn('[ns-entry][android] Application.init called with null and resolution failed; deferring.');
 						}
 						return;
 					}
-					if (!nativeApp) {
-						try {
-							__ns_getTelemetry() && __ns_getTelemetry().fallbackSuccess++;
-						} catch {}
-					}
 					return orig.call(this, appArg);
 				} catch (e: any) {
 					const msg = (e && (e.message || e)) + '';
 					if (msg && msg.indexOf('already initialized') !== -1) {
-						try {
-							__ns_getTelemetry() && __ns_getTelemetry().duplicates++;
-						} catch {}
 						if (verbose) {
 							console.info('[ns-entry][android] Application.init already initialized; continuing.');
 						}

@@ -56,8 +56,6 @@ const appRoot = path.resolve(spikeDir, take('--app', 'apps/ng'));
 const flavor = take('--flavor', 'angular');
 const isAngular = flavor === 'angular';
 const isVue = flavor === 'vue';
-// The toolbox case table spawns a worker; the Vue fixture has none.
-const hasWorker = !isAngular && !isVue;
 if (isVue && contentCss) throw new Error('--content-css has no Vue case table');
 if (!isAngular && (compilationApi || freshPlugins || noNsRules)) throw new Error('--compilation-api, --fresh-plugins and --no-ns-rules apply to --flavor angular only');
 
@@ -169,7 +167,8 @@ const ANGULAR_EDITS = [
 	{ key: 'e1a', label: '(e1) syntax error in home.component.ts', file: 'src/app/home/home.component.ts', from: '(n) => n + 1);', to: '(n) => n + 1;', expect: { error: true, update: false } },
 	{ key: 'e1b', label: '(e1) fix the syntax error', file: 'src/app/home/home.component.ts', from: '(n) => n + 1;', to: '(n) => n + 1);', expect: { error: false, reboot: 1, rerunIncludes: '/src/app/home/home.component.ts' } },
 	{ key: 'e2a', label: '(e2) template compile error in home.component.html', file: 'src/app/home/home.component.html', from: `+ count()"`, to: `+ count("`, expect: { error: true, update: false, inPlace: false } },
-	{ key: 'e2b', label: '(e2) fix the template', file: 'src/app/home/home.component.html', from: `+ count("`, to: `+ count()"`, expect: { error: false, reboot: 0, inPlace: true } },
+	// The first update that passes after a withheld one reboots through the entry.
+	{ key: 'e2b', label: '(e2) fix the template', file: 'src/app/home/home.component.html', from: `+ count("`, to: `+ count()"`, expect: { error: false, reboot: 1, inPlace: false, rerunIncludes: '/src/app/home/home.component.ts' } },
 	{ key: 'e3a', label: '(e3) service throws at evaluation', file: SERVICE_TS, from: 'export class ProbeService {', to: "throw new Error('probe: evaluation failed');\nexport class ProbeService {", expect: { error: false, reboot: 1, rerunIncludes: `/${SERVICE_TS}` } },
 	{ key: 'e3b', label: '(e3) fix the service', file: SERVICE_TS, from: "throw new Error('probe: evaluation failed');\nexport class ProbeService {", to: 'export class ProbeService {', expect: { error: false, reboot: 1 } },
 	{ key: 'e4a', label: '(e4) reconnect without edits', reconnect: true, expect: { update: false, rerun: false } },
@@ -197,29 +196,25 @@ const ANGULAR_EDITS = [
 	{ key: 'r8', label: '(r8) helper imported by the lazy home.component.ts edited: app.routes.ts lazy import re-stamped', stampProbe: true, expect: { stamped: true } },
 ];
 
-// Toolbox (`apps/toolbox`): a page, its code-behind, a util, the global stylesheet and a worker.
-const WORKER_URL = '/src/__spike__/spike.worker.ts?worker_file&type=module';
+// Toolbox (`apps/toolbox`): a page, its code-behind, a util and the global stylesheet.
 const ADDED_PAGE = 'src/probe-added-page.xml';
 const CONTEXT_PATH = '/@id/__x00__virtual:ns-bundler-context';
 const IN_PLACE_CSS = { error: false, reboot: 0, selfUpdate: '/src/app.css', fullReload: false, restart: false, cssUpdatesEvent: false };
-const WORKER_RESTART = { error: false, reboot: 0, fullReload: true, restart: true, restartBootFailures: 0 };
 const TS_EDITS = [
-	{ key: 'x1', label: '(x1) page XML main-page.xml', file: 'src/main-page.xml', from: 'text="worker-spike"', to: 'text="worker-spike!"', expect: { error: false, reboot: 1, rerunIncludes: '/src/main-page.xml?raw', fullReload: false, restart: false } },
+	{ key: 'x1', label: '(x1) page XML main-page.xml', file: 'src/main-page.xml', from: 'text="ete/hub"', to: 'text="ete/hub!"', expect: { error: false, reboot: 1, rerunIncludes: '/src/main-page.xml?raw', fullReload: false, restart: false } },
 	{ key: 'x2', label: '(x2) code-behind main-page.ts', file: 'src/main-page.ts', from: `'Supports multiple scenes:'`, to: `'Supports multiple scenes!:'`, expect: { error: false, reboot: 1, rerunIncludes: '/src/main-page.ts', fullReload: false, restart: false } },
 	{ key: 'x3', label: '(x3) util main-view-model.ts', file: 'src/main-view-model.ts', from: 'args.inset.top += 10;', to: 'args.inset.top += 11;', expect: { error: false, reboot: 1, rerunIncludes: '/src/main-view-model.ts', fullReload: false, restart: false } },
 	{ key: 'c1', label: '(c1) global app.css', file: 'src/app.css', append: '\n.probe-global { color: red; }\n', expect: { ...IN_PLACE_CSS, inPlaceHas: '.probe-global' } },
 	{ key: 'c2', label: '(c2) partial _app-platform.ios.css imported by app.css', file: 'src/_app-platform.ios.css', append: '\n.probe-partial { color: red; }\n', expect: { ...IN_PLACE_CSS, inPlaceHas: '.probe-partial' } },
 	{ key: 'c3a', label: '(c3) syntax error in app.css', file: 'src/app.css', append: '\n.probe-broken { color: red;\n', expect: { error: true, update: false, reboot: 0, fullReload: false } },
-	{ key: 'c3b', label: '(c3) fix the app.css syntax error', file: 'src/app.css', from: '.probe-broken { color: red;\n', to: '.probe-broken { color: red; }\n', expect: { ...IN_PLACE_CSS, inPlaceHas: '.probe-broken { color: red; }' } },
+	// The first update that passes after a withheld one reboots through the entry.
+	{ key: 'c3b', label: '(c3) fix the app.css syntax error', file: 'src/app.css', from: '.probe-broken { color: red;\n', to: '.probe-broken { color: red; }\n', expect: { error: false, reboot: 1, rerunIncludes: '/src/app.css', fullReload: false, restart: false } },
 	{ key: 'e1a', label: '(e1) syntax error in main-page.ts', file: 'src/main-page.ts', from: 'new HelloWorldModel();', to: 'new HelloWorldModel(;', expect: { error: true, update: false, fullReload: false } },
 	{ key: 'e1b', label: '(e1) fix the syntax error', file: 'src/main-page.ts', from: 'new HelloWorldModel(;', to: 'new HelloWorldModel();', expect: { error: false, reboot: 1, rerunIncludes: '/src/main-page.ts', fullReload: false } },
 	// A page added while the app runs joins the bundler context with the next reboot.
 	{ key: 'p1a', label: '(p1) page XML added', createFile: { file: ADDED_PAGE, text: '<Page><Label text="probe added page" /></Page>\n' }, expect: { error: false, fullReload: false, restart: false } },
-	{ key: 'p1b', label: '(p1) next reboot registers the added page', file: 'src/main-page.xml', from: 'text="worker-spike', to: 'text="probe-p1 worker-spike', expect: { error: false, reboot: 1, servedIncludes: [CONTEXT_PATH, 'probe-added-page.xml'] } },
+	{ key: 'p1b', label: '(p1) next reboot registers the added page', file: 'src/main-page.xml', from: 'text="ete/hub', to: 'text="probe-p1 ete/hub', expect: { error: false, reboot: 1, servedIncludes: [CONTEXT_PATH, 'probe-added-page.xml'] } },
 	{ key: 'p1c', label: '(p1) page XML removed', removeFile: ADDED_PAGE, expect: { error: false, reboot: 0, fullReload: true, restart: true, restartBootFailures: 0 } },
-	{ key: 'w1', label: '(w1) spawner worker-spawner.ts', file: 'src/__spike__/worker-spawner.ts', from: 'current.postMessage(n);', to: 'current.postMessage(n + 0);', expect: { error: false, reboot: 1, rerunIncludes: '/src/__spike__/worker-spawner.ts', fullReload: false, restart: false } },
-	{ key: 'w2', label: '(w2) worker entry spike.worker.ts', file: 'src/__spike__/spike.worker.ts', from: 'square: square(event.data),', to: 'square: square(event.data) + 0,', expect: WORKER_RESTART },
-	{ key: 'w3', label: '(w3) worker helper worker-helper.ts', file: 'src/__spike__/worker-helper.ts', from: 'n * n', to: 'n * n + 0', expect: WORKER_RESTART },
 	// Mirrors (r5)/(r6): Vite restarts and app.css is saved while the app boots.
 	{ key: 'r5', label: '(r5) server.restart(), app.css saved mid-boot before /src/app.css is fetched', bootRace: 'before-home', raceUrl: '/src/app.css', raceFile: 'src/app.css', stylesheet: true, expect: { fresh: true } },
 	{ key: 'r6', label: '(r6) server.restart(), app.css saved mid-boot after /src/app.css is fetched', bootRace: 'after-home', raceUrl: '/src/app.css', raceFile: 'src/app.css', stylesheet: true, expect: { fresh: true, reboot: 1 } },
@@ -521,8 +516,6 @@ async function crawl(url, opts = {}) {
 	}
 }
 await crawl(session.entryUrl);
-// The device spawns the toolbox worker on a tap; spawn it now so its modules are in the graph.
-if (hasWorker) await crawl(new URL(WORKER_URL, deviceOrigin).href);
 if (isAngular) {
 	const home = await (await fetch(`${local}/src/app/home/home.component.ts`)).text();
 	console.log(`home.component.ts compiled with HMR listener: ${home.includes('angular:component-update')}`);
@@ -791,7 +784,7 @@ try {
 			entries.push({ via: 'device', text: check.text });
 		}
 		entries.push(...ipcMessages.splice(0).map((message) => ({ via: 'ipc', text: short(message), payload: message })));
-		// The CLI restarts the app: it boots from the entry again, opens a new socket, and the worker is spawned again.
+		// The CLI restarts the app: it boots from the entry again and opens a new socket.
 		if (!isAngular && entries.some((e) => e.via === 'ipc' && e.payload?.type === 'nativescript:restart')) {
 			ws.close();
 			await sleep(300);
@@ -802,7 +795,6 @@ try {
 			seen.clear();
 			const bodies = new Map();
 			await crawl(boot.entryUrl, { bodies });
-			if (hasWorker) await crawl(new URL(WORKER_URL, deviceOrigin).href, { bodies });
 			edit.restartBootFailures = crawlFailureCount - failuresBefore;
 			ws = await openSocket();
 			await settle();

@@ -11,7 +11,7 @@
  */
 
 import { DEFAULT_SNAPSHOT, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, type HmrConnectionStage, type HmrOverlayPosition, type HmrOverlaySnapshot, type HmrOverlayStageInfo, type HmrUpdateStage } from './dev-overlay-snapshots.js';
-import { getHmrDevOverlayPosition, getOverlayGlobal, getRuntimeState, type HmrOverlayRuntimeState } from './dev-overlay-shared.js';
+import { getHmrDevOverlayPosition, getRuntimeState, type HmrOverlayRuntimeState } from './dev-overlay-shared.js';
 import { applySnapshotToLiveRefs, ensureLiveOverlayRefs } from './dev-overlay-tree.js';
 import { applySnapshotToIosRefs, ensureIosOverlayRefs, getIosOverlayHost } from './dev-overlay-ios.js';
 import { applySnapshotToAndroidRefs, ensureAndroidOverlayRefs, getAndroidOverlayHost } from './dev-overlay-android.js';
@@ -53,8 +53,7 @@ export function setHmrDevOverlayPosition(position: HmrOverlayPosition): void {
 	if (position !== 'top' && position !== 'bottom' && position !== 'center') {
 		return;
 	}
-	const g = getOverlayGlobal();
-	g.__NS_HMR_OVERLAY_POSITION__ = position;
+	nsDev().overlayPosition = position;
 	const state = getRuntimeState();
 	applyRuntimeSnapshot(state.snapshot);
 }

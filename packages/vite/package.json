@@ -34,11 +34,6 @@
 			"import": "./configuration/solid.js",
 			"default": "./configuration/solid.js"
 		},
-		"./solid-bootstrap": {
-			"types": "./hmr/frameworks/solid/client/app-runtime.d.ts",
-			"import": "./hmr/frameworks/solid/client/app-runtime.js",
-			"default": "./hmr/frameworks/solid/client/app-runtime.js"
-		},
 		"./vue": {
 			"types": "./configuration/vue.d.ts",
 			"import": "./configuration/vue.js",
@@ -73,8 +68,6 @@
 		"./hmr/frameworks/core/client/reboot.js": "./hmr/frameworks/core/client/reboot.js",
 		"./hmr/frameworks/vue/client/reboot": "./hmr/frameworks/vue/client/reboot.js",
 		"./hmr/frameworks/vue/client/reboot.js": "./hmr/frameworks/vue/client/reboot.js",
-		"./hmr/shared/runtime/dev-overlay": "./hmr/shared/runtime/dev-overlay.js",
-		"./hmr/shared/runtime/dev-overlay.js": "./hmr/shared/runtime/dev-overlay.js",
 		"./hmr/shared/runtime/browser-runtime-contract": "./hmr/shared/runtime/browser-runtime-contract.js",
 		"./hmr/shared/runtime/browser-runtime-contract.js": "./hmr/shared/runtime/browser-runtime-contract.js",
 		"./hmr/shared/runtime/session-bootstrap": "./hmr/shared/runtime/session-bootstrap.js",
@@ -95,11 +88,7 @@
 	],
 	"dependencies": {
 		"@babel/core": "^7.28.0",
-		"@babel/plugin-transform-typescript": "^7.28.0",
-		"@babel/plugin-transform-unicode-property-regex": "^7.25.9",
-		"@jridgewell/sourcemap-codec": "^1.5.0",
 		"@rollup/plugin-alias": "^6.0.0",
-		"@rollup/plugin-commonjs": "^29.0.0",
 		"@rollup/plugin-replace": "^6.0.2",
 		"css": "^3.0.0",
 		"es-module-lexer": "^1.7.0",

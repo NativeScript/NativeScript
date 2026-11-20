@@ -7,7 +7,7 @@
  * This module must stay stateless and dependency-free: every copy resolves
  * the same object through `Symbol.for`.
  */
-import type { HmrOverlayApi } from './dev-overlay.js';
+import type { HmrOverlayApi, HmrOverlayPosition } from './dev-overlay.js';
 
 export const NS_DEV_SYMBOL_KEY = 'nativescript.dev';
 
@@ -16,6 +16,8 @@ export interface NativeScriptDevGlobals {
 	bootComplete?: boolean;
 	/** The dev overlay installed at boot and driven by the HMR client. */
 	overlay?: HmrOverlayApi;
+	/** Where the live overlay renders; 'top' when unset. Settable before the session boots. */
+	overlayPosition?: HmrOverlayPosition;
 	/** Origin of the dev server the session booted from. Generated worker code resolves worker URLs against it. */
 	httpOrigin?: string;
 }

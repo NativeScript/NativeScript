@@ -6,10 +6,8 @@
  *   const g = getGlobalScope();
  *   g.__SOME_DYNAMIC_KEY__ = value;
  *
- * For the well-known `__NS_*` / `__ns*` keys declared in
- * `hmr/shared/ns-globals.ts`, prefer direct typed access
- * (`globalThis.__NS_HMR_IMPORT__`) — this helper is for dynamic or
- * intentionally-untyped keys only.
+ * State of our own belongs on the dev globals object
+ * (`hmr/shared/runtime/dev-globals.ts`), not on new global keys.
  *
  * Deliberately zero-dependency: it is imported by served device modules
  * AND by entry-bundled modules, so it must add no weight and no import edges.

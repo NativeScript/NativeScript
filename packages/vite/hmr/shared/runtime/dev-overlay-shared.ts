@@ -11,6 +11,7 @@ import { Application } from '@nativescript/core/application';
 import { Color } from '@nativescript/core/color';
 import { Frame, GridLayout, Label, StackLayout } from '@nativescript/core/ui';
 import { DEFAULT_SNAPSHOT, type HmrOverlayAction, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
+import { nsDev } from './dev-globals.js';
 import { getGlobalScope } from './global-scope.js';
 
 const DEFAULT_OVERLAY_POSITION: HmrOverlayPosition = 'top';
@@ -109,14 +110,11 @@ export function getOverlayGlobal(): any {
 /**
  * Resolve the configured live-overlay position.
  *
- * Reads `globalThis.__NS_HMR_OVERLAY_POSITION__` so a project can
- * override the default at boot time (e.g. inside `app.ts` before the
- * Vite session bootstraps). Falls back to 'top' which gives the
+ * Reads the dev object's `overlayPosition`. Falls back to 'top', the
  * toast-style chip with a slide-in animation and safe-area padding.
  */
 export function getHmrDevOverlayPosition(): HmrOverlayPosition {
-	const g = getOverlayGlobal();
-	const stored = g.__NS_HMR_OVERLAY_POSITION__;
+	const stored: unknown = nsDev().overlayPosition;
 	if (stored === 'top' || stored === 'bottom' || stored === 'center') {
 		return stored;
 	}

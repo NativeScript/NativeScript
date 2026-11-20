@@ -6,8 +6,9 @@
 
 **Globals.** Device code shares state through ESM imports: under HMR all device code but Android's app-component chunks is served by Vite, and every served module has one URL and therefore one instance. The one NS global is `globalThis[Symbol.for('nativescript.dev')]` (`hmr/shared/runtime/dev-globals.ts`, see "Dev globals"), which code generated as strings can reach. Libraries such as `@nativescript/angular` use standard `import.meta.hot`. What remains outside the dev object:
 - keys core owns: `__NS_DEV_PLACEHOLDER_ROOT_VIEW__`/`__NS_DEV_PLACEHOLDER_ROOT_EARLY__` (read by core `application.ios.ts`) and `__NS_LAST_XML_ERROR__` (written by core `ui/builder`);
-- `__NS_HMR_OVERLAY_POSITION__`, an app-facing override;
-- `__NS_DEV_TELEMETRY__`/`__NS_TELEMETRY__` (manual opt-in diagnostics) and the optional `__NS_HMR_IMPORT__` hook.
+- compile-time defines, which are not runtime globals: `__NS_ENV_VERBOSE__`, `__NS_HMR_PROGRESS_OVERLAY_ENABLED__` and `__NS_WEBPACK__` (`false`, shared with webpack).
+
+The live overlay's position is the dev object's `overlayPosition` (or `setHmrDevOverlayPosition()`).
 
 The before → after table is in FINDINGS.md round 14.
 
@@ -284,7 +285,8 @@ A broken save shows an error on the device and leaves the running app as it is. 
   - **On failure** the device gets Vite's standard `error` payload, `{ type: 'error', err: { message, stack, id, frame, loc, plugin } }`, instead of `ns:rerun` + `update`. Nothing is disposed.
   - **On success** `ns:rerun` goes out right before the `update`.
 - **Gated events.** A flavor's in-place events (`FrameworkServerStrategy.gatedEvents`; Angular: `angular:component-update`) are held until the update of the same save passes, and dropped when it fails. Held events whose save produces no update are released after 200 ms. Analog batches its notifications and flushes them in object form (`{ type: 'custom', event }`), so both the string and the object form are recognized.
-- **The next good save.** `rerun` comes from what the device has loaded (served `?t=` stamps), so it covers every module changed since the last update that went out. `changed` accumulates the edits of failed saves too.
+- **The next good save.** The first update that passes after a withheld one is replaced by an entry reboot (the catch-up's `js-update` of the entry), or an app restart without an entry boundary. The passing update's own boundaries may not cover the withheld edits: a util edited while its SFC was broken would otherwise never reach a component that re-renders in place. The modules the withheld and passing saves edited are re-stamped first (`invalidateModule` with HMR), so an in-place template edit's component is re-imported too. `rerun` comes from what the device has loaded (served `?t=` stamps); `changed` lists every edit since the last update that went out. A save whose error Vite sends itself (plugin-vue failing to parse an SFC in `handleHotUpdate`) withholds nothing, so its fix stays in place.
+  - A deleted file is reached through its importers' old graph edges until they re-transform: it is checked after them, and only while one still imports it.
 - **No `error` to an empty channel.** Vite would buffer it and replay it, possibly stale, on the next connection. The catch-up checks again instead.
 - **Evaluation errors after dispose.** The entry import throws, because a module in the chain throws at evaluation:
   - the overlay shows the error with the stack's device URLs shortened to Vite URLs, `afterReboot` reports `error`, and the process stays alive;
@@ -331,7 +333,6 @@ A broken save shows an error on the device and leaves the running app as it is. 
   - It leaves `hot.dispose` alone: a module has one dispose slot, and the entry's is the framework teardown. A module's own `hot.prune` replaces the helper's.
   - **Trade-off:** a worker spawned through a module that isn't re-run survives a reboot, even when its re-run caller spawns another.
 - **Worker edits.** An edit to the worker entry, to a worker-only import, or to a util shared with main-realm code dead-ends at the worker entry. Vite sends `full-reload`, i.e. an app restart: the main-realm HMR client can't update a worker isolate.
-- **Toolbox demo:** `apps/toolbox/src/__spike__/spike.worker.ts`, `worker-helper.ts` and `worker-spawner.ts`, behind the "worker-spike" button in `main-page.xml`.
 
 ### CLI contract for app restarts (to implement in nativescript-cli)
 1. Spawn `vite serve` with an IPC channel: `stdio: ['inherit', 'inherit', 'inherit', 'ipc']`, or `fork`. Keep stdout/stderr inherited, so logs stream as today.
@@ -418,8 +419,6 @@ No NS server strategies for updates. Each framework's Vite plugin produces stock
 - **The compiler is Solid 1's.** `vite-plugin-solid` 2.11.17 compiles with `babel-preset-solid` 1.9.19, which emits the one-argument `effect(fn)`. Solid 2's universal renderer (`@solidjs/universal` 2.x, used by `@nativescript-community/solid-js` 2 and the official `template-blank-solid-ts` 9.1.2) expects `effect(compute, apply)` and halts reactivity on the first reactive prop (`node._effectFn is not a function`). Release builds exit 0 with that shape.
 - **The Solid 2 path is `@solidjs/vite-plugin` 3** (peers `solid-js ^2`, `vite ^8 || ^9`, `@solidjs/web ^2`). Its component HMR is `solid-js/refresh`: standard `import.meta.hot` (`accept`, `data`, `invalidate`), no DOM, and the TDZ problem that kept `hot: false` is fixed there (wrapped components are hoisted).
 - **Entry boundary idea:** the stock entry discards `render`'s disposer and returns dominative's `document` singleton, so the core reboot module doesn't fit (`resetRootView` with the same view pops the live Frame; the settle reports "did not replace the root view"). A boundary can own the root through Solid's public ownership API instead: run the first `entry.create()` inside a `createRoot`, dispose that root and clear `document.body` on dispose, and re-run `create()` without `resetRootView` when it returns the current root.
-- `@nativescript/vite/solid-bootstrap` (`hmr/frameworks/solid/client/app-runtime.ts`) has no users; its remount branch is unreachable since nothing calls `mount` twice.
-
 **React.** The supported renderer is `@nativescript-community/react` (React 19, `react-reconciler` ^0.32, dominative). Unchanged in 4b: no entry boundary, so every edit but `app.css` is an app restart; `optimizeDeps.include` keeps `react` and `react-reconciler`.
 - **An entry boundary needs the renderer's own hooks** (as `@nativescript/angular` exports them). `startReactApp` keeps its root and disposer in a closure and returns dominative's `document` singleton, so nothing outside the renderer can tear the app down. Proposed upstream API:
   - a module-scope registry of rendered roots (`render()` records `{ root, container, dispose }`; the module isn't re-evaluated on a reboot);
