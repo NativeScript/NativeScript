@@ -86,6 +86,8 @@ function getSelectorWheelPaint(picker: android.widget.NumberPicker): android.gra
 export class ListPicker extends ListPickerBase {
 	nativeViewProtected: android.widget.NumberPicker;
 	private _selectorWheelPaint: android.graphics.Paint;
+	// Not a JS property of the picker: the edit text is its child, so that would be a cycle.
+	private _editText: android.widget.EditText;
 
 	public createNativeView() {
 		const picker = new android.widget.NumberPicker(this._context);
@@ -117,8 +119,8 @@ export class ListPicker extends ListPickerBase {
 		(<any>nativeView).valueChangedListener = valueChangedListener;
 
 		const editText = getEditText(nativeView);
+		this._editText = editText;
 		if (editText) {
-			(<any>nativeView).editText = editText;
 			//Fix the disappearing selected item.
 			//HACK: http://stackoverflow.com/questions/17708325/android-numberpicker-with-formatter-does-not-format-on-first-rendering/26797732
 			editText.setFilters([]);
@@ -136,6 +138,7 @@ export class ListPicker extends ListPickerBase {
 		if ((<any>nativeView)?.valueChangedListener) {
 			(<any>nativeView).valueChangedListener.owner = null;
 		}
+		this._editText = null;
 		super.disposeNativeView();
 	}
 
@@ -145,7 +148,7 @@ export class ListPicker extends ListPickerBase {
 		nativeView.setFormatter(null);
 		nativeView.setFormatter((<any>nativeView).formatter); //Force the NumberPicker to call our Formatter
 
-		const editText = (<any>nativeView).editText;
+		const editText = this._editText;
 		if (editText) {
 			editText.setFilters([]);
 			editText.invalidate(); //Force the EditText to redraw
@@ -197,7 +200,7 @@ export class ListPicker extends ListPickerBase {
 		if (this._selectorWheelPaint) {
 			this._selectorWheelPaint.setColor(color);
 
-			const editText = (<any>this.nativeViewProtected).editText;
+			const editText = this._editText;
 			if (editText) {
 				editText.setTextColor(color);
 			}

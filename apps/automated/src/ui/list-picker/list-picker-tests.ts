@@ -1,6 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View, Application } from '@nativescript/core';
+import { View, Application, Utils } from '@nativescript/core';
 import * as listPickerTestsNative from './list-picker-tests-native';
 
 // >> article-require-listpicker-module
@@ -200,7 +200,7 @@ export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		var expectedValue = ' ';
-		var actualValue = (listPicker.nativeViewProtected as any).editText.getText().toString();
+		var actualValue = (listPicker as any)._editText.getText().toString();
 		TKUnit.assertEqual(actualValue, expectedValue);
 	});
 };
@@ -214,10 +214,29 @@ export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly =
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = ['One'];
 		var expectedValue = 'One';
-		var actualValue = (listPicker.nativeViewProtected as any).editText.getText().toString();
+		var actualValue = (listPicker as any)._editText.getText().toString();
 		TKUnit.assertEqual(actualValue, expectedValue);
 	});
 };
+
+export function test_Android_EditTextIsUpdatedAfterGarbageCollection() {
+	if (!Application.android) {
+		return;
+	}
+
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
+		const listPicker = <listPickerModule.ListPicker>views[0];
+		listPicker.items = ['One', 'Two'];
+		for (let i = 0; i < 3; i++) {
+			Utils.GC();
+			java.lang.System.gc();
+			java.lang.System.runFinalization();
+			TKUnit.wait(0.05);
+		}
+		listPicker.selectedIndex = 1;
+		TKUnit.assertEqual((listPicker as any)._editText.getText().toString(), 'Two');
+	});
+}
 
 export var test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = function () {
 	if (!Application.android) {
@@ -229,7 +248,7 @@ export var test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = func
 		listPicker.items = ['One', 'Two'];
 		listPicker.selectedIndex = 1;
 		var expectedValue = 'Two';
-		var actualValue = (listPicker.nativeViewProtected as any).editText.getText().toString();
+		var actualValue = (listPicker as any)._editText.getText().toString();
 		TKUnit.assertEqual(actualValue, expectedValue);
 	});
 };
