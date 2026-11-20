@@ -94,4 +94,76 @@ describe('bootFromDevServer', () => {
 
 		expect(requested).toEqual([`${OPTIONS.origin}/__ns_dev__/restart?reason=the%20dev%20server%20is%20reachable%20again&age=8000&token=a%2Bb`]);
 	});
+
+	describe('on Android', () => {
+		function stubAndroid(connect: () => void) {
+			const extend = vi.fn(() => ({}));
+			const registerActivityLifecycleCallbacks = vi.fn();
+			const Builder = function (this: any) {
+				this.permitNetwork = () => this;
+				this.build = () => ({});
+			};
+			vi.stubGlobal('android', {
+				os: { StrictMode: { getThreadPolicy: () => ({}), setThreadPolicy: vi.fn(), ThreadPolicy: { Builder } } },
+				app: {
+					Application: {
+						ActivityLifecycleCallbacks: function (impl: unknown) {
+							return impl;
+						},
+					},
+				},
+			});
+			vi.stubGlobal('androidx', { appcompat: { app: { AppCompatActivity: { prototype: { onCreate() {} }, extend } } } });
+			vi.stubGlobal('java', {
+				net: {
+					Socket: function (this: any) {
+						this.connect = connect;
+						this.close = () => {};
+					},
+					InetSocketAddress: function () {},
+				},
+			});
+			const app = {
+				registerActivityLifecycleCallbacks,
+				getPackageName: () => 'org.example',
+				getPackageManager: () => ({ getLaunchIntentForPackage: () => ({ getComponent: () => ({ getClassName: () => 'org.example.MainActivity' }) }) }),
+			};
+			vi.stubGlobal('com', { tns: { NativeScriptApplication: { getInstance: () => app } } });
+			return { extend, registerActivityLifecycleCallbacks };
+		}
+
+		// A fresh module: the fallback launches once per process.
+		async function freshLoader(): Promise<typeof bootFromDevServer> {
+			vi.resetModules();
+			return (await import('./dev-boot-loader.js')).bootFromDevServer;
+		}
+
+		it('registers the launcher activities and reports the failure through the module loader instead of rethrowing', async () => {
+			vi.spyOn(console, 'error').mockImplementation(() => {});
+			const { extend, registerActivityLifecycleCallbacks } = stubAndroid(() => {});
+			const imported: string[] = [];
+			await (
+				await freshLoader()
+			)(OPTIONS, async (url) => {
+				imported.push(url);
+				return url === OPTIONS.bootUrl ? { bootFailure: { message: 'entry threw' } } : { default: { status: 200 } };
+			});
+			expect(extend.mock.calls.map((call: any[]) => call[0])).toEqual(['org.example.MainActivity', 'com.tns.NativeScriptActivity']);
+			expect(registerActivityLifecycleCallbacks).toHaveBeenCalledOnce();
+			expect(imported[2]).toMatch(new RegExp(`^${OPTIONS.origin}/__ns_dev__/boot-failed\\?reason=entry%20threw&token=a%2Bb&module=1&n=\\d+$`));
+		});
+
+		it('shows the unreachable screen without fetching when the port does not connect', async () => {
+			vi.spyOn(console, 'error').mockImplementation(() => {});
+			const { extend } = stubAndroid(() => {
+				throw new Error('connect timed out');
+			});
+			const importModule = vi.fn(async () => ({}));
+			await (
+				await freshLoader()
+			)(OPTIONS, importModule);
+			expect(importModule).not.toHaveBeenCalled();
+			expect(extend).toHaveBeenCalledTimes(2);
+		});
+	});
 });

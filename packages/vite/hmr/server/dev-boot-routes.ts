@@ -70,6 +70,19 @@ function sendJson(res: import('node:http').ServerResponse, body: unknown, status
 	res.end(JSON.stringify(body));
 }
 
+/**
+ * The action routes' answer. With `module=1` it is a module whose default
+ * export is the body plus `status`, always with HTTP 200: Android's boot
+ * loader can only make the request through the runtime's module loader.
+ */
+function sendAnswer(req: Connect.IncomingMessage, res: import('node:http').ServerResponse, body: Record<string, unknown>, status = 200): void {
+	if (queryOf(req).get('module') !== '1') return sendJson(res, body, status);
+	res.statusCode = 200;
+	res.setHeader('Content-Type', 'text/javascript');
+	res.setHeader('Cache-Control', 'no-store');
+	res.end(`export default ${JSON.stringify({ ...body, status })};\n`);
+}
+
 export interface DevBootRoutes {
 	/** To install after Vite's transform middleware. */
 	errorHandler: Connect.ErrorHandleFunction;
@@ -130,7 +143,7 @@ export function registerDevBootRoutes(server: ViteDevServer, options: DevBootRou
 				rejectedPaths.add(pathname);
 				server.config.logger.warn(`[NativeScript] rejected ${pathname} without this dev server's token, as from an app process an earlier dev server launched.`, { timestamp: true });
 			}
-			return sendJson(res, { ok: false, reason: 'missing or wrong token' }, 403);
+			return sendAnswer(req, res, { ok: false, reason: 'missing or wrong token' }, 403);
 		}
 		if (pathname === NS_DEV_RESTART_PATH) {
 			// A process older than this server was launched while it was down, and
@@ -138,16 +151,16 @@ export function registerDevBootRoutes(server: ViteDevServer, options: DevBootRou
 			// keeps it polling instead of booting the app twice.
 			const age = Number(queryOf(req).get('age'));
 			if (cliLaunchesApp() && age > now() - listeningAt) {
-				return sendJson(res, { ok: false, reason: 'the NativeScript CLI launches the app' }, 409);
+				return sendAnswer(req, res, { ok: false, reason: 'the NativeScript CLI launches the app' }, 409);
 			}
 			request(reasonOf(req, 'the device requested a restart'));
-			return sendJson(res, { ok: true });
+			return sendAnswer(req, res, { ok: true });
 		}
 		if (pathname === NS_DEV_BOOT_FAILED_PATH) {
 			failedBoot = reasonOf(req, 'unknown error');
 			server.config.logger.error(`[NativeScript] the app failed to boot: ${failedBoot}. The next saved edit restarts it.`, { timestamp: true });
 			const recent = lastServerError && Date.now() - lastServerError.at < RECENT_ERROR_MS ? lastServerError.message : undefined;
-			return sendJson(res, { serverError: recent });
+			return sendAnswer(req, res, { serverError: recent });
 		}
 		if (pathname === NS_DEV_WARM_PATH) {
 			const started = Date.now();

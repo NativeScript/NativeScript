@@ -21,7 +21,6 @@ import { dynamicImportPlugin } from '../helpers/dynamic-import-plugin.js';
 import { mainEntryPlugin } from '../helpers/main-entry.js';
 import { BOOT_TIMER_PRELUDE } from '../helpers/dev-boot-bundle.js';
 import { createUiRegistrationPlugin } from '../helpers/ui-registration.js';
-import { nsCoreExternalUrlsPlugin } from '../helpers/ns-core-external-urls.js';
 import { getProjectFlavor, setProjectFlavor } from '../helpers/flavor.js';
 import { preserveImportsPlugin } from '../helpers/preserve-imports.js';
 import { optimizeDepsPlatformResolver } from '../helpers/esbuild-platform-resolver.js';
@@ -284,10 +283,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Merge any dependency-provided `nativescript.vite.mjs` configs. Runs
 			// in an awaited `config` hook so ESM configs load correctly.
 			externalConfigsPlugin(),
-			// Android HMR builds still emit the app components (custom
-			// Activity/Application) as local chunks; their core imports must name
-			// the served core rather than bundle a second one.
-			...(hmrActive && platform === 'android' ? [nsCoreExternalUrlsPlugin({ platform, projectRoot, nsCoreRoot: NS_CORE_ROOT, hmrPort, useHttps })] : []),
 			createPlatformCssPlugin(platform),
 			// TODO: move to per-project basis based on usage
 			createEnsureHoistedThemeLinkPlugin(THEME_CORE_ROOT, projectRoot, platform),

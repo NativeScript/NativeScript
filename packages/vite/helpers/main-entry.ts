@@ -5,7 +5,7 @@ import { preprocessCSS, type ResolvedConfig } from 'vite';
 import { parseCssAst as parseCssToAst } from './css-ast.js';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppVirtualPath, resolveProjectGlobalCssPath } from './utils.js';
-import { getResolvedAppComponents } from './app-components.js';
+import { getResolvedAppComponents, getServedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
 import { devWsTokenFile, devWsTokenForBundle } from './dev-ws-token.js';
@@ -122,9 +122,6 @@ function appComponentImports(opts: Pick<BootCodeOptions, 'platform' | 'verbose'>
 // The boot sequence: the non-HMR bundle.mjs, or under HMR the served dev
 // boot module, whose bare specifiers Vite's import analysis rewrites.
 function generateBootCode(opts: BootCodeOptions, bootOrigin: string): string {
-	// `?ns-keep` is a build-only tree-shaking marker; served, it would give the
-	// module a second URL.
-	const androidActivitySpecifier = opts.hmrActive ? '@nativescript/core/ui/frame/activity.android' : '@nativescript/core/ui/frame/activity.android.js?ns-keep';
 	const { projectRoot, mainEntry, mainEntryRelPosix, mainEntryImportSpecifier, polyfillsExists, polyfillsImportSpecifier } = getProjectEntry();
 	let imports = '';
 	// Before anything else in the boot graph evaluates.
@@ -200,14 +197,24 @@ function generateBootCode(opts: BootCodeOptions, bootOrigin: string): string {
 	}
 
 	// ---- Custom App Components (Activity/Application) ----
-	// Under HMR they are local build outputs, imported by bundle.mjs itself.
+	// Under HMR the Android branch below imports them.
 	if (!opts.hmrActive) {
 		imports += appComponentImports(opts);
 	}
 
 	// ---- Platform-specific always-needed modules ----
 	let needsAndroidActivityDefer = false;
-	if (opts.platform === 'android') {
+	if (opts.platform === 'android' && opts.hmrActive) {
+		// Nothing on disk declares these classes under HMR: a named `extend`
+		// generates its class into the app's class loader, and the runtime holds
+		// `Application.onCreate` until `bundle.mjs` settles, so each class exists
+		// before Android instantiates it. App components come first, so one named
+		// like core's activity wins.
+		for (const component of getServedAppComponents()) {
+			imports += `import ${JSON.stringify(toStaticImportSpecifier(projectRoot, component.absolutePath))};\n`;
+		}
+		imports += `import ${JSON.stringify(coreSpec('ui/frame/activity.android'))};\n`;
+	} else if (opts.platform === 'android') {
 		/**
 		 * Defer activity lifecycle wiring until native Application is ready
 		 * to avoid "application is null" errors during startup.
@@ -267,7 +274,7 @@ function generateBootCode(opts: BootCodeOptions, bootOrigin: string): string {
 	if (needsAndroidActivityDefer) {
 		imports += `
             (function __nsDeferAndroidActivityImport(){
-              const load = () => { try { import(${JSON.stringify(androidActivitySpecifier)}); } catch (e) { console.error('[ns-entry] failed to import android activity module', e); } };
+              const load = () => { try { import('@nativescript/core/ui/frame/activity.android.js?ns-keep'); } catch (e) { console.error('[ns-entry] failed to import android activity module', e); } };
               try {
                 const hasApp = !!(Application && Application.android && Application.android.nativeApp);
                 if (hasApp) {
@@ -359,7 +366,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 	// session-bootstrap's `configureLoader` installs the import map, so it
 	// names absolute URLs only.
 	const generateHmrBundleEntry = (bootOrigin: string, token: string): string => {
-		return `import { bootFromDevServer } from '@nativescript/vite/runtime/dev-boot-loader.js';\nawait bootFromDevServer(${JSON.stringify(devBootLoaderOptions(bootOrigin, token, opts.verbose))});\n` + appComponentImports(opts);
+		return `import { bootFromDevServer } from '@nativescript/vite/runtime/dev-boot-loader.js';\nawait bootFromDevServer(${JSON.stringify(devBootLoaderOptions(bootOrigin, token, opts.verbose))});\n`;
 	};
 
 	return {

@@ -146,6 +146,25 @@ describe('registerDevBootRoutes', () => {
 		expect(request.mock.calls).toEqual([['young']]);
 	});
 
+	it('answers the action routes as a module, always with HTTP 200, when asked with module=1', async () => {
+		const request = vi.fn();
+		const { server, handlers } = fakeServer(idleEnv());
+		registerDevBootRoutes(server, { bootGraphUrls: () => [], request, cliLaunchesApp: () => true, now: () => 10_000 });
+		const answer = (url: string) =>
+			new Promise<{ status: number; type?: string; body: string }>((resolve) => {
+				const headers: Record<string, string> = {};
+				const res: any = { statusCode: 200, setHeader: (name: string, value: string) => (headers[name] = value), end: (body: string) => resolve({ status: res.statusCode, type: headers['Content-Type'], body }) };
+				void handlers[0]({ url }, res, () => {});
+			});
+
+		const rejected = await answer(`${NS_DEV_RESTART_PATH}?module=1&reason=x`);
+		expect(rejected).toEqual({ status: 200, type: 'text/javascript', body: 'export default {"ok":false,"reason":"missing or wrong token","status":403};\n' });
+		expect((await answer(`${NS_DEV_RESTART_PATH}?${T}&module=1&age=20000`)).body).toContain('"status":409');
+		expect((await answer(`${NS_DEV_RESTART_PATH}?${T}&module=1&age=0&reason=back`)).body).toBe('export default {"ok":true,"status":200};\n');
+		expect((await answer(`${NS_DEV_BOOT_FAILED_PATH}?${T}&module=1&reason=boom`)).body).toBe('export default {"status":200};\n');
+		expect(request.mock.calls).toEqual([['back']]);
+	});
+
 	it('passes other requests on', async () => {
 		const { server, handlers } = fakeServer(idleEnv());
 		registerDevBootRoutes(server, { bootGraphUrls: () => [], request: vi.fn() });
