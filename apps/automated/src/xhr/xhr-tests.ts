@@ -452,3 +452,47 @@ export var test_XMLHttpRequest_contentReceivedBlobProperly = function (done) {
 	// ```
 	// </snippet>
 };
+
+function paddedJsonBytes(): Uint8Array<ArrayBuffer> {
+	const json = JSON.stringify({ MyVariableOne: 'ValueOne', MyVariableTwo: 'ValueTwo' });
+	const padded = new Uint8Array(json.length + 8).fill('x'.charCodeAt(0));
+	for (let i = 0; i < json.length; i++) {
+		padded[i + 4] = json.charCodeAt(i);
+	}
+
+	return padded.subarray(4, 4 + json.length);
+}
+
+function postBinaryWithXhr(body: any, done) {
+	const request = new XMLHttpRequest();
+	request.open('POST', 'https://http-echo.nativescript.org/post');
+	if (!(body instanceof Blob)) {
+		request.setRequestHeader('Content-Type', 'application/json');
+	}
+	request.onreadystatechange = function () {
+		if (request.readyState > 3) {
+			try {
+				const result = JSON.parse(request.responseText);
+				TKUnit.assertEqual(result['json']?.['MyVariableOne'], 'ValueOne', 'Content not sent properly!');
+				TKUnit.assertEqual(result['json']?.['MyVariableTwo'], 'ValueTwo', 'Content not sent properly!');
+				done(null);
+			} catch (err) {
+				done(err);
+			}
+		}
+	};
+	request.send(body);
+}
+
+export function test_XMLHttpRequest_typedArrayContentSentProperly(done) {
+	postBinaryWithXhr(paddedJsonBytes(), done);
+}
+
+export function test_XMLHttpRequest_dataViewContentSentProperly(done) {
+	const bytes = paddedJsonBytes();
+	postBinaryWithXhr(new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), done);
+}
+
+export function test_XMLHttpRequest_blobContentSentProperly(done) {
+	postBinaryWithXhr(new Blob([paddedJsonBytes()], { type: 'application/json' }), done);
+}
