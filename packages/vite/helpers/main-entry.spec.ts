@@ -12,19 +12,18 @@ afterEach(() => {
 });
 
 describe('strict global require flag', () => {
-	it('is off unless NS_VITE_STRICT_REQUIRE is a truthy spelling', () => {
-		expect(isStrictGlobalRequireEnabled({})).toBe(false);
-		expect(isStrictGlobalRequireEnabled({ NS_VITE_STRICT_REQUIRE: '0' })).toBe(false);
-		expect(isStrictGlobalRequireEnabled({ NS_VITE_STRICT_REQUIRE: 'false' })).toBe(false);
-		for (const value of ['1', 'true', 'ON', ' yes ']) expect(isStrictGlobalRequireEnabled({ NS_VITE_STRICT_REQUIRE: value })).toBe(true);
+	it('is on unless NS_VITE_STRICT_REQUIRE is a falsy spelling', () => {
+		expect(isStrictGlobalRequireEnabled({})).toBe(true);
+		for (const value of ['1', 'true', '']) expect(isStrictGlobalRequireEnabled({ NS_VITE_STRICT_REQUIRE: value })).toBe(true);
+		for (const value of ['0', 'false', 'OFF', ' no ']) expect(isStrictGlobalRequireEnabled({ NS_VITE_STRICT_REQUIRE: value })).toBe(false);
 	});
 
-	it('makes the shadow the first import of the dev boot module', () => {
-		const opts = { platform: 'ios' as const, verbose: false, flavor: 'typescript' };
-		expect(generateDevBootCode(opts)).not.toContain(STRICT_IMPORT);
-		process.env.NS_VITE_STRICT_REQUIRE = '1';
+	it.each(['ios', 'android', 'visionos'] as const)('makes the shadow the first import of the %s dev boot module by default', (platform) => {
+		const opts = { platform, verbose: false, flavor: 'typescript' };
 		const code = generateDevBootCode(opts);
 		expect(code.split('\n').find((line) => line.startsWith('import '))).toBe(STRICT_IMPORT);
+		process.env.NS_VITE_STRICT_REQUIRE = '0';
+		expect(generateDevBootCode(opts)).not.toContain(STRICT_IMPORT);
 	});
 });
 

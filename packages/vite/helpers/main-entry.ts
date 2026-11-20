@@ -98,13 +98,13 @@ function coreSpec(subpath?: string | null): string {
 }
 
 /**
- * Opt-in strict mode for served code (`NS_VITE_STRICT_REQUIRE=1`): the dev boot
- * module first replaces the runtime's global `require` with one that throws
- * when called, so any served code still reaching it fails loudly.
+ * Strict mode for served code, on unless `NS_VITE_STRICT_REQUIRE` is `0`,
+ * `false`, `off` or `no`: the dev boot module first shadows the runtime's
+ * global `require`, so served code still reaching it fails loudly.
  */
 export function isStrictGlobalRequireEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
 	const raw = (env.NS_VITE_STRICT_REQUIRE ?? '').toString().trim().toLowerCase();
-	return ['1', 'true', 'on', 'yes'].includes(raw);
+	return !['0', 'false', 'off', 'no'].includes(raw);
 }
 
 type BootCodeOptions = { platform: 'ios' | 'android' | 'visionos'; isDevMode: boolean; verbose: boolean; hmrActive: boolean; flavor: string };

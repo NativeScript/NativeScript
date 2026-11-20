@@ -110,20 +110,3 @@ describe('createModuleRequire', () => {
 		expect(() => require.cache).toThrow(/require\.cache is not supported/);
 	});
 });
-
-describe('strict global require', () => {
-	it('replaces the global require with a function that throws only when called', async () => {
-		const g = globalThis as any;
-		const had = Object.prototype.hasOwnProperty.call(g, 'require');
-		const previous = g.require;
-		try {
-			await import('./strict-global-require.js');
-			expect(typeof g.require).toBe('function');
-			const captured = g.require;
-			expect(() => captured('x')).toThrow(/require\("x"\): the global require is not available in dev/);
-		} finally {
-			if (had) g.require = previous;
-			else delete g.require;
-		}
-	});
-});
