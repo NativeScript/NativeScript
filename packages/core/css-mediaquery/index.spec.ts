@@ -162,6 +162,17 @@ describe('css-mediaquery', () => {
 				expect(matchQuery('not unknown', { type: MediaQueryType.screen })).toBe(true);
 				expect(matchQuery('not tv and (min-width: 100px)', { type: MediaQueryType.screen, width: 800 })).toBe(true);
 			});
+
+			it('should treat reserved media type keywords as never-matching (`not all`)', () => {
+				expect(matchQuery('not only', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('not not', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('not and', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('not or', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('not layer', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('and', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('or', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('layer', { type: MediaQueryType.screen })).toBe(false);
+			});
 		});
 	});
 });
