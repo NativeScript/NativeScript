@@ -2,7 +2,7 @@ import type { Plugin } from 'vite';
 
 // Safety-net TypeScript fallback transform.
 //
-// Problem: In HMR mode (where `useAngularCompilationAPI = false`), the
+// Problem: with `useAngularCompilationAPI = false` (always, see angular.ts), the
 // `@analogjs/vite-plugin-angular` `config` hook forcibly sets `oxc: false` on
 // the Vite config (see `angular-vite-plugin.js`:
 // `const oxc = pluginOptions.useAngularCompilationAPI ? undefined : (config.oxc ?? false);`).

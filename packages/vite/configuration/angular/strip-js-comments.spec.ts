@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { containsRealNgDeclare, stripJsComments } from './util.js';
+import { stripJsComments } from './strip-js-comments.js';
 
 describe('stripJsComments', () => {
 	it('returns the input unchanged when there are no comments', () => {
@@ -45,19 +45,5 @@ describe('stripJsComments', () => {
 		const out = stripJsComments(src);
 		expect(/styleUrls\s*:\s*\[/.test(out)).toBe(false);
 		expect(/templateUrl\s*:\s*['"]\.\/x\.html['"]/.test(out)).toBe(true);
-	});
-});
-
-describe('containsRealNgDeclare', () => {
-	it('detects ɵɵngDeclareComponent in real code', () => {
-		expect(containsRealNgDeclare('export const x = i0.ɵɵngDeclareComponent({});')).toBe(true);
-	});
-
-	it('ignores ɵɵngDeclare references inside string literals', () => {
-		expect(containsRealNgDeclare("const s = 'i0.ɵɵngDeclareComponent(';")).toBe(false);
-	});
-
-	it('ignores ɵɵngDeclare references inside line comments', () => {
-		expect(containsRealNgDeclare('// i0.ɵɵngDeclareComponent({})')).toBe(false);
 	});
 });

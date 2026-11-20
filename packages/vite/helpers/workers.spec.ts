@@ -230,9 +230,6 @@ describe('worker graph in a real Vite dev server', () => {
 	});
 });
 
-// tsFallbackTransformPlugin + angularWorkerUrlPreservePlugin specs moved with
-// their plugins to hmr/frameworks/angular/build/.
-
 // --- neutralizeWorkerImportMeta -----------------------------------------
 //
 // Worker chunks are classic scripts; any code-level `import.meta` token is a

@@ -93,7 +93,6 @@
 		"vite"
 	],
 	"dependencies": {
-		"@babel/core": "^7.28.0",
 		"@rollup/plugin-alias": "^6.0.0",
 		"@rollup/plugin-replace": "^6.0.2",
 		"css": "^3.0.0",
@@ -106,7 +105,7 @@
 		"vite-plugin-static-copy": "^4.0.1"
 	},
 	"peerDependencies": {
-		"@analogjs/vite-plugin-angular": "^2.0.0",
+		"@analogjs/vite-plugin-angular": "^2.7.1",
 		"@angular/build": "^21.0.0 || ^22.0.0",
 		"@vitejs/plugin-vue": "^6.0.5",
 		"@vitejs/plugin-vue-jsx": "^5.1.5",

@@ -151,7 +151,7 @@ export function shouldSuppressViteWarning(msg: string): boolean {
 	//
 	// In practice these files compile fine via our `tsFallbackTransformPlugin`
 	// (which type-strips them through Vite's oxc transformer at request
-	// time, see `helpers/workers.ts`'s ANGULAR_DECORATOR_RE skip-guard for
+	// time, see `configuration/angular/ts-fallback-transform.ts`'s ANGULAR_DECORATOR_RE skip-guard for
 	// the matching policy). Decorator metadata isn't generated for them
 	// because they're not in the Angular program — but that's exactly the
 	// expected outcome for files that don't need DI or template binding.

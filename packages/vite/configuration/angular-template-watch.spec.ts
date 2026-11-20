@@ -11,11 +11,6 @@ vi.mock('./base.js', () => ({
 	baseConfig: vi.fn(() => ({})),
 }));
 
-vi.mock('../hmr/frameworks/angular/build/angular-linker.js', () => ({
-	angularLinkerVitePlugin: vi.fn(() => ({ name: 'mock-angular-linker-pre' })),
-	angularLinkerVitePluginPost: vi.fn(() => ({ name: 'mock-angular-linker-post' })),
-}));
-
 vi.mock('../helpers/cli-flags.js', () => ({
 	getCliFlags: vi.fn(() => ({})),
 }));

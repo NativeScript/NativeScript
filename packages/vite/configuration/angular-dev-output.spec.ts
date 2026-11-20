@@ -4,11 +4,6 @@ vi.mock('@analogjs/vite-plugin-angular', () => ({
 	default: vi.fn(() => []),
 }));
 
-vi.mock('../hmr/frameworks/angular/build/angular-linker.js', () => ({
-	angularLinkerVitePlugin: vi.fn(() => ({ name: 'mock-angular-linker-pre' })),
-	angularLinkerVitePluginPost: vi.fn(() => ({ name: 'mock-angular-linker-post' })),
-}));
-
 vi.mock('../helpers/cli-flags.js', () => ({
 	getCliFlags: vi.fn(() => ({})),
 }));
@@ -32,32 +27,20 @@ import angular from '@analogjs/vite-plugin-angular';
 const angularPluginFactory = vi.mocked(angular);
 
 describe('angularConfig non-HMR development output', () => {
-	it('enables the Angular compilation API for development no-HMR builds', () => {
-		angularPluginFactory.mockClear();
+	it('never enables the Angular compilation API', () => {
+		for (const mode of ['development', 'production']) {
+			angularPluginFactory.mockClear();
 
-		angularConfig({ mode: 'development' });
+			angularConfig({ mode });
 
-		expect(angularPluginFactory).toHaveBeenCalledWith(
-			expect.objectContaining({
-				experimental: {
-					useAngularCompilationAPI: true,
-				},
-			}),
-		);
-	});
-
-	it('keeps the Angular compilation API disabled outside development no-HMR mode', () => {
-		angularPluginFactory.mockClear();
-
-		angularConfig({ mode: 'production' });
-
-		expect(angularPluginFactory).toHaveBeenCalledWith(
-			expect.objectContaining({
-				experimental: {
-					useAngularCompilationAPI: false,
-				},
-			}),
-		);
+			expect(angularPluginFactory).toHaveBeenCalledWith(
+				expect.objectContaining({
+					experimental: {
+						useAngularCompilationAPI: false,
+					},
+				}),
+			);
+		}
 	});
 
 	it('disables chunk splitting for development rebuilds', () => {
