@@ -1,6 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { Page, isAndroid, Frame, NavigationEntry, Application, TabView, TabViewItem } from '@nativescript/core';
+import { Page, isAndroid, Frame, NavigationEntry, Application, TabView, TabViewItem, Label, Button, StackLayout, FormattedString, Span } from '@nativescript/core';
 
 function waitUntilTabViewReady(page: Page, action: Function) {
 	helper.waitUntilNavigatedTo(page, action);
@@ -142,6 +142,31 @@ export function test_reset_during_tab_index_change() {
 	helper.waitUntilNavigatedTo(testFrameRoot.page, () => Application.resetRootView(testFrameRoot.entry));
 
 	TKUnit.assertTrue(true);
+}
+
+export function test_reset_layout_with_transformed_text_to_frame() {
+	const label = new Label();
+	label.text = 'label';
+	label.textTransform = 'uppercase';
+
+	const formattedText = new FormattedString();
+	const span = new Span();
+	span.text = 'button';
+	formattedText.spans.push(span);
+	const button = new Button();
+	button.formattedText = formattedText;
+
+	const layoutRoot = new StackLayout();
+	layoutRoot.addChild(label);
+	layoutRoot.addChild(button);
+
+	Application.resetRootView({ create: () => layoutRoot });
+	TKUnit.waitUntilReady(() => layoutRoot.isLoaded);
+	TKUnit.assertEqual(Application.getRootView(), layoutRoot);
+
+	const testFrameRoot = createTestFrameRootEntry();
+	helper.waitUntilNavigatedTo(testFrameRoot.page, () => Application.resetRootView(testFrameRoot.entry));
+	TKUnit.assertEqual(Application.getRootView(), testFrameRoot.root);
 }
 
 export function tearDownModule() {

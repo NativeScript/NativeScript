@@ -32,22 +32,32 @@ function initializeTextTransformation(): void {
 	@NativeClass
 	@Interfaces([android.text.method.TransformationMethod])
 	class TextTransformationImpl extends java.lang.Object implements android.text.method.TransformationMethod {
-		constructor(public textBase: TextBase) {
+		// Weak: the native text view holds this transformation, so a strong owner would be
+		// a cycle that only tearing down the view breaks.
+		public textBase: WeakRef<TextBase>;
+
+		constructor(textBase: TextBase) {
 			super();
+			this.textBase = new WeakRef(textBase);
 
 			return global.__native(this);
 		}
 
 		public getTransformation(charSeq: any, view: android.view.View): any {
+			const textBase = this.textBase.deref();
+			if (!textBase) {
+				return charSeq;
+			}
+
 			// NOTE: Do we need to transform the new text here?
-			const formattedText = this.textBase.formattedText;
+			const formattedText = textBase.formattedText;
 			if (formattedText) {
-				return this.textBase.createFormattedTextNative(formattedText);
+				return textBase.createFormattedTextNative(formattedText);
 			} else {
-				const text = this.textBase.text;
+				const text = textBase.text;
 				const stringValue = isNullOrUndefined(text) ? '' : text.toString();
 
-				return getTransformedText(stringValue, this.textBase.textTransform);
+				return getTransformedText(stringValue, textBase.textTransform);
 			}
 		}
 
