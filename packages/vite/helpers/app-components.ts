@@ -107,6 +107,11 @@ export function getServedAppComponents(): Array<{ absolutePath: string; outputNa
 	return getResolvedAppComponents('android').filter((component) => !readsAsApplicationComponent(component.absolutePath));
 }
 
+/** The custom `Application` component, the one Android app component that is built to disk under HMR. */
+export function getApplicationAppComponent(): { absolutePath: string; outputName: string } | undefined {
+	return getResolvedAppComponents('android').find((component) => readsAsApplicationComponent(component.absolutePath));
+}
+
 /**
  * Plugin to handle NativeScript app components (custom Activity/Application classes)
  *

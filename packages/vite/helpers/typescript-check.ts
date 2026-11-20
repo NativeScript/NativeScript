@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import type * as TS from 'typescript';
 import { getCliFlags, resolvePlatform } from './cli-flags.js';
+import { isSingleProcessDev } from '../hmr/server/dev-output.js';
 import { getProjectRootPath, getProjectTSConfigPath } from './project.js';
 import type { Platform } from './platform-types.js';
 import { loadTypeScript, type TypeScript } from './typescript.js';
@@ -480,7 +481,8 @@ export function vueTypeCheckPlugin(opts: { platform?: PlatformType; verbose?: bo
 
 export function getTypeCheckPlugins(flavor: TypeCheckFlavor, setting?: TypeCheckSetting): Plugin[] {
 	const options = getTypeCheckOptions(setting);
-	if (!options.enabled) {
+	// A single-process dev server only builds an Android `Application` chunk, in process.
+	if (!options.enabled || (options.platform && isSingleProcessDev(options.platform))) {
 		return [];
 	}
 

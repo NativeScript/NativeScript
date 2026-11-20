@@ -10,7 +10,8 @@ describe('isSingleProcessDev', () => {
 		const asked = { [SINGLE_PROCESS_DEV_ENV]: '1' };
 		expect(isSingleProcessDev('ios', asked)).toBe(true);
 		expect(isSingleProcessDev('visionos', asked)).toBe(true);
-		expect(isSingleProcessDev('android', asked)).toBe(false);
+		expect(isSingleProcessDev('android', asked)).toBe(true);
+		expect(isSingleProcessDev('web', asked)).toBe(false);
 		expect(isSingleProcessDev('ios', {})).toBe(false);
 		expect(isSingleProcessDev('ios', { [SINGLE_PROCESS_DEV_ENV]: '0' })).toBe(false);
 	});

@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 import { composeDevBootBundle, devBootLoaderOptions } from '../../helpers/dev-boot-bundle.js';
 import { BOOT_BUNDLE_FILE, cliBuildMessage, type CliBuildMessage } from '../../helpers/ns-cli-plugins.js';
 import { nsConfigToJson } from '../../helpers/utils.js';
+import { getApplicationAppComponent } from '../../helpers/app-components.js';
 import { WARM_WAIT_CAP_MS } from './dev-boot-routes.js';
+import { buildDevApplication, createDevApplicationChunk } from './dev-application-build.js';
 import { getServerOrigin } from './server-origin.js';
 
 /** Set to `1` by the NativeScript CLI on a `vite serve` it runs without a `vite build --watch`. */
@@ -14,10 +16,10 @@ export const SINGLE_PROCESS_DEV_ENV = 'NS_VITE_SINGLE_PROCESS';
 /**
  * Platforms whose dev output `vite serve` writes itself. The CLI reads the
  * same list from this package's `package.json` (`nativescriptCli.singleProcessDev`)
- * to decide whether to ask for it. Android keeps the HMR build: its app
- * components must be on disk for the static binding generator.
+ * to decide whether to ask for it. In this mode the only build the process
+ * runs is an Android custom `Application` chunk (`dev-application-build.ts`).
  */
-export const SINGLE_PROCESS_DEV_PLATFORMS: readonly string[] = ['ios', 'visionos'];
+export const SINGLE_PROCESS_DEV_PLATFORMS: readonly string[] = ['ios', 'visionos', 'android'];
 
 export function isSingleProcessDev(platform: string, env: NodeJS.ProcessEnv = process.env): boolean {
 	return env[SINGLE_PROCESS_DEV_ENV] === '1' && SINGLE_PROCESS_DEV_PLATFORMS.includes(platform);
@@ -31,15 +33,16 @@ export interface DevOutputCopyDir {
 }
 
 export interface DevOutputOptions {
+	platform: string;
 	/** The directory the CLI copies into the app (`build.outDir`). */
 	outDir: string;
 	copyDirs: DevOutputCopyDir[];
 }
 
-export interface DevOutputWriterOptions extends DevOutputOptions {
+export interface DevOutputWriterOptions extends Omit<DevOutputOptions, 'platform'> {
 	root: string;
 	/** Generated files by output-relative path, read on every sync. */
-	files: () => Record<string, string>;
+	files: () => Record<string, string | Uint8Array>;
 	send?: (message: CliBuildMessage) => void;
 	warn: (message: string) => void;
 	debounceMs?: number;
@@ -94,8 +97,8 @@ function listFiles(dir: string, dot = false): string[] {
 }
 
 /** Writes `content` to `file` unless it already holds it; true when written. */
-function writeIfChanged(file: string, content: string | Buffer): boolean {
-	const next = typeof content === 'string' ? Buffer.from(content) : content;
+function writeIfChanged(file: string, content: string | Uint8Array): boolean {
+	const next = Buffer.from(content);
 	try {
 		if (fs.readFileSync(file).equals(next)) return false;
 	} catch {}
@@ -193,33 +196,65 @@ const DEV_BOOT_LOADER_FILE = fileURLToPath(new URL('../../runtime/dev-boot-loade
 
 /**
  * Writes what the HMR build writes for the CLI (`bundle.mjs`, `package.json`,
- * the app's static directories) once the server listens and its boot graph is
- * warm, keeps the copies current from Vite's watcher, and sends the CLI the
- * build's messages, so `vite serve` alone runs a dev session.
+ * the app's static directories, and on Android a custom `Application` chunk)
+ * once the server listens and its boot graph is warm, keeps them current from
+ * Vite's watcher, and sends the CLI the build's messages, so `vite serve`
+ * alone runs a dev session.
  */
 export function startDevOutput(server: ViteDevServer, options: DevOutputOptions & { verbose?: boolean }, warmedUp: Promise<void>): void {
 	const logger = server.config.logger;
+	const applicationComponent = options.platform === 'android' ? getApplicationAppComponent() : undefined;
+	// A rebuild before the first sync must not send the CLI's `initial` message early.
+	let synced = false;
+	const application = applicationComponent
+		? createDevApplicationChunk({
+				component: applicationComponent,
+				build: (component) => buildDevApplication(server, component),
+				// The CLI syncs the chunk and restarts the app, which evaluates it from disk.
+				onRebuilt: () => {
+					if (!synced) return;
+					try {
+						writer.sync();
+					} catch (error: any) {
+						logger.error(`[NativeScript] could not write the custom Application chunk to ${options.outDir}: ${error?.message ?? error}`, { timestamp: true });
+					}
+				},
+				error: (message) => logger.error(message, { timestamp: true }),
+				watch: (files) => server.watcher.add(files.filter((file) => !isInside(server.config.root, file))),
+			})
+		: undefined;
 	const writer = createDevOutputWriter({
 		...options,
 		root: server.config.root,
 		files: () => ({
 			[BOOT_BUNDLE_FILE]: composeDevBootBundle(fs.readFileSync(DEV_BOOT_LOADER_FILE, 'utf8'), devBootLoaderOptions(getServerOrigin(server), server.config.webSocketToken, !!options.verbose)),
 			'package.json': JSON.stringify(nsConfigToJson(), null, 2),
+			...application?.files(),
 		}),
 		send: typeof process.send === 'function' ? (message) => process.send!(message) : undefined,
 		warn: (message) => logger.warn(message, { timestamp: true }),
 	});
 	for (const event of ['add', 'change', 'unlink'] as const) {
-		server.watcher.on(event, (file: string) => writer.onFileEvent(event, file));
+		server.watcher.on(event, (file: string) => {
+			writer.onFileEvent(event, file);
+			application?.onFileEvent(file);
+		});
 	}
+	const applicationBuilt = application ? application.build() : Promise.resolve(true);
 	let capTimer: ReturnType<typeof setTimeout> | undefined;
 	const capped = new Promise<void>((resolve) => {
 		capTimer = setTimeout(resolve, WARM_WAIT_CAP_MS);
 		capTimer.unref?.();
 	});
-	void Promise.race([warmedUp, capped]).then(() => {
+	void Promise.all([Promise.race([warmedUp, capped]), applicationBuilt]).then(([, built]) => {
 		clearTimeout(capTimer);
 		const firstSync = !processState.initialSent;
+		// The CLI's native build, binding generator included, runs on the first message.
+		if (firstSync && !built) {
+			logger.error(`[NativeScript] the native build needs the custom Application chunk: fix it and run again.`, { timestamp: true });
+			process.exit(1);
+		}
+		synced = true;
 		try {
 			writer.sync();
 		} catch (error: any) {

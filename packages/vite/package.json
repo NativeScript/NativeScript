@@ -85,7 +85,8 @@
 	"nativescriptCli": {
 		"singleProcessDev": [
 			"ios",
-			"visionos"
+			"visionos",
+			"android"
 		]
 	},
 	"keywords": [

@@ -235,10 +235,13 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		staticCopyTargets.push({ src: `${fontsDir}/**/*`.replace(/\\/g, '/'), dest: 'fonts', rename: { stripBase: fontsStripBase } });
 	}
 	// `vite serve` writes what the HMR build would (see `hmr/server/dev-output.ts`)
-	// when the CLI runs no build next to it.
+	// when the CLI runs no build next to it. The only build such a process runs
+	// is an Android custom `Application` chunk, which needs none of the
+	// full build's CLI messages, type check or static copies.
 	const singleProcessDev = hmrActive && isSingleProcessDev(platform);
 	const devOutput = singleProcessDev
 		? {
+				platform,
 				outDir: path.resolve(projectRoot, distOutputFolder),
 				copyDirs: [
 					{ dir: assetsDir, dest: 'assets' },
@@ -331,14 +334,14 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// In single-process dev the dev output copies them, and the CLI restarts
 			// the app on its message; this plugin's serve half would answer the same
 			// change with a `full-reload`, i.e. a second restart.
-			...((staticCopyTargets == null ? void 0 : staticCopyTargets.length)
+			...(staticCopyTargets.length && !singleProcessDev
 				? viteStaticCopy({
 						targets: staticCopyTargets,
 						watch: { reloadPageOnChange: true },
-					}).filter((plugin) => !(singleProcessDev && plugin.apply === 'serve'))
+					})
 				: []),
 			// NativeScript CLI integration
-			cliPlugin({ distOutputFolder, isDevMode, verbose, hmrActive }),
+			...(singleProcessDev ? [] : [cliPlugin({ distOutputFolder, isDevMode, verbose, hmrActive })]),
 		],
 		css: {
 			postcss: createPostCssConfig({
