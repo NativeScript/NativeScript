@@ -100,7 +100,7 @@ describe('registerDevBootRoutes', () => {
 
 	it("answers a failed boot with the server's recent transform error", async () => {
 		const { server, handlers } = fakeServer(idleEnv());
-		const onError = registerDevBootRoutes(server, { bootGraphUrls: () => [], request: vi.fn() });
+		const { errorHandler: onError } = registerDevBootRoutes(server, { bootGraphUrls: () => [], request: vi.fn() });
 		const forwarded = vi.fn();
 		onError(new Error('main.ts:7:28: Property assignment expected.'), {} as any, {} as any, forwarded);
 		expect(forwarded).toHaveBeenCalledOnce();

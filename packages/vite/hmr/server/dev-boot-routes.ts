@@ -4,7 +4,7 @@ import { cliLaunchesAppAfterServerStart, requestAppRestart } from './app-restart
 import { NS_DEV_BOOT_FAILED_PATH, NS_DEV_RESTART_PATH, NS_DEV_WARM_PATH } from './dev-routes.js';
 
 /** How long {@link NS_DEV_WARM_PATH} holds a request before answering anyway. */
-const WARM_WAIT_CAP_MS = 30_000;
+export const WARM_WAIT_CAP_MS = 30_000;
 const RECENT_ERROR_MS = 60_000;
 /** How long after a restart for a failed boot a `full-reload` for the same edit is dropped. */
 const STALE_RELOAD_MS = 5_000;
@@ -70,15 +70,20 @@ function sendJson(res: import('node:http').ServerResponse, body: unknown, status
 	res.end(JSON.stringify(body));
 }
 
+export interface DevBootRoutes {
+	/** To install after Vite's transform middleware. */
+	errorHandler: Connect.ErrorHandleFunction;
+	/** Resolves once the server listens and its boot graph warm-up is done (or failed). */
+	warmedUp: Promise<void>;
+}
+
 /**
  * Routes the dev boot loader in `bundle.mjs` calls when the boot never
  * reached the app's own launch (it then owns `UIApplicationMain`, so only a
  * new process can boot the app), plus the warm-up gate the HMR build waits on
  * before the CLI launches the app.
- *
- * Returns the error middleware to install after Vite's transform middleware.
  */
-export function registerDevBootRoutes(server: ViteDevServer, options: DevBootRoutesOptions): Connect.ErrorHandleFunction {
+export function registerDevBootRoutes(server: ViteDevServer, options: DevBootRoutesOptions): DevBootRoutes {
 	const request = options.request ?? requestAppRestart;
 	const cliLaunchesApp = options.cliLaunchesApp ?? cliLaunchesAppAfterServerStart;
 	const now = options.now ?? Date.now;
@@ -159,8 +164,11 @@ export function registerDevBootRoutes(server: ViteDevServer, options: DevBootRou
 		next();
 	});
 
-	return (err, _req, _res, next) => {
-		lastServerError = { message: err?.message ? String(err.message) : String(err), at: Date.now() };
-		next(err);
+	return {
+		errorHandler: (err, _req, _res, next) => {
+			lastServerError = { message: err?.message ? String(err.message) : String(err), at: Date.now() };
+			next(err);
+		},
+		warmedUp: warm,
 	};
 }

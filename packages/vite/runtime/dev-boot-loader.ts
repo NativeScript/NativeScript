@@ -2,10 +2,11 @@
  * The dev `bundle.mjs` under HMR: loads the app from the dev server and, when
  * that fails before the app launched, launches a minimal screen that says why.
  *
- * Bundled into `bundle.mjs`, so it must not import anything the dev server
- * serves (core included): it drives UIKit through the runtime directly.
+ * Imports nothing: the dev server writes this file's compiled output into
+ * `bundle.mjs` as is (`helpers/dev-boot-bundle.ts`), and it must not depend on
+ * anything the dev server serves (core included), so it drives UIKit through
+ * the runtime directly.
  */
-import { NS_DEV_BOOT_FAILED_PATH, NS_DEV_RESTART_PATH } from '../hmr/server/dev-routes.js';
 
 export interface DevBootLoaderOptions {
 	/** The dev server origin the device reaches. */
@@ -27,6 +28,9 @@ interface DevBootFailure {
 // runtime's 30 s fetch timeout plus a retry.
 const REACHABILITY_TIMEOUT_MS = 6000;
 const RECONNECT_INTERVAL_MS = 2000;
+// Copies of `NS_DEV_RESTART_PATH` and `NS_DEV_BOOT_FAILED_PATH` (`hmr/server/dev-routes.ts`).
+export const RESTART_PATH = '/__ns_dev__/restart';
+export const BOOT_FAILED_PATH = '/__ns_dev__/boot-failed';
 
 const g: any = globalThis;
 
@@ -88,7 +92,7 @@ function showDevServerUnreachable(options: DevBootLoaderOptions, failure: DevBoo
 	// process: the dev server restarts it. It compares `age` with its own uptime.
 	const reconnect = () => {
 		const query = `reason=${encodeURIComponent('the dev server is reachable again')}&age=${Date.now() - startedAt}&token=${encodeURIComponent(options.token)}`;
-		httpGet(`${options.origin}${NS_DEV_RESTART_PATH}?${query}`, 3, (ok) => {
+		httpGet(`${options.origin}${RESTART_PATH}?${query}`, 3, (ok) => {
 			if (!ok) setTimeout(reconnect, RECONNECT_INTERVAL_MS);
 			else console.info('[ns-entry] the dev server is reachable again; it restarts the app');
 		});
@@ -99,7 +103,7 @@ function showDevServerUnreachable(options: DevBootLoaderOptions, failure: DevBoo
 function showBootFailure(options: DevBootLoaderOptions, failure: DevBootFailure): void {
 	const details = failure.stack && failure.stack.indexOf(failure.message) === -1 ? `${failure.message}\n\n${failure.stack}` : failure.stack || failure.message;
 	const screen = launchFallback({ title: 'The app failed to boot', text: `${details}\n\nFix the error and save: the app restarts.` });
-	httpGet(`${options.origin}${NS_DEV_BOOT_FAILED_PATH}?reason=${encodeURIComponent(failure.message)}&token=${encodeURIComponent(options.token)}`, 5, (ok, body) => {
+	httpGet(`${options.origin}${BOOT_FAILED_PATH}?reason=${encodeURIComponent(failure.message)}&token=${encodeURIComponent(options.token)}`, 5, (ok, body) => {
 		if (!ok || !body) return;
 		try {
 			const serverError = JSON.parse(body).serverError;

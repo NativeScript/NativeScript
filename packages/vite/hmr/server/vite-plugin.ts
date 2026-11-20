@@ -11,6 +11,8 @@ import { createDeviceRequestMiddleware, useFirst } from './device-requests.js';
 import { getServerOrigin } from './server-origin.js';
 import { devWsTokenFile, publishDevWsToken } from '../../helpers/dev-ws-token.js';
 import { devServerAddressOf } from '../../helpers/ns-cli-plugins.js';
+import { DEV_BOOT_RESOLVED } from '../../helpers/dev-boot-bundle.js';
+import { startDevOutput, type DevOutputOptions } from './dev-output.js';
 import { fileURLToPath } from 'node:url';
 
 const runtimeFile = (relToHmrServer: string) => fileURLToPath(new URL(relToHmrServer, import.meta.url));
@@ -160,7 +162,7 @@ let processWebSocketToken: string | undefined;
 /**
  * Gives every config resolved in this process the first one's
  * `webSocketToken`, and `publish`es it for the HMR build, which bakes it into
- * `bundle.mjs`.
+ * `bundle.mjs` (when this server doesn't write `bundle.mjs` itself).
  */
 export function pinWebSocketToken(config: { webSocketToken: string }, publish: (token: string) => void): void {
 	processWebSocketToken ??= config.webSocketToken;
@@ -257,7 +259,14 @@ export function allowDeviceHost(config: { server: { allowedHosts: string[] | tru
 	allowedHosts.push(hostname);
 }
 
-export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?: boolean }): Plugin {
+export interface NsHmrClientPluginOptions {
+	platform: NsDevPlatform;
+	verbose?: boolean;
+	/** Set when this server writes the dev output itself (`dev-output.ts`), with no HMR build next to it. */
+	devOutput?: DevOutputOptions;
+}
+
+export function nsHmrClientVitePlugin(opts: NsHmrClientPluginOptions): Plugin {
 	let config: ResolvedConfig | undefined;
 	let devServer: ViteDevServer | undefined;
 	const sessionId = new Date().toISOString();
@@ -293,7 +302,7 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 			if (c.command === 'serve') {
 				// Vite checks upgrades against `config.webSocketToken` of the config
 				// it hands to `configResolved`, so pinning it here is what it uses.
-				pinWebSocketToken(c as { webSocketToken: string }, (token) => publishDevWsToken(devWsTokenFile(c.root, devServerAddressOf(c.server).port), token));
+				pinWebSocketToken(c as { webSocketToken: string }, opts.devOutput ? () => {} : (token) => publishDevWsToken(devWsTokenFile(c.root, devServerAddressOf(c.server).port), token));
 				allowServedDirs(c, [nsVitePackageDir()]);
 				// Vite freezes a copy of `allowedHosts` when it creates the server.
 				allowDeviceHost(c);
@@ -336,13 +345,14 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 					res.end(JSON.stringify({ error: error?.message || 'Failed to build NativeScript dev session descriptor' }));
 				}
 			});
-			const onTransformError = registerDevBootRoutes(server, {
+			const bootRoutes = registerDevBootRoutes(server, {
 				// Ids as Vite's transform middleware passes them on (`/@id/__x00__` unwrapped).
-				bootGraphUrls: () => ['\0virtual:ns-dev-boot', NS_DEV_CLIENT_RESOLVED, resolveProjectMainEntryPath(server.config.root)],
+				bootGraphUrls: () => [DEV_BOOT_RESOLVED, NS_DEV_CLIENT_RESOLVED, resolveProjectMainEntryPath(server.config.root)],
 			});
+			if (opts.devOutput) startDevOutput(server, { ...opts.devOutput, verbose: opts.verbose }, bootRoutes.warmedUp);
 			// After Vite's own middlewares, ahead of its error handler.
 			return () => {
-				server.middlewares.use(onTransformError);
+				server.middlewares.use(bootRoutes.errorHandler);
 			};
 		},
 	};

@@ -12,7 +12,7 @@ import { devWsTokenFile, devWsTokenForBundle } from './dev-ws-token.js';
 import { devServerAddressOf, waitForDevServerListening } from './ns-cli-plugins.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
 import { BUNDLE_CSS_AST_SENTINEL, inlineBundleCss } from './bundle-css.js';
-import { deviceUrlForGraphUrl } from '../hmr/server/vite-url.js';
+import { DEV_BOOT_RESOLVED, DEV_BOOT_VIRTUAL_ID, devBootLoaderOptions } from './dev-boot-bundle.js';
 import { IMPORT_MAP_PATH, NS_DEV_SESSION_PATH } from '../hmr/server/dev-routes.js';
 interface ProjectEntry {
 	projectRoot: string;
@@ -82,14 +82,6 @@ const BUNDLE_CSS_RESOLVED = '\0' + BUNDLE_CSS_VIRTUAL_ID;
 // polyfill is installed during module evaluation (before zone.js patches run).
 const XHR_POLYFILL_VIRTUAL_ID = 'virtual:ns-xhr-polyfill';
 const XHR_POLYFILL_RESOLVED = '\0' + XHR_POLYFILL_VIRTUAL_ID;
-
-// Under HMR, everything `bundle.mjs` boots with is this one module, served by
-// the dev server: Vite's import analysis then writes every URL it imports,
-// exactly as it does for the app graph, so each file has one device URL.
-const DEV_BOOT_VIRTUAL_ID = 'virtual:ns-dev-boot';
-const DEV_BOOT_RESOLVED = '\0' + DEV_BOOT_VIRTUAL_ID;
-/** The root-relative URL the device requests the dev boot module under. */
-const DEV_BOOT_DEVICE_PATH = deviceUrlForGraphUrl(DEV_BOOT_RESOLVED);
 
 /** Bare `@nativescript/core[/sub]` specifier. */
 function coreSpec(subpath?: string | null): string {
@@ -367,8 +359,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 	// session-bootstrap's `configureLoader` installs the import map, so it
 	// names absolute URLs only.
 	const generateHmrBundleEntry = (bootOrigin: string, token: string): string => {
-		const loaderOptions = { origin: bootOrigin, bootUrl: bootOrigin + DEV_BOOT_DEVICE_PATH, token, verbose: opts.verbose };
-		return `import { bootFromDevServer } from '@nativescript/vite/runtime/dev-boot-loader.js';\nawait bootFromDevServer(${JSON.stringify(loaderOptions)});\n` + appComponentImports(opts);
+		return `import { bootFromDevServer } from '@nativescript/vite/runtime/dev-boot-loader.js';\nawait bootFromDevServer(${JSON.stringify(devBootLoaderOptions(bootOrigin, token, opts.verbose))});\n` + appComponentImports(opts);
 	};
 
 	return {

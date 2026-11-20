@@ -1,5 +1,6 @@
 import type { NsDevPlatform } from '../shared/runtime/browser-runtime-contract.js';
 import { nsHmrClientVitePlugin, nsViteClientPlugin } from './vite-plugin.js';
+import type { DevOutputOptions } from './dev-output.js';
 import { nsImportMapPlugin } from './import-map-route.js';
 import { nsAppRestartPlugin } from './app-restart.js';
 import { nsAppCssModulePlugins } from './app-css-module.js';
@@ -8,7 +9,7 @@ import { nsRerunPlugin } from './update-gate.js';
 import { nsModuleRequirePlugin } from './module-require.js';
 import { nsPreBundleWatchPlugin } from './prebundle-watch.js';
 
-export function getHMRPlugins(opts: { platform: NsDevPlatform; flavor: string; verbose: boolean }) {
+export function getHMRPlugins(opts: { platform: NsDevPlatform; flavor: string; verbose: boolean; devOutput?: DevOutputOptions }) {
 	// The pre-bundle watch hot-update hook ahead of the app restart one: both
 	// are `pre`, and rebuilding the pre-bundles supersedes any other handling
 	// of the same file.

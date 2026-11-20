@@ -1,5 +1,9 @@
+import fs from 'node:fs';
+import { transformSync } from 'esbuild';
+import { init, parse } from 'es-module-lexer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { bootFromDevServer } from './dev-boot-loader.js';
+import { BOOT_FAILED_PATH, RESTART_PATH, bootFromDevServer } from './dev-boot-loader.js';
+import { NS_DEV_BOOT_FAILED_PATH, NS_DEV_RESTART_PATH } from '../hmr/server/dev-routes.js';
 
 const OPTIONS = { origin: 'http://192.168.1.5:5173', bootUrl: 'http://192.168.1.5:5173/@id/__x00__virtual:ns-dev-boot', token: 'a+b' };
 
@@ -7,6 +11,20 @@ afterEach(() => {
 	vi.unstubAllGlobals();
 	vi.restoreAllMocks();
 	vi.useRealTimers();
+});
+
+describe('dev boot loader module', () => {
+	it('imports nothing, so its compiled output is bundle.mjs without bundling', async () => {
+		await init;
+		const { code } = transformSync(fs.readFileSync(new URL('./dev-boot-loader.ts', import.meta.url), 'utf8'), { loader: 'ts', format: 'esm' });
+		const [imports] = parse(code);
+		expect(imports.filter((entry) => entry.d === -1)).toEqual([]);
+	});
+
+	it("names the dev server's routes", () => {
+		expect(RESTART_PATH).toBe(NS_DEV_RESTART_PATH);
+		expect(BOOT_FAILED_PATH).toBe(NS_DEV_BOOT_FAILED_PATH);
+	});
 });
 
 describe('bootFromDevServer', () => {

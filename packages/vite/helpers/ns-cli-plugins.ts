@@ -20,6 +20,34 @@ export function hashBootBundle(bundle: Record<string, { type: string; code?: str
 	return createHash('sha1').update(content).digest('hex');
 }
 
+/**
+ * The message the NativeScript CLI copies and syncs files on: the first one
+ * (`initial`) launches the app, a later one restarts it with the files.
+ * `emittedFiles` and `removedFiles` are relative to the output directory; a
+ * CLI that doesn't know `removedFiles` ignores it.
+ */
+export interface CliBuildMessage {
+	emittedFiles: string[];
+	chunkFiles: string[];
+	hash: string;
+	isHMR: false;
+	buildType: 'initial' | 'incremental';
+	timestamp: number;
+	removedFiles?: string[];
+}
+
+export function cliBuildMessage(files: string[], buildType: CliBuildMessage['buildType'], removedFiles?: string[]): CliBuildMessage {
+	return {
+		emittedFiles: files,
+		chunkFiles: files.filter((f) => f.includes('chunk') || f.includes('vendor')),
+		hash: Date.now().toString(),
+		isHMR: false,
+		buildType,
+		timestamp: Date.now(),
+		...(removedFiles?.length ? { removedFiles } : {}),
+	};
+}
+
 // Covers the dev server starting up, which the CLI runs in parallel.
 const WARM_WAIT_MS = 30_000;
 const WARM_RETRY_MS = 200;
@@ -182,18 +210,10 @@ export function cliPlugin(opts: { distOutputFolder: string; isDevMode: boolean; 
 
 			if (process.send) {
 				const sendMessage = (files: string[]) => {
-					const message = {
-						emittedFiles: files,
-						chunkFiles: files.filter((f) => f.includes('chunk') || f.includes('vendor')),
-						hash: Date.now().toString(),
-						isHMR: false,
-						buildType,
-						timestamp: Date.now(),
-					} as const;
 					if (opts.verbose) {
 						console.log(`Sending ${buildType} build notification to CLI.`);
 					}
-					process.send(message as any);
+					process.send(cliBuildMessage(files, buildType));
 				};
 				if (emittedFiles.length === 0) {
 					// Allow a short delay for any late FS writes by other post plugins

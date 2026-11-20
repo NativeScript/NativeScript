@@ -22,6 +22,7 @@ import { nativescriptPackageResolver } from '../helpers/nativescript-package-res
 import { cliPlugin } from '../helpers/ns-cli-plugins.js';
 import { dynamicImportPlugin } from '../helpers/dynamic-import-plugin.js';
 import { mainEntryPlugin } from '../helpers/main-entry.js';
+import { BOOT_TIMER_PRELUDE } from '../helpers/dev-boot-bundle.js';
 import { createUiRegistrationPlugin } from '../helpers/ui-registration.js';
 import { nsCoreExternalUrlsPlugin } from '../helpers/ns-core-external-urls.js';
 import { getProjectFlavor, setProjectFlavor } from '../helpers/flavor.js';
@@ -30,6 +31,7 @@ import { optimizeDepsPlatformResolver } from '../helpers/esbuild-platform-resolv
 import { resolveVerboseFlag, createFilteredViteLogger } from '../helpers/logging.js';
 import { externalConfigsPlugin } from '../helpers/external-configs.js';
 import { getHMRPlugins } from '../hmr/server/index.js';
+import { isSingleProcessDev } from '../hmr/server/dev-output.js';
 import type { Platform } from '../helpers/platform-types.js';
 import { packagePlatformResolverPlugin } from '../helpers/package-platform-aliases.js';
 import { findPackageInNodeModules } from '../helpers/module-resolution.js';
@@ -236,6 +238,18 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	if (existsSync(fontsDir)) {
 		staticCopyTargets.push({ src: `${fontsDir}/**/*`.replace(/\\/g, '/'), dest: 'fonts', rename: { stripBase: fontsStripBase } });
 	}
+	// `vite serve` writes what the HMR build would (see `hmr/server/dev-output.ts`)
+	// when the CLI runs no build next to it.
+	const singleProcessDev = hmrActive && isSingleProcessDev(platform);
+	const devOutput = singleProcessDev
+		? {
+				outDir: path.resolve(projectRoot, distOutputFolder),
+				copyDirs: [
+					{ dir: assetsDir, dest: 'assets' },
+					{ dir: fontsDir, dest: 'fonts' },
+				],
+			}
+		: undefined;
 
 	// Dev (serve) only; builds never read it.
 	const [nativeClassTransform] = createNativeClassTransformerPlugin();
@@ -291,7 +305,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Ensure explicit keep markers are honored
 			preserveImportsPlugin(),
 			// HMR plugins (source streaming replaces prior exploded source plugin when enabled)
-			...(hmrActive ? [...getHMRPlugins({ platform, flavor, verbose })] : []),
+			...(hmrActive ? [...getHMRPlugins({ platform, flavor, verbose, devOutput })] : []),
 			// TODO: make flavor plugins dynamic
 			// ...flavorPlugins,
 			...commonjsPlugins,
@@ -348,13 +362,14 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// detection heuristic and the full rationale.
 			...(hmrActive ? [tsFallbackTransformPlugin({ verbose })] : []),
 			// Copy static assets and fonts when present in project app root
+			// In single-process dev the dev output copies them, and the CLI restarts
+			// the app on its message; this plugin's serve half would answer the same
+			// change with a `full-reload`, i.e. a second restart.
 			...((staticCopyTargets == null ? void 0 : staticCopyTargets.length)
-				? [
-						viteStaticCopy({
-							targets: staticCopyTargets,
-							watch: { reloadPageOnChange: true },
-						}),
-					]
+				? viteStaticCopy({
+						targets: staticCopyTargets,
+						watch: { reloadPageOnChange: true },
+					}).filter((plugin) => !(singleProcessDev && plugin.apply === 'serve'))
 				: []),
 			// NativeScript CLI integration
 			cliPlugin({ distOutputFolder, isDevMode, verbose, hmrActive }),
@@ -497,25 +512,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					format: 'es', // Emit ES modules (.mjs)
 					...sbgMinifyOutput,
 					entryFileNames: 'bundle.mjs',
-					// Prepend a tiny polyfill prelude to every emitted chunk so timer
-					// globals (`setTimeout`, `setInterval`, `clearTimeout`,
-					// `clearInterval`) are available at module-instantiation time —
-					// BEFORE `@nativescript/core/globals` runs from inside the entry.
-					//
-					// Why this is needed. ESM evaluates dependency chunks DFS-post-order
-					// before the importing module's body. `bundle.mjs` declares
-					// `import './vendor.mjs'` at the top, so `vendor.mjs` evaluates first
-					// — but the official timer polyfills live in
-					// `@nativescript/core/globals` which is bundled into `bundle.mjs`'s
-					// body. Any vendor package that captures a timer global at module
-					// top-level hits `ReferenceError: setTimeout is
-					// not defined` because `globalThis.setTimeout` is still undefined
-					// during vendor.mjs evaluation.
-					//
-					// When the runtime eventually exposes the unprefixed timer names
-					// directly (removing the chicken-and-egg at the source), this
-					// prelude becomes a no-op and can be removed.
-					banner: [`typeof globalThis !== 'undefined' && typeof globalThis.setTimeout === 'undefined' && typeof globalThis.__ns__setTimeout === 'function' && (`, `  globalThis.setTimeout = globalThis.__ns__setTimeout,`, `  globalThis.setInterval = globalThis.__ns__setInterval,`, `  globalThis.clearTimeout = globalThis.__ns__clearTimeout,`, `  globalThis.clearInterval = globalThis.__ns__clearInterval`, `);`].join('\n'),
+					banner: BOOT_TIMER_PRELUDE,
 					// Point source map URLs to absolute file:// paths on the host so
 					// Chrome DevTools can fetch them even though the running code comes
 					// from file:///app on the simulator/device.

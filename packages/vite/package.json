@@ -82,6 +82,12 @@
 	"bin": {
 		"nativescript-vite": "./bin/cli.cjs"
 	},
+	"nativescriptCli": {
+		"singleProcessDev": [
+			"ios",
+			"visionos"
+		]
+	},
 	"keywords": [
 		"nativescript",
 		"vite"
