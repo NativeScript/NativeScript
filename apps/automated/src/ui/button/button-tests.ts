@@ -1,6 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View, EventData, Button, Observable, Color, Page, FormattedString, BindingOptions, Span } from '@nativescript/core';
+import { View, EventData, Button, Observable, Color, Page, FormattedString, BindingOptions, Span, Utils } from '@nativescript/core';
 import * as buttonTestsNative from './button-tests-native';
 
 export function test_recycling() {
@@ -14,6 +14,30 @@ export var testSetText = function () {
 export var testOnClick = function () {
 	helper.buildUIAndRunTest(_createButtonFunc(), _testOnClick);
 };
+
+function collectJsAndJavaGarbage() {
+	for (let i = 0; i < 3; i++) {
+		Utils.GC();
+		if (__ANDROID__) {
+			java.lang.System.gc();
+			java.lang.System.runFinalization();
+		}
+		TKUnit.wait(0.05);
+	}
+}
+
+export function testOnClickAfterGarbageCollection() {
+	helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<View>) {
+		const button = <Button>views[0];
+		let tapped = false;
+		button.on(Button.tapEvent, () => (tapped = true));
+
+		collectJsAndJavaGarbage();
+		buttonTestsNative.performNativeClick(button);
+
+		TKUnit.assertTrue(tapped, 'tap should fire after a garbage collection');
+	});
+}
 
 export var testBindTextDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createButtonFunc(), _testBindTextDirectlyToModel);
