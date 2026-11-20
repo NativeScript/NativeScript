@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { initSync, parse } from 'es-module-lexer';
 import { isBuiltinModuleId } from '../../helpers/builtin-modules.js';
@@ -17,15 +18,21 @@ const ID_PREFIX = '/@id/';
  * Other static imports stay root-relative.
  */
 export function rewriteDeviceImports(code: string, origin: string): string {
+	return rewriteDeviceImportsDetailed(code, origin).code;
+}
+
+function rewriteDeviceImportsDetailed(code: string, origin: string): { code: string; originInserted: boolean } {
+	const unchanged = { code, originInserted: false };
 	const hasDynamic = code.includes('import(') || code.includes('import (');
-	if (!hasDynamic && !code.includes(ID_PREFIX)) return code;
+	if (!hasDynamic && !code.includes(ID_PREFIX)) return unchanged;
 	initSync();
 	let imports: ReturnType<typeof parse>[0];
 	try {
 		[imports] = parse(code);
 	} catch {
-		return code;
+		return unchanged;
 	}
+	let originInserted = false;
 	const base = origin.replace(/\/+$/, '');
 	let out = '';
 	let last = 0;
@@ -44,9 +51,37 @@ export function rewriteDeviceImports(code: string, origin: string): string {
 		} else if (dynamic) {
 			out += code.slice(last, start) + base;
 			last = start;
+			originInserted = true;
 		}
 	}
-	return last === 0 ? code : out + code.slice(last);
+	return last === 0 ? unchanged : { code: out + code.slice(last), originInserted };
+}
+
+// A body with the origin baked in differs per origin while Vite's ETag and
+// `immutable` describe the origin-independent original, and the device caches
+// responses across sessions, whose origin can change (LAN address, USB tunnel).
+function originTag(origin: string): string {
+	return '-o' + createHash('sha1').update(origin).digest('hex').slice(0, 8);
+}
+
+function withOriginTag(etag: string, tag: string): string {
+	return etag.endsWith('"') ? etag.slice(0, -1) + tag + '"' : etag + tag;
+}
+
+/**
+ * Maps `If-None-Match` validators this server issued for the current origin
+ * back to Vite's own ETags, so Vite can still answer 304. Validators issued
+ * for another origin are left as they are and never match.
+ */
+export function restoreOriginETags(ifNoneMatch: string, origin: string): string {
+	const tag = originTag(origin) + '"';
+	return ifNoneMatch
+		.split(',')
+		.map((value) => {
+			const trimmed = value.trim();
+			return trimmed.endsWith(tag) ? trimmed.slice(0, -tag.length) + '"' : trimmed;
+		})
+		.join(', ');
 }
 
 const jsContentTypeRE = /\bjavascript\b/i;
@@ -71,6 +106,8 @@ function toBuffer(chunk: unknown, encoding: unknown): Buffer {
  * module's root-relative URL.
  */
 export function rewriteDeviceImportsInResponse(req: IncomingMessage, res: ServerResponse, getOrigin: () => string): void {
+	const ifNoneMatch = req.headers?.['if-none-match'];
+	if (typeof ifNoneMatch === 'string') req.headers['if-none-match'] = restoreOriginETags(ifNoneMatch, getOrigin());
 	const write = res.write;
 	const end = res.end;
 	// undefined: undecided until the first write/end, when status and headers are final.
@@ -98,10 +135,15 @@ export function rewriteDeviceImportsInResponse(req: IncomingMessage, res: Server
 		let body = original;
 		if (original.length) {
 			const code = original.toString('utf8');
-			const rewritten = rewriteDeviceImports(code, getOrigin());
-			if (rewritten !== code) body = Buffer.from(rewritten, 'utf8');
+			const origin = getOrigin();
+			const rewritten = rewriteDeviceImportsDetailed(code, origin);
+			if (rewritten.code !== code) body = Buffer.from(rewritten.code, 'utf8');
+			if (rewritten.originInserted) {
+				const etag = this.getHeader('etag');
+				if (typeof etag === 'string') this.setHeader('ETag', withOriginTag(etag, originTag(origin)));
+				if (/\bimmutable\b/i.test(String(this.getHeader('cache-control') ?? ''))) this.setHeader('Cache-Control', 'no-cache');
+			}
 		}
-		// The ETag stays Vite's: for one server origin the rewrite is a pure function of the body.
 		if (body !== original && this.hasHeader('content-length')) this.setHeader('Content-Length', body.length);
 		return (end as Function).call(this, body, done);
 	} as ServerResponse['end'];

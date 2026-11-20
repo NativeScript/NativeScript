@@ -171,6 +171,31 @@ describe('device requests on a real Vite server', () => {
 		expect(start).toEqual({ wsUrl: session.wsUrl, wsProtocol: 'vite-hmr', entryUrl: `${ORIGIN}/src/main.js`, origin: ORIGIN, root });
 	});
 
+	function headers(url: string, extra: Record<string, string> = {}): Promise<{ status: number; headers: http.IncomingHttpHeaders }> {
+		return new Promise((resolve, reject) => {
+			http
+				.get({ host: '127.0.0.1', port, path: url, headers: { host: `127.0.0.1:${port}`, ...extra } }, (res) => {
+					res.resume();
+					res.on('end', () => resolve({ status: res.statusCode ?? 0, headers: res.headers }));
+				})
+				.on('error', reject);
+		});
+	}
+
+	it('ties an origin-rewritten module to the origin and still answers 304 for it', async () => {
+		const first = await headers('/src/main.js');
+		expect(first.status).toBe(200);
+		expect(first.headers.etag).toMatch(/-o[0-9a-f]{8}"$/);
+		const again = await headers('/src/main.js', { 'if-none-match': first.headers.etag! });
+		expect(again.status).toBe(304);
+		const otherOrigin = await headers('/src/main.js', { 'if-none-match': first.headers.etag!.replace(/-o[0-9a-f]{8}"$/, '-o00000000"') });
+		expect(otherOrigin.status).toBe(200);
+	});
+
+	it('marks the NativeScript dev routes no-store', async () => {
+		expect((await headers('/__ns_dev__/session.mjs')).headers['cache-control']).toBe('no-store');
+	});
+
 	it("passes Vite's host check for the NS_HMR_HOST hostname only", async () => {
 		expect((await get('/src/dep.js', `dev-mac.local:${port}`)).status).toBe(200);
 		expect((await get('/src/dep.js', `evil.example:${port}`)).status).toBe(403);

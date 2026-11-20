@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { describe, expect, it } from 'vitest';
-import { rewriteDeviceImports, rewriteDeviceImportsInResponse } from './device-imports.js';
+import { restoreOriginETags, rewriteDeviceImports, rewriteDeviceImportsInResponse } from './device-imports.js';
 
 const ORIGIN = 'http://192.168.1.2:5173';
 
@@ -83,6 +83,42 @@ describe('rewriteDeviceImportsInResponse', () => {
 		});
 		expect(res.text()).toContain(`import('${ORIGIN}/src/lazy.ts')`);
 		expect(res.hasHeader('content-length')).toBe(false);
+	});
+
+	it('ties the ETag to the origin and drops immutable when the origin is written into the body', () => {
+		const res = respond('GET', 200, 'text/javascript', (r) => {
+			r.setHeader('ETag', 'W/"2a-abc"');
+			r.setHeader('Cache-Control', 'max-age=31536000,immutable');
+			r.end(module);
+		});
+		expect(res.getHeader('etag')).toMatch(/^W\/"2a-abc-o[0-9a-f]{8}"$/);
+		expect(res.getHeader('cache-control')).toBe('no-cache');
+	});
+
+	it("keeps Vite's ETag and caching when the body has no origin-dependent rewrite", () => {
+		const builtinOnly = `import { createRequire } from "/@id/ns:module";`;
+		const res = respond('GET', 200, 'text/javascript', (r) => {
+			r.setHeader('ETag', 'W/"2a-abc"');
+			r.setHeader('Cache-Control', 'max-age=31536000,immutable');
+			r.end(builtinOnly);
+		});
+		expect(res.text()).toBe(`import { createRequire } from "ns:module";`);
+		expect(res.getHeader('etag')).toBe('W/"2a-abc"');
+		expect(res.getHeader('cache-control')).toBe('max-age=31536000,immutable');
+	});
+
+	it('maps validators issued for the current origin back to Vite ETags, leaving other origins unmatched', () => {
+		const issued = respond('GET', 200, 'text/javascript', (r) => {
+			r.setHeader('ETag', 'W/"2a-abc"');
+			r.end(module);
+		}).getHeader('etag') as string;
+		expect(restoreOriginETags(issued, ORIGIN)).toBe('W/"2a-abc"');
+		expect(restoreOriginETags(`W/"1-x", ${issued}`, ORIGIN)).toBe('W/"1-x", W/"2a-abc"');
+		expect(restoreOriginETags(issued, 'http://10.0.0.9:5173')).toBe(issued);
+
+		const req = { method: 'GET', headers: { 'if-none-match': issued } } as any;
+		rewriteDeviceImportsInResponse(req, new FakeResponse() as any, () => ORIGIN);
+		expect(req.headers['if-none-match']).toBe('W/"2a-abc"');
 	});
 
 	it('passes through other content types, statuses, HEAD requests and empty bodies', () => {

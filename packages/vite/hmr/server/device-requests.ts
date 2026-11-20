@@ -26,7 +26,9 @@ export function createDeviceRequestMiddleware(server: Pick<ViteDevServer, 'confi
 		if (req.url) req.url = stripDevNonce(req.url);
 		const withOriginal = req as typeof req & { originalUrl?: string };
 		if (withOriginal.originalUrl) withOriginal.originalUrl = stripDevNonce(withOriginal.originalUrl);
-		if (!req.url?.startsWith(NS_DEV_ROUTE_PREFIX)) recordServedModuleOnFinish(server, req, res);
+		// Per-session answers (the session carries the WebSocket token); the device caches HTTP responses across launches.
+		if (req.url?.startsWith(NS_DEV_ROUTE_PREFIX)) res.setHeader('Cache-Control', 'no-store');
+		else recordServedModuleOnFinish(server, req, res);
 		rewriteDeviceImportsInResponse(req, res, getOrigin);
 		if (!beforeNext) return next();
 		beforeNext().then(
