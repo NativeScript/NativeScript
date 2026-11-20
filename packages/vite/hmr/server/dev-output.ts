@@ -1,4 +1,4 @@
-import type { ViteDevServer } from 'vite';
+import { normalizePath, type HotUpdateOptions, type Plugin, type ViteDevServer } from 'vite';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,8 +7,9 @@ import { BOOT_BUNDLE_FILE, cliBuildMessage, type CliBuildMessage } from '../../h
 import { nsConfigToJson } from '../../helpers/utils.js';
 import { getApplicationAppComponent } from '../../helpers/app-components.js';
 import { WARM_WAIT_CAP_MS } from './dev-boot-routes.js';
-import { buildDevApplication, createDevApplicationChunk } from './dev-application-build.js';
+import { buildDevApplication, createDevApplicationChunk, type DevApplicationChunk } from './dev-application-build.js';
 import { getServerOrigin } from './server-origin.js';
+import { requestAppRestart } from './app-restart.js';
 
 /** Set to `1` by the NativeScript CLI on a `vite serve` it runs without a `vite build --watch`. */
 export const SINGLE_PROCESS_DEV_ENV = 'NS_VITE_SINGLE_PROCESS';
@@ -61,9 +62,9 @@ export interface DevOutputWriter {
 	/**
 	 * Makes the output directory match the generated files and the copy
 	 * sources, and tells the CLI: everything the first time in this process,
-	 * afterwards only what changed.
+	 * afterwards only what changed. True when it sent the CLI a message.
 	 */
-	sync(): void;
+	sync(): boolean;
 	/** A watcher event; ignored until the first {@link DevOutputWriter.sync}. */
 	onFileEvent(event: 'add' | 'change' | 'unlink', file: string): void;
 }
@@ -165,9 +166,11 @@ export function createDevOutputWriter(options: DevOutputWriterOptions): DevOutpu
 			if (!state.initialSent) {
 				state.initialSent = true;
 				send(cliBuildMessage([...desired], 'initial'));
-			} else if (changed.length || removed.length) {
-				send(cliBuildMessage(changed, 'incremental', removed));
+				return true;
 			}
+			if (!changed.length && !removed.length) return false;
+			send(cliBuildMessage(changed, 'incremental', removed));
+			return true;
 		},
 		onFileEvent(event, file) {
 			if (!ready) return;
@@ -192,6 +195,31 @@ export function createDevOutputWriter(options: DevOutputWriterOptions): DevOutpu
 	};
 }
 
+// Set by each server start's `startDevOutput`, read by the hot-update hook of the same process.
+let currentApplication: Pick<DevApplicationChunk, 'isSource'> | undefined;
+
+/**
+ * Drops the hot update of an edit to a source of the custom `Application`
+ * chunk (Android). That code evaluates once per process, from disk, so the
+ * edit applies through the chunk's rebuild, its sync and the CLI's app
+ * restart; a module the served app shares with it must not update in place
+ * ahead of that restart, nor trigger a second one.
+ */
+export function nsDevApplicationHotUpdatePlugin(options: { isSource?: (file: string) => boolean } = {}): Plugin {
+	const isSource = options.isSource ?? ((file: string) => !!currentApplication?.isSource(file));
+	return {
+		name: 'nativescript-dev-application-hot-update',
+		apply: 'serve',
+		hotUpdate: {
+			order: 'pre',
+			handler(ctx: HotUpdateOptions) {
+				if (this.environment.name !== 'client' || ctx.type === 'delete' || !isSource(ctx.file)) return;
+				return [];
+			},
+		},
+	};
+}
+
 const DEV_BOOT_LOADER_FILE = fileURLToPath(new URL('../../runtime/dev-boot-loader.js', import.meta.url));
 
 /**
@@ -211,18 +239,24 @@ export function startDevOutput(server: ViteDevServer, options: DevOutputOptions 
 				component: applicationComponent,
 				build: (component) => buildDevApplication(server, component),
 				// The CLI syncs the chunk and restarts the app, which evaluates it from disk.
-				onRebuilt: () => {
+				onRebuilt: (files) => {
 					if (!synced) return;
+					let sent: boolean;
 					try {
-						writer.sync();
+						sent = writer.sync();
 					} catch (error: any) {
 						logger.error(`[NativeScript] could not write the custom Application chunk to ${options.outDir}: ${error?.message ?? error}`, { timestamp: true });
+						return;
 					}
+					// The hot-update hook dropped the served app's update of these files, and an unchanged chunk gets the CLI no message to restart on.
+					const served = sent ? [] : files.filter((file) => server.environments.client.moduleGraph.getModulesByFile(normalizePath(file))?.size);
+					if (served.length) requestAppRestart(`${served.map((file) => path.relative(server.config.root, file) || file).join(', ')} changed`);
 				},
 				error: (message) => logger.error(message, { timestamp: true }),
 				watch: (files) => server.watcher.add(files.filter((file) => !isInside(server.config.root, file))),
 			})
 		: undefined;
+	currentApplication = application;
 	const writer = createDevOutputWriter({
 		...options,
 		root: server.config.root,

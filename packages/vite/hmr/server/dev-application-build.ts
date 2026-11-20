@@ -9,7 +9,7 @@ export interface AppComponent {
 export interface DevApplicationOutput {
 	/** Output-relative files: the component's chunks and their source maps. */
 	files: Record<string, string | Uint8Array>;
-	/** Absolute paths of the source files bundled into them. */
+	/** Absolute paths of the files the build loaded, those it tree-shook or inlined away included. */
 	sources: string[];
 }
 
@@ -21,8 +21,12 @@ interface OutputItem {
 	moduleIds?: string[];
 }
 
-/** Restricts a build of the app's own config to `component`, in memory and once. */
-export function devApplicationBuildPlugin(component: AppComponent): Plugin {
+/**
+ * Restricts a build of the app's own config to `component`, in memory and once. `onModuleIds` gets
+ * every module the build loaded: a chunk's `moduleIds` leave out the ones
+ * that render no code (an unused import, constants inlined into importers).
+ */
+export function devApplicationBuildPlugin(component: AppComponent, onModuleIds?: (ids: string[]) => void): Plugin {
 	return {
 		name: 'ns-dev-application-build',
 		enforce: 'post',
@@ -37,20 +41,25 @@ export function devApplicationBuildPlugin(component: AppComponent): Plugin {
 		options(inputOptions) {
 			return { ...inputOptions, input: { [component.outputName]: component.absolutePath } };
 		},
+		buildEnd(error) {
+			if (!error) onModuleIds?.([...this.getModuleIds()]);
+		},
 	};
 }
 
-/** The files and watched sources of a build's output. */
-export function collectDevApplicationOutput(items: readonly OutputItem[]): DevApplicationOutput {
+/** The files and watched sources of a build's output and of the modules it loaded. */
+export function collectDevApplicationOutput(items: readonly OutputItem[], moduleIds: readonly string[] = []): DevApplicationOutput {
 	const files: Record<string, string | Uint8Array> = {};
 	const sources = new Set<string>();
+	const addSource = (id: string) => {
+		const file = id.split('?')[0];
+		if (!file.startsWith('\0') && path.isAbsolute(file)) sources.add(normalizePath(file));
+	};
+	moduleIds.forEach(addSource);
 	for (const item of items) {
 		if (item.type === 'chunk') {
 			files[item.fileName] = item.code ?? '';
-			for (const id of item.moduleIds ?? []) {
-				const file = id.split('?')[0];
-				if (!file.startsWith('\0') && path.isAbsolute(file)) sources.add(normalizePath(file));
-			}
+			item.moduleIds?.forEach(addSource);
 		} else if (item.fileName.endsWith('.map')) {
 			files[item.fileName] = item.source ?? '';
 		}
@@ -65,16 +74,20 @@ export function collectDevApplicationOutput(items: readonly OutputItem[]): DevAp
  * Self-contained: it runs before the dev server is reachable.
  */
 export async function buildDevApplication(server: ViteDevServer, component: AppComponent): Promise<DevApplicationOutput> {
+	let moduleIds: string[] = [];
 	const result = await build({
 		configFile: server.config.configFile ?? false,
 		root: server.config.root,
 		mode: server.config.mode,
 		logLevel: 'warn',
 		clearScreen: false,
-		plugins: [devApplicationBuildPlugin(component)],
+		plugins: [devApplicationBuildPlugin(component, (ids) => (moduleIds = ids))],
 	});
 	const outputs = (Array.isArray(result) ? result : [result]) as Array<{ output?: OutputItem[] }>;
-	return collectDevApplicationOutput(outputs.flatMap((output) => output.output ?? []));
+	return collectDevApplicationOutput(
+		outputs.flatMap((output) => output.output ?? []),
+		moduleIds,
+	);
 }
 
 export interface DevApplicationState {
@@ -87,8 +100,8 @@ const processState: DevApplicationState = {};
 export interface DevApplicationChunkOptions {
 	component: AppComponent;
 	build: (component: AppComponent) => Promise<DevApplicationOutput>;
-	/** After a rebuild that a source change triggered succeeded. */
-	onRebuilt: () => void;
+	/** After a rebuild that changes to `files` triggered succeeded, with those changes and any a failed rebuild left. */
+	onRebuilt: (files: string[]) => void;
 	error: (message: string) => void;
 	/** Sources of the last build, for the watcher. */
 	watch?: (files: string[]) => void;
@@ -101,6 +114,8 @@ export interface DevApplicationChunk {
 	files(): Record<string, string | Uint8Array>;
 	/** Builds now, after any build in flight; resolves whether it succeeded. */
 	build(): Promise<boolean>;
+	/** True when `file` is one of the chunk's sources, which a change of rebuilds. */
+	isSource(file: string): boolean;
 	/** A watcher event: rebuilds when `file` is one of the chunk's sources. */
 	onFileEvent(file: string): void;
 }
@@ -113,6 +128,7 @@ export function createDevApplicationChunk(options: DevApplicationChunkOptions): 
 	let sources = new Set([options.component.absolutePath, ...(state.output?.sources ?? [])].map(key));
 	let queue: Promise<unknown> = Promise.resolve();
 	let timer: ReturnType<typeof setTimeout> | undefined;
+	const changed = new Set<string>();
 
 	const run = async (): Promise<boolean> => {
 		try {
@@ -135,10 +151,19 @@ export function createDevApplicationChunk(options: DevApplicationChunkOptions): 
 	return {
 		files: () => state.output?.files ?? {},
 		build,
+		isSource: (file) => sources.has(key(file)),
 		onFileEvent(file) {
 			if (!sources.has(key(file))) return;
+			changed.add(file);
 			clearTimeout(timer);
-			timer = setTimeout(() => void build().then((ok) => ok && options.onRebuilt()), debounceMs);
+			timer = setTimeout(() => {
+				const files = [...changed];
+				changed.clear();
+				void build().then((ok) => {
+					if (ok) options.onRebuilt(files);
+					else files.forEach((file) => changed.add(file));
+				});
+			}, debounceMs);
 		},
 	};
 }

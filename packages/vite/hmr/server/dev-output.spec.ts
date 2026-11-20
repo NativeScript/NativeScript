@@ -2,8 +2,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { HotUpdateOptions } from 'vite';
 import type { CliBuildMessage } from '../../helpers/ns-cli-plugins.js';
-import { SINGLE_PROCESS_DEV_ENV, SINGLE_PROCESS_DEV_PLATFORMS, createDevOutputWriter, isSingleProcessDev, type DevOutputProcessState, type DevOutputWriterOptions } from './dev-output.js';
+import { SINGLE_PROCESS_DEV_ENV, SINGLE_PROCESS_DEV_PLATFORMS, createDevOutputWriter, isSingleProcessDev, nsDevApplicationHotUpdatePlugin, type DevOutputProcessState, type DevOutputWriterOptions } from './dev-output.js';
 
 describe('isSingleProcessDev', () => {
 	it('holds only when the CLI asks for it, on the platforms this package supports', () => {
@@ -89,12 +90,12 @@ describe('createDevOutputWriter', () => {
 	});
 
 	it('sends the initial build once per process, then only what a later sync changed', () => {
-		writer().sync();
-		writer().sync();
+		expect(writer().sync()).toBe(true);
+		expect(writer().sync()).toBe(false);
 		expect(sent).toHaveLength(1);
 		files = { ...files, 'bundle.mjs': 'boot 2' };
 		fs.rmSync(path.join(assets, 'logo.png'));
-		writer().sync();
+		expect(writer().sync()).toBe(true);
 		expect(sent).toHaveLength(2);
 		expect(sent[1]).toMatchObject({ buildType: 'incremental', emittedFiles: ['bundle.mjs'], removedFiles: ['assets/logo.png'] });
 	});
@@ -156,5 +157,30 @@ describe('createDevOutputWriter', () => {
 		} finally {
 			fs.rmSync(outside, { recursive: true, force: true });
 		}
+	});
+});
+
+describe('nsDevApplicationHotUpdatePlugin', () => {
+	const source = '/app/src/utils/shared.ts';
+	const update = (environment: string, ctx: Partial<HotUpdateOptions>, isSource?: (file: string) => boolean) => {
+		const hook = nsDevApplicationHotUpdatePlugin({ isSource: isSource ?? ((file) => file === source) }).hotUpdate as { order: string; handler: (this: unknown, ctx: HotUpdateOptions) => unknown };
+		expect(hook.order).toBe('pre');
+		return hook.handler.call({ environment: { name: environment } }, { type: 'update', file: source, modules: [{ url: '/src/utils/shared.ts' }], ...ctx } as HotUpdateOptions);
+	};
+
+	it('drops the update of a source of the Application chunk', () => {
+		expect(update('client', {})).toEqual([]);
+		expect(update('client', { type: 'create' })).toEqual([]);
+	});
+
+	it('leaves other files, deletions and other environments alone', () => {
+		expect(update('client', { file: '/app/src/other.ts' })).toBeUndefined();
+		expect(update('client', { type: 'delete' })).toBeUndefined();
+		expect(update('ssr', {})).toBeUndefined();
+	});
+
+	it('acts on no file before a server start created the chunk', () => {
+		const hook = nsDevApplicationHotUpdatePlugin().hotUpdate as { handler: (this: unknown, ctx: HotUpdateOptions) => unknown };
+		expect(hook.handler.call({ environment: { name: 'client' } }, { type: 'update', file: source, modules: [] } as unknown as HotUpdateOptions)).toBeUndefined();
 	});
 });
