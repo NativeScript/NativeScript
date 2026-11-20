@@ -54,9 +54,9 @@ class FakeResponse extends EventEmitter {
 	}
 }
 
-function respond(method: string, status: number, contentType: string | undefined, send: (res: FakeResponse) => void) {
+function respond(method: string, status: number, contentType: string | undefined, send: (res: FakeResponse) => void, isOptimizedDepUrl?: (url: string) => boolean, url = '/src/a.js') {
 	const res = new FakeResponse();
-	rewriteDeviceImportsInResponse({ method } as any, res as any, () => ORIGIN);
+	rewriteDeviceImportsInResponse({ method, url } as any, res as any, () => ORIGIN, isOptimizedDepUrl);
 	res.statusCode = status;
 	if (contentType) res.setHeader('Content-Type', contentType);
 	send(res);
@@ -95,16 +95,40 @@ describe('rewriteDeviceImportsInResponse', () => {
 		expect(res.getHeader('cache-control')).toBe('no-cache');
 	});
 
-	it("keeps Vite's ETag and caching when the body has no origin-dependent rewrite", () => {
+	it("keeps Vite's ETag and immutable for a pre-bundle without an origin-dependent rewrite", () => {
 		const builtinOnly = `import { createRequire } from "/@id/ns:module";`;
-		const res = respond('GET', 200, 'text/javascript', (r) => {
-			r.setHeader('ETag', 'W/"2a-abc"');
-			r.setHeader('Cache-Control', 'max-age=31536000,immutable');
-			r.end(builtinOnly);
-		});
+		const res = respond(
+			'GET',
+			200,
+			'text/javascript',
+			(r) => {
+				r.setHeader('ETag', 'W/"2a-abc"');
+				r.setHeader('Cache-Control', 'max-age=31536000,immutable');
+				r.end(builtinOnly);
+			},
+			(url) => url.startsWith('/node_modules/.vite/deps/'),
+			'/node_modules/.vite/deps/pkg.js?v=1',
+		);
 		expect(res.text()).toBe(`import { createRequire } from "ns:module";`);
 		expect(res.getHeader('etag')).toBe('W/"2a-abc"');
 		expect(res.getHeader('cache-control')).toBe('max-age=31536000,immutable');
+	});
+
+	it('revalidates a versioned file of an excluded package instead of pinning it immutable', () => {
+		const res = respond(
+			'GET',
+			200,
+			'text/javascript',
+			(r) => {
+				r.setHeader('ETag', 'W/"2a-abc"');
+				r.setHeader('Cache-Control', 'max-age=31536000,immutable');
+				r.end('export const a = 1;');
+			},
+			(url) => url.startsWith('/node_modules/.vite/deps/'),
+			'/node_modules/@valor/nativescript-websockets/websocket.js?v=1',
+		);
+		expect(res.getHeader('etag')).toBe('W/"2a-abc"');
+		expect(res.getHeader('cache-control')).toBe('no-cache');
 	});
 
 	it('maps validators issued for the current origin back to Vite ETags, leaving other origins unmatched', () => {

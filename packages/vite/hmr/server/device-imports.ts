@@ -105,7 +105,7 @@ function toBuffer(chunk: unknown, encoding: unknown): Buffer {
  * invalidation re-stamps `?t=` only on specifiers equal to an imported
  * module's root-relative URL.
  */
-export function rewriteDeviceImportsInResponse(req: IncomingMessage, res: ServerResponse, getOrigin: () => string): void {
+export function rewriteDeviceImportsInResponse(req: IncomingMessage, res: ServerResponse, getOrigin: () => string, isOptimizedDepUrl: (url: string) => boolean = () => false): void {
 	const ifNoneMatch = req.headers?.['if-none-match'];
 	if (typeof ifNoneMatch === 'string') req.headers['if-none-match'] = restoreOriginETags(ifNoneMatch, getOrigin());
 	const write = res.write;
@@ -141,7 +141,12 @@ export function rewriteDeviceImportsInResponse(req: IncomingMessage, res: Server
 			if (rewritten.originInserted) {
 				const etag = this.getHeader('etag');
 				if (typeof etag === 'string') this.setHeader('ETag', withOriginTag(etag, originTag(origin)));
-				if (/\bimmutable\b/i.test(String(this.getHeader('cache-control') ?? ''))) this.setHeader('Cache-Control', 'no-cache');
+			}
+			// Vite marks every `?v=` URL immutable, but only a pre-bundle's bytes are tied to
+			// that hash: a served file of an excluded package (a hand edit, patch-package, a
+			// relinked build) changes under the same URL, and the device caches across launches.
+			if ((rewritten.originInserted || !isOptimizedDepUrl(req.url ?? '')) && /\bimmutable\b/i.test(String(this.getHeader('cache-control') ?? ''))) {
+				this.setHeader('Cache-Control', 'no-cache');
 			}
 		}
 		if (body !== original && this.hasHeader('content-length')) this.setHeader('Content-Length', body.length);

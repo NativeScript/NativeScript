@@ -29,7 +29,7 @@ export function createDeviceRequestMiddleware(server: Pick<ViteDevServer, 'confi
 		// Per-session answers (the session carries the WebSocket token); the device caches HTTP responses across launches.
 		if (req.url?.startsWith(NS_DEV_ROUTE_PREFIX)) res.setHeader('Cache-Control', 'no-store');
 		else recordServedModuleOnFinish(server, req, res);
-		rewriteDeviceImportsInResponse(req, res, getOrigin);
+		rewriteDeviceImportsInResponse(req, res, getOrigin, (url) => !!server.environments.client?.depsOptimizer?.isOptimizedDepUrl(url));
 		if (!beforeNext) return next();
 		beforeNext().then(
 			() => next(),
