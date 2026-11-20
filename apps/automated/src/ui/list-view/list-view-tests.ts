@@ -872,6 +872,42 @@ export class ListViewTest extends UITest<ListView> {
 		}
 	}
 
+	public test_stickyHeader_Android_padding_after_garbage_collection() {
+		if (!isAndroid) {
+			return;
+		}
+
+		this.setUp();
+
+		const listView = this.testView;
+		listView.sectioned = true;
+		listView.stickyHeader = true;
+		listView.stickyHeaderTemplate = "<Label id='headerLabel' text='{{ title }}' />";
+		listView.items = [
+			{ title: 'First', items: ['a', 'b', 'c'] },
+			{ title: 'Second', items: ['d', 'e'] },
+		];
+
+		this.waitUntilTestElementIsLoaded();
+		this.waitUntilTestElementLayoutIsValid();
+		TKUnit.waitUntilReady(() => !!(<any>listView)._stickyHeaderView);
+
+		const header = <android.view.View>(<any>listView)._stickyHeaderView.nativeViewProtected;
+		const nativeListView = <android.widget.ListView>listView.android;
+
+		// Registers a new layout listener, which has to survive the collections before it runs.
+		(<any>listView)._addListViewPadding();
+		for (let i = 0; i < 3; i++) {
+			Utils.GC();
+			java.lang.System.gc();
+			java.lang.System.runFinalization();
+			TKUnit.wait(0.05);
+		}
+		header.requestLayout();
+
+		TKUnit.waitUntilReady(() => nativeListView.getPaddingTop() === header.getMeasuredHeight() + 4);
+	}
+
 	private checkItemVisibleAtIndex(listView: ListView, index: number): boolean {
 		return listView.isItemAtIndexVisible(index);
 	}
