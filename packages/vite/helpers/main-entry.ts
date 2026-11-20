@@ -4,7 +4,7 @@ import path from 'path';
 import { preprocessCSS, type ResolvedConfig } from 'vite';
 import { parseCssAst as parseCssToAst } from './css-ast.js';
 import { getProjectFlavor } from './flavor.js';
-import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath, resolveProjectGlobalCssPath } from './utils.js';
+import { getProjectAppVirtualPath, resolveProjectGlobalCssPath } from './utils.js';
 import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
@@ -14,41 +14,52 @@ import { rewritePlatformCssImports } from './css-platform-plugin.js';
 import { BUNDLE_CSS_AST_SENTINEL, inlineBundleCss } from './bundle-css.js';
 import { deviceUrlForGraphUrl } from '../hmr/server/vite-url.js';
 import { IMPORT_MAP_PATH, NS_DEV_SESSION_PATH } from '../hmr/server/dev-routes.js';
-// Switched to runtime modules to avoid fragile string injection and enable TS checks
-const projectRoot = getProjectRootPath();
-const appRootDir = getProjectAppPath();
+interface ProjectEntry {
+	projectRoot: string;
+	mainEntry: string;
+	/** Project-relative posix path (e.g. "/src/app.ts") for HTTP ESM boot. */
+	mainEntryRelPosix: string;
+	mainEntryImportSpecifier: string;
+	polyfillsExists: boolean;
+	polyfillsImportSpecifier: string;
+}
 
-// main entry (always included regardless of HMR)
-const packageJson = getPackageJson();
-const mainEntry = getProjectFilePath(packageJson.main);
-// Normalize to a project-relative posix path (e.g., "/src/app.ts") for HTTP ESM boot
-const mainEntryRelPosix = (() => {
-	try {
-		const rel = path.relative(projectRoot, mainEntry).replace(/\\/g, '/');
-		return ('/' + rel).replace(/\/+/g, '/');
-	} catch {
-		return getProjectAppVirtualPath('app.ts');
-	}
-})();
-const mainEntryImportSpecifier = toStaticImportSpecifier(projectRoot, mainEntry);
-const flavor = getProjectFlavor() as string;
+let projectEntry: ProjectEntry | undefined;
 
-// Optional polyfills support (non-HMR specific but dev friendly)
-// Resolve polyfills relative to the main entry directory so it works both for standalone projects and monorepos/workspaces where the workspace root and app root differ.
-// We keep both the absolute filesystem path (for existsSync) and a project-root-relative POSIX path (for the import specifier used in Vite).
-const mainEntryDir = path.dirname(mainEntry);
-const polyfillsFsPath = path.resolve(mainEntryDir, 'polyfills.ts');
-const polyfillsExists = fs.existsSync(polyfillsFsPath);
-const polyfillsImportSpecifier = (() => {
-	try {
-		// Normalize to "/..." posix-style (similar to mainEntryRelPosix)
-		const rel = path.relative(projectRoot, polyfillsFsPath).replace(/\\/g, '/');
-		return ('/' + rel).replace(/\/+/g, '/');
-	} catch {
-		// Fallback to a simple relative specifier next to main entry
-		return './polyfills.ts';
-	}
-})();
+// Read on first use: importing this module must not require cwd to be an app.
+function getProjectEntry(): ProjectEntry {
+	if (projectEntry) return projectEntry;
+	const projectRoot = getProjectRootPath();
+	const mainEntry = getProjectFilePath(getPackageJson().main);
+	const mainEntryRelPosix = (() => {
+		try {
+			const rel = path.relative(projectRoot, mainEntry).replace(/\\/g, '/');
+			return ('/' + rel).replace(/\/+/g, '/');
+		} catch {
+			return getProjectAppVirtualPath('app.ts');
+		}
+	})();
+	// Next to the main entry, so it works both for standalone projects and
+	// workspaces where the workspace root and app root differ.
+	const polyfillsFsPath = path.resolve(path.dirname(mainEntry), 'polyfills.ts');
+	const polyfillsImportSpecifier = (() => {
+		try {
+			const rel = path.relative(projectRoot, polyfillsFsPath).replace(/\\/g, '/');
+			return ('/' + rel).replace(/\/+/g, '/');
+		} catch {
+			return './polyfills.ts';
+		}
+	})();
+	projectEntry = {
+		projectRoot,
+		mainEntry,
+		mainEntryRelPosix,
+		mainEntryImportSpecifier: toStaticImportSpecifier(projectRoot, mainEntry),
+		polyfillsExists: fs.existsSync(polyfillsFsPath),
+		polyfillsImportSpecifier,
+	};
+	return projectEntry;
+}
 
 const VIRTUAL_ID = 'virtual:entry-with-polyfills';
 const RESOLVED = '\0' + VIRTUAL_ID;
@@ -122,6 +133,7 @@ function generateBootCode(opts: BootCodeOptions, bootOrigin: string): string {
 	// `?ns-keep` is a build-only tree-shaking marker; served, it would give the
 	// module a second URL.
 	const androidActivitySpecifier = opts.hmrActive ? '@nativescript/core/ui/frame/activity.android' : '@nativescript/core/ui/frame/activity.android.js?ns-keep';
+	const { projectRoot, mainEntry, mainEntryRelPosix, mainEntryImportSpecifier, polyfillsExists, polyfillsImportSpecifier } = getProjectEntry();
 	let imports = '';
 	// Before anything else in the boot graph evaluates.
 	if (opts.hmrActive && isStrictGlobalRequireEnabled()) {
@@ -325,7 +337,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 	// over deps-based detection: in workspaces whose app package.json doesn't
 	// list the framework package (hoisted to the root), detection falls through
 	// to 'typescript', whose entry imports ts-only virtual modules.
-	const effectiveFlavor = opts.flavor || flavor;
+	const effectiveFlavor = opts.flavor || (getProjectFlavor() as string);
 	// The dev server origin the device reaches (wildcard binds and Android
 	// loopback are remapped), computed the same way for the HMR build and the
 	// dev server: the runtime keys an HTTP module by its URL.
@@ -401,7 +413,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				// Same resolver as the entry generator (app.css → styles.css fallback)
 				// so both always pick the same file. Only reached when a global
 				// stylesheet exists, but guard defensively against a mid-session delete.
-				const appCssPath = resolveProjectGlobalCssPath(projectRoot);
+				const appCssPath = resolveProjectGlobalCssPath(getProjectEntry().projectRoot);
 				if (!appCssPath) {
 					return { code: 'export default "";', moduleType: 'js' };
 				}

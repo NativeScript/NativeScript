@@ -168,4 +168,41 @@ describe('getDevOptimizeDeps', () => {
 			expect(served!.code).toMatch(new RegExp(`from "/node_modules/\\.vite/deps/${dep}\\.js\\?v=`));
 		}
 	});
+
+	it.each([
+		['still pre-bundles the rest', true],
+		['fails the whole scan without the guard', false],
+	])('a bare import the scan cannot resolve: %s', async (_name, guarded) => {
+		const root = makeRoot();
+		const nm = path.join(root, 'node_modules');
+		pkg(root, { name: 'app', main: 'src/main.ts', dependencies: { 'linked-plugin': '*' } });
+		write(path.join(root, 'src/main.ts'), "import { a } from 'linked-plugin';\nconsole.log(a);\n");
+		pkg(path.join(root, 'libs/linked-plugin'), { name: 'linked-plugin', main: 'index.js', type: 'module' });
+		write(path.join(root, 'libs/linked-plugin/index.js'), "import dep from 'cjs-a';\nexport const a = dep.value;\nexport const optional = () => import('not-installed');\n");
+		pkg(path.join(nm, 'cjs-a'), { name: 'cjs-a', version: '1.0.0', main: 'index.js' });
+		write(path.join(nm, 'cjs-a/index.js'), "module.exports = { value: 'cjs-a' };\n");
+		fs.symlinkSync(path.join(root, 'libs/linked-plugin'), path.join(nm, 'linked-plugin'));
+
+		process.chdir(root);
+		vi.resetModules();
+		const { getDevOptimizeDeps, nsDepScanUnresolvedPlugin } = await import('./dev-optimize-deps.js');
+		const deps = getDevOptimizeDeps({ projectRoot: root, flavor: 'typescript', platform: 'ios', extensions: EXTENSIONS });
+		server = await createServer({
+			root,
+			configFile: false,
+			logLevel: 'silent',
+			appType: 'custom',
+			resolve: { preserveSymlinks: true, extensions: EXTENSIONS },
+			server: { middlewareMode: true, ws: false, watch: null },
+			optimizeDeps: { ...deps, holdUntilCrawlEnd: false },
+			plugins: guarded ? [nsDepScanUnresolvedPlugin()] : [],
+		});
+		const env = server.environments.client;
+		await env.depsOptimizer!.init();
+		await env.depsOptimizer!.scanProcessing;
+		const discovered = Object.keys(env.depsOptimizer!.metadata.discovered);
+		if (guarded) expect(discovered).toContain('cjs-a');
+		else expect(discovered).not.toContain('cjs-a');
+		expect(discovered).not.toContain('not-installed');
+	});
 });

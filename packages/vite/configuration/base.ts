@@ -42,7 +42,7 @@ import { appComponentsPlugin } from '../helpers/app-components.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { normalizeModuleId } from '../helpers/normalize-id.js';
 import { getHmrWatchIgnoreGlobs, getNodeModulesWatchGlobs } from '../helpers/hmr-scope.js';
-import { getDevOptimizeDeps } from '../helpers/dev-optimize-deps.js';
+import { getDevOptimizeDeps, nsDepScanUnresolvedPlugin } from '../helpers/dev-optimize-deps.js';
 import { getOptimizeDepsDefine, optimizeDepsEsmRequirePlugin } from '../helpers/optimize-deps.js';
 import { sbgClassNamesPlugin } from '../helpers/sbg-class-names.js';
 import { chunkFileNames } from '../helpers/chunk-file-names.js';
@@ -66,29 +66,25 @@ const appSourceDir = getProjectAppPath();
 const resolveFromAppRoot = (subPath: string) => path.resolve(projectRoot, getProjectAppRelativePath(subPath));
 const appGlobPattern = `${appSourceDir}/**`;
 
-// Resolve @nativescript/core root.
-// Prefer monorepo source (packages/core) when present to match webpack5 behavior,
-// else fall back to node_modules resolution.
-let NS_CORE_ROOT = '' as string;
-const workspaceCorePkg = path.resolve(projectRoot, '../../packages/core/package.json');
-if (existsSync(workspaceCorePkg)) {
-	NS_CORE_ROOT = normalizeModuleId(path.dirname(workspaceCorePkg));
-} else {
-	const corePkg = require.resolve('@nativescript/core/package.json', { paths: [projectRoot] });
-	NS_CORE_ROOT = normalizeModuleId(path.dirname(corePkg));
-}
+let packageRoots: { coreRoot: string; themeCoreRoot: string | undefined } | undefined;
 
-// Attempt to resolve hoisted workspace dependency roots from the app's project root.
-// This enables monorepo usage where dependencies are declared at the workspace root
-// but consumed within an app package without its own node_modules copy.
-let THEME_CORE_ROOT: string | undefined;
-const themePkgDir = findPackageInNodeModules('nativescript-theme-core', projectRoot);
-if (themePkgDir && existsSync(themePkgDir)) {
-	THEME_CORE_ROOT = normalizeModuleId(themePkgDir);
+// Resolved on first use: importing this module must not require cwd to be an app.
+function resolvePackageRoots() {
+	if (packageRoots) return packageRoots;
+	// Prefer monorepo source (packages/core) when present to match webpack5 behavior,
+	// else fall back to node_modules resolution.
+	const workspaceCorePkg = path.resolve(projectRoot, '../../packages/core/package.json');
+	const coreRoot = normalizeModuleId(path.dirname(existsSync(workspaceCorePkg) ? workspaceCorePkg : require.resolve('@nativescript/core/package.json', { paths: [projectRoot] })));
+	// Hoisted workspace dependencies: declared at the workspace root, consumed
+	// by an app package without its own node_modules copy.
+	const themePkgDir = findPackageInNodeModules('nativescript-theme-core', projectRoot);
+	packageRoots = { coreRoot, themeCoreRoot: themePkgDir && existsSync(themePkgDir) ? normalizeModuleId(themePkgDir) : undefined };
+	return packageRoots;
 }
 
 export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }): UserConfig => {
 	const targetMode = mode === 'development' ? 'development' : 'production';
+	const { coreRoot: NS_CORE_ROOT, themeCoreRoot: THEME_CORE_ROOT } = resolvePackageRoots();
 
 	const cliFlags = getCliFlags();
 	const verbose = resolveVerboseFlag({ env: process.env, cliFlags });
@@ -323,6 +319,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			dynamicImportPlugin(),
 			// Dev only: points `new Worker(new URL(...))` at the worker's module URL on the dev origin.
 			...(hmrActive ? [workerHmrUrlPlugin({ verbose })] : []),
+			...(devOptimizeDeps ? [nsDepScanUnresolvedPlugin()] : []),
 			// `vite build` only (production / `--no-hmr`): neutralize Angular's
 			// internal TS transformer so it stops blanking the worker URL.
 			//

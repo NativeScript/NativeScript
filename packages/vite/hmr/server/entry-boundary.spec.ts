@@ -90,6 +90,24 @@ describe('soft reboot through the entry boundary', () => {
 		fs.rmSync(root, { recursive: true, force: true });
 	});
 
+	it("maps the entry's own lines past the injected block", async () => {
+		await start({ child1SelfAccepts: false });
+		const plugin = server.config.plugins.find((p) => p.name === 'nativescript-entry-boundary')!;
+		const transform = plugin.transform as (this: unknown, code: string, id: string) => { code: string; map: { mappings: string; sources: string[]; sourcesContent: string[] } };
+		const id = path.join(root, 'main.js');
+		const source = fs.readFileSync(id, 'utf8');
+		const { code, map } = transform.call({ environment: { name: 'client' } }, source, id);
+		expect(code.endsWith(source)).toBe(true);
+		const injectedLines = code.slice(0, code.length - source.length).split('\n').length - 1;
+		expect(injectedLines).toBeGreaterThan(0);
+		const lines = map.mappings.split(';');
+		expect(lines.slice(0, injectedLines).every((segments) => segments === '')).toBe(true);
+		// The first source line starts at generated column 0 of source line 0, column 0.
+		expect(lines[injectedLines].startsWith('AAAA')).toBe(true);
+		expect(map.sources).toEqual([id]);
+		expect(map.sourcesContent).toEqual([source]);
+	});
+
 	it('makes the app entry self-accepting', async () => {
 		await start({ child1SelfAccepts: false });
 		expect(server.environments.client.moduleGraph.getModuleById(path.join(root, 'main.js'))?.isSelfAccepting).toBe(true);

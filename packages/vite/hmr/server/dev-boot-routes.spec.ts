@@ -109,7 +109,7 @@ describe('registerDevBootRoutes', () => {
 
 	it('warms the boot graph and holds the warm route until its crawl is idle', async () => {
 		let idle!: () => void;
-		const env = { warmupRequest: vi.fn(async () => {}), waitForRequestsIdle: vi.fn(() => new Promise<void>((resolve) => (idle = resolve))) };
+		const env = { warmupRequest: vi.fn(async (_url: string) => {}), waitForRequestsIdle: vi.fn(() => new Promise<void>((resolve) => (idle = resolve))) };
 		const { server, handlers } = fakeServer(env);
 		registerDevBootRoutes(server, { bootGraphUrls: () => ['/@id/__x00__virtual:ns-dev-boot', '/src/main.ts'], request: vi.fn() });
 		const answer = call(handlers[0], NS_DEV_WARM_PATH);

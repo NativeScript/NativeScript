@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import type { Plugin } from 'vite';
 import { getFrameworkServerStrategy } from '../hmr/framework-flavors.js';
 import { collectImportMapSpecifiers } from '../hmr/server/import-map.js';
 import { createNsDevClientModuleCode } from '../hmr/server/vite-plugin.js';
@@ -147,7 +148,7 @@ export interface DevOptimizeDepsOptions {
  *   CommonJS one then fails to load), is discovered only at request time
  *   otherwise (a re-optimization that reloads the app), and loads twice when
  *   a pre-bundle also imports it. A bare import in a scanned file that does
- *   not resolve fails the whole scan (Vite then skips pre-bundling).
+ *   not resolve is left out ({@link nsDepScanUnresolvedPlugin}).
  */
 export function getDevOptimizeDeps(opts: DevOptimizeDepsOptions): { entries: string[]; include: string[]; exclude: string[] } {
 	const { projectRoot, flavor, platform } = opts;
@@ -193,4 +194,33 @@ export function getDevOptimizeDeps(opts: DevOptimizeDepsOptions): { entries: str
 	}
 	const entries = [...new Set(files.filter((f) => existsSync(f)).map((f) => toEntryPattern(f, projectRoot)))];
 	return { entries, include, exclude };
+}
+
+// The bare-import test of Vite's dependency scanner.
+const SCAN_BARE_IMPORT_RE = /^[\w@][^:]/;
+
+/**
+ * Makes a bare import that the dependency scan can't resolve external to the
+ * scan. Vite fails the whole scan on one such import and skips pre-bundling
+ * for the session, and the scanned files include packages the app may never
+ * load (an optional or platform-only import of a linked plugin). Served, the
+ * import still fails where it is actually loaded. Only the scanner passes
+ * `scan`; the optimizer's own bundle resolves without user plugins.
+ */
+export function nsDepScanUnresolvedPlugin(): Plugin {
+	const warned = new Set<string>();
+	return {
+		name: 'nativescript-dep-scan-unresolved',
+		apply: 'serve',
+		// Last, so only an import nothing else resolves reaches it.
+		enforce: 'post',
+		resolveId(id, importer, options) {
+			if (!(options as { scan?: boolean }).scan || !SCAN_BARE_IMPORT_RE.test(id)) return null;
+			if (!warned.has(id)) {
+				warned.add(id);
+				this.environment.logger.warn(`[ns-vite] "${id}"${importer ? ` (imported by ${importer})` : ''} does not resolve; it is left out of dependency pre-bundling.`);
+			}
+			return { id, external: true };
+		},
+	};
 }

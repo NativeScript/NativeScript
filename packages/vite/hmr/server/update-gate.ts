@@ -1,4 +1,6 @@
-import type { ErrorPayload, Plugin, ViteDevServer, WebSocketClient } from 'vite';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import type { EnvironmentModuleNode, ErrorPayload, Plugin, Update, UpdatePayload, ViteDevServer, WebSocketClient } from 'vite';
 import { getFrameworkServerStrategy } from '../framework-flavors.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { NS_UPDATE_RERUN_EVENT, type UpdateRerunEventData } from '../shared/protocol.js';
@@ -106,21 +108,32 @@ export function toErrorPayloadErr(error: unknown): ErrorPayload['err'] {
 
 /**
  * Transforms `urls` as the device would request them and returns the first
- * failure, in `urls` order: a transform that throws, or output the framework
- * rejects. The results stay in Vite's transform cache for the device's fetches.
+ * failure: a transform that throws, or output the framework rejects. The
+ * results stay in Vite's transform cache for the device's fetches.
+ *
+ * A module whose file was deleted is reached through its importers' old
+ * edges until they re-transform, so it is checked after them, and only while
+ * one of them still imports it.
  */
 export async function checkModules(server: Pick<ViteDevServer, 'environments'>, urls: readonly string[], strategy?: Pick<FrameworkServerStrategy, 'verifyTransform'>): Promise<ErrorPayload['err'] | undefined> {
 	const environment = server.environments.client;
-	const results = await Promise.allSettled(
-		urls.map(async (url) => {
-			const result = await environment.transformRequest(transformIdForViteUrl(url));
-			const node = environment.moduleGraph.urlToModuleMap.get(url);
-			if (result && node?.id && strategy?.verifyTransform) {
-				const failure = await strategy.verifyTransform({ id: node.id, url, code: result.code });
-				if (failure) throw failure;
-			}
-		}),
-	);
+	const nodeOf = (url: string) => environment.moduleGraph.urlToModuleMap.get(url);
+	const check = async (url: string) => {
+		const result = await environment.transformRequest(transformIdForViteUrl(url));
+		const node = nodeOf(url);
+		if (result && node?.id && strategy?.verifyTransform) {
+			const failure = await strategy.verifyTransform({ id: node.id, url, code: result.code });
+			if (failure) throw failure;
+		}
+	};
+	const isDeleted = (url: string) => {
+		const file = nodeOf(url)?.file;
+		return !!file && path.isAbsolute(file) && !existsSync(file);
+	};
+	const deleted = urls.filter(isDeleted);
+	const results = await Promise.allSettled(urls.filter((url) => !deleted.includes(url)).map(check));
+	const stillImported = deleted.filter((url) => (nodeOf(url)?.importers.size ?? 0) > 0);
+	results.push(...(await Promise.allSettled(stillImported.map(check))));
 	const failed = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
 	return failed ? toErrorPayloadErr(failed.reason) : undefined;
 }
@@ -151,6 +164,8 @@ const wrappedChannels = new WeakSet<object>();
  * The gate every HMR payload passes on its way to the device:
  * - an `update` with a `js-update` is compiled first; on failure the device
  *   gets Vite's `error` payload instead, and its app stays untouched;
+ * - the first one that passes after such a failure becomes an entry reboot
+ *   covering every edit since the last update that passed;
  * - otherwise `ns:rerun` (what re-runs) goes right before it;
  * - the flavor's gated events (Angular's `angular:component-update`) wait
  *   for that verdict, so a broken template never applies in place;
@@ -172,6 +187,7 @@ export function nsRerunPlugin(opts: { flavor?: string } = {}): Plugin {
 			const channel = server.ws as unknown as { send: (...args: SendArgs) => void; clients?: Set<unknown> };
 			const graph = () => server.environments.client.moduleGraph as unknown as GraphLike;
 			const served = getServedModules(server);
+			const edits = getModuleEdits(server);
 			// Saves the device was told about while connected, as an update or an error.
 			const delivered = new Set<number>();
 			const noteDelivered = (timestamps: Iterable<number>) => {
@@ -240,20 +256,63 @@ export function nsRerunPlugin(opts: { flavor?: string } = {}): Plugin {
 					);
 					noteDelivered(timestamps);
 					if (failure) {
-						held = [];
-						if (heldTimer) clearTimeout(heldTimer);
-						heldTimer = undefined;
-						for (const t of timestamps) failedSaves.add(t);
-						// Vite would buffer it for the next connection, where it may be stale;
-						// the catch-up on connect checks again instead.
-						if (!channel.clients || channel.clients.size > 0) originalSend({ type: 'error', err: failure } satisfies ErrorPayload);
+						withhold(timestamps, failure);
+						return;
+					}
+					if (failedSaves.size) {
+						await sendWithheld(payload.updates ?? [], timestamps);
 						return;
 					}
 					release();
-					const changed = takeChanged([...failedSaves, ...timestamps]);
-					failedSaves.clear();
+					const changed = takeChanged(timestamps);
 					originalSend(NS_UPDATE_RERUN_EVENT, { timestamp: jsUpdates[0].timestamp!, changed: changed.map(deviceUrlForGraphUrl), rerun: rerun.map(deviceUrlForGraphUrl), root: server.config.root } satisfies UpdateRerunEventData);
 					originalSend(...args);
+				};
+
+				const dropHeld = () => {
+					held = [];
+					if (heldTimer) clearTimeout(heldTimer);
+					heldTimer = undefined;
+				};
+
+				const withhold = (timestamps: Iterable<number>, failure: ErrorPayload['err']) => {
+					dropHeld();
+					for (const t of timestamps) failedSaves.add(t);
+					// Vite would buffer it for the next connection, where it may be stale;
+					// the catch-up on connect checks again instead.
+					if (!channel.clients || channel.clients.size > 0) originalSend({ type: 'error', err: failure } satisfies ErrorPayload);
+				};
+
+				/**
+				 * Sent in place of the first update that passes after withheld ones.
+				 * Their edits never reached the device, and the passing update's own
+				 * boundaries may not cover them (a util below a component that
+				 * re-renders in place), so the app reboots through its entry with
+				 * every edit since the last update that passed, or restarts without
+				 * an entry boundary. Gated in-place events are dropped: the reboot
+				 * re-evaluates their modules.
+				 */
+				const sendWithheld = async (updates: readonly JsUpdateLike[], timestamps: ReadonlySet<number>) => {
+					const saves = new Set([...failedSaves, ...timestamps]);
+					if (!strategy?.entryBoundary) {
+						dropHeld();
+						failedSaves.clear();
+						const changed = takeChanged(saves);
+						requestAppRestart(`${changed.length} file(s) changed while an update was failing to compile`);
+						return;
+					}
+					const timestamp = Date.now();
+					restampEdits(server, edits, saves, timestamp);
+					const reboot = await prepareEntryReboot(server, graph(), served, strategy, timestamp);
+					if ('failure' in reboot) {
+						withhold(timestamps, reboot.failure);
+						return;
+					}
+					dropHeld();
+					failedSaves.clear();
+					const changed = takeChanged(saves);
+					originalSend(NS_UPDATE_RERUN_EVENT, { timestamp, changed: changed.map(deviceUrlForGraphUrl), rerun: reboot.rerun.map(deviceUrlForGraphUrl), root: server.config.root } satisfies UpdateRerunEventData);
+					originalSend({ type: 'update', updates: [reboot.update, ...(updates.filter((u) => u.type !== 'js-update') as Update[])] } satisfies UpdatePayload);
 				};
 
 				channel.send = (...args: SendArgs) => {
@@ -267,7 +326,6 @@ export function nsRerunPlugin(opts: { flavor?: string } = {}): Plugin {
 				};
 			}
 
-			const edits = getModuleEdits(server);
 			server.ws.on('vite:client:connect', (_data: unknown, client: WebSocketClient) => {
 				void sendCatchUp(server, client, { graph: graph(), served, delivered, edits, strategy }).catch((error) => server.config.logger.error(`[ns-hmr] catch-up failed: ${error?.message ?? error}`));
 			});
@@ -345,16 +403,42 @@ export async function sendCatchUp(server: Pick<ViteDevServer, 'config' | 'enviro
 		requestAppRestart(`${missed.length} module(s) changed while the app was starting`);
 		return 'restart';
 	}
-	const entry = resolveProjectMainEntryPath(server.config.root);
 	const timestamp = Date.now();
-	const update = { type: 'js-update' as const, path: entry, acceptedPath: entry, timestamp, explicitImportRequired: false, isWithinCircularImport: false };
-	const rerun = collectRerunUrls(state.graph, [update], state.served);
-	const failure = await checkModules(server, collectCheckedUrls(state.graph, rerun), state.strategy);
-	if (failure) {
-		client.send({ type: 'error', err: failure });
+	const reboot = await prepareEntryReboot(server, state.graph, state.served, state.strategy, timestamp);
+	if ('failure' in reboot) {
+		client.send({ type: 'error', err: reboot.failure });
 		return 'error';
 	}
-	client.send(NS_UPDATE_RERUN_EVENT, { timestamp, changed: missed.map(deviceUrlForGraphUrl), rerun: rerun.map(deviceUrlForGraphUrl), root: server.config.root } satisfies UpdateRerunEventData);
-	client.send({ type: 'update', updates: [update] });
+	client.send(NS_UPDATE_RERUN_EVENT, { timestamp, changed: missed.map(deviceUrlForGraphUrl), rerun: reboot.rerun.map(deviceUrlForGraphUrl), root: server.config.root } satisfies UpdateRerunEventData);
+	client.send({ type: 'update', updates: [reboot.update] });
 	return 'reboot';
+}
+
+/**
+ * A `js-update` of the app entry, and the modules it re-runs: everything
+ * below the entry whose current `?t=` stamp the device hasn't loaded.
+ * Checked like any other update.
+ */
+async function prepareEntryReboot(server: Pick<ViteDevServer, 'config' | 'environments'>, graph: GraphLike, served: ServedModules, strategy: FrameworkServerStrategy | undefined, timestamp: number): Promise<{ update: Update; rerun: string[] } | { failure: ErrorPayload['err'] }> {
+	const entry = resolveProjectMainEntryPath(server.config.root);
+	const update: Update = { type: 'js-update', path: entry, acceptedPath: entry, timestamp, explicitImportRequired: false, isWithinCircularImport: false };
+	const rerun = collectRerunUrls(graph, [update], served);
+	const failure = await checkModules(server, collectCheckedUrls(graph, rerun), strategy);
+	return failure ? { failure } : { update, rerun };
+}
+
+/**
+ * Stamps the modules `saves` edited, and their importers up to one that
+ * accepts them, with `timestamp`, as Vite does for an edit. A module updated
+ * in place (an Angular template) leaves its importers' stamps alone, and an
+ * entry reboot only re-imports modules whose stamp the device hasn't loaded.
+ */
+function restampEdits(server: Pick<ViteDevServer, 'environments'>, edits: ModuleEdits, saves: ReadonlySet<number>, timestamp: number): void {
+	const moduleGraph = server.environments.client.moduleGraph;
+	const seen = new Set<EnvironmentModuleNode>();
+	for (const [url, editedAt] of edits) {
+		if (!saves.has(editedAt)) continue;
+		const mod = moduleGraph.urlToModuleMap.get(url);
+		if (mod) moduleGraph.invalidateModule(mod, seen, timestamp, true);
+	}
 }

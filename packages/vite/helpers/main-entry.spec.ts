@@ -1,4 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+// The boot code names the app's main entry; cwd may be the workspace root.
+vi.mock('./project.js', async (importOriginal) => ({ ...(await importOriginal<typeof import('./project.js')>()), getPackageJson: () => ({ main: 'src/app.ts' }) }));
+
 import { generateDevBootCode, isStrictGlobalRequireEnabled } from './main-entry.js';
 
 const STRICT_IMPORT = "import '@nativescript/vite/runtime/strict-global-require.js';";

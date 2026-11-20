@@ -1,4 +1,5 @@
 import type { Plugin } from 'vite';
+import MagicString from 'magic-string';
 import path from 'path';
 import { getFrameworkServerStrategy } from '../framework-flavors.js';
 import type { FrameworkEntryBoundary } from './framework-strategy.js';
@@ -41,7 +42,8 @@ export function nsEntryBoundaryPlugin(opts: { flavor: string }): Plugin | undefi
 		transform(source, id) {
 			if (this.environment?.name !== 'client' || !entryFile) return null;
 			if (path.resolve(id.split('?', 1)[0]) !== path.resolve(entryFile)) return null;
-			return { code: code + source, map: null };
+			const output = new MagicString(source).prepend(code);
+			return { code: output.toString(), map: output.generateMap({ hires: 'boundary', source: id, includeContent: true }) };
 		},
 	};
 }
