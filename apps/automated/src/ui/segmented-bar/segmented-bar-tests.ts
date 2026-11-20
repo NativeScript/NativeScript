@@ -1,7 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as segmentedBarTestsNative from './segmented-bar-tests-native';
 import { buildUIAndRunTest } from '../../ui-helper';
-import { Color, Observable, BindingOptions, View } from '@nativescript/core';
+import { Color, Observable, BindingOptions, View, Utils } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 
 // >> article-require-segmentedbar-module
@@ -32,6 +32,31 @@ function _createItems(count: number): Array<segmentedBarModule.SegmentedBarItem>
 	}
 
 	return items;
+}
+
+function collectJsAndJavaGarbage() {
+	for (let i = 0; i < 3; i++) {
+		Utils.GC();
+		if (__ANDROID__) {
+			java.lang.System.gc();
+			java.lang.System.runFinalization();
+		}
+		TKUnit.wait(0.05);
+	}
+}
+
+export function test_SelectingTabsAfterGarbageCollection_CreatesTheirContent() {
+	const segmentedBar = _createSegmentedBar();
+	segmentedBar.items = _createItems(3);
+	buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
+		const bar = <segmentedBarModule.SegmentedBar>views[0];
+		collectJsAndJavaGarbage();
+		bar.selectedIndex = 2;
+		collectJsAndJavaGarbage();
+		bar.selectedIndex = 1;
+		TKUnit.assertEqual(bar.selectedIndex, 1, 'selectedIndex');
+		TKUnit.assertEqual(segmentedBarTestsNative.getNativeItemsCount(bar), 3, 'native items');
+	});
 }
 
 export var testWhenSegmentedBarIsCreatedItemsAreUndefined = function () {
