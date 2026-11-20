@@ -11,10 +11,10 @@ import { Application } from '@nativescript/core/application';
 import { Color } from '@nativescript/core/color';
 import { Frame, GridLayout, Label, StackLayout } from '@nativescript/core/ui';
 import { DEFAULT_SNAPSHOT, type HmrOverlayAction, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
-import { nsDev } from './dev-globals.js';
 import { getGlobalScope } from './global-scope.js';
 
-const DEFAULT_OVERLAY_POSITION: HmrOverlayPosition = 'top';
+/** Where the live overlay renders: the toast chip at the top, with a slide-in and safe-area padding. */
+export const HMR_OVERLAY_POSITION: HmrOverlayPosition = 'top';
 
 export type LiveOverlayRefs = {
 	page: any;
@@ -105,20 +105,6 @@ export type HmrOverlayRuntimeState = {
 
 export function getOverlayGlobal(): any {
 	return getGlobalScope();
-}
-
-/**
- * Resolve the configured live-overlay position.
- *
- * Reads the dev object's `overlayPosition`. Falls back to 'top', the
- * toast-style chip with a slide-in animation and safe-area padding.
- */
-export function getHmrDevOverlayPosition(): HmrOverlayPosition {
-	const stored: unknown = nsDev().overlayPosition;
-	if (stored === 'top' || stored === 'bottom' || stored === 'center') {
-		return stored;
-	}
-	return DEFAULT_OVERLAY_POSITION;
 }
 
 let runtimeState: HmrOverlayRuntimeState | null = null;

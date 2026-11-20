@@ -14,7 +14,7 @@
  * Activity to attach to (tests, web, early boot).
  */
 import { type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
-import { type AndroidOverlayRefs, formatStatusText, getHmrDevOverlayPosition, getOverlayGlobal, type HmrOverlayRuntimeState, MAX_CODE_LINES, resolveCoreExport, runOverlayAction } from './dev-overlay-shared.js';
+import { type AndroidOverlayRefs, formatStatusText, HMR_OVERLAY_POSITION, getOverlayGlobal, type HmrOverlayRuntimeState, MAX_CODE_LINES, resolveCoreExport, runOverlayAction } from './dev-overlay-shared.js';
 import { type AndroidSafeAreaInsets, computeAndroidToastMargin, readAndroidSafeAreaInsets } from './dev-overlay-tree.js';
 
 export type AndroidOverlayHost = {
@@ -247,7 +247,7 @@ function buildAndroidOverlayRefs(host: AndroidOverlayHost, state: HmrOverlayRunt
 			actionButton: null,
 			density,
 			wasVisible: false,
-			currentPosition: getHmrDevOverlayPosition(),
+			currentPosition: HMR_OVERLAY_POSITION,
 		};
 		refs.actionButton = buildActionButton(android, activity, dp, () => runOverlayAction(refs.currentAction));
 		if (refs.actionButton) panel.addView(refs.actionButton, spaced());
@@ -348,7 +348,7 @@ export function applySnapshotToAndroidRefs(refs: AndroidOverlayRefs | null, snap
 		const View = android.view.View;
 		const visible = snapshot.visible && (snapshot.mode === 'connection' || snapshot.mode === 'update');
 		const wasVisible = !!refs.wasVisible;
-		const position = getHmrDevOverlayPosition();
+		const position = HMR_OVERLAY_POSITION;
 		const previousPosition = refs.currentPosition || position;
 		const isToast = position !== 'center';
 

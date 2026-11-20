@@ -10,8 +10,6 @@ type HmrOverlayMode = 'hidden' | 'connection' | 'update';
 
 // Where the live (connection/update) overlay renders. 'top'/'bottom' slide in a
 // safe-area toast chip with a transparent backdrop; 'center' is the dimmed modal.
-// Override per session through the dev object's `overlayPosition` or
-// `setHmrDevOverlayPosition()`.
 export type HmrOverlayPosition = 'top' | 'bottom' | 'center';
 
 export type HmrConnectionStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline' | 'healthy';

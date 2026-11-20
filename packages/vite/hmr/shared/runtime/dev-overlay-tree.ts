@@ -7,7 +7,7 @@
  */
 
 import { type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
-import { asColor, formatStatusText, getHmrDevOverlayPosition, getOverlayGlobal, getRuntimeState, MAX_CODE_LINES, resolveCoreExport, runOverlayAction, type LiveOverlayRefs } from './dev-overlay-shared.js';
+import { asColor, formatStatusText, HMR_OVERLAY_POSITION, getOverlayGlobal, getRuntimeState, MAX_CODE_LINES, resolveCoreExport, runOverlayAction, type LiveOverlayRefs } from './dev-overlay-shared.js';
 
 function resolveActivePage(): any {
 	try {
@@ -202,7 +202,7 @@ function buildLiveOverlayView(snapshot: HmrOverlaySnapshot): Omit<LiveOverlayRef
 	const panel = new StackLayout();
 	panel.horizontalAlignment = 'center';
 	// Vertical alignment is overridden in applySnapshotToLiveRefs
-	// based on getHmrDevOverlayPosition(); 'middle' is the default
+	// based on HMR_OVERLAY_POSITION; 'middle' is the default
 	panel.verticalAlignment = 'middle';
 	panel.width = 320;
 	panel.margin = 24;
@@ -241,7 +241,7 @@ function buildLiveOverlayView(snapshot: HmrOverlaySnapshot): Omit<LiveOverlayRef
 		statusLabel,
 		codeLabel,
 		wasVisible: false,
-		currentPosition: getHmrDevOverlayPosition(),
+		currentPosition: HMR_OVERLAY_POSITION,
 	};
 
 	const Button = resolveCoreExport('Button');
@@ -331,7 +331,7 @@ export function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot)
 	// snapshot's tone and the configured overlay position.
 	const visible = snapshot.visible && (snapshot.mode === 'connection' || snapshot.mode === 'update');
 	const wasVisible = !!refs.wasVisible;
-	const position = getHmrDevOverlayPosition();
+	const position = HMR_OVERLAY_POSITION;
 	const previousPosition: HmrOverlayPosition = refs.currentPosition || position;
 	const isToast = position !== 'center';
 

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@nativescript/core/application', () => ({}));
 vi.mock('@nativescript/core/color', () => ({}));
 vi.mock('@nativescript/core/ui', () => ({}));
-import { computeAndroidToastMargin, computeIosOverlayLayout, computeIosOverlayWindowLevel, iosOverlayCapturesTouch, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, getHmrDevOverlayPosition } from './dev-overlay.js';
+import { computeAndroidToastMargin, computeIosOverlayLayout, computeIosOverlayWindowLevel, iosOverlayCapturesTouch, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot } from './dev-overlay.js';
 import { applySnapshotToIosRefs } from './dev-overlay-ios.js';
 import { applySnapshotToLiveRefs } from './dev-overlay-tree.js';
 import { getGlobalScope } from './global-scope.js';
@@ -12,13 +12,12 @@ import { NS_DEV_SYMBOL_KEY, nsDev } from './dev-globals.js';
 
 type DevOverlayModule = typeof import('./dev-overlay.js');
 let ensureHmrDevOverlayRuntimeInstalled: DevOverlayModule['ensureHmrDevOverlayRuntimeInstalled'];
-let setHmrDevOverlayPosition: DevOverlayModule['setHmrDevOverlayPosition'];
 let setHmrUpdateStage: DevOverlayModule['setHmrUpdateStage'];
 
 // The overlay runtime state is module state: each case gets a fresh instance.
 beforeEach(async () => {
 	vi.resetModules();
-	({ ensureHmrDevOverlayRuntimeInstalled, setHmrDevOverlayPosition, setHmrUpdateStage } = await import('./dev-overlay.js'));
+	({ ensureHmrDevOverlayRuntimeInstalled, setHmrUpdateStage } = await import('./dev-overlay.js'));
 });
 
 describe('HMR dev overlay snapshots', () => {
@@ -371,45 +370,6 @@ describe('Android toast margin', () => {
 			expect(Number.isFinite(v)).toBe(true);
 			expect(v).toBeGreaterThanOrEqual(0);
 		}
-	});
-});
-
-describe('HMR overlay position config', () => {
-	beforeEach(() => {
-		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
-	});
-
-	afterEach(() => {
-		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
-	});
-
-	it("defaults to 'top' so the centered modal does NOT obscure app UI", () => {
-		expect(getHmrDevOverlayPosition()).toBe('top');
-	});
-
-	it('reads a stored override from the dev object', () => {
-		nsDev().overlayPosition = 'bottom';
-		expect(getHmrDevOverlayPosition()).toBe('bottom');
-		nsDev().overlayPosition = 'center';
-		expect(getHmrDevOverlayPosition()).toBe('center');
-	});
-
-	it('falls back to the default when an unknown value is stored', () => {
-		nsDev().overlayPosition = 'left' as any;
-		expect(getHmrDevOverlayPosition()).toBe('top');
-		nsDev().overlayPosition = 42 as any;
-		expect(getHmrDevOverlayPosition()).toBe('top');
-	});
-
-	it('setHmrDevOverlayPosition updates the dev object and ignores invalid values', () => {
-		setHmrDevOverlayPosition('bottom');
-		expect(nsDev().overlayPosition).toBe('bottom');
-		setHmrDevOverlayPosition('center');
-		expect(nsDev().overlayPosition).toBe('center');
-		// Invalid input must NOT clobber a previously-set value, so a
-		// typo in dev code can't accidentally reset the position.
-		setHmrDevOverlayPosition('elsewhere' as any);
-		expect(nsDev().overlayPosition).toBe('center');
 	});
 });
 
@@ -831,10 +791,6 @@ describe('iOS overlay touch pass-through', () => {
 });
 
 describe('iOS overlay window — action button', () => {
-	beforeEach(() => {
-		delete nsDev().overlayPosition;
-	});
-
 	function fakeIosRefs(passThrough: boolean) {
 		const label = () => ({ hidden: false, text: '', frame: null as any, sizeThatFits: () => ({ height: 20 }) });
 		const actionButton = {
@@ -898,10 +854,6 @@ describe('iOS overlay window — action button', () => {
 });
 
 describe('in-tree overlay — action button', () => {
-	beforeEach(() => {
-		delete nsDev().overlayPosition;
-	});
-
 	function fakeLiveRefs() {
 		const panel = { requestLayout() {} };
 		return {

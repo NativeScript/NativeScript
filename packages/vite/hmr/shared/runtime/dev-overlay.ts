@@ -10,8 +10,8 @@
  *   native backend can be built
  */
 
-import { DEFAULT_SNAPSHOT, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, type HmrConnectionStage, type HmrOverlayPosition, type HmrOverlaySnapshot, type HmrOverlayStageInfo, type HmrUpdateStage } from './dev-overlay-snapshots.js';
-import { getHmrDevOverlayPosition, getRuntimeState, type HmrOverlayRuntimeState } from './dev-overlay-shared.js';
+import { DEFAULT_SNAPSHOT, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, type HmrConnectionStage, type HmrOverlaySnapshot, type HmrOverlayStageInfo, type HmrUpdateStage } from './dev-overlay-snapshots.js';
+import { getRuntimeState, type HmrOverlayRuntimeState } from './dev-overlay-shared.js';
 import { applySnapshotToLiveRefs, ensureLiveOverlayRefs } from './dev-overlay-tree.js';
 import { applySnapshotToIosRefs, ensureIosOverlayRefs, getIosOverlayHost } from './dev-overlay-ios.js';
 import { applySnapshotToAndroidRefs, ensureAndroidOverlayRefs, getAndroidOverlayHost } from './dev-overlay-android.js';
@@ -22,7 +22,6 @@ import { nsDev } from './dev-globals.js';
 // `./dev-overlay.js` importers keep working.
 export { createConnectionOverlaySnapshot, createUpdateOverlaySnapshot } from './dev-overlay-snapshots.js';
 export type { HmrConnectionStage, HmrOverlayAction, HmrOverlayPosition, HmrOverlaySnapshot, HmrOverlayStageInfo, HmrUpdateStage } from './dev-overlay-snapshots.js';
-export { getHmrDevOverlayPosition } from './dev-overlay-shared.js';
 export { computeAndroidToastMargin } from './dev-overlay-tree.js';
 export type { AndroidSafeAreaInsets, AndroidToastMargin } from './dev-overlay-tree.js';
 export { computeIosOverlayLayout, computeIosOverlayWindowLevel, iosOverlayCapturesTouch } from './dev-overlay-ios.js';
@@ -42,21 +41,6 @@ export type HmrOverlayApi = {
 	hide: (reason?: string) => void;
 	getSnapshot: () => HmrOverlaySnapshot;
 };
-
-/**
- * Imperative setter for the live-overlay position. Re-applies the
- * current snapshot so the change is visible without waiting for the
- * next HMR cycle. Useful during dev to A/B between top/bottom/center
- * without restarting the app.
- */
-export function setHmrDevOverlayPosition(position: HmrOverlayPosition): void {
-	if (position !== 'top' && position !== 'bottom' && position !== 'center') {
-		return;
-	}
-	nsDev().overlayPosition = position;
-	const state = getRuntimeState();
-	applyRuntimeSnapshot(state.snapshot);
-}
 
 function applyRuntimeSnapshot(snapshot: HmrOverlaySnapshot): HmrOverlaySnapshot {
 	const state = getRuntimeState();

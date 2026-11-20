@@ -11,7 +11,7 @@
  */
 
 import { type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
-import { formatStatusText, getHmrDevOverlayPosition, getOverlayGlobal, getRuntimeState, type HmrOverlayRuntimeState, type IosOverlayRefs, MAX_CODE_LINES, runOverlayAction } from './dev-overlay-shared.js';
+import { formatStatusText, HMR_OVERLAY_POSITION, getOverlayGlobal, getRuntimeState, type HmrOverlayRuntimeState, type IosOverlayRefs, MAX_CODE_LINES, runOverlayAction } from './dev-overlay-shared.js';
 
 /**
  * Returns the UIWindow level we use for the live/connection overlay. We lift
@@ -81,10 +81,8 @@ export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: 
 	const panelPadding = Math.max(0, Number(input.panelPadding ?? 16));
 	const interLabelSpacing = Math.max(0, Number(input.interLabelSpacing ?? 10));
 	const minTopInset = Math.max(0, Number(input.minTopInset ?? 20));
-	// Default to 'center' on the pure function so the existing
-	// snapshot/layout tests remain stable; the runtime call site
-	// (layoutIosOverlayRefs) reads the configured position from
-	// `getHmrDevOverlayPosition()` and forwards it explicitly.
+	// The runtime call site (layoutIosOverlayRefs) always passes
+	// `HMR_OVERLAY_POSITION`.
 	const position: HmrOverlayPosition = input.position ?? 'center';
 	// Distance between the panel and the safe-area edge in toast
 	// modes. 8pt mirrors the typical iOS notification chip inset and
@@ -223,7 +221,7 @@ function getPassThroughWindowClass(UIWindow: any): any {
 				{
 					pointInsideWithEvent(point: { x: number; y: number }) {
 						const refs = getRuntimeState().iosRefs;
-						return !!refs && iosOverlayCapturesTouch(point, { blocking: getHmrDevOverlayPosition() === 'center', actionHitRect: refs.actionHitRect });
+						return !!refs && iosOverlayCapturesTouch(point, { blocking: HMR_OVERLAY_POSITION === 'center', actionHitRect: refs.actionHitRect });
 					},
 				},
 				{ name: 'NSViteHmrOverlayWindow' },
@@ -384,7 +382,7 @@ function buildIosOverlayRefs(state: HmrOverlayRuntimeState): IosOverlayRefs | nu
 			actionHitRect: null,
 			passThrough: !!WindowClass,
 			wasVisible: false,
-			currentPosition: getHmrDevOverlayPosition(),
+			currentPosition: HMR_OVERLAY_POSITION,
 		};
 		refsHolder.refs = refs;
 		return refs;
@@ -592,7 +590,7 @@ export function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: Hm
 		// the dev session.
 		const visible = snapshot.visible && (snapshot.mode === 'connection' || snapshot.mode === 'update');
 		const wasVisible = !!refs.wasVisible;
-		const position = getHmrDevOverlayPosition();
+		const position = HMR_OVERLAY_POSITION;
 		const previousPosition = refs.currentPosition;
 		const isToast = position !== 'center';
 
