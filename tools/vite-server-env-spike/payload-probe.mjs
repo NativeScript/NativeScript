@@ -167,7 +167,7 @@ const ANGULAR_EDITS = [
 	{ key: 'e1a', label: '(e1) syntax error in home.component.ts', file: 'src/app/home/home.component.ts', from: '(n) => n + 1);', to: '(n) => n + 1;', expect: { error: true, update: false } },
 	{ key: 'e1b', label: '(e1) fix the syntax error', file: 'src/app/home/home.component.ts', from: '(n) => n + 1;', to: '(n) => n + 1);', expect: { error: false, reboot: 1, rerunIncludes: '/src/app/home/home.component.ts' } },
 	{ key: 'e2a', label: '(e2) template compile error in home.component.html', file: 'src/app/home/home.component.html', from: `+ count()"`, to: `+ count("`, expect: { error: true, update: false, inPlace: false } },
-	// The first update that passes after a withheld one reboots through the entry.
+	// The first update that passes after a withheld one reboots through the entry; a template is not a stylesheet.
 	{ key: 'e2b', label: '(e2) fix the template', file: 'src/app/home/home.component.html', from: `+ count("`, to: `+ count()"`, expect: { error: false, reboot: 1, inPlace: false, rerunIncludes: '/src/app/home/home.component.ts' } },
 	{ key: 'e3a', label: '(e3) service throws at evaluation', file: SERVICE_TS, from: 'export class ProbeService {', to: "throw new Error('probe: evaluation failed');\nexport class ProbeService {", expect: { error: false, reboot: 1, rerunIncludes: `/${SERVICE_TS}` } },
 	{ key: 'e3b', label: '(e3) fix the service', file: SERVICE_TS, from: "throw new Error('probe: evaluation failed');\nexport class ProbeService {", to: 'export class ProbeService {', expect: { error: false, reboot: 1 } },
@@ -207,8 +207,8 @@ const TS_EDITS = [
 	{ key: 'c1', label: '(c1) global app.css', file: 'src/app.css', append: '\n.probe-global { color: red; }\n', expect: { ...IN_PLACE_CSS, inPlaceHas: '.probe-global' } },
 	{ key: 'c2', label: '(c2) partial _app-platform.ios.css imported by app.css', file: 'src/_app-platform.ios.css', append: '\n.probe-partial { color: red; }\n', expect: { ...IN_PLACE_CSS, inPlaceHas: '.probe-partial' } },
 	{ key: 'c3a', label: '(c3) syntax error in app.css', file: 'src/app.css', append: '\n.probe-broken { color: red;\n', expect: { error: true, update: false, reboot: 0, fullReload: false } },
-	// The first update that passes after a withheld one reboots through the entry.
-	{ key: 'c3b', label: '(c3) fix the app.css syntax error', file: 'src/app.css', from: '.probe-broken { color: red;\n', to: '.probe-broken { color: red; }\n', expect: { error: false, reboot: 1, rerunIncludes: '/src/app.css', fullReload: false, restart: false } },
+	// Only a stylesheet was withheld and the fix re-sends it whole, so it restyles in place.
+	{ key: 'c3b', label: '(c3) fix the app.css syntax error', file: 'src/app.css', from: '.probe-broken { color: red;\n', to: '.probe-broken { color: red; }\n', expect: { ...IN_PLACE_CSS, inPlaceHas: '.probe-broken { color: red; }' } },
 	{ key: 'e1a', label: '(e1) syntax error in main-page.ts', file: 'src/main-page.ts', from: 'new HelloWorldModel();', to: 'new HelloWorldModel(;', expect: { error: true, update: false, fullReload: false } },
 	{ key: 'e1b', label: '(e1) fix the syntax error', file: 'src/main-page.ts', from: 'new HelloWorldModel(;', to: 'new HelloWorldModel();', expect: { error: false, reboot: 1, rerunIncludes: '/src/main-page.ts', fullReload: false } },
 	// A page added while the app runs joins the bundler context with the next reboot.

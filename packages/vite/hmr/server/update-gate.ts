@@ -88,6 +88,56 @@ export function collectCheckedUrls(moduleGraph: GraphLike, rerun: readonly strin
 	return [...urls];
 }
 
+const STYLESHEET_RE = /\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)$/i;
+
+const isStylesheetUrl = (url: string) => STYLESHEET_RE.test(url.split('?', 1)[0]);
+
+/**
+ * Whether `updates` restyle in place everything the withheld saves edited
+ * (their files as `viteUrlForFile` URLs, per save): each save edited only
+ * stylesheets, and each of those is re-sent whole, as a self-accepting
+ * stylesheet module, or as a sheet `@import`ed only into re-sent ones (a
+ * partial shared with a sheet that isn't re-sent would stay stale there).
+ * Any other edit may sit below a boundary the passing update doesn't cross,
+ * and a framework may have diffed the passing save against the withheld one
+ * rather than against what the device runs.
+ */
+export function restylesWithheld(moduleGraph: GraphLike, updates: readonly JsUpdateLike[], withheldFiles: readonly (Iterable<string> | undefined)[], root: string): boolean {
+	const resent = new Set<string>();
+	const sheets = new Set<GraphNodeLike>();
+	for (const update of updates) {
+		const whole = update.type === 'css-update' || (update.type === 'js-update' && update.acceptedPath === update.path);
+		if (!whole || !update.path || !isStylesheetUrl(update.path)) continue;
+		resent.add(update.path.split('?', 1)[0]);
+		const node = moduleGraph.urlToModuleMap.get(update.path);
+		if (node) sheets.add(node);
+	}
+	const fresh = new Map<GraphNodeLike, boolean>();
+	const isFresh = (node: GraphNodeLike): boolean => {
+		if (sheets.has(node)) return true;
+		const known = fresh.get(node);
+		if (known !== undefined) return known;
+		fresh.set(node, false);
+		const result = isStylesheetUrl(node.url) && node.importers.size > 0 && [...node.importers].every(isFresh);
+		fresh.set(node, result);
+		return result;
+	};
+	const seen = new Set<GraphNodeLike>();
+	const pending = [...sheets];
+	// By file: Vite may key an `@import`ed partial as `/@fs/<file>` even inside the root.
+	while (pending.length) {
+		const node = pending.pop()!;
+		if (seen.has(node)) continue;
+		seen.add(node);
+		if (node.file && isFresh(node)) resent.add(viteUrlForFile(node.file, root));
+		for (const imported of node.importedModules) if (isStylesheetUrl(imported.url)) pending.push(imported);
+	}
+	return withheldFiles.every((files) => {
+		const urls = files ? [...files] : [];
+		return urls.length > 0 && urls.every((url) => isStylesheetUrl(url) && resent.has(url));
+	});
+}
+
 // eslint-disable-next-line no-control-regex
 const ansiRE = /\u001b\[[0-9;]*m/g;
 const stripAnsi = (value: unknown) => (typeof value === 'string' ? value.replace(ansiRE, '') : undefined);
@@ -165,7 +215,8 @@ const wrappedChannels = new WeakSet<object>();
  * - an `update` with a `js-update` is compiled first; on failure the device
  *   gets Vite's `error` payload instead, and its app stays untouched;
  * - the first one that passes after such a failure becomes an entry reboot
- *   covering every edit since the last update that passed;
+ *   covering every edit since the last update that passed, unless those
+ *   edits were only stylesheets it re-sends whole;
  * - otherwise `ns:rerun` (what re-runs) goes right before it;
  * - the flavor's gated events (Angular's `angular:component-update`) wait
  *   for that verdict, so a broken template never applies in place;
@@ -259,12 +310,22 @@ export function nsRerunPlugin(opts: { flavor?: string } = {}): Plugin {
 						withhold(timestamps, failure);
 						return;
 					}
-					if (failedSaves.size) {
+					if (
+						failedSaves.size &&
+						!restylesWithheld(
+							graph(),
+							payload.updates ?? [],
+							[...failedSaves].map((t) => changedBySave.get(t)),
+							server.config.root,
+						)
+					) {
 						await sendWithheld(payload.updates ?? [], timestamps);
 						return;
 					}
+					const saves = [...failedSaves, ...timestamps];
+					failedSaves.clear();
 					release();
-					const changed = takeChanged(timestamps);
+					const changed = takeChanged(saves);
 					originalSend(NS_UPDATE_RERUN_EVENT, { timestamp: jsUpdates[0].timestamp!, changed: changed.map(deviceUrlForGraphUrl), rerun: rerun.map(deviceUrlForGraphUrl), root: server.config.root } satisfies UpdateRerunEventData);
 					originalSend(...args);
 				};

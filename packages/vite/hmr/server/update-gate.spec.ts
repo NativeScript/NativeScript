@@ -11,7 +11,7 @@ import { NS_UPDATE_RERUN_EVENT } from '../shared/protocol.js';
 import { requestAppRestart } from './app-restart.js';
 import { nsEntryBoundaryPlugin } from './entry-boundary.js';
 import { ServedModules, servedTimestamp } from './served-modules.js';
-import { collectCheckedUrls, collectRerunUrls, findMissedModules, getModuleEdits, nsRerunPlugin, sendCatchUp } from './update-gate.js';
+import { collectCheckedUrls, collectRerunUrls, findMissedModules, getModuleEdits, nsRerunPlugin, restylesWithheld, sendCatchUp } from './update-gate.js';
 
 describe('ServedModules', () => {
 	it('records the stamps and the time each module was served', () => {
@@ -49,6 +49,29 @@ describe('collectCheckedUrls', () => {
 		const main = node('/src/main.ts', { importedModules: new Set([component]) });
 		expect(collectRerunUrls(graphOf(main, component, template), [{ type: 'js-update', acceptedPath: '/src/main.ts', timestamp: 7 }], new ServedModules()).sort()).toEqual(['/src/home.component.ts', '/src/main.ts']);
 		expect(collectRerunUrls(graphOf(main, component, template), [{ type: 'js-update', acceptedPath: '/src/home.component.html', timestamp: 7 }])).toEqual([]);
+	});
+});
+
+describe('restylesWithheld', () => {
+	const sheet = node('/src/home.component.css');
+	const update = { type: 'js-update', path: '/src/home.component.css', acceptedPath: '/src/home.component.css' };
+
+	it('needs a whole stylesheet re-sent for every withheld file', () => {
+		expect(restylesWithheld(graphOf(sheet), [update], [new Set(['/src/home.component.css'])], '/app')).toBe(true);
+		expect(restylesWithheld(graphOf(sheet), [{ type: 'css-update', path: '/src/home.component.css' }], [new Set(['/src/home.component.css'])], '/app')).toBe(true);
+		expect(restylesWithheld(graphOf(sheet), [update], [new Set(['/src/other.css'])], '/app')).toBe(false);
+		// Accepted by an importer: the sheet's module is not what re-runs.
+		expect(restylesWithheld(graphOf(sheet), [{ ...update, acceptedPath: '/src/home.component.ts' }], [new Set(['/src/home.component.css'])], '/app')).toBe(false);
+	});
+
+	it('never counts an Angular template, even re-sent as a self-update', () => {
+		const template = node('/src/home.component.html');
+		expect(restylesWithheld(graphOf(template), [{ type: 'js-update', path: '/src/home.component.html', acceptedPath: '/src/home.component.html' }], [new Set(['/src/home.component.html'])], '/app')).toBe(false);
+	});
+
+	it('fails closed for a withheld save it has no record of', () => {
+		expect(restylesWithheld(graphOf(sheet), [update], [undefined], '/app')).toBe(false);
+		expect(restylesWithheld(graphOf(sheet), [update], [new Set()], '/app')).toBe(false);
 	});
 });
 
@@ -105,6 +128,10 @@ describe('findMissedModules', () => {
 });
 
 const VIEW = "import { util } from './util.js';\nexport const view = [util];\nif (import.meta.hot) import.meta.hot.accept();\n";
+// A page template, like the toolbox's `main-page.xml?raw`: markup the view depends on, not a stylesheet.
+const STYLED_VIEW = "import { util } from './util.js';\nimport template from './view.xml?raw';\nexport const view = [util, template];\nif (import.meta.hot) import.meta.hot.accept();\n";
+const APP_CSS = "@import './partial.css';\n.a { color: red; }\n";
+const BROKEN_APP_CSS = "@import './partial.css';\n.a { content: 'UNCOMPILABLE'; }\n";
 
 // main → one → child1; main → child2; child1 → child2; main → three → four.
 describe('compile gate and catch-up on a real Vite server', () => {
@@ -112,13 +139,17 @@ describe('compile gate and catch-up on a real Vite server', () => {
 	let server: ViteDevServer;
 	let sent: any[];
 
-	async function start(options: { gatedFlavor?: boolean | 'object'; boundary?: boolean; selfAccepting?: boolean } = {}) {
+	async function start(options: { gatedFlavor?: boolean | 'object'; boundary?: boolean; selfAccepting?: boolean; styled?: boolean | 'shared-partial' } = {}) {
+		const selfAccepting = options.selfAccepting || !!options.styled;
+		const sharedPartial = options.styled === 'shared-partial';
 		const files: Record<string, string> = {
 			'package.json': JSON.stringify({ main: 'main.js' }),
 			'fw.js': 'export function dispose() {}\nexport function settled() {}\n',
-			'main.js': options.selfAccepting ? "import { one } from './one.js';\nimport { child2 } from './child2.js';\nimport { three } from './three.js';\nimport { view } from './view.js';\nexport const app = [one, child2, three, view];\n" : "import { one } from './one.js';\nimport { child2 } from './child2.js';\nimport { three } from './three.js';\nexport const app = [one, child2, three];\n",
+			'main.js': (options.styled ? "import './app.css';\n" : '') + (sharedPartial ? "import './other.css';\n" : '') + (selfAccepting ? "import { one } from './one.js';\nimport { child2 } from './child2.js';\nimport { three } from './three.js';\nimport { view } from './view.js';\nexport const app = [one, child2, three, view];\n" : "import { one } from './one.js';\nimport { child2 } from './child2.js';\nimport { three } from './three.js';\nexport const app = [one, child2, three];\n"),
 			// Like an SFC: accepts itself, so an edit of its util stops at it.
-			...(options.selfAccepting ? { 'view.js': VIEW, 'util.js': "export const util = 'u1';\n" } : {}),
+			...(selfAccepting ? { 'view.js': options.styled ? STYLED_VIEW : VIEW, 'util.js': "export const util = 'u1';\n" } : {}),
+			...(options.styled ? { 'app.css': APP_CSS, 'partial.css': '.p { color: blue; }\n', 'view.xml': '<Label text="v1" />\n' } : {}),
+			...(sharedPartial ? { 'other.css': "@import './partial.css';\n.o { color: red; }\n" } : {}),
 			'one.js': "import { child1 } from './child1.js';\nexport const one = [child1];\n",
 			'child1.js': "import { child2 } from './child2.js';\nexport const child1 = ['a', child2];\n",
 			'child2.js': "export const child2 = 'b';\n",
@@ -170,6 +201,11 @@ describe('compile gate and catch-up on a real Vite server', () => {
 		for (const name of Object.keys(files).filter((n) => n.endsWith('.js') && n !== 'fw.js')) {
 			await server.environments.client.transformRequest(`/${name}`);
 		}
+		if (options.styled) {
+			await server.environments.client.transformRequest('/app.css');
+			await server.environments.client.transformRequest('/view.xml?raw');
+		}
+		if (sharedPartial) await server.environments.client.transformRequest('/other.css');
 	}
 
 	async function edit(name: string, content: string) {
@@ -274,6 +310,51 @@ describe('compile gate and catch-up on a real Vite server', () => {
 		expect(vi.mocked(requestAppRestart).mock.calls[0][0]).toMatch(/^2 file\(s\) changed/);
 		await new Promise((r) => setTimeout(r, 50));
 		expect(sent).toEqual([]);
+	});
+
+	it('restyles in place when every withheld save edited only stylesheets the passing update re-sends whole', async () => {
+		await start({ styled: true });
+		expect(await edit('app.css', BROKEN_APP_CSS)).toEqual(['error']);
+		// A partial is compiled into the sheet that imports it.
+		expect(await edit('partial.css', '.p { color: green; }\n')).toEqual(['error']);
+		expect(await edit('app.css', APP_CSS)).toEqual([NS_UPDATE_RERUN_EVENT, 'update']);
+		expect(sent[1].updates).toEqual([expect.objectContaining({ type: 'js-update', path: '/app.css', acceptedPath: '/app.css' })]);
+		expect([...sent[0].data.changed].sort()).toEqual(['/app.css', '/partial.css']);
+		expect(await edit('util.js', "export const util = 'u2';\n")).toEqual([NS_UPDATE_RERUN_EVENT, 'update']);
+		expect(sent[1].updates).toEqual([expect.objectContaining({ path: '/view.js' })]);
+	});
+
+	it('reboots when a script was withheld along with a stylesheet', async () => {
+		await start({ styled: true });
+		expect(await edit('app.css', BROKEN_APP_CSS)).toEqual(['error']);
+		// Passes its own check, but the reboot it becomes re-runs the broken sheet.
+		expect(await edit('util.js', "export const util = 'u2';\n")).toEqual(['error']);
+		expect(await edit('app.css', APP_CSS)).toEqual([NS_UPDATE_RERUN_EVENT, 'update']);
+		expect(sent[1].updates).toEqual([expect.objectContaining({ path: '/main.js', acceptedPath: '/main.js' })]);
+		expect([...sent[0].data.changed].sort()).toEqual(['/app.css', '/util.js']);
+	});
+
+	it('reboots when a withheld partial is also compiled into a sheet the passing update does not re-send', async () => {
+		await start({ styled: 'shared-partial' });
+		expect(await edit('app.css', BROKEN_APP_CSS)).toEqual(['error']);
+		expect(await edit('partial.css', '.p { color: green; }\n')).toEqual(['error']);
+		expect(await edit('app.css', APP_CSS)).toEqual([NS_UPDATE_RERUN_EVENT, 'update']);
+		expect(sent[1].updates).toEqual([expect.objectContaining({ path: '/main.js', acceptedPath: '/main.js' })]);
+	});
+
+	it('releases the gated in-place events of a restyle that passes after a withheld stylesheet', async () => {
+		await start({ styled: true, gatedFlavor: true });
+		expect(await edit('app.css', BROKEN_APP_CSS)).toEqual(['error']);
+		expect(await edit('app.css', APP_CSS)).toEqual(['spec:in-place', NS_UPDATE_RERUN_EVENT, 'update']);
+		expect(sent[2].updates).toEqual([expect.objectContaining({ path: '/app.css', acceptedPath: '/app.css' })]);
+	});
+
+	it('reboots after a withheld template edit', async () => {
+		await start({ styled: true });
+		expect(await edit('view.xml', '<Label text="UNCOMPILABLE" />\n')).toEqual(['error']);
+		expect(await edit('view.xml', '<Label text="v2" />\n')).toEqual([NS_UPDATE_RERUN_EVENT, 'update']);
+		expect(sent[1].updates).toEqual([expect.objectContaining({ path: '/main.js', acceptedPath: '/main.js' })]);
+		expect(sent[0].data.changed).toEqual(['/view.xml']);
 	});
 
 	it.each([
