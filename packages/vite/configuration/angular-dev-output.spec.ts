@@ -23,6 +23,7 @@ vi.mock('./base.js', () => ({
 
 import { angularConfig } from './angular.js';
 import angular from '@analogjs/vite-plugin-angular';
+import { getCliFlags } from '../helpers/cli-flags.js';
 
 const angularPluginFactory = vi.mocked(angular);
 
@@ -50,6 +51,20 @@ describe('angularConfig non-HMR development output', () => {
 		expect(output.codeSplitting).toBe(false);
 		expect('manualChunks' in output).toBe(false);
 		expect('chunkFileNames' in output).toBe(false);
+	});
+
+	it('keeps chunk splitting for the HMR build even when NODE_ENV is production', () => {
+		vi.mocked(getCliFlags).mockReturnValueOnce({ hmr: true } as any);
+		vi.stubEnv('NODE_ENV', 'production');
+		try {
+			const config = angularConfig({ mode: 'development' });
+			const output = (config.build as any).rolldownOptions.output;
+
+			expect(output.codeSplitting).toBeUndefined();
+			expect(typeof output.manualChunks).toBe('function');
+		} finally {
+			vi.unstubAllEnvs();
+		}
 	});
 
 	it('keeps the base chunking strategy outside development no-HMR mode', () => {

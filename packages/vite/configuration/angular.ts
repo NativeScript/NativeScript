@@ -12,10 +12,6 @@ import { getMonorepoWorkspaceRoot } from '../helpers/project.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { resolveVerboseFlag } from '../helpers/logging.js';
 
-const cliFlags = getCliFlags()!;
-const isDevEnv = process.env.NODE_ENV !== 'production';
-const hmrActive = isDevEnv && !!cliFlags.hmr;
-
 /**
  * In-place component HMR opt-out (`NS_VITE_ANGULAR_LIVE_RELOAD=0`).
  *
@@ -29,7 +25,6 @@ const angularLiveReloadDisabledByEnv: boolean = (() => {
 	const v = raw.trim().toLowerCase();
 	return v === '0' || v === 'false' || v === 'off' || v === 'no';
 })();
-const hmrAngularLiveReload = hmrActive && !angularLiveReloadDisabledByEnv;
 
 const projectRoot = process.cwd();
 const tsConfigAppPath = path.resolve(projectRoot, 'tsconfig.app.json');
@@ -131,8 +126,9 @@ export interface AngularFileReplacement {
 	ssr?: string;
 }
 
-function createAngularPlugins(opts: { fileReplacements?: AngularFileReplacement[]; workspaceRoot?: string }): Plugin[] {
+function createAngularPlugins(opts: { hmrActive: boolean; fileReplacements?: AngularFileReplacement[]; workspaceRoot?: string }): Plugin[] {
 	const verbose = resolveVerboseFlag();
+	const hmrAngularLiveReload = opts.hmrActive && !angularLiveReloadDisabledByEnv;
 	const assetToComponents = new Map<string, Set<string>>();
 	const componentToAssets = new Map<string, Set<string>>();
 	const pendingComponentInvalidations = new Set<string>();
@@ -283,7 +279,7 @@ function createAngularPlugins(opts: { fileReplacements?: AngularFileReplacement[
 		}),
 		...(hmrAngularLiveReload ? angularHmrPayloadRulesPlugins({ workspaceRoot: analogWorkspaceRoot }) : []),
 		// Analog turns off Vite's TypeScript transform; this strips files outside the Angular program.
-		...(hmrActive ? [tsFallbackTransformPlugin({ verbose })] : []),
+		...(opts.hmrActive ? [tsFallbackTransformPlugin({ verbose })] : []),
 		angularUnlinkedPartialsGuardPlugin(),
 	];
 }
@@ -315,8 +311,12 @@ export const angularConfig = ({
 	 */
 	workspaceRoot?: string;
 }): UserConfig => {
+	// From `mode`, not NODE_ENV: `vite build` sets NODE_ENV to production
+	// before it loads the config, also for the HMR watch build.
+	const hmrActive = mode === 'development' && !!getCliFlags()?.hmr;
 	const useSingleBundleDevOutput = mode === 'development' && !hmrActive;
 	const plugins = createAngularPlugins({
+		hmrActive,
 		fileReplacements,
 		workspaceRoot,
 	});
