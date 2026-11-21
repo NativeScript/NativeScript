@@ -17,6 +17,8 @@ const RE_MEDIA_QUERY = /^(?:(only|not)?\s*([_a-z][_a-z0-9-]*)|(\([^\)]+\)))(?:\s
 	RE_LENGTH_UNIT = /(em|rem|px|cm|mm|in|pt|pc)?\s*$/,
 	RE_RESOLUTION_UNIT = /(dpi|dpcm|dppx)?\s*$/;
 
+const RESERVED_MEDIA_TYPES = new Set(['only', 'not', 'and', 'or', 'layer']);
+
 export enum MediaQueryType {
 	all = 'all',
 	print = 'print',
@@ -37,7 +39,7 @@ export interface MediaQueryEnvironmentParams {
 
 export interface MediaQueryExpression {
 	inverse: boolean;
-	type: MediaQueryType;
+	type: MediaQueryType | string;
 	features: MediaQueryFeature[];
 }
 
@@ -135,9 +137,14 @@ export function parseQuery(mediaQuery: string): MediaQueryExpression[] {
 		const type = captures[2];
 		const featureString = ((captures[3] || '') + (captures[4] || '')).trim();
 
+		const mediaType = type ? type.toLowerCase() : MediaQueryType.all;
+		if (RESERVED_MEDIA_TYPES.has(mediaType)) {
+			return { inverse: true, type: MediaQueryType.all, features: [] };
+		}
+
 		const expression: MediaQueryExpression = {
 			inverse: !!modifier && modifier.toLowerCase() === 'not',
-			type: MediaQueryType[type ? type.toLowerCase() : 'all'] ?? 'all',
+			type: mediaType,
 			features: [],
 		};
 
