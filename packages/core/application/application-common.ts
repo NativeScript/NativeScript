@@ -274,6 +274,11 @@ export class ApplicationCommon {
 			const rootView = this.getRootView();
 			this.livesync(rootView, context);
 		};
+
+		// The process can outlive an exit and open a new window, which has to fire launch again.
+		this.on(this.exitEvent, () => {
+			this._launchBridgeConsumed = false;
+		});
 	}
 
 	/**
