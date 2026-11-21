@@ -1,3 +1,14 @@
+## 5.0.42 (2026-11-21)
+
+### 🩹 Fixes
+
+- **webpack:** keep source map positions in native-class loaders ([#11647](https://github.com/NativeScript/NativeScript/pull/11647))
+- **webpack:** keep source map positions in app-css-loader ([#11646](https://github.com/NativeScript/NativeScript/pull/11646))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
 ## 5.0.41 (2026-11-10)
 
 ### 🩹 Fixes
