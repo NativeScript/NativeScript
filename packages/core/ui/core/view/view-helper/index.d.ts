@@ -99,6 +99,9 @@ export namespace IOSHelper {
 	export function layoutView(controller: any /* UIViewController */, owner: View): void;
 	export function getPositionFromFrame(frame: any /* CGRect */): Position;
 	export function getFrameFromPosition(position: Position, insets?: Position): any; /* CGRect */
+	export function getPositionFromFramePosition(left: number, top: number, right: number, bottom: number): Position;
+	export function getPositionFromRect(x: number, y: number, width: number, height: number): Position;
+	export function getAvailablePositionsFromParent(view: View, width: number, height: number): { safeArea: Position; fullscreen: Position; inWindow: Position };
 	export function shrinkToSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
 	export function expandBeyondSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
 	export class UILayoutViewController {
