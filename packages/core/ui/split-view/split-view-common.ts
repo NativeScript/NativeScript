@@ -124,7 +124,7 @@ splitRoleProperty.register(View);
 export const displayModeProperty = new Property<SplitViewBase, SplitDisplayMode>({
 	name: 'displayMode',
 	defaultValue: 'automatic',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: splitDisplayModeConverter,
 });
 displayModeProperty.register(SplitViewBase);
@@ -132,7 +132,7 @@ displayModeProperty.register(SplitViewBase);
 export const splitBehaviorProperty = new Property<SplitViewBase, SplitBehavior>({
 	name: 'splitBehavior',
 	defaultValue: 'automatic',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: splitBehaviorConverter,
 });
 splitBehaviorProperty.register(SplitViewBase);
@@ -140,7 +140,7 @@ splitBehaviorProperty.register(SplitViewBase);
 export const preferredPrimaryColumnWidthFractionProperty = new Property<SplitViewBase, number>({
 	name: 'preferredPrimaryColumnWidthFraction',
 	defaultValue: 0,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: (v) => Math.max(0, Math.min(1, parseFloat(v))),
 });
 preferredPrimaryColumnWidthFractionProperty.register(SplitViewBase);
@@ -148,7 +148,7 @@ preferredPrimaryColumnWidthFractionProperty.register(SplitViewBase);
 export const preferredSupplementaryColumnWidthFractionProperty = new Property<SplitViewBase, number>({
 	name: 'preferredSupplementaryColumnWidthFraction',
 	defaultValue: 0,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: (v) => Math.max(0, Math.min(1, parseFloat(v))),
 });
 preferredSupplementaryColumnWidthFractionProperty.register(SplitViewBase);
@@ -156,7 +156,7 @@ preferredSupplementaryColumnWidthFractionProperty.register(SplitViewBase);
 export const preferredInspectorColumnWidthFractionProperty = new Property<SplitViewBase, number>({
 	name: 'preferredInspectorColumnWidthFraction',
 	defaultValue: 0,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: (v) => Math.max(0, Math.min(1, parseFloat(v))),
 });
 preferredInspectorColumnWidthFractionProperty.register(SplitViewBase);

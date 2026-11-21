@@ -670,9 +670,9 @@ export function mainEntryPlugin(opts: { platform: Platform; isDevMode: boolean; 
 			}
 
 			// ---- HMR bootstrap prerequisites ----
-			// The Windows runtime provides WebSocket natively; the polyfill has no Windows
-			// implementation and would fail to resolve.
-			if (opts.hmrActive && opts.platform !== 'windows') {
+			// The Windows and Linux runtimes provide WebSocket natively; the polyfill has
+			// no implementation there and would fail to resolve.
+			if (opts.hmrActive && opts.platform !== 'windows' && opts.platform !== 'linux') {
 				// WebSocket polyfill needed for dev hot reload messaging
 				imports += "import '@valor/nativescript-websockets';\n";
 				if (opts.verbose) {

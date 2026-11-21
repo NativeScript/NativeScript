@@ -9,6 +9,7 @@ import AndroidPlatform from '../platforms/android';
 import iOSPlatform from '../platforms/ios';
 import visionOSPlatform from '../platforms/visionos';
 import WindowsPlatform from '../platforms/windows';
+import LinuxPlatform from '../platforms/linux';
 
 export interface INativeScriptPlatform {
 	getEntryPath?(): string;
@@ -25,6 +26,7 @@ const platforms: {
 	ios: iOSPlatform,
 	visionos: visionOSPlatform,
 	windows: WindowsPlatform,
+	linux: LinuxPlatform,
 };
 
 /**
@@ -70,6 +72,10 @@ export function getPlatformName(): Platform {
 
 	if (env?.windows) {
 		return 'windows';
+	}
+
+	if (env?.linux) {
+		return 'linux';
 	}
 
 	// support custom platforms

@@ -10,7 +10,7 @@ import type { View } from '../ui/core/view';
 import type { Frame } from '../ui/frame';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
-import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType, WindowsApplication as WindowsApplicationType } from '.';
+import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType, WindowsApplication as WindowsApplicationType, LinuxApplication as LinuxApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, LayoutDirectionChangedEventData, UnhandledErrorEventData, SceneOpenURLContextsEventData, SceneContinueUserActivityEventData, ScenePerformActionForShortcutItemEventData } from './application-interfaces';
 import { applyAccessibilityCssToRoot, readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { getActiveWindow, getAppMainEntry, getAutoSystemAppearanceChanged, isAppInBackground, setActiveWindow, setAppInBackground, setAppMainEntry, setAutoSystemAppearanceChanged } from './helpers-common';
@@ -831,6 +831,7 @@ export class ApplicationCommon {
 			ios: this.ios,
 			android: this.android,
 			windows: this.windows,
+			linux: this.linux,
 			...additionalLanchEventData,
 		};
 		this.notify(launchArgs);
@@ -1174,6 +1175,10 @@ export class ApplicationCommon {
 	}
 
 	get windows(): WindowsApplicationType {
+		return undefined;
+	}
+
+	get linux(): LinuxApplicationType {
 		return undefined;
 	}
 

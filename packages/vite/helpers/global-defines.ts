@@ -40,6 +40,7 @@ export interface RuntimeDefineValues {
 	__VISIONOS__: boolean;
 	__APPLE__: boolean;
 	__WINDOWS__: boolean;
+	__LINUX__: boolean;
 	__COMMONJS__: boolean;
 	__NS_WEBPACK__: boolean;
 	__NS_ENV_VERBOSE__: boolean;
@@ -58,6 +59,7 @@ export function getRuntimeDefineValues(opts: { platform?: string; isDevMode: boo
 		__VISIONOS__: platform === 'visionos',
 		__APPLE__: platform === 'ios' || platform === 'visionos',
 		__WINDOWS__: platform === 'windows',
+		__LINUX__: platform === 'linux',
 		__COMMONJS__: false,
 		__NS_WEBPACK__: false,
 		__NS_ENV_VERBOSE__: !!opts.verbose,
@@ -95,6 +97,7 @@ export function getRuntimeSeedValues(opts: { platform?: string; isDevMode: boole
 		isAndroid: values.__ANDROID__,
 		isIOS: values.__APPLE__,
 		isWindows: values.__WINDOWS__,
+		isLinux: values.__LINUX__,
 		// Runtime flavor for the raw-served HMR client's TARGET_FLAVOR resolution.
 		__NS_TARGET_FLAVOR__: opts.flavor,
 		// Device path of a registered (non built-in) flavor's client strategy;
@@ -134,12 +137,12 @@ export function buildDefineSeedStatements(values: RuntimeDefineValues): string[]
  * the bundle seed see it already set and no-op.
  */
 export function buildGuardedDefineSeedStatement(values: RuntimeDefineValues): string {
-	// `isIOS`/`isAndroid`/`isWindows` mirror the bundle build's `global.isIOS` /
-	// `global.isAndroid` / `global.isWindows` defines (getGlobalDefines): raw-served modules get no
+	// `isIOS`/`isAndroid`/`isWindows`/`isLinux` mirror the bundle build's `global.isIOS` /
+	// `global.isAndroid` / `global.isWindows` / `global.isLinux` defines (getGlobalDefines): raw-served modules get no
 	// text substitution, so the real globals must exist for member-access reads.
 	// Guarded separately from `__IOS__` because a bundle seed may already have
 	// planted one set but not the other.
-	return `if (globalThis.__IOS__ === undefined && globalThis.__ANDROID__ === undefined && globalThis.__WINDOWS__ === undefined) { globalThis.__ANDROID__ = ${values.__ANDROID__}; globalThis.__IOS__ = ${values.__IOS__}; globalThis.__VISIONOS__ = ${values.__VISIONOS__}; globalThis.__APPLE__ = ${values.__APPLE__}; globalThis.__WINDOWS__ = ${values.__WINDOWS__}; }\nif (globalThis.isIOS === undefined && globalThis.isAndroid === undefined && globalThis.isWindows === undefined) { globalThis.isAndroid = ${values.__ANDROID__}; globalThis.isIOS = ${values.__APPLE__}; globalThis.isWindows = ${values.__WINDOWS__}; }\nif (globalThis.__DEV__ === undefined) { globalThis.__DEV__ = ${values.__DEV__}; }`;
+	return `if (globalThis.__IOS__ === undefined && globalThis.__ANDROID__ === undefined && globalThis.__WINDOWS__ === undefined && globalThis.__LINUX__ === undefined) { globalThis.__ANDROID__ = ${values.__ANDROID__}; globalThis.__IOS__ = ${values.__IOS__}; globalThis.__VISIONOS__ = ${values.__VISIONOS__}; globalThis.__APPLE__ = ${values.__APPLE__}; globalThis.__WINDOWS__ = ${values.__WINDOWS__}; globalThis.__LINUX__ = ${values.__LINUX__}; }\nif (globalThis.isIOS === undefined && globalThis.isAndroid === undefined && globalThis.isWindows === undefined && globalThis.isLinux === undefined) { globalThis.isAndroid = ${values.__ANDROID__}; globalThis.isIOS = ${values.__APPLE__}; globalThis.isWindows = ${values.__WINDOWS__}; globalThis.isLinux = ${values.__LINUX__}; }\nif (globalThis.__DEV__ === undefined) { globalThis.__DEV__ = ${values.__DEV__}; }`;
 }
 
 /**
@@ -247,9 +250,11 @@ export function getGlobalDefines(opts: { platform: string; targetMode: string; v
 		__VISIONOS__: JSON.stringify(values.__VISIONOS__),
 		__APPLE__: JSON.stringify(values.__APPLE__),
 		__WINDOWS__: JSON.stringify(values.__WINDOWS__),
+		__LINUX__: JSON.stringify(values.__LINUX__),
 		'global.isAndroid': JSON.stringify(values.__ANDROID__),
 		'global.isIOS': JSON.stringify(values.__APPLE__),
 		'global.isWindows': JSON.stringify(values.__WINDOWS__),
+		'global.isLinux': JSON.stringify(values.__LINUX__),
 		__DEV__: JSON.stringify(values.__DEV__),
 		__COMMONJS__: values.__COMMONJS__,
 		__NS_WEBPACK__: values.__NS_WEBPACK__,

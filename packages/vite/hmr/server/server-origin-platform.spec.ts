@@ -236,6 +236,16 @@ describe('getServerOrigin platform routing', () => {
 		expect(getServerOrigin(server)).toBe('http://127.0.0.1:5173');
 	});
 
+	it('routes Linux to IPv4 loopback', () => {
+		getCliFlagsSpy.mockReturnValue({ linux: true });
+		const server = makeFakeServer({
+			host: '0.0.0.0',
+			resolvedNetwork: ['http://192.168.0.8:5173/'],
+		});
+
+		expect(getServerOrigin(server)).toBe('http://127.0.0.1:5173');
+	});
+
 	it('keeps the Windows loopback bind verbatim', () => {
 		getCliFlagsSpy.mockReturnValue({ windows: true });
 		const server = makeFakeServer({ host: '127.0.0.1', port: 6173 });

@@ -1060,4 +1060,10 @@ describe('resolveDeviceReachableHost on Windows (app runs on the dev machine)', 
 		const r = resolveDeviceReachableOrigin({ host: '0.0.0.0', platform: 'windows', env: {}, port: 6173 });
 		expect(r.origin).toBe('http://127.0.0.1:6173');
 	});
+
+	it('routes Linux to loopback too', () => {
+		const r = resolveDeviceReachableHost({ host: '0.0.0.0', platform: 'linux', env: {}, lanHostResolver: () => '192.168.1.42' });
+		expect(r.host).toBe('127.0.0.1');
+		expect(r.source).toBe('platform-default');
+	});
 });

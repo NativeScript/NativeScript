@@ -118,9 +118,42 @@ describe('windows platform defines', () => {
 		expect(seeded.isIOS).toBeUndefined();
 	});
 
+	it('keeps __WINDOWS__ false on linux', () => {
+		expect(getRuntimeDefineValues({ platform: 'linux', isDevMode: true, verbose: false }).__WINDOWS__).toBe(false);
+	});
+
 	it('emits a per-module __WINDOWS__ shim', () => {
 		const shims = buildDefineShimStatements(getRuntimeDefineValues({ platform: 'windows', isDevMode: true, verbose: false }));
 		expect(shims).toContain('const __WINDOWS__ = globalThis.__WINDOWS__ !== undefined ? globalThis.__WINDOWS__ : true;');
 		expect(shims).toContain('const __APPLE__ = globalThis.__APPLE__ !== undefined ? globalThis.__APPLE__ : false;');
+	});
+});
+
+describe('linux platform defines', () => {
+	it('sets __LINUX__ only on linux', () => {
+		const values = getRuntimeDefineValues({ platform: 'linux', isDevMode: true, verbose: false });
+		expect(values).toMatchObject({ __LINUX__: true, __WINDOWS__: false, __ANDROID__: false, __IOS__: false, __APPLE__: false });
+		for (const platform of ['android', 'ios', 'visionos', 'windows']) {
+			expect(getRuntimeDefineValues({ platform, isDevMode: true, verbose: false }).__LINUX__).toBe(false);
+		}
+	});
+
+	it('mirrors webpack: __LINUX__ and global.isLinux in the Vite define map', () => {
+		const defines = getGlobalDefines({ platform: 'linux', targetMode: 'production', verbose: false, flavor: 'typescript' }) as Record<string, unknown>;
+		expect(defines.__LINUX__).toBe('true');
+		expect(defines['global.isLinux']).toBe('true');
+		expect(defines['global.isWindows']).toBe('false');
+		expect(defines['global.isIOS']).toBe('false');
+	});
+
+	it('seeds isLinux and guards the HMR prelude seed', () => {
+		expect(getRuntimeSeedValues({ platform: 'linux', isDevMode: true, verbose: false, flavor: 'typescript' }).isLinux).toBe(true);
+		const stmt = buildGuardedDefineSeedStatement(getRuntimeDefineValues({ platform: 'linux', isDevMode: true, verbose: false }));
+		const fresh: Record<string, unknown> = {};
+		new Function('globalThis', stmt)(fresh);
+		expect(fresh).toMatchObject({ __LINUX__: true, __WINDOWS__: false, isLinux: true, isWindows: false, isIOS: false });
+		const seeded: Record<string, unknown> = { __LINUX__: true, isLinux: true };
+		new Function('globalThis', stmt)(seeded);
+		expect(seeded.__IOS__).toBeUndefined();
 	});
 });

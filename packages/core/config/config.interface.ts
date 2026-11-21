@@ -145,6 +145,67 @@ interface IConfigAndroid extends IConfigPlatform {
 	enableMultithreadedJavascript?: boolean;
 }
 
+interface IConfigLinux extends IConfigPlatform {
+	/**
+	 * V8 flags set before the runtime starts, e.g. '--expose_gc'.
+	 * Development runtimes also take $NS_V8_FLAGS.
+	 */
+	v8Flags?: string;
+	/**
+	 * Initial size of new windows, in logical pixels. Default: 1024x768.
+	 */
+	window?: {
+		width?: number;
+		height?: number;
+		minWidth?: number;
+		minHeight?: number;
+		/** Default: true */
+		resizable?: boolean;
+		/** Default: the app name */
+		title?: string;
+	};
+	/**
+	 * Keeps the app's native controls light or dark whatever the desktop uses, like a fixed
+	 * light/dark app theme on Android or iOS.
+	 * Default: 'system' (follows the desktop)
+	 */
+	appearance?: 'system' | 'light' | 'dark';
+	/**
+	 * Release builds ship the app folder as one read-only archive, app.nsbundle, next to the
+	 * executable. App code reads it through the usual file APIs; writing to app files fails.
+	 * Debug builds (LiveSync, HMR) always use the plain folder.
+	 * Default: true
+	 */
+	bundle?: boolean;
+	/**
+	 * Globs (relative to the app folder) of files that stay real files in app.nsbundle.unpacked,
+	 * for code that opens them by path. Native addons (.node, .so) are always unpacked.
+	 * Default: ['fonts/**']
+	 */
+	bundleUnpack?: string[];
+	/**
+	 * Encrypt the bundle with a key generated for each build and embedded in the executable,
+	 * so the app's sources don't ship readable. Release builds only; overridable with
+	 * --source-protect / --no-source-protect, and --source-protect-key-hex sets the key.
+	 * A requested source protection that can't be applied fails the build.
+	 * Default: false
+	 */
+	sourceProtect?: boolean;
+	/**
+	 * Release build switches baked into the executable.
+	 */
+	fuses?: {
+		/** Refuse an app.nsbundle that doesn't match the build. Default: true when bundled */
+		bundleIntegrity?: boolean;
+		/** Run only from app.nsbundle, never from a plain app folder. Default: true when bundled */
+		onlyLoadAppFromBundle?: boolean;
+		/** Allow attaching DevTools with --inspect. Default: false */
+		inspector?: boolean;
+		/** Honor runtime command line flags and environment overrides. Default: false */
+		envOverrides?: boolean;
+	};
+}
+
 interface IConfigWindows extends IConfigPlatform {
 	/**
 	 * Seal the app's webpack output into an encrypted app.nsbundle instead of shipping it as plaintext.
@@ -368,6 +429,10 @@ export interface NativeScriptConfig {
 	 * Various Windows specific configurations (WinUI 3 / windows-runtime).
 	 */
 	windows?: IConfigWindows;
+	/**
+	 * Linux specific configurations.
+	 */
+	linux?: IConfigLinux;
 	/**
 	 * Enable profiling for the application. Default: no profiling
 	 * In most cases when profiling, you will want to use "timeline"

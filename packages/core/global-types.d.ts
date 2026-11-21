@@ -142,6 +142,7 @@ declare const __IOS__: boolean;
 declare const __VISIONOS__: boolean;
 declare const __APPLE__: boolean;
 declare const __WINDOWS__: boolean;
+declare const __LINUX__: boolean;
 
 declare function setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): number;
 declare function clearTimeout(timeoutId: number): void;

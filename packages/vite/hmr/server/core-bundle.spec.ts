@@ -351,6 +351,8 @@ describe('generateCoreBundle (integration)', () => {
 			// Registry population + named export surface present
 			expect(state.code).toContain('__NS_CORE_MODULES__');
 			expect(state.code).toMatch(/^export \{/m);
+			// `~/package.json` is the CLI-written file, read on device as a plain object
+			expect(state.code).toMatch(/\(["']~\/package\.json["']\)/);
 		},
 		120000,
 	);

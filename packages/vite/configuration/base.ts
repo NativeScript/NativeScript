@@ -104,6 +104,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		platform = 'visionos';
 	} else if (cliFlags.windows) {
 		platform = 'windows';
+	} else if (cliFlags.linux) {
+		platform = 'linux';
 	}
 	if (verbose) {
 		console.log('--------------');
@@ -141,7 +143,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	const platformExtensions = (() => {
 		const base = ['.tsx', '.jsx', '.ts', '.js'] as const;
 		const exts: string[] = [];
-		if (platform === 'android' || platform === 'windows') {
+		if (platform === 'android' || platform === 'windows' || platform === 'linux') {
 			exts.push(...platformFirstExtensions(platform, base));
 		} else if (isApplePlatform(platform)) {
 			// Treat visionOS like iOS for file resolution
@@ -471,9 +473,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// LAN address devices use is visible at startup. The URL
 					// host devices are told to use is decided separately by
 					// `resolveDeviceReachableHost`. `NS_HMR_HOST` overrides.
-					// Windows apps run on this machine, so loopback suffices and
+					// Windows and Linux apps run on this machine, so loopback suffices and
 					// avoids the firewall prompt a wildcard bind triggers.
-					host: process.env.NS_HMR_HOST || (platform === 'windows' ? '127.0.0.1' : '0.0.0.0'),
+					host: process.env.NS_HMR_HOST || (platform === 'windows' || platform === 'linux' ? '127.0.0.1' : '0.0.0.0'),
 					// The CLI picks a free port per platform session and hands
 					// it in as `NS_HMR_PORT`; that same port is baked into
 					// `bundle.mjs` and tunnelled with `adb reverse`, so Vite
@@ -579,12 +581,12 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// Preserve side effects for NativeScript core so classes/functions
 					// aren't tree-shaken out inadvertently. This does NOT cause cross‑chunk duplication;
 					// it only prevents Rollup from dropping modules it considers side‑effect free.
-					// Also preserve side effects for .android/.ios/.windows files which may contain
+					// Also preserve side effects for .android/.ios/.windows/.linux files which may contain
 					// other decorated classes that register with the native runtime
 					moduleSideEffects: (id) => {
 						if (/node_modules[\\\/]\@nativescript[\\\/]core[\\\/]/.test(id)) return true;
 						// Activity and Application files have side effects (class registration)
-						if (/\.(android|ios|windows)\.(ts|js)$/.test(id)) return true;
+						if (/\.(android|ios|windows|linux)\.(ts|js)$/.test(id)) return true;
 						return null;
 					},
 				},

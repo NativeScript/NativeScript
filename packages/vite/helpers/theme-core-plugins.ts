@@ -26,10 +26,10 @@ export function getThemeCoreGenericAliases(themeCoreRoot: string | undefined, pl
 	for (const base of bases) {
 		let replacement = path.join(cssDir, base + platformSuffix);
 		if (!existsSync(replacement)) {
-			// theme-core ships only android/ios variants. Elsewhere (Windows) the generic
+			// theme-core ships only android/ios variants. Elsewhere (Windows, Linux) the generic
 			// import would fail the build; resolve it to an empty stylesheet instead of
 			// another platform's theme, whose rules don't fit.
-			if (platform !== 'windows') continue;
+			if (platform !== 'windows' && platform !== 'linux') continue;
 			replacement = emptyStylesheet(themeCoreRoot);
 			missing.push(base + '.css');
 		}

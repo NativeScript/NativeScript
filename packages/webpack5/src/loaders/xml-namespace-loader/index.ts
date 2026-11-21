@@ -52,6 +52,7 @@ async function parseXML(content: string): Promise<ParseResult> {
 	(saxParser as any).ns['win'] = 'http://schemas.nativescript.org/tns.xsd';
 	(saxParser as any).ns['android'] = 'http://schemas.nativescript.org/tns.xsd';
 	(saxParser as any).ns['desktop'] = 'http://schemas.nativescript.org/tns.xsd';
+	(saxParser as any).ns['linux'] = 'http://schemas.nativescript.org/tns.xsd';
 	(saxParser as any).ns['web'] = 'http://schemas.nativescript.org/tns.xsd';
 
 	const handleOpenTag = async (namespace: string, elementName: string) => {

@@ -36,7 +36,9 @@ function bitmapFromUriAsync(uriStr: string): Promise<Microsoft.UI.Xaml.Media.Ima
 			bmp.ImageOpened = onOpened as never;
 			bmp.ImageFailed = onFailed as never;
 			bmp.UriSource = new Windows.Foundation.Uri(uriStr);
-		} catch (err) { reject(err); }
+		} catch (err) {
+			reject(err);
+		}
 	});
 }
 
@@ -61,11 +63,17 @@ function bytesToStream(bytes: Uint8Array): Promise<any> {
 			writer.WriteBytes(bytes as never);
 			const buffer = writer.DetachBuffer();
 			const stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
-			NSWinRT.toPromise((stream as any).WriteAsync(buffer)).then(
-				() => { try { (stream as any).Seek(0); resolve(stream); } catch (e) { reject(e); } },
-				reject
-			);
-		} catch (e) { reject(e); }
+			NSWinRT.toPromise((stream as any).WriteAsync(buffer)).then(() => {
+				try {
+					(stream as any).Seek(0);
+					resolve(stream);
+				} catch (e) {
+					reject(e);
+				}
+			}, reject);
+		} catch (e) {
+			reject(e);
+		}
 	});
 }
 
@@ -75,11 +83,17 @@ function bufferToStream(buffer: any): Promise<any> {
 	return new Promise((resolve, reject) => {
 		try {
 			const stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
-			NSWinRT.toPromise((stream as any).WriteAsync(buffer)).then(
-				() => { try { (stream as any).Seek(0); resolve(stream); } catch (e) { reject(e); } },
-				reject
-			);
-		} catch (e) { reject(e); }
+			NSWinRT.toPromise((stream as any).WriteAsync(buffer)).then(() => {
+				try {
+					(stream as any).Seek(0);
+					resolve(stream);
+				} catch (e) {
+					reject(e);
+				}
+			}, reject);
+		} catch (e) {
+			reject(e);
+		}
 	});
 }
 
@@ -90,11 +104,10 @@ function bitmapFromStream(stream: any): Promise<any> {
 			try {
 				(stream as any).Seek(0);
 				const bmp = makeBitmapImage();
-				NSWinRT.toPromise(bmp.SetSourceAsync(stream)).then(
-					() => resolve(bmp),
-					reject
-				);
-			} catch (e) { reject(e); }
+				NSWinRT.toPromise(bmp.SetSourceAsync(stream)).then(() => resolve(bmp), reject);
+			} catch (e) {
+				reject(e);
+			}
 		};
 		if (isMainThread()) {
 			create();
@@ -122,11 +135,17 @@ function fetchBytesAsync(url: string): Promise<Uint8Array> {
 						const bytes = new Uint8Array(buffer.Length);
 						reader.ReadBytes(bytes as never);
 						resolve(bytes);
-					} catch (e) { reject(e); }
+					} catch (e) {
+						reject(e);
+					}
 				},
-				(err: any) => { reject(err); }
+				(err: any) => {
+					reject(err);
+				},
 			);
-		} catch (e) { reject(e); }
+		} catch (e) {
+			reject(e);
+		}
 	});
 }
 
@@ -142,38 +161,35 @@ function bytesToBase64(bytes: Uint8Array): string {
 function readFileBytes(filePath: string): Promise<Uint8Array> {
 	return new Promise((resolve, reject) => {
 		try {
-			NSWinRT.toPromise((Windows.Storage.PathIO as any).ReadBufferAsync(filePath)).then(
-				(buffer: any) => {
-					try {
-						const reader = Windows.Storage.Streams.DataReader.FromBuffer(buffer);
-						const bytes = new Uint8Array(buffer.Length);
-						reader.ReadBytes(bytes as never);
-						resolve(bytes);
-					} catch (e) { reject(e); }
-				},
-				reject
-			);
-		} catch (e) { reject(e); }
+			NSWinRT.toPromise((Windows.Storage.PathIO as any).ReadBufferAsync(filePath)).then((buffer: any) => {
+				try {
+					const reader = Windows.Storage.Streams.DataReader.FromBuffer(buffer);
+					const bytes = new Uint8Array(buffer.Length);
+					reader.ReadBytes(bytes as never);
+					resolve(bytes);
+				} catch (e) {
+					reject(e);
+				}
+			}, reject);
+		} catch (e) {
+			reject(e);
+		}
 	});
 }
 
 function writeBytesToFile(filePath: string, bytes: Uint8Array): Promise<boolean> {
 	return new Promise((resolve, reject) => {
-		NSWinRT.toPromise(
-			NativeScript.Widgets.ImageHelper.SaveToFileAsync(bytes as never, filePath)
-		).then(
+		NSWinRT.toPromise(NativeScript.Widgets.ImageHelper.SaveToFileAsync(bytes as never, filePath)).then(
 			(result) => resolve(result),
-			(err) => reject(err)
+			(err) => reject(err),
 		);
 	});
 }
 
 function resizeBitmapAsync(bytes: Uint8Array, maxSize: number): Promise<{ bmp: any; bytes: Uint8Array; width: number; height: number }> {
 	return new Promise((resolve, reject) => {
-		NSWinRT.toPromise(
-			NativeScript.Widgets.ImageHelper.ResizeAsync(bytes as never, maxSize)
-		).then(
-			(result: NativeScript.Widgets.ImageResult) => {
+		NSWinRT.toPromise(NativeScript.Widgets.ImageHelper.ResizeAsync(bytes as never, maxSize))
+			.then((result: NativeScript.Widgets.ImageResult) => {
 				resolve({
 					bmp: result.Bitmap,
 					bytes: bytes,
@@ -182,7 +198,6 @@ function resizeBitmapAsync(bytes: Uint8Array, maxSize: number): Promise<{ bmp: a
 				});
 			})
 			.catch((err) => reject(err));
-
 	});
 }
 
@@ -190,16 +205,25 @@ export class ImageSource implements ImageSourceDefinition {
 	public android: any;
 	public ios: any;
 	public windows: any; // BitmapImage or raw Uint8Array (lazy)
+	public linux: any;
 
 	private _rawBytes: Uint8Array | null = null;
 	private _width: number = 0;
 	private _height: number = 0;
 	private _rotationAngle: number = 0;
 
-	public get height(): number { return this._height; }
-	public get width(): number { return this._width; }
-	public get rotationAngle(): number { return this._rotationAngle; }
-	public set rotationAngle(value: number) { this._rotationAngle = value; }
+	public get height(): number {
+		return this._height;
+	}
+	public get width(): number {
+		return this._width;
+	}
+	public get rotationAngle(): number {
+		return this._rotationAngle;
+	}
+	public set rotationAngle(value: number) {
+		this._rotationAngle = value;
+	}
 
 	constructor(nativeSource?: any) {
 		if (nativeSource) {
@@ -210,21 +234,23 @@ export class ImageSource implements ImageSourceDefinition {
 	static fromAsset(asset: ImageAsset): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
 			asset.getImageAsync((fileOrNative: any, err: any) => {
-				if (err) { reject(err); return; }
-				if (!fileOrNative) { reject(new Error('No image from asset')); return; }
+				if (err) {
+					reject(err);
+					return;
+				}
+				if (!fileOrNative) {
+					reject(new Error('No image from asset'));
+					return;
+				}
 				try {
 					if (typeof fileOrNative === 'string') {
 						ImageSource.fromFile(fileOrNative).then(resolve, reject);
 						return;
 					}
-					NSWinRT.toPromise(fileOrNative.OpenAsync(0 /* FileAccessMode.Read */)).then(
-						(stream: any) => bitmapFromStream(stream).then(
-							(bmp) => resolve(new ImageSource(bmp)),
-							reject
-						),
-						reject
-					);
-				} catch (e) { reject(e); }
+					NSWinRT.toPromise(fileOrNative.OpenAsync(0 /* FileAccessMode.Read */)).then((stream: any) => bitmapFromStream(stream).then((bmp) => resolve(new ImageSource(bmp)), reject), reject);
+				} catch (e) {
+					reject(e);
+				}
 			});
 		});
 	}
@@ -272,7 +298,9 @@ export class ImageSource implements ImageSourceDefinition {
 						src._height = bmp.PixelHeight ?? 0;
 						return src;
 					}
-				} catch { /* try next extension */ }
+				} catch {
+					/* try next extension */
+				}
 			}
 
 			return null as any;
@@ -317,22 +345,24 @@ export class ImageSource implements ImageSourceDefinition {
 			});
 		}
 		const resolved = resolveAppPath(filePath);
-		return readFileBytes(resolved).then((bytes) => {
-			return bitmapFromBytesAsync(bytes).then((bmp) => {
-				const src = new ImageSource(bmp);
-				src._rawBytes = bytes;
-				src._width = bmp.PixelWidth ?? 0;
-				src._height = bmp.PixelHeight ?? 0;
-				return src;
+		return readFileBytes(resolved)
+			.then((bytes) => {
+				return bitmapFromBytesAsync(bytes).then((bmp) => {
+					const src = new ImageSource(bmp);
+					src._rawBytes = bytes;
+					src._width = bmp.PixelWidth ?? 0;
+					src._height = bmp.PixelHeight ?? 0;
+					return src;
+				});
+			})
+			.catch(() => {
+				return bitmapFromUriAsync(appContentUri(filePath)).then((bmp) => {
+					const src = new ImageSource(bmp);
+					src._width = bmp.PixelWidth ?? 0;
+					src._height = bmp.PixelHeight ?? 0;
+					return src;
+				});
 			});
-		}).catch(() => {
-			return bitmapFromUriAsync(appContentUri(filePath)).then((bmp) => {
-				const src = new ImageSource(bmp);
-				src._width = bmp.PixelWidth ?? 0;
-				src._height = bmp.PixelHeight ?? 0;
-				return src;
-			});
-		});
 	}
 
 	static fromDataSync(data: ArrayBuffer | Uint8Array): ImageSource {
@@ -415,7 +445,7 @@ export class ImageSource implements ImageSourceDefinition {
 				this._width = source.PixelWidth;
 				this._height = source.PixelHeight;
 			}
-		} catch { }
+		} catch {}
 	}
 
 	// Deprecated instance loaders (parity with iOS/Android): delegate to the static factories and
@@ -512,13 +542,15 @@ export class ImageSource implements ImageSourceDefinition {
 		if (!this._rawBytes) {
 			return Promise.resolve(this);
 		}
-		return resizeBitmapAsync(this._rawBytes, maxSize).then(({ bmp, bytes, width, height }) => {
-			const src = new ImageSource(bmp);
-			src._rawBytes = bytes;
-			src._width = width;
-			src._height = height;
-			return src;
-		}).catch(() => this);
+		return resizeBitmapAsync(this._rawBytes, maxSize)
+			.then(({ bmp, bytes, width, height }) => {
+				const src = new ImageSource(bmp);
+				src._rawBytes = bytes;
+				src._width = width;
+				src._height = height;
+				return src;
+			})
+			.catch(() => this);
 	}
 }
 

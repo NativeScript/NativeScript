@@ -268,8 +268,8 @@ function isRuntimePluginRootEntrySpecifier(specifier: string, projectRoot: strin
 	}
 
 	const pkgBaseName = packageName.split('/').pop() || '';
-	const withoutExt = /(?:\.(?:ios|android|visionos|windows))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i.test(subpath) ? subpath.replace(/\.[^.]+$/, '') : subpath;
-	const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos|windows)$/i, '');
+	const withoutExt = /(?:\.(?:ios|android|visionos|windows|linux))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i.test(subpath) ? subpath.replace(/\.[^.]+$/, '') : subpath;
+	const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos|windows|linux)$/i, '');
 	return withoutPlatform === 'index' || withoutPlatform === pkgBaseName;
 }
 

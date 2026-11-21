@@ -133,7 +133,7 @@ const insetAdjustmentConverter = makeParser<'never' | 'automatic' | 'scrollableA
 export const iosContentInsetAdjustmentBehaviorProperty = new Property<ScrollViewBase, 'never' | 'automatic' | 'scrollableAxes' | 'always'>({
 	name: 'iosContentInsetAdjustmentBehavior',
 	defaultValue: 'never',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: insetAdjustmentConverter,
 });
 iosContentInsetAdjustmentBehaviorProperty.register(ScrollViewBase);

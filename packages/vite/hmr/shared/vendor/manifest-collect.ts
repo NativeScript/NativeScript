@@ -22,6 +22,7 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	'@nativescript/ios',
 	'@nativescript/visionos',
 	'@nativescript/windows',
+	'@nativescript/linux',
 	'@nativescript/types',
 	'@nativescript/webpack',
 	// Angular browser animations are not used in NativeScript; excluding reduces
@@ -751,6 +752,9 @@ function compiledJsExtensionsForPlatform(platform: string | undefined): string[]
 			break;
 		case 'windows':
 			exts.push('.windows.js');
+			break;
+		case 'linux':
+			exts.push('.linux.js');
 			break;
 	}
 	return exts;

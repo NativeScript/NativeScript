@@ -258,7 +258,7 @@ export function buildCoreBundleEntryCode(subs: readonly string[]): string {
 // node_modules).
 // ============================================================================
 
-const CORE_BUNDLE_DISK_CACHE_SCHEMA = 1;
+const CORE_BUNDLE_DISK_CACHE_SCHEMA = 2;
 
 function isCoreBundleDiskCacheDisabled(env: NodeJS.ProcessEnv = process.env): boolean {
 	const v = env.NS_CORE_BUNDLE_NO_DISK_CACHE;
@@ -453,8 +453,12 @@ export async function generateCoreBundle(options: GenerateCoreBundleOptions): Pr
 		name: 'ns-core-bundle-nsconfig',
 		setup(build) {
 			build.onResolve({ filter: /^~\/package\.json$/ }, () => ({ path: 'ns-core-bundle:nsconfig-json', namespace: 'ns-core-bundle-virtual' }));
+			// The CLI-written package.json, with nativescript.config as fallback.
+			// CommonJS so require() gets the object, not `{ default }`.
 			build.onLoad({ filter: /^ns-core-bundle:nsconfig-json$/, namespace: 'ns-core-bundle-virtual' }, () => ({
-				contents: `export default ${nsConfigJson};`,
+				contents: `var r = globalThis.require, c = null;
+try { c = typeof r === 'function' ? r('~/package.json') : null; } catch (e) {}
+module.exports = c && typeof c === 'object' ? c : ${nsConfigJson};`,
 				loader: 'js',
 			}));
 		},

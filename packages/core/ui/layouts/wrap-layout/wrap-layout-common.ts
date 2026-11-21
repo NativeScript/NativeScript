@@ -21,7 +21,7 @@ WrapLayoutBase.prototype.recycleNativeView = 'auto';
 export const itemWidthProperty = new Property<WrapLayoutBase, CoreTypes.LengthType>({
 	name: 'itemWidth',
 	defaultValue: 'auto',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueConverter: Length.parse,
 	valueChanged: (target, oldValue, newValue) => (target.effectiveItemWidth = Length.toDevicePixels(newValue, -1)),
@@ -31,7 +31,7 @@ itemWidthProperty.register(WrapLayoutBase);
 export const itemHeightProperty = new Property<WrapLayoutBase, CoreTypes.LengthType>({
 	name: 'itemHeight',
 	defaultValue: 'auto',
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	equalityComparer: Length.equals,
 	valueConverter: Length.parse,
 	valueChanged: (target, oldValue, newValue) => (target.effectiveItemHeight = Length.toDevicePixels(newValue, -1)),
@@ -42,7 +42,7 @@ const converter = makeParser<CoreTypes.OrientationType>(makeValidator<CoreTypes.
 export const orientationProperty = new Property<WrapLayoutBase, CoreTypes.OrientationType>({
 	name: 'orientation',
 	defaultValue: CoreTypes.Orientation.horizontal,
-	affectsLayout: __APPLE__,
+	affectsLayout: __APPLE__ || __LINUX__,
 	valueConverter: converter,
 });
 orientationProperty.register(WrapLayoutBase);

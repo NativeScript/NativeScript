@@ -376,13 +376,25 @@ export class iOSApplication extends ApplicationCommon {
 	shouldDelayLaunchEvent: boolean;
 }
 export class WindowsApplication extends ApplicationCommon {
-
 	getRootView(): View;
 
 	run(entry?: string | NavigationEntry): void;
 
 	getNativeApplication(): Microsoft.UI.Xaml.Application;
+}
 
+/**
+ * The Linux (GTK 4) application.
+ */
+export class LinuxApplication extends ApplicationCommon {
+	getRootView(): View;
+
+	run(entry?: string | NavigationEntry): void;
+
+	/**
+	 * The `GtkApplication*`.
+	 */
+	getNativeApplication(): interop.Pointer;
 }
 
 export const VALID_FONT_SCALES: number[];

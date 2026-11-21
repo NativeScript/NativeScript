@@ -24,17 +24,22 @@ export class ImageSource {
 	/**
 	 * The iOS-specific [UIImage](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIImage_Class/) instance. Will be undefined when running on Android.
 	 */
-	ios: any /* UIImage */;
+	ios: any; /* UIImage */
 
 	/**
 	 * The Android-specific [image](http://developer.android.com/reference/android/graphics/Bitmap.html) instance. Will be undefined when running on iOS.
 	 */
-	android: any /* android.graphics.Bitmap */;
+	android: any; /* android.graphics.Bitmap */
 
 	/**
 	 * The Windows-specific [image](https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.imagesource) instance. Will be undefined when running on iOS or Android.
 	 */
-	windows: any /* Windows.UI.Xaml.Media.ImageSource */;
+	windows: any; /* Windows.UI.Xaml.Media.ImageSource */
+
+	/**
+	 * The Linux [GdkTexture](https://docs.gtk.org/gdk4/class.Texture.html). Undefined on other platforms.
+	 */
+	linux: any;
 
 	/**
 	 * Loads this instance from the specified asset asynchronously.

@@ -109,6 +109,7 @@ describe('installRootPlaceholder — patched Application.run timing', () => {
 		delete getGlobalScope().__NS_DEV_RESTORE_PLACEHOLDER__;
 		delete getGlobalScope().__NS_DEV_PLACEHOLDER_RESTORE_TIMER__;
 		delete getGlobalScope().__NS_DEV_PATCHED_RESET_ROOT_VIEW__;
+		delete getGlobalScope().__NS_DEV_LAUNCH_REPLAYED__;
 	});
 
 	/**
@@ -132,6 +133,7 @@ describe('installRootPlaceholder — patched Application.run timing', () => {
 			off: vi.fn((eventName: string, handler: Function) => {
 				if (listeners.get(eventName) === handler) listeners.delete(eventName);
 			}),
+			notify: vi.fn((args: any) => listeners.get(args.eventName)?.(args)),
 			run: vi.fn(),
 			// `installRootPlaceholder` will replace this property with a wrapper.
 			// `resetSpy` stays the canonical observation point — the wrapper
@@ -214,5 +216,25 @@ describe('installRootPlaceholder — patched Application.run timing', () => {
 		await Promise.resolve();
 		await Promise.resolve();
 		expect(resetSpy).not.toHaveBeenCalled();
+	});
+
+	it('replays the consumed launch event and installs the root a listener supplies', () => {
+		const { application, resetSpy } = setupPlaceholderApplication();
+		const root = { kind: 'framework-root' };
+		application.on('launch', (args: any) => {
+			args.root = root;
+		});
+		(application as any).run(undefined);
+		expect(resetSpy).toHaveBeenCalledTimes(1);
+		expect(resetSpy.mock.calls[0][0].create()).toBe(root);
+	});
+
+	it('replays the launch event only once', () => {
+		const { application } = setupPlaceholderApplication();
+		const launched = vi.fn();
+		application.on('launch', launched);
+		(application as any).run(undefined);
+		(application as any).run(undefined);
+		expect(launched).toHaveBeenCalledTimes(1);
 	});
 });

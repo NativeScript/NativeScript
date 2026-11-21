@@ -50,12 +50,17 @@ export declare class Color {
 	/**
 	 * Gets the iOS-specific UIColor value representation. This is a read-only property.
 	 */
-	ios: any /* UIColor */;
+	ios: any; /* UIColor */
 
 	/**
 	 * Gets the Windows-specific Color value representation. This is a read-only property.
 	 */
-	windows: any /* Windows.UI.Color */;
+	windows: any; /* Windows.UI.Color */
+
+	/**
+	 * CSS color for GTK style sheets (Linux).
+	 */
+	linux: string;
 
 	/**
 	 * Specifies whether this Color is equal to the Color parameter.
