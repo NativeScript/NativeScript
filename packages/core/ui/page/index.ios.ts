@@ -522,8 +522,9 @@ export class Page extends PageBase {
 
 		const childLeft = 0 + insets.left;
 		const childTop = 0 + insets.top;
-		const childRight = right - insets.right;
-		const childBottom = bottom - insets.bottom;
+		// Bounds come from the native frame, which may be offset within its superview.
+		const childRight = right - left - insets.right;
+		const childBottom = bottom - top - insets.bottom;
 
 		View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
 	}
