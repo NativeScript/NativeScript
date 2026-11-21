@@ -3,7 +3,7 @@ import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsPro
 import { AndroidHelper, isEnabledProperty } from '../core/view';
 import { colorProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { layout } from '../../utils';
+import { android as androidUtils, layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
@@ -67,15 +67,21 @@ function initializeNativeClasses(): void {
 	@NativeClass
 	@Interfaces([android.widget.TabHost.TabContentFactory])
 	class TabContentFactoryImpl extends java.lang.Object implements android.widget.TabHost.TabContentFactory {
-		constructor(public owner: SegmentedBar) {
+		// Weak: the bar holds this factory, so a strong owner would be a cycle
+		// through the factory's native counterpart.
+		private owner: WeakRef<SegmentedBar>;
+
+		constructor(owner: SegmentedBar) {
 			super();
+			this.owner = new WeakRef(owner);
 
 			return global.__native(this);
 		}
 
 		createTabContent(tag: string): android.view.View {
-			const tv = new android.widget.TextView(this.owner._context);
-			const isRtl = this.owner.direction === CoreTypes.LayoutDirection.rtl;
+			const owner = this.owner.deref();
+			const tv = new android.widget.TextView(owner ? owner._context : androidUtils.getApplicationContext());
+			const isRtl = owner?.direction === CoreTypes.LayoutDirection.rtl;
 
 			// This is collapsed by default and made visible
 			// by android when TabItem becomes visible/selected.
