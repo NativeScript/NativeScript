@@ -407,6 +407,7 @@ export class Frame extends FrameBase {
 		const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
 		const newFragment = this.createFragment(newEntry, newFragmentTag);
 		const transaction = manager.beginTransaction();
+		transaction.setReorderingAllowed(true);
 		const animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
 		// NOTE: Don't use transition for the initial navigation (same as on iOS)
 		// On API 21+ transition won't be triggered unless there was at least one
@@ -441,6 +442,7 @@ export class Frame extends FrameBase {
 
 		const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
 		const transaction = manager.beginTransaction();
+		transaction.setReorderingAllowed(true);
 
 		if (!backstackEntry.fragment) {
 			// Happens on newer API levels. On older all fragments
@@ -486,7 +488,8 @@ export class Frame extends FrameBase {
 		// Create native view with available _currentEntry occur in Don't Keep Activities
 		// scenario when Activity is recreated on app suspend/resume. Push frame back in frame stack
 		// since it was removed in disposeNativeView() method.
-		if (this._currentEntry) {
+		// A frame torn down while navigating still has that navigation queued; navigate() put it in the stack.
+		if (this._currentEntry || (!this._isInFrameStack && !this.navigationQueueIsEmpty())) {
 			this._pushInFrameStack();
 		}
 
@@ -508,6 +511,43 @@ export class Frame extends FrameBase {
 		this._android.rootViewGroup.setId(this._containerViewId);
 	}
 
+	/**
+	 * Withdraws the executing navigation while its fragment transaction is still pending, and leaves
+	 * it at the head of the navigation queue so the frame replays it if it is shown again.
+	 * Returns true when the current entry's fragment stays in its fragment manager.
+	 */
+	private _withdrawPendingNavigation(): boolean {
+		const context = this._executingContext;
+		const fragment = context?.entry?.fragment;
+		// A destroyed activity restores or drops its fragments itself; setCurrent handles that through _tearDownPending.
+		if (!fragment || fragment.isAdded() || this._android.activity?.isDestroyed()) {
+			return false;
+		}
+
+		const manager = fragment.getParentFragmentManager();
+		if (manager.isDestroyed()) {
+			return false;
+		}
+
+		// Executed in the same reordering-allowed batch as the pending replace, so the new fragment is
+		// never attached and its container is never looked up. The replace also removes the current
+		// fragment, so it is added back.
+		const transaction = manager.beginTransaction();
+		transaction.setReorderingAllowed(true);
+		transaction.remove(fragment);
+		const current = this._currentEntry;
+		const keepCurrent = !!current?.fragment?.isAdded() && current.fragment.getParentFragmentManager().equals(manager);
+		if (keepCurrent) {
+			transaction.add(this.containerViewId, current.fragment, current.fragmentTag);
+		}
+		transaction.commitAllowingStateLoss();
+
+		this._disposeBackstackEntry(context.entry);
+		this._executingContext = null;
+
+		return keepCurrent;
+	}
+
 	public disposeNativeView() {
 		const nativeView = this.nativeViewProtected as android.view.ViewGroup;
 		const listener = getAttachListener();
@@ -521,6 +561,7 @@ export class Frame extends FrameBase {
 			this._onDetachedFromWindow();
 		}
 
+		const keepCurrent = this._withdrawPendingNavigation();
 		this._tearDownPending = !!this._executingContext;
 
 		const current = this._currentEntry;
@@ -534,7 +575,8 @@ export class Frame extends FrameBase {
 			}
 		});
 
-		if (current && !executingEntry) {
+		// A kept fragment is found by its tag when the frame is shown again, so the entry must keep referencing it.
+		if (current && !executingEntry && !keepCurrent) {
 			this._disposeBackstackEntry(current);
 		}
 
