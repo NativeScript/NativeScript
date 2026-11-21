@@ -1,31 +1,13 @@
 /**
- * Regression test for the bundle/rewriter origin split.
+ * `getServerOrigin()` must pick the origin `dev-host.ts` bakes into
+ * `bundle.mjs`, from the same precedence ladder (NS_HMR_HOST → explicit
+ * host → NS_HMR_PREFER_LAN_HOST → platform default), never Vite's
+ * `resolvedUrls.network[0]`:
  *
- * The bug. `getServerOrigin()` is what bakes the URL prefix into every
- * module the rewriter serves to the device — `import "{ORIGIN}/ns/m/..."`
- * statements spliced into `/ns/core/xhr`, `/ns/m/node_modules/<pkg>`,
- * etc. Before the fix it preferred `resolvedUrls.network[0]` (Vite's
- * detected LAN IP) whenever one was available, which broke two
- * different scenarios:
- *
- *   1. Android emulators NAT-drop packets destined for the host's LAN
- *      IP. The bundle would boot from `10.0.2.2:5173`, fetch
- *      `/ns/core/xhr`, and immediately die on the nested
- *      `http://192.168.x.y:5173/ns/m/.../tslib` import baked into the
- *      module body. User-visible symptom:
- *        Failed to fetch http://192.168.0.8:5173/.../tslib status=0
- *
- *   2. Across all platforms the rewriter's origin (`192.168.x.y`)
- *      disagreed with what `dev-host.ts` baked into `bundle.mjs`
- *      (`localhost` on iOS, `10.0.2.2` on Android). V8's ESM loader
- *      keys modules by URL, so the same module fetched from two
- *      origins instantiates twice — a `@nativescript/core` realm
- *      split with all the singleton-state breakage that implies.
- *
- * The fix routes every platform through `resolveDeviceReachableOrigin`
- * so the rewriter and the bundle pick the same canonical origin from
- * the same precedence ladder (NS_HMR_HOST → explicit host →
- * NS_HMR_PREFER_LAN_HOST → platform default).
+ *   1. Android emulators NAT-drop packets destined for the host's LAN IP,
+ *      so a URL on it fails with `status=0`.
+ *   2. V8's ESM loader keys modules by URL: one module fetched from two
+ *      origins instantiates twice, splitting the `@nativescript/core` realm.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { getServerOrigin } from './server-origin.js';
@@ -74,9 +56,7 @@ describe('getServerOrigin platform routing', () => {
 	});
 
 	it('returns 10.0.2.2 on Android even when Vite reports a LAN URL', () => {
-		// Repro of the original bug: Vite served the LAN IP from
-		// resolvedUrls.network[0], the rewriter baked it into every
-		// /ns/m/* import, and the emulator could not route to it.
+		// The emulator cannot route to the LAN IP Vite reports.
 		getCliFlagsSpy.mockReturnValue({ android: true });
 		const server = makeFakeServer({
 			host: '0.0.0.0',

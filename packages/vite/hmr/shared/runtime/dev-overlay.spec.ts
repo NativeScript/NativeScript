@@ -1,29 +1,28 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { computeAndroidToastMargin, computeIosOverlayLayout, computeIosOverlayWindowLevel, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, ensureHmrDevOverlayRuntimeInstalled, getHmrDevOverlayPosition, setHmrDevOverlayPosition, setHmrUpdateStage } from './dev-overlay.js';
+
+// @nativescript/core can't evaluate in Node; the overlay reads its classes only when drawing.
+vi.mock('@nativescript/core/application', () => ({}));
+vi.mock('@nativescript/core/color', () => ({}));
+vi.mock('@nativescript/core/ui', () => ({}));
+import { computeAndroidToastMargin, computeIosOverlayLayout, computeIosOverlayWindowLevel, iosOverlayCapturesTouch, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot } from './dev-overlay.js';
+import { applySnapshotToIosRefs } from './dev-overlay-ios.js';
+import { applySnapshotToLiveRefs } from './dev-overlay-tree.js';
 import { getGlobalScope } from './global-scope.js';
+import { NS_DEV_SYMBOL_KEY, nsDev } from './dev-globals.js';
+
+type DevOverlayModule = typeof import('./dev-overlay.js');
+let ensureHmrDevOverlayRuntimeInstalled: DevOverlayModule['ensureHmrDevOverlayRuntimeInstalled'];
+let setHmrUpdateStage: DevOverlayModule['setHmrUpdateStage'];
+
+// The overlay runtime state is module state: each case gets a fresh instance.
+beforeEach(async () => {
+	vi.resetModules();
+	({ ensureHmrDevOverlayRuntimeInstalled, setHmrUpdateStage } = await import('./dev-overlay.js'));
+});
 
 describe('HMR dev overlay snapshots', () => {
 	afterEach(() => {
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
-	});
-
-	it('builds a phase-based boot snapshot with attempt detail', () => {
-		const snapshot = createBootOverlaySnapshot('importing-main', {
-			detail: 'http://localhost:5173/ns/m/src/main.ts?v=1',
-			attempt: 2,
-			attempts: 6,
-		});
-
-		expect(snapshot.visible).toBe(true);
-		expect(snapshot.mode).toBe('boot');
-		expect(snapshot.phase).toContain('Importing the app entry');
-		// 2026-05-10: 'importing-main' base lowered from 82 → 30 so the bar
-		// has ~62 percentage points of visible motion during the long
-		// HTTP-module-load phase (the heartbeat + snippet then ratchet it up
-		// toward 92 before 'waiting-for-app' fires at 94).
-		expect(snapshot.progress).toBe(30);
-		expect(snapshot.detail).toContain('Attempt 2/6');
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	it('builds a reconnect snapshot without a determinate progress bar', () => {
@@ -35,55 +34,30 @@ describe('HMR dev overlay snapshots', () => {
 		expect(snapshot.tone).toBe('warn');
 		expect(snapshot.phase).toContain('reconnect');
 	});
-
-	it('builds an explicit app-root-committed boot snapshot', () => {
-		const snapshot = createBootOverlaySnapshot('app-root-committed', {
-			detail: 'The real app root replaced the boot placeholder.',
-		});
-
-		expect(snapshot.visible).toBe(true);
-		expect(snapshot.mode).toBe('boot');
-		expect(snapshot.badge).toBe('READY');
-		expect(snapshot.phase).toContain('Real app root committed');
-		expect(snapshot.progress).toBe(100);
-	});
 });
 
 describe('HMR dev overlay runtime API', () => {
 	beforeEach(() => {
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	afterEach(() => {
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
-	it('installs a stable global API and tracks boot stages', () => {
+	it('installs a stable global API', () => {
 		const api = ensureHmrDevOverlayRuntimeInstalled(true);
 		const sameApi = ensureHmrDevOverlayRuntimeInstalled(false);
 
 		expect(api).toBe(sameApi);
-		expect(getGlobalScope().__NS_HMR_DEV_OVERLAY__).toBe(api);
-
-		api.setBootStage('loading-core-bridge', {
-			detail: 'http://localhost:5173/ns/core/7',
-		});
-
-		expect(api.getSnapshot()).toMatchObject({
-			visible: true,
-			mode: 'boot',
-			phase: 'Loading the unified core bridge',
-			progress: 54,
-		});
+		expect(nsDev().overlay).toBe(api);
 	});
 
 	it('switches from connection state back to hidden on hide()', () => {
 		const api = ensureHmrDevOverlayRuntimeInstalled(true);
 
 		api.setConnectionStage('offline', {
-			detail: 'Waiting for ws://localhost:5173/ns-hmr',
+			detail: 'Waiting for ws://localhost:5173/vite-hmr',
 		});
 		expect(api.getSnapshot()).toMatchObject({
 			visible: true,
@@ -97,65 +71,6 @@ describe('HMR dev overlay runtime API', () => {
 			mode: 'hidden',
 			badge: 'HMR',
 		});
-	});
-
-	// Regression guard for the 2026-05-10 monotonic-ratchet contract in
-	// `setBootStage`. Boot stages are *supposed* to fire in increasing
-	// order, but in practice the http-bootloader fallback (`entry-runtime.ts`)
-	// fires `installing-css` (70) before `importing-main`, while the new
-	// 'importing-main' base is 30. Without the ratchet the placeholder bar
-	// would visibly drop from 70 → 30 every cold boot, which the user reads
-	// as "the boot started over". The ratchet keeps the higher previous
-	// value AND lets the snippet/heartbeat continue climbing from there
-	// toward the 92 cap.
-	it('clamps a lower boot-stage progress to the previous value (monotonic ratchet)', () => {
-		const api = ensureHmrDevOverlayRuntimeInstalled(true);
-
-		api.setBootStage('installing-css', { detail: 'Applying app stylesheet' });
-		expect(api.getSnapshot().progress).toBe(70);
-
-		api.setBootStage('importing-main', { detail: '/src/main.ts' });
-		// 'importing-main' base is 30; ratchet preserves the previous 70.
-		expect(api.getSnapshot().progress).toBe(70);
-		// Phase still reflects the new stage so the user sees the right label.
-		expect(api.getSnapshot().phase).toContain('Importing the app entry');
-	});
-
-	it('lets a higher boot-stage progress overwrite a lower previous value', () => {
-		const api = ensureHmrDevOverlayRuntimeInstalled(true);
-
-		api.setBootStage('importing-main', { detail: '/src/main.ts' });
-		expect(api.getSnapshot().progress).toBe(30);
-
-		api.setBootStage('waiting-for-app', { detail: 'Waiting for the real app root' });
-		// 'waiting-for-app' base is 94 — strictly greater than the previous
-		// 30, so the ratchet allows it through unchanged.
-		expect(api.getSnapshot().progress).toBe(94);
-	});
-
-	it('lets the snippet/heartbeat ratchet `importing-main` past its base (explicit progress override)', () => {
-		const api = ensureHmrDevOverlayRuntimeInstalled(true);
-
-		api.setBootStage('importing-main', { detail: '/src/main.ts' });
-		expect(api.getSnapshot().progress).toBe(30);
-
-		// Simulate the heartbeat / inline snippet pushing the bar forward
-		// once the module count + elapsed-time formula has accumulated.
-		api.setBootStage('importing-main', { detail: 'Evaluated 80 modules\n/src/foo.ts', progress: 92 });
-		expect(api.getSnapshot().progress).toBe(92);
-	});
-
-	it('does not ratchet across modes (connection / update reset cleanly)', () => {
-		const api = ensureHmrDevOverlayRuntimeInstalled(true);
-
-		api.setBootStage('installing-css', { detail: 'Applying app stylesheet' });
-		expect(api.getSnapshot().progress).toBe(70);
-
-		// Switching to a connection snapshot is a fresh visual state — the
-		// ratchet must NOT carry the boot progress over.
-		api.setConnectionStage('reconnecting');
-		expect(api.getSnapshot().mode).toBe('connection');
-		expect(api.getSnapshot().progress).toBeNull();
 	});
 });
 
@@ -458,49 +373,6 @@ describe('Android toast margin', () => {
 	});
 });
 
-describe('HMR overlay position config', () => {
-	beforeEach(() => {
-		delete getGlobalScope().__NS_HMR_OVERLAY_POSITION__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
-	});
-
-	afterEach(() => {
-		delete getGlobalScope().__NS_HMR_OVERLAY_POSITION__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
-	});
-
-	it("defaults to 'top' so the centered modal does NOT obscure app UI", () => {
-		expect(getHmrDevOverlayPosition()).toBe('top');
-	});
-
-	it('reads a stored override from the global flag', () => {
-		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 'bottom';
-		expect(getHmrDevOverlayPosition()).toBe('bottom');
-		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 'center';
-		expect(getHmrDevOverlayPosition()).toBe('center');
-	});
-
-	it('falls back to the default when an unknown value is stored', () => {
-		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 'left';
-		expect(getHmrDevOverlayPosition()).toBe('top');
-		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 42;
-		expect(getHmrDevOverlayPosition()).toBe('top');
-	});
-
-	it('setHmrDevOverlayPosition updates the global and ignores invalid values', () => {
-		setHmrDevOverlayPosition('bottom');
-		expect(getGlobalScope().__NS_HMR_OVERLAY_POSITION__).toBe('bottom');
-		setHmrDevOverlayPosition('center');
-		expect(getGlobalScope().__NS_HMR_OVERLAY_POSITION__).toBe('center');
-		// Invalid input must NOT clobber a previously-set value, so a
-		// typo in dev code can't accidentally reset the position.
-		setHmrDevOverlayPosition('elsewhere' as any);
-		expect(getGlobalScope().__NS_HMR_OVERLAY_POSITION__).toBe('center');
-	});
-});
-
 // HMR-applying progress overlay.
 //
 // These tests pin the snapshot shape (badge / phase / progress /
@@ -538,7 +410,7 @@ describe('HMR apply overlay snapshots', () => {
 
 		const rebooting = createUpdateOverlaySnapshot('rebooting');
 		expect(rebooting.progress).toBe(90);
-		expect(rebooting.phase).toBe('Rebooting Angular');
+		expect(rebooting.phase).toBe('Rebooting app');
 		expect(rebooting.tone).toBe('success');
 	});
 
@@ -552,6 +424,29 @@ describe('HMR apply overlay snapshots', () => {
 		// supported surfaces stops spinning.
 		expect(snapshot.busy).toBe(false);
 		expect(snapshot.detail).toContain('Total 412ms');
+	});
+
+	it("emits a 'failed' frame with the error tone and the failure detail", () => {
+		const snapshot = createUpdateOverlaySnapshot('failed', { detail: 'Transform failed' });
+		expect(snapshot.title).toBe('HMR update failed');
+		expect(snapshot.tone).toBe('error');
+		expect(snapshot.busy).toBe(false);
+		expect(snapshot.progress).toBeNull();
+		expect(snapshot.detail).toBe('Transform failed');
+	});
+
+	it("carries the code block and the action on a 'failed' frame only", () => {
+		const action = { label: 'Restart app', onTap: () => {} };
+		expect(createUpdateOverlaySnapshot('failed', { detail: 'boom', code: '1 | x(', action })).toMatchObject({ detail: 'boom', code: '1 | x(', action });
+		const restart = createUpdateOverlaySnapshot('restart-required', { detail: 'reason', code: 'frame', action });
+		expect(restart.code).toBeUndefined();
+		expect(restart.action).toBeUndefined();
+		expect(createUpdateOverlaySnapshot('failed', { detail: 'boom' }).action).toBeUndefined();
+	});
+
+	it("emits a 'restart-required' frame with its own tone and the reason as detail", () => {
+		const snapshot = createUpdateOverlaySnapshot('restart-required', { detail: 'hot.decline() in /src/a.ts' });
+		expect(snapshot).toMatchObject({ visible: true, mode: 'update', title: 'Restart required', tone: 'warn', busy: false, progress: null, detail: 'hot.decline() in /src/a.ts' });
 	});
 
 	// Progress must monotonically increase across stages so the bar
@@ -575,13 +470,11 @@ describe('HMR apply overlay snapshots', () => {
 
 describe('HMR apply overlay runtime API', () => {
 	beforeEach(() => {
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	afterEach(() => {
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
-		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope()[Symbol.for(NS_DEV_SYMBOL_KEY)];
 	});
 
 	it('drives the overlay through update stages via setUpdateStage', () => {
@@ -692,6 +585,33 @@ describe('HMR apply overlay runtime API', () => {
 		}
 	});
 
+	it("drops the 'failed' action once the overlay moves to 'restart-required'", () => {
+		const api = ensureHmrDevOverlayRuntimeInstalled(true);
+		const action = { label: 'Restart app', onTap: vi.fn() };
+		api.setUpdateStage('failed', { detail: 'boom', action });
+		expect(api.getSnapshot().action).toBe(action);
+		api.setUpdateStage('restart-required', { detail: 'requested from the error overlay' });
+		expect(api.getSnapshot().action).toBeUndefined();
+	});
+
+	it("keeps 'restart-required' on screen over later update, connection and hide calls", () => {
+		vi.useFakeTimers();
+		try {
+			const api = ensureHmrDevOverlayRuntimeInstalled(true);
+			api.setUpdateStage('complete', { detail: 'previous cycle' });
+			api.setUpdateStage('restart-required', { detail: 'hot.decline() in /src/a.ts' });
+			api.setUpdateStage('received', { detail: 'next cycle' });
+			api.setUpdateStage('complete', { detail: 'next cycle' });
+			api.setConnectionStage('reconnecting');
+			api.setConnectionStage('healthy');
+			api.hide('healthy');
+			vi.advanceTimersByTime(5000);
+			expect(api.getSnapshot()).toMatchObject({ visible: true, mode: 'update', title: 'Restart required', detail: 'hot.decline() in /src/a.ts' });
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
 	// A common race: cycle-1 reaches 'complete' (auto-hide
 	// scheduled), then cycle-2 starts and posts 'received' before
 	// the timer fires. Cycle-1's hide MUST NOT pull cycle-2's
@@ -754,17 +674,12 @@ describe('HMR apply overlay runtime API', () => {
 			tone: 'success',
 			progress: 5,
 		});
-		expect(getGlobalScope().__NS_HMR_DEV_OVERLAY__).toBeDefined();
+		expect(nsDev().overlay).toBeDefined();
 	});
 
-	// The server emits `ns:hmr-pending` IMMEDIATELY when
-	// `handleHotUpdate` fires, then later emits `ns:angular-update`
-	// once it has done graph upserts and chosen an eviction set.
-	// Both messages call setUpdateStage('received'). The cycle clock
-	// — used by the auto-hide minimum-visible window — must be
-	// stamped against the FIRST 'received' frame, not the second;
-	// otherwise the early-overlay UX is defeated because the second
-	// 'received' resets the clock to ~now.
+	// The cycle clock — used by the auto-hide minimum-visible window —
+	// must be stamped against the FIRST 'received' frame of a cycle,
+	// not a later re-assertion.
 	it("preserves updateCycleStartedAt when 'received' fires twice in the same cycle", () => {
 		vi.useFakeTimers();
 		try {
@@ -835,5 +750,138 @@ describe('HMR apply overlay runtime API', () => {
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+});
+
+describe('iOS overlay layout — code block and action button', () => {
+	const base = { viewWidth: 390, viewHeight: 844, safeInsets: { top: 47, bottom: 34, left: 0, right: 0 }, titleHeight: 20, statusHeight: 36, position: 'top' as const };
+
+	it('stacks the code block and the button below the status, growing the panel', () => {
+		const layout = computeIosOverlayLayout({ ...base, codeHeight: 60, actionHeight: 36 });
+		expect(layout.code).toEqual({ x: 16, y: 16 + 20 + 10 + 36 + 10, width: 340 - 32, height: 60 });
+		expect(layout.action).toEqual({ x: 16, y: layout.code.y + 60 + 10, width: 340 - 32, height: 36 });
+		expect(layout.panel.height).toBe(layout.action.y + 36 + 16);
+	});
+
+	it('leaves the panel as before without either', () => {
+		const plain = computeIosOverlayLayout(base);
+		expect(plain.panel.height).toBe(16 * 2 + 20 + 10 + 36);
+		expect(plain.code.height).toBe(0);
+		expect(plain.action.height).toBe(0);
+		expect(computeIosOverlayLayout({ ...base, actionHeight: 36 }).action.y).toBe(16 + 20 + 10 + 36 + 10);
+	});
+});
+
+describe('iOS overlay touch pass-through', () => {
+	const actionHitRect = { x: 41, y: 200, width: 308, height: 36 };
+
+	it('a toast takes touches on its button only', () => {
+		expect(iosOverlayCapturesTouch({ x: 100, y: 210 }, { blocking: false, actionHitRect })).toBe(true);
+		expect(iosOverlayCapturesTouch({ x: 100, y: 150 }, { blocking: false, actionHitRect })).toBe(false);
+		expect(iosOverlayCapturesTouch({ x: 20, y: 210 }, { blocking: false, actionHitRect })).toBe(false);
+	});
+
+	it('a toast without a button lets every touch through', () => {
+		expect(iosOverlayCapturesTouch({ x: 100, y: 210 }, { blocking: false, actionHitRect: null })).toBe(false);
+	});
+
+	it('the centered overlay takes every touch', () => {
+		expect(iosOverlayCapturesTouch({ x: 0, y: 0 }, { blocking: true, actionHitRect: null })).toBe(true);
+	});
+});
+
+describe('iOS overlay window — action button', () => {
+	function fakeIosRefs(passThrough: boolean) {
+		const label = () => ({ hidden: false, text: '', frame: null as any, sizeThatFits: () => ({ height: 20 }) });
+		const actionButton = {
+			hidden: true,
+			frame: null as any,
+			title: '',
+			setTitleForState(title: string) {
+				actionButton.title = title;
+			},
+		};
+		return {
+			window: { hidden: true, userInteractionEnabled: false },
+			controller: { view: { bounds: { size: { width: 390, height: 844 } }, safeAreaInsets: { top: 47, bottom: 34, left: 0, right: 0 } } },
+			backdrop: { frame: null },
+			panel: { frame: null, alpha: 1 },
+			titleLabel: label(),
+			statusLabel: label(),
+			codeLabel: { ...label(), hidden: true },
+			actionButton,
+			actionHandler: {},
+			actionHitRect: null as any,
+			currentAction: undefined as any,
+			passThrough,
+			wasVisible: false,
+			currentPosition: 'top' as const,
+		};
+	}
+
+	it('shows the button with its label and takes touches on it only', () => {
+		const refs = fakeIosRefs(true);
+		const action = { label: 'Restart app', onTap: vi.fn() };
+
+		applySnapshotToIosRefs(refs, createUpdateOverlaySnapshot('failed', { detail: 'boom', code: '1 | x(', action }));
+
+		expect(refs.actionButton).toMatchObject({ hidden: false, title: 'Restart app' });
+		expect(refs.codeLabel).toMatchObject({ hidden: false, text: '1 | x(' });
+		expect(refs.currentAction).toBe(action);
+		const layout = computeIosOverlayLayout({ viewWidth: 390, viewHeight: 844, safeInsets: { top: 47, bottom: 34, left: 0, right: 0 }, titleHeight: 20, statusHeight: 20, codeHeight: 20, actionHeight: 36, position: 'top' });
+		expect(refs.actionHitRect).toEqual({ x: layout.panel.x + layout.action.x, y: layout.panel.y + layout.action.y, width: layout.action.width, height: 36 });
+		expect(refs.window.userInteractionEnabled).toBe(true);
+	});
+
+	it('hides the button and stops taking touches on the next stage', () => {
+		const refs = fakeIosRefs(true);
+		applySnapshotToIosRefs(refs, createUpdateOverlaySnapshot('failed', { detail: 'boom', action: { label: 'Restart app', onTap: vi.fn() } }));
+
+		applySnapshotToIosRefs(refs, createUpdateOverlaySnapshot('restart-required', { detail: 'requested from the error overlay' }));
+
+		expect(refs.actionButton.hidden).toBe(true);
+		expect(refs.actionHitRect).toBeNull();
+		expect(refs.currentAction).toBeUndefined();
+	});
+
+	it('without the pass-through window, a toast takes touches only while a button is shown', () => {
+		const refs = fakeIosRefs(false);
+		applySnapshotToIosRefs(refs, createUpdateOverlaySnapshot('received', { detail: 'a.ts' }));
+		expect(refs.window.userInteractionEnabled).toBe(false);
+		applySnapshotToIosRefs(refs, createUpdateOverlaySnapshot('failed', { detail: 'boom', action: { label: 'Restart app', onTap: vi.fn() } }));
+		expect(refs.window.userInteractionEnabled).toBe(true);
+	});
+});
+
+describe('in-tree overlay — action button', () => {
+	function fakeLiveRefs() {
+		const panel = { requestLayout() {} };
+		return {
+			overlay: { visibility: 'collapse', isUserInteractionEnabled: false },
+			titleLabel: { text: '', parent: panel },
+			statusLabel: { text: '' },
+			codeLabel: { text: '', visibility: 'collapse' },
+			actionButton: { text: '', visibility: 'collapse' },
+			currentAction: undefined as any,
+			wasVisible: false,
+			currentPosition: 'top' as const,
+		};
+	}
+
+	it('shows the button on the failed stage and makes the overlay interactive only then', () => {
+		const refs = fakeLiveRefs();
+		const action = { label: 'Restart app', onTap: vi.fn() };
+
+		applySnapshotToLiveRefs(refs, createUpdateOverlaySnapshot('failed', { detail: 'boom', code: '1 | x(', action }));
+		expect(refs.actionButton).toMatchObject({ visibility: 'visible', text: 'Restart app' });
+		expect(refs.codeLabel).toMatchObject({ visibility: 'visible', text: '1 | x(' });
+		expect(refs.currentAction).toBe(action);
+		expect(refs.overlay.isUserInteractionEnabled).toBe(true);
+
+		applySnapshotToLiveRefs(refs, createUpdateOverlaySnapshot('restart-required', { detail: 'reason' }));
+		expect(refs.actionButton.visibility).toBe('collapse');
+		expect(refs.codeLabel.visibility).toBe('collapse');
+		expect(refs.currentAction).toBeUndefined();
+		expect(refs.overlay.isUserInteractionEnabled).toBe(false);
 	});
 });

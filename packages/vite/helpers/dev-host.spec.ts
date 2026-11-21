@@ -499,18 +499,33 @@ describe('resolveDeviceReachableOrigin', () => {
 		expect(r.port).toBe(5173);
 	});
 
-	it('keeps unbracketed IPv6 hosts intact (no spurious colon split)', () => {
-		// An unbracketed `::1` has multiple colons; we MUST NOT treat the
-		// last segment as a port.
+	it('brackets unbracketed IPv6 hosts without splitting off a port', () => {
 		const r = resolveDeviceReachableOrigin({
 			host: '::1',
 			platform: 'ios',
 			env: {},
 			port: 5173,
 		});
-		expect(r.origin).toBe('http://::1:5173');
-		expect(r.host).toBe('::1');
+		expect(r.origin).toBe('http://[::1]:5173');
+		expect(r.host).toBe('[::1]');
 		expect(r.port).toBe(5173);
+	});
+
+	it('brackets an unbracketed IPv6 NS_HMR_HOST', () => {
+		const r = resolveDeviceReachableOrigin({ host: true, platform: 'ios', env: { NS_HMR_HOST: 'fd00::2' }, port: 5180 });
+		expect(r.origin).toBe('http://[fd00::2]:5180');
+		expect(r.source).toBe('env');
+	});
+
+	it('keeps a bracketed IPv6 NS_HMR_HOST and its port', () => {
+		const r = resolveDeviceReachableOrigin({ host: true, platform: 'ios', env: { NS_HMR_HOST: '[fd00::2]:5190' }, port: 5180 });
+		expect(r.origin).toBe('http://[fd00::2]:5190');
+	});
+
+	it('brackets an explicit IPv6 server.host', () => {
+		const r = resolveDeviceReachableOrigin({ host: 'fd00::2', platform: 'ios', env: {}, port: 5180 });
+		expect(r.origin).toBe('http://[fd00::2]:5180');
+		expect(r.source).toBe('explicit');
 	});
 });
 

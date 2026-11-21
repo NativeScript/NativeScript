@@ -1,7 +1,6 @@
 import { createLogger, type Logger } from 'vite';
-import { getGlobalScope } from '../hmr/shared/runtime/global-scope.js';
+import { getCliFlags } from './cli-flags.js';
 
-const GLOBAL_VERBOSE_FLAG = '__NS_ENV_VERBOSE__';
 const ENV_VERBOSE_KEYS = ['NS_VITE_VERBOSE', 'NS_ENV_VERBOSE', 'NS_VERBOSE', 'VERBOSE', 'VITE_DEBUG_LOGS', 'DEBUG'];
 
 type Primitive = string | number | boolean | undefined | null;
@@ -11,7 +10,6 @@ type ResolveOptions = {
 	cliFlags?: Record<string, Primitive> | null;
 	defaultValue?: boolean;
 	cache?: boolean;
-	useGlobalFlag?: boolean;
 };
 
 let cachedVerbose: boolean | undefined;
@@ -39,7 +37,9 @@ export function resolveVerboseFlag(options: ResolveOptions = {}): boolean {
 		return cachedVerbose;
 	}
 
-	const { env = typeof process !== 'undefined' ? process.env : undefined, cliFlags } = options;
+	// The result is cached, so a first caller that passes no flags must still
+	// see `--env.verbose`.
+	const { env = typeof process !== 'undefined' ? process.env : undefined, cliFlags = getCliFlags() } = options;
 	let resolved: boolean | undefined;
 
 	if (cliFlags && typeof cliFlags === 'object') {
@@ -47,16 +47,6 @@ export function resolveVerboseFlag(options: ResolveOptions = {}): boolean {
 		if (typeof cliVerbose === 'boolean') {
 			resolved = cliVerbose;
 		}
-	}
-
-	if (resolved === undefined && options.useGlobalFlag !== false) {
-		try {
-			const globalVerbose = getGlobalScope()?.[GLOBAL_VERBOSE_FLAG];
-			const coerced = coerceBoolean(globalVerbose);
-			if (typeof coerced === 'boolean') {
-				resolved = coerced;
-			}
-		} catch {}
 	}
 
 	if (resolved === undefined && env) {
@@ -87,8 +77,7 @@ export function clearVerboseCache(): void {
 }
 
 // Vite/Rollup warning filter helper
-// Centralizes suppression of noisy build warnings that are either benign or
-// expected given NativeScript's virtual vendor bundling strategy.
+// Centralizes suppression of noisy build warnings that are benign.
 // Currently filters:
 //  - Sourcemap missing source files (common in published packages)
 //  - Sourcemap source paths that walk outside the published package (the map
@@ -96,22 +85,16 @@ export function clearVerboseCache(): void {
 //    consumer's node_modules doesn't have)
 //  - Sidecar `.js.map` files listed in a `//# sourceMappingURL=` comment that
 //    were not published alongside the `.js` file
-//  - Eval usage attributed to the virtual "@nativescript/vendor" module
-//  - License/annotation position warnings for the vendor bundle
 //  - Analog Angular optimizer/router plugins that never emit sourcemaps
 // Extend this list cautiously; prefer documenting each suppression reason.
 //
 // All matching uses `.includes()` (never `.startsWith()`) because Vite wraps
 // some warnings in picocolors ANSI escape sequences before handing them to
 // the logger, which would defeat `startsWith`-style probes on TTY output.
-export function createFilteredViteLogger(options: { hmrActive?: boolean } = {}): Logger {
+export function createFilteredViteLogger(): Logger {
 	const baseLogger = createLogger(undefined, { allowClearScreen: true });
 	return {
 		...baseLogger,
-		info(message: any, opts?: any) {
-			if (options.hmrActive && shouldSuppressViteInfo(String(message || ''))) return;
-			return baseLogger.info(message, opts);
-		},
 		warn(message: any, options?: any) {
 			const msg = String(message || '');
 			if (shouldSuppressViteWarning(msg)) return;
@@ -123,17 +106,6 @@ export function createFilteredViteLogger(options: { hmrActive?: boolean } = {}):
 			return baseLogger.warnOnce(message);
 		},
 	};
-}
-
-/**
- * Vite's stock HMR client never connects under device HMR — the device talks
- * to `/ns-hmr` — so Vite's own verdicts about that client are noise, and one
- * of them misleads: `page reload <file>` is what Vite decides for any module
- * it cannot hot-accept on the web, printed while the device is applying the
- * same save in place through a framework strategy.
- */
-export function shouldSuppressViteInfo(msg: string): boolean {
-	return /\bpage reload\b/.test(msg) || /\bhmr update\b/.test(msg);
 }
 
 // Exported for unit tests. Keep this function pure so the test suite can
@@ -164,14 +136,6 @@ export function shouldSuppressViteWarning(msg: string): boolean {
 	if (msg.includes('Failed to load source map for')) {
 		return true;
 	}
-	// Vendor eval usage (third-party libs aggregated); benign
-	if (msg.includes('Use of eval') && (msg.includes('@nativescript/vendor') || msg.includes('"@nativescript/vendor"'))) {
-		return true;
-	}
-	// Annotation/license position warning for vendor bundle
-	if ((msg.includes('contains an annotation that Rollup cannot interpret') || msg.includes('position of the comment')) && (msg.includes('@nativescript/vendor') || msg.includes('"@nativescript/vendor"'))) {
-		return true;
-	}
 	// Analog Angular optimizer/router plugins do not emit sourcemaps; Vite floods logs with warnings.
 	if (msg.includes('Sourcemap is likely to be incorrect') && (msg.includes('analogjs-router-optimization') || msg.includes('@analogjs/vite-plugin-angular-optimizer'))) {
 		return true;
@@ -187,7 +151,7 @@ export function shouldSuppressViteWarning(msg: string): boolean {
 	//
 	// In practice these files compile fine via our `tsFallbackTransformPlugin`
 	// (which type-strips them through Vite's oxc transformer at request
-	// time, see `helpers/workers.ts`'s ANGULAR_DECORATOR_RE skip-guard for
+	// time, see `configuration/angular/ts-fallback-transform.ts`'s ANGULAR_DECORATOR_RE skip-guard for
 	// the matching policy). Decorator metadata isn't generated for them
 	// because they're not in the Angular program — but that's exactly the
 	// expected outcome for files that don't need DI or template binding.

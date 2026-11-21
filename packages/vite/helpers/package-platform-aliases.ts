@@ -8,8 +8,7 @@ import { resolveMainFieldPlatformVariant } from './resolve-main-field-platform.j
 const projectRoot = getProjectRootPath();
 
 export function packagePlatformResolverPlugin(opts: { tsConfig: { paths?: Record<string, string[]> } | null; verbose?: boolean; platform: string }): Plugin {
-	// packages used via core transient dependencies and other vite support
-	const commonSkips = ['source-map-js', 'html-entities', 'fast-xml-parser', '@valor/nativescript-websockets'];
+	const commonSkips = ['@valor/nativescript-websockets'];
 	// Memoize the resolved id (or null) per bare package name. This runs on the
 	// hot `enforce:'pre'` path for EVERY bare specifier; without a cache it does
 	// a full `findPackageInNodeModules` fs-walk + `package.json` read/parse on

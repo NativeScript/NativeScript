@@ -1,34 +1,14 @@
 import path from 'path';
 
 /**
- * Identifies the Angular **bootstrap (root) component** of a project from
- * its dev-server entry module, and provides helpers to match Analog's
- * `angular:component-update` events against it.
+ * Identifies the Angular bootstrap (root) component from the app's entry
+ * module. The root hosts the navigation `Frame` (`<page-router-outlet>`),
+ * which `ɵɵreplaceMetadata` tears down without re-navigating, so its
+ * `angular:component-update`s must become full reloads.
  *
- * Why this exists
- * ---------------
- * NativeScript's root Angular component hosts the navigation `Frame` (via
- * `<page-router-outlet>`). Analog's in-place template HMR
- * (`ɵɵreplaceMetadata`) recreates the matching `LView`s for the edited
- * component WITHOUT re-running router navigation. For a normal child
- * component that's exactly right — its view re-renders inside an intact
- * page. For the ROOT component it's fatal: replacing the root metadata
- * tears down the `PageRouterOutlet`'s `Frame` and nothing re-navigates,
- * leaving a permanent blank/white screen that no further in-place update
- * can recover.
- *
- * The reboot path (`ns:angular-update` → `__reboot_ng_modules__`) DOES
- * recover the root view (it re-bootstraps and replays route state). So the
- * fix is to route every root-component edit through the reboot path and
- * suppress the destructive in-place update for it. Both halves need to know
- * which file is the root component — that's what this module resolves.
- *
- * Resolution is intentionally dependency-free string/path math so it can be
- * unit-tested without a Vite server or filesystem. It targets the modern
- * standalone bootstrap shape (`bootstrapApplication(AppComponent, …)`),
- * which is what `main.ts` uses; it degrades gracefully to `null` for shapes
- * it can't statically resolve (e.g. NgModule `bootstrap: [...]`), in which
- * case callers keep their existing behavior.
+ * Plain string/path math, testable without Vite or a filesystem. Only the
+ * standalone `bootstrapApplication(AppComponent, …)` shape resolves; other
+ * shapes (e.g. NgModule `bootstrap: [...]`) yield `null`.
  */
 
 export interface BootstrapRootComponent {
@@ -170,40 +150,4 @@ export function resolveBootstrapRootComponent(options: { entrySource: string; en
 	const className = binding.importedName && binding.importedName !== 'default' && binding.importedName !== '*' ? binding.importedName : localName;
 
 	return { moduleRel, className };
-}
-
-/**
- * Decodes Analog's `angular:component-update` payload `id`
- * (`encodeURIComponent(relativePath + '@' + className)`) into a normalized,
- * extensionless module rel plus the class name, so the bridge can compare it
- * against the resolved root component. Returns `null` for empty/invalid ids.
- */
-export function decodeAngularComponentUpdateId(id: unknown): { moduleRel: string; className: string } | null {
-	if (typeof id !== 'string' || !id) return null;
-	let decoded = id;
-	try {
-		decoded = decodeURIComponent(id);
-	} catch {
-		// Leave as-is — a non-encoded id still splits/normalizes correctly.
-	}
-	// Class names never contain `@`, but scoped paths can — split on the LAST
-	// `@` so `relativePath` keeps any leading `@scope/...` segments intact.
-	const at = decoded.lastIndexOf('@');
-	const pathPart = at >= 0 ? decoded.slice(0, at) : decoded;
-	const className = at >= 0 ? decoded.slice(at + 1) : '';
-	if (!pathPart) return null;
-	return { moduleRel: toExtensionlessModuleRel(pathPart), className };
-}
-
-/**
- * True when an Analog `angular:component-update` `id` targets the resolved
- * root component — matched by module path first (robust to class-name
- * collisions), then by class name as a fallback.
- */
-export function isAngularRootComponentUpdate(root: BootstrapRootComponent | null | undefined, id: unknown): boolean {
-	if (!root) return false;
-	const decoded = decodeAngularComponentUpdateId(id);
-	if (!decoded) return false;
-	if (isSameAngularModuleRel(root.moduleRel, decoded.moduleRel)) return true;
-	return !!decoded.className && decoded.className === root.className;
 }

@@ -117,10 +117,9 @@ const monorepoWorkspaceRootCache = new Map<string, string | null>();
 /**
  * Memoized variant of {@link findMonorepoWorkspaceRoot}.
  *
- * The dev server resolves hoisted `node_modules/<pkg>/...` candidates on
- * every `/ns/m/` request, and each lookup walks the directory tree once
- * doing `existsSync` calls. Since the workspace layout doesn't change at
- * runtime, the result is safe to cache per `start` directory for the
+ * Each lookup walks the directory tree doing `existsSync` calls, and the
+ * dev server repeats it for many files. The workspace layout doesn't change
+ * at runtime, so the result is cached per `start` directory for the
  * lifetime of the dev server process.
  */
 export function getMonorepoWorkspaceRoot(start: string = getProjectRootPath()): string | null {
@@ -206,6 +205,32 @@ export function getLinkedDependencyRoots(projectRoot: string = getProjectRootPat
  */
 export function clearLinkedDependencyRootsCache(): void {
 	linkedDependencyRootsCache.clear();
+}
+
+/**
+ * Names of the app's declared dependencies (every section) whose installed
+ * directory, found as Node resolves it from `projectRoot`, is a real path
+ * outside any `node_modules` dir: workspace packages and `link:`/`file:`
+ * checkouts, not registry installs.
+ * @param projectRoot app root to inspect
+ */
+export function getLinkedDependencyNames(projectRoot: string = getProjectRootPath()): string[] {
+	const names: string[] = [];
+	try {
+		const pkg = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8'));
+		const declared = new Set(['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'].flatMap((section) => Object.keys(pkg[section] ?? {})));
+		for (const name of declared) {
+			for (let dir = resolve(projectRoot); ; dir = dirname(dir)) {
+				const installed = join(dir, 'node_modules', name);
+				if (existsSync(installed)) {
+					if (!realpathSync(installed).split(sep).includes('node_modules')) names.push(name);
+					break;
+				}
+				if (dir === dirname(dir)) break;
+			}
+		}
+	} catch {}
+	return names;
 }
 
 /**

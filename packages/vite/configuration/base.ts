@@ -1,4 +1,4 @@
-import { type UserConfig } from 'vite';
+import { searchForWorkspaceRoot, type UserConfig } from 'vite';
 import path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { createRequire } from 'node:module';
@@ -10,27 +10,24 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import NativeScriptPlugin from '../helpers/resolver.js';
 import nsConfigAsJsonPlugin from '../helpers/config-as-json.js';
-import { getDevServerFsAllow, getProjectRootPath } from '../helpers/project.js';
+import { getDevServerFsAllow, getPackageJson, getProjectRootPath } from '../helpers/project.js';
 import { aliasCssTree } from '../helpers/css-tree.js';
 import { getGlobalDefines } from '../helpers/global-defines.js';
 import { getWorkerPlugins, workerHmrUrlPlugin, workerUrlPlugin, nativescriptWorkerLoaderStubPlugin } from '../helpers/workers.js';
-import { tsFallbackTransformPlugin } from '../hmr/frameworks/angular/build/ts-fallback-transform.js';
-import { angularWorkerUrlPreservePlugin } from '../hmr/frameworks/angular/build/worker-url-preserve.js';
 import { createTsConfigPathsResolver, getTsConfigData } from '../helpers/ts-config-paths.js';
-import { commonjsPlugins } from '../helpers/commonjs-plugins.js';
 import { nativescriptPackageResolver } from '../helpers/nativescript-package-resolver.js';
 import { cliPlugin } from '../helpers/ns-cli-plugins.js';
 import { dynamicImportPlugin } from '../helpers/dynamic-import-plugin.js';
 import { mainEntryPlugin } from '../helpers/main-entry.js';
+import { BOOT_TIMER_PRELUDE } from '../helpers/dev-boot-bundle.js';
 import { createUiRegistrationPlugin } from '../helpers/ui-registration.js';
-import { nsCoreExternalUrlsPlugin } from '../helpers/ns-core-external-urls.js';
 import { getProjectFlavor, setProjectFlavor } from '../helpers/flavor.js';
 import { preserveImportsPlugin } from '../helpers/preserve-imports.js';
 import { optimizeDepsPlatformResolver } from '../helpers/esbuild-platform-resolver.js';
-import { vendorManifestPlugin } from '../hmr/shared/vendor/manifest.js';
 import { resolveVerboseFlag, createFilteredViteLogger } from '../helpers/logging.js';
 import { externalConfigsPlugin } from '../helpers/external-configs.js';
 import { getHMRPlugins } from '../hmr/server/index.js';
+import { isSingleProcessDev } from '../hmr/server/dev-output.js';
 import type { Platform } from '../helpers/platform-types.js';
 import { packagePlatformResolverPlugin } from '../helpers/package-platform-aliases.js';
 import { findPackageInNodeModules } from '../helpers/module-resolution.js';
@@ -42,8 +39,9 @@ import { getProjectAppPath, getProjectAppRelativePath } from '../helpers/utils.j
 import { appComponentsPlugin } from '../helpers/app-components.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { normalizeModuleId } from '../helpers/normalize-id.js';
-import { getHmrWatchIgnoreGlobs } from '../helpers/hmr-scope.js';
-import { NS_OPTIMIZE_DEPS_EXCLUDE } from '../helpers/optimize-deps.js';
+import { getHmrWatchIgnoreGlobs, getNodeModulesWatchGlobs } from '../helpers/hmr-scope.js';
+import { getDevOptimizeDeps, nsDepScanUnresolvedPlugin } from '../helpers/dev-optimize-deps.js';
+import { getOptimizeDepsDefine, optimizeDepsEsmRequirePlugin } from '../helpers/optimize-deps.js';
 import { sbgClassNamesPlugin } from '../helpers/sbg-class-names.js';
 import { chunkFileNames } from '../helpers/chunk-file-names.js';
 import { nativescriptBuiltinModules } from '../helpers/builtin-modules.js';
@@ -66,29 +64,25 @@ const appSourceDir = getProjectAppPath();
 const resolveFromAppRoot = (subPath: string) => path.resolve(projectRoot, getProjectAppRelativePath(subPath));
 const appGlobPattern = `${appSourceDir}/**`;
 
-// Resolve @nativescript/core root.
-// Prefer monorepo source (packages/core) when present to match webpack5 behavior,
-// else fall back to node_modules resolution.
-let NS_CORE_ROOT = '' as string;
-const workspaceCorePkg = path.resolve(projectRoot, '../../packages/core/package.json');
-if (existsSync(workspaceCorePkg)) {
-	NS_CORE_ROOT = normalizeModuleId(path.dirname(workspaceCorePkg));
-} else {
-	const corePkg = require.resolve('@nativescript/core/package.json', { paths: [projectRoot] });
-	NS_CORE_ROOT = normalizeModuleId(path.dirname(corePkg));
-}
+let packageRoots: { coreRoot: string; themeCoreRoot: string | undefined } | undefined;
 
-// Attempt to resolve hoisted workspace dependency roots from the app's project root.
-// This enables monorepo usage where dependencies are declared at the workspace root
-// but consumed within an app package without its own node_modules copy.
-let THEME_CORE_ROOT: string | undefined;
-const themePkgDir = findPackageInNodeModules('nativescript-theme-core', projectRoot);
-if (themePkgDir && existsSync(themePkgDir)) {
-	THEME_CORE_ROOT = normalizeModuleId(themePkgDir);
+// Resolved on first use: importing this module must not require cwd to be an app.
+function resolvePackageRoots() {
+	if (packageRoots) return packageRoots;
+	// Prefer monorepo source (packages/core) when present to match webpack5 behavior,
+	// else fall back to node_modules resolution.
+	const workspaceCorePkg = path.resolve(projectRoot, '../../packages/core/package.json');
+	const coreRoot = normalizeModuleId(path.dirname(existsSync(workspaceCorePkg) ? workspaceCorePkg : require.resolve('@nativescript/core/package.json', { paths: [projectRoot] })));
+	// Hoisted workspace dependencies: declared at the workspace root, consumed
+	// by an app package without its own node_modules copy.
+	const themePkgDir = findPackageInNodeModules('nativescript-theme-core', projectRoot);
+	packageRoots = { coreRoot, themeCoreRoot: themePkgDir && existsSync(themePkgDir) ? normalizeModuleId(themePkgDir) : undefined };
+	return packageRoots;
 }
 
 export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }): UserConfig => {
 	const targetMode = mode === 'development' ? 'development' : 'production';
+	const { coreRoot: NS_CORE_ROOT, themeCoreRoot: THEME_CORE_ROOT } = resolvePackageRoots();
 
 	const cliFlags = getCliFlags();
 	const verbose = resolveVerboseFlag({ env: process.env, cliFlags });
@@ -115,16 +109,15 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 
 	flavor = flavor || (getProjectFlavor() as string);
 	// Seed the flavor singleton with the config-declared flavor so every later
-	// getProjectFlavor() consumer (deps-bundle linker gating, boot recorder,
-	// worker serving) sees the truth even when package.json detection can't —
-	// see setProjectFlavor for the hoisted-monorepo failure this prevents.
+	// getProjectFlavor() consumer sees the truth even when package.json
+	// detection can't — see setProjectFlavor for the hoisted-monorepo case.
 	setProjectFlavor(flavor);
 	if (verbose) {
 		console.log(`Building for ${flavor}.`);
 	}
 
 	// Filtered logger to suppress noisy warnings
-	const filteredLogger = createFilteredViteLogger({ hmrActive });
+	const filteredLogger = createFilteredViteLogger();
 
 	// Create TypeScript aliases with platform support
 	const tsConfig = getTsConfigData({ platform, verbose });
@@ -241,94 +234,38 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	if (existsSync(fontsDir)) {
 		staticCopyTargets.push({ src: `${fontsDir}/**/*`.replace(/\\/g, '/'), dest: 'fonts', rename: { stripBase: fontsStripBase } });
 	}
-
-	let disableOptimizeDeps = false;
-	// some flavor-specific adjustments for optimizing deps
-	switch (flavor) {
-		case 'angular':
-		// Solid joins Angular in disabling Vite's dep optimizer under HMR.
-		// Under HMR the device fetches every module through the `/ns/m/`
-		// transform pipeline, NEVER through Vite's `.vite/deps` prebundle — so
-		// discovery buys nothing on-device and actively HURTS: Vite discovers
-		// `solid-js` (+ `solid-js/web`, `solid-js/jsx-runtime`) mid-boot, emits
-		// `optimized dependencies changed. reloading`, and that full reload
-		// re-evaluates the solid-js reactive core while `globalThis.Solid$$`
-		// from the first evaluation still persists. The result is the
-		// "You appear to have multiple instances of Solid" warning, a split
-		// reactive graph, and a flaky white screen on cold boot (the renderer
-		// and the app's signals end up in different Owner realms). `noDiscovery`
-		// keeps `solid-js` resolving through the stable resolve.alias →
-		// `dist/dev.js` URL for the whole session, so there is a single core and
-		// no mid-boot reload. Mirrors Angular, which has run this way reliably.
-		case 'solid':
-		// React (rendering through dominative via @nativescript-community/react)
-		// has the same single-instance requirement as Solid: two copies of `react`
-		// — one pre-bundled by Vite's depscanner, one served through `/ns/m/` —
-		// means two reconciler/dispatcher realms, so hooks/context silently break.
-		// Disable discovery under HMR so `react` resolves through one stable path.
-		case 'react':
-			disableOptimizeDeps = hmrActive || process.env.NS_DISABLE_OPTIMIZEDEPS === '1' || process.env.NS_DISABLE_OPTIMIZEDEPS === 'true';
-			break;
-	}
-
-	// `module` / `node:module` are aliased to local polyfills (see
-	// `aliasCssTree` and the `node:module` entry in `resolveConfig.alias`).
-	// Vite's depscanner has no awareness of these aliases and, when discovery
-	// is enabled (every non-Angular flavor), happily pre-bundles them at
-	// `/node_modules/.vite/deps/module.js`. The HMR `/ns/m/` pipeline then
-	// runs `rewriteVitePrebundleImportsForDevice`, which maps pre-bundle URLs
-	// back to bare specifiers via the vendor manifest. Because `module` is
-	// NOT a real package (no manifest entry), the mapping returns `null` and
-	// the entire `import { createRequire } from 'module'` line is dropped —
-	// leaving `createRequire` undefined when `css-tree/lib/data-patch.js`
-	// executes on device:
-	//
-	//   ReferenceError: createRequire is not defined
-	//       at .../node_modules/css-tree/lib/data-patch.js
-	//
-	// Excluding both specifiers from optimizeDeps keeps the alias path
-	// intact end-to-end. Angular sets `noDiscovery: true` so it never hits
-	// this in the first place, but adding it here is still safe because the
-	// Angular config rebuilds `optimizeDeps.exclude` from a different list.
-	const optimizeDepsExclude = [...NS_OPTIMIZE_DEPS_EXCLUDE];
-	const optimizeDepsConditions = ['module', 'react-native', 'import', 'browser', 'default'];
-	const optimizeDepsConfig = disableOptimizeDeps
+	// `vite serve` writes what the HMR build would (see `hmr/server/dev-output.ts`)
+	// when the CLI runs no build next to it. The only build such a process runs
+	// is an Android custom `Application` chunk, which needs none of the
+	// full build's CLI messages, type check or static copies.
+	const singleProcessDev = hmrActive && isSingleProcessDev(platform);
+	const devOutput = singleProcessDev
 		? {
-				noDiscovery: true,
-				include: [],
-				entries: [],
-				exclude: [...optimizeDepsExclude, 'rxjs'],
-				rolldownOptions: {
-					resolve: {
-						conditionNames: optimizeDepsConditions,
-						extensions: platformExtensions as any,
-					},
-					transform: {
-						define: {
-							global: 'globalThis',
-							'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
-						},
-					},
-					plugins: [nativescriptBuiltinModules()],
-				},
+				platform,
+				outDir: path.resolve(projectRoot, distOutputFolder),
+				copyDirs: [
+					{ dir: assetsDir, dest: 'assets' },
+					{ dir: fontsDir, dest: 'fonts' },
+				],
 			}
-		: {
-				include: [],
-				exclude: optimizeDepsExclude,
-				rolldownOptions: {
-					resolve: {
-						conditionNames: optimizeDepsConditions,
-						extensions: platformExtensions as any,
-					},
-					transform: {
-						define: {
-							global: 'globalThis',
-							'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
-						},
-					},
-					plugins: [nativescriptBuiltinModules(), optimizeDepsPlatformResolver({ platform, verbose })],
-				},
-			};
+		: undefined;
+
+	// Dev (serve) only; builds never read it.
+	const [nativeClassTransform] = createNativeClassTransformerPlugin();
+	const devOptimizeDeps = isDevMode ? getDevOptimizeDeps({ projectRoot, flavor, platform, verbose, extensions: platformExtensions, packageDirs: { '@nativescript/core': NS_CORE_ROOT } }) : undefined;
+	const optimizeDepsConfig = {
+		...devOptimizeDeps,
+		rolldownOptions: {
+			resolve: {
+				conditionNames: ['module', 'react-native', 'import', 'browser', 'default'],
+				extensions: platformExtensions as any,
+			},
+			transform: {
+				define: getOptimizeDepsDefine(debug ? 'development' : 'production'),
+			},
+			plugins: [...(devOptimizeDeps ? [optimizeDepsEsmRequirePlugin(devOptimizeDeps.exclude)] : []), nativescriptBuiltinModules(), optimizeDepsPlatformResolver({ platform, verbose }), { name: 'ns-nativeclass-optimize-deps', transform: nativeClassTransform.transform as any }],
+		},
+	};
 
 	// The Android static binding generator finds a decorated class only from its own
 	// `X = __decorate([JavaProxy('name')], X)` statement; compressing statements into comma
@@ -344,15 +281,11 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		define: defineConfig,
 		optimizeDeps: optimizeDepsConfig,
 		plugins: [
-			// Must stay first: Vite stubs `node:` builtins for the browser otherwise.
+			// Must be the first resolver: Vite stubs `node:` builtins for the browser otherwise.
 			nativescriptBuiltinModules(),
 			// Merge any dependency-provided `nativescript.vite.mjs` configs. Runs
 			// in an awaited `config` hook so ESM configs load correctly.
 			externalConfigsPlugin(),
-			// Under HMR, rewrite every bare `@nativescript/core*` specifier to
-			// the full /ns/core HTTP URL so bundle.mjs contains NO bundled copy
-			// of the core runtime (see helpers/ns-core-external-urls.ts).
-			...(hmrActive ? [nsCoreExternalUrlsPlugin({ platform, projectRoot, nsCoreRoot: NS_CORE_ROOT, hmrPort, useHttps })] : []),
 			createPlatformCssPlugin(platform),
 			// TODO: move to per-project basis based on usage
 			createEnsureHoistedThemeLinkPlugin(THEME_CORE_ROOT, projectRoot, platform),
@@ -366,26 +299,13 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			}),
 			// Ensure explicit keep markers are honored
 			preserveImportsPlugin(),
-			hmrActive
-				? vendorManifestPlugin({
-						projectRoot,
-						platform,
-						mode: targetMode,
-						verbose,
-						emitAssets: true,
-						flavor,
-					})
-				: undefined,
-			// Vue HMR plugins for development mode
 			// HMR plugins (source streaming replaces prior exploded source plugin when enabled)
-			...(hmrActive ? [...getHMRPlugins({ platform, flavor, verbose })] : []),
+			...(hmrActive ? [...getHMRPlugins({ platform, flavor, verbose, devOutput })] : []),
 			// TODO: make flavor plugins dynamic
 			// ...flavorPlugins,
-			...commonjsPlugins,
 			tsConfigResolver,
 			packagePlatformResolverPlugin({ tsConfig, platform, verbose }),
 
-			// Platform-specific package resolver - MUST come before commonjs plugin
 			nativescriptPackageResolver(platform),
 			// Stub legacy webpack `nativescript-worker-loader!` imports so they don't
 			// fail static resolution under Rolldown (see helper for full rationale).
@@ -404,49 +324,24 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Handle custom Android Activity/Application components (auto-detected or configured)
 			appComponentsPlugin({ platform, verbose }),
 			dynamicImportPlugin(),
-			// Dev/HMR only: rewrite `new Worker(new URL('./foo', import.meta.url))`
-			// to a `/ns/m/`-routed string URL before Vite's built-in worker plugin
-			// produces a `?worker_file&type=classic` URL that the NS runtime can't
-			// load (see `workerHmrUrlPlugin` for the full rationale).
+			// Dev only: points `new Worker(new URL(...))` at the worker's module URL on the dev origin.
 			...(hmrActive ? [workerHmrUrlPlugin({ verbose })] : []),
-			// `vite build` only (production / `--no-hmr`): neutralize Angular's
-			// internal TS transformer so it stops blanking the worker URL.
-			//
-			// Without this, Analog's `processWebWorker` host callback returns
-			// `''` and Angular's worker transformer rewrites the original
-			// `new Worker(new URL('./foo.worker', import.meta.url))` into
-			// `new Worker(new URL("", import.meta.url), { type: "module" })`.
-			// Vite's own `workerImportMetaUrlPlugin` then doesn't match the
-			// empty URL, no worker asset is emitted, and the shipped bundle
-			// crashes on device with a `ReadText("")` assertion inside V8's
-			// module loader. See `angularWorkerUrlPreservePlugin` in
-			// `hmr/frameworks/angular/build/worker-url-preserve.ts` for the full
-			// rationale. Monkey-patch is idempotent and a no-op in non-Angular
-			// projects.
-			...(!hmrActive ? [angularWorkerUrlPreservePlugin({ verbose })] : []),
+			...(devOptimizeDeps ? [nsDepScanUnresolvedPlugin()] : []),
 			// Transform Vite worker URLs to NativeScript format AFTER bundling
 			workerUrlPlugin(),
 			...(platform === 'android' ? [sbgClassNamesPlugin()] : []),
-			// Dev/HMR only: safety-net TypeScript transform for `.ts`/`.tsx` files
-			// that escape the Angular plugin's fileEmitter (e.g. worker entry files
-			// loaded via `new Worker(new URL('./foo.worker', import.meta.url))`,
-			// which are not in the Angular TypeScript program). Without this, the
-			// Analog Angular plugin's config hook disables Vite's oxc transformer
-			// in HMR mode and any non-Angular `.ts` file reaches the device with
-			// type annotations intact. See `tsFallbackTransformPlugin` for the
-			// detection heuristic and the full rationale.
-			...(hmrActive ? [tsFallbackTransformPlugin({ verbose })] : []),
 			// Copy static assets and fonts when present in project app root
-			...((staticCopyTargets == null ? void 0 : staticCopyTargets.length)
-				? [
-						viteStaticCopy({
-							targets: staticCopyTargets,
-							watch: { reloadPageOnChange: true },
-						}),
-					]
+			// In single-process dev the dev output copies them, and the CLI restarts
+			// the app on its message; this plugin's serve half would answer the same
+			// change with a `full-reload`, i.e. a second restart.
+			...(staticCopyTargets.length && !singleProcessDev
+				? viteStaticCopy({
+						targets: staticCopyTargets,
+						watch: { reloadPageOnChange: true },
+					})
 				: []),
 			// NativeScript CLI integration
-			cliPlugin({ distOutputFolder, isDevMode, verbose, hmrActive }),
+			...(singleProcessDev ? [] : [cliPlugin({ distOutputFolder, isDevMode, verbose, hmrActive })]),
 		],
 		css: {
 			postcss: createPostCssConfig({
@@ -467,12 +362,13 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			? {
 					// Bind all interfaces so every consumer can connect: Android
 					// emulator NAT / adb-reverse, the iOS Simulator (loopback),
-					// AND physical devices fetching over the LAN. Vite prints
-					// both `Local:` and `Network:` URLs with this bind, so the
-					// LAN address devices use is visible at startup. The URL
-					// host devices are told to use is decided separately by
-					// `resolveDeviceReachableHost`. `NS_HMR_HOST` overrides.
-					host: process.env.NS_HMR_HOST || '0.0.0.0',
+					// physical devices over the LAN, AND an iPhone over the USB
+					// tunnel, whose host-side address is IPv6. `true` leaves the
+					// address to Node: dual-stack `::`, or `0.0.0.0` where IPv6
+					// can't bind. The host devices are told to use is decided
+					// separately by `resolveDeviceReachableHost` (`NS_HMR_HOST`
+					// sets that, never this bind).
+					host: true,
 					// The CLI picks a free port per platform session and hands
 					// it in as `NS_HMR_PORT`; that same port is baked into
 					// `bundle.mjs` and tunnelled with `adb reverse`, so Vite
@@ -493,7 +389,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					},
 					cors: true,
 					watch: {
-						ignored: getHmrWatchIgnoreGlobs(distOutputFolder),
+						// `--env.watchNodeModules` (webpack's flag) watches the app's direct dependencies.
+						ignored: [...getHmrWatchIgnoreGlobs(distOutputFolder), ...(cliFlags.watchNodeModules ? getNodeModulesWatchGlobs(Object.keys(getPackageJson().dependencies ?? {})) : [])],
 					},
 					// Widen `fs.allow` to the detected monorepo workspace root.
 					//
@@ -511,12 +408,14 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// Detect the real workspace root once at config time and
 					// add it to `fs.allow`, alongside the workspace roots of any
 					// linked dependency checkouts whose files the dev server must
-					// serve. `mergeConfig` concatenates arrays, so apps that pass
-					// their own `server.fs.allow` keep their entries on top of
-					// this baseline.
+					// serve. Setting `fs.allow` replaces Vite's default, so that
+					// default stays first. `mergeConfig` concatenates arrays, so
+					// apps that pass their own `server.fs.allow` keep their
+					// entries on top of this baseline. The HMR plugins add the
+					// `@nativescript/core` and `@nativescript/vite` directories.
 					...(() => {
 						const allow = getDevServerFsAllow(projectRoot);
-						return allow.length ? { fs: { allow } } : {};
+						return allow.length ? { fs: { allow: [searchForWorkspaceRoot(projectRoot), ...allow] } } : {};
 					})(),
 				}
 			: {},
@@ -553,7 +452,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			sourcemap: debug,
 			// Disable module preloading to avoid browser APIs
 			modulePreload: false,
-			// Under HMR, avoid rebuilds on app root changes — device consumes updates via /ns-hmr
+			// Under HMR, avoid rebuilds on app root changes — the device takes updates from the dev server
 			...(hmrActive && {
 				watch: {
 					exclude: [appGlobPattern],
@@ -565,15 +464,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				reportCompressedSize: false,
 			}),
 			rolldownOptions: {
-				onwarn(warning, defaultHandler) {
-					// Suppress COMMONJS_VARIABLE_IN_ESM from the vendor virtual module.
-					// The esbuild-bundled vendor code may contain CommonJS `exports` references
-					// inside ESM wrapper code which Rolldown flags but is harmless at runtime.
-					if (warning.code === 'COMMONJS_VARIABLE_IN_ESM' && (warning.id?.includes('@nativescript/vendor') || warning.message?.includes('@nativescript/vendor'))) {
-						return;
-					}
-					defaultHandler(warning);
-				},
 				treeshake: {
 					// Preserve side effects for NativeScript core so classes/functions
 					// aren't tree-shaken out inadvertently. This does NOT cause cross‑chunk duplication;
@@ -592,25 +482,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					format: 'es', // Emit ES modules (.mjs)
 					...sbgMinifyOutput,
 					entryFileNames: 'bundle.mjs',
-					// Prepend a tiny polyfill prelude to every emitted chunk so timer
-					// globals (`setTimeout`, `setInterval`, `clearTimeout`,
-					// `clearInterval`) are available at module-instantiation time —
-					// BEFORE `@nativescript/core/globals` runs from inside the entry.
-					//
-					// Why this is needed. ESM evaluates dependency chunks DFS-post-order
-					// before the importing module's body. `bundle.mjs` declares
-					// `import './vendor.mjs'` at the top, so `vendor.mjs` evaluates first
-					// — but the official timer polyfills live in
-					// `@nativescript/core/globals` which is bundled into `bundle.mjs`'s
-					// body. Any vendor package that captures a timer global at module
-					// top-level hits `ReferenceError: setTimeout is
-					// not defined` because `globalThis.setTimeout` is still undefined
-					// during vendor.mjs evaluation.
-					//
-					// When the runtime eventually exposes the unprefixed timer names
-					// directly (removing the chicken-and-egg at the source), this
-					// prelude becomes a no-op and can be removed.
-					banner: [`typeof globalThis !== 'undefined' && typeof globalThis.setTimeout === 'undefined' && typeof globalThis.__ns__setTimeout === 'function' && (`, `  globalThis.setTimeout = globalThis.__ns__setTimeout,`, `  globalThis.setInterval = globalThis.__ns__setInterval,`, `  globalThis.clearTimeout = globalThis.__ns__clearTimeout,`, `  globalThis.clearInterval = globalThis.__ns__clearInterval`, `);`].join('\n'),
+					banner: BOOT_TIMER_PRELUDE,
 					// Point source map URLs to absolute file:// paths on the host so
 					// Chrome DevTools can fetch them even though the running code comes
 					// from file:///app on the simulator/device.
@@ -621,16 +493,10 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// Keep critical NativeScript core bootstrap/lifecycle modules in the main bundle
 					// so they evaluate AFTER bundle-entry-points initialize Application.
 					manualChunks(id) {
-						// In HMR, avoid emitting a Rollup vendor chunk on disk. The dev server
-						// serves vendor over HTTP and we separately emit a single ns-vendor.mjs
-						// for Android SBG to scan via the vendorManifestPlugin above.
+						// Under HMR the app graph is served by the dev server; bundle.mjs
+						// carries only the boot code, so it gets no vendor split.
 						if (hmrActive) {
 							return undefined;
-						}
-						const normalizedId = id.split('?')[0].replace(/\\/g, '/');
-						// Ensure virtual vendor modules live in vendor.mjs
-						if (normalizedId.includes('@nativescript/vendor') || normalizedId.includes('@nativescript/vendor-manifest')) {
-							return 'vendor';
 						}
 						if (id.includes('node_modules')) {
 							// Keep Angular, NativeScript core, and Angular ecosystem packages
@@ -655,7 +521,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					},
 				},
 				// When HMR is active, prevent Vite's build watcher from reacting to source folder changes.
-				// The device will get updates via socket /ns-hmr instead.
+				// The device takes updates from the dev server instead.
 				...(hmrActive
 					? {
 							watch: {

@@ -1,10 +1,13 @@
 import type { Plugin } from 'vite';
+import { BUNDLER_CONTEXT_VIRTUAL_ID } from './bundler-context.js';
+import { getCliFlags } from './cli-flags.js';
 
 /**
  * Virtual module that registers @nativescript/core/ui with the bundler module
  * registry (so the XML builder's `global.loadModule('@nativescript/core/ui')`
  * resolves), registers short element names (Frame, StackLayout, …), imports the
- * bundler context, and applies View prototype guards.
+ * bundler context, and applies View prototype guards. The HMR boot bundle leaves
+ * the bundler context to the served app entry, which imports it there.
  *
  * The entry (`virtual:entry-with-polyfills`, see main-entry.ts) imports this
  * module immediately after `bundle-entry-points`, so its body evaluates after
@@ -98,7 +101,7 @@ import 'virtual:ns-bundler-context';
 // Patch CSS accessors to be resilient to early default initializations before style exists
 (function(){
   try {
-    const __ui = (global.loadModule ? global.loadModule('@nativescript/core/ui') : (global.require ? global.require('@nativescript/core/ui') : null));
+    const __ui = global.loadModule ? global.loadModule('@nativescript/core/ui') : null;
     if (__ui && __ui.View) {
       const View = __ui.View;
       const props = ['order','flexGrow','flexShrink','flexWrapBefore','alignSelf'];
@@ -128,7 +131,7 @@ import 'virtual:ns-bundler-context';
 // Some XML builder paths attempt to load 'Frame' directly instead of the barrel.
 // We expose individual element names so global.loadModule('Frame') works.
 try {
-  const __ui = (global.loadModule ? global.loadModule('@nativescript/core/ui') : (global.require ? global.require('@nativescript/core/ui') : null));
+  const __ui = global.loadModule ? global.loadModule('@nativescript/core/ui') : null;
   if (__ui && global.registerModule) {
     const existsFn = global.moduleExists ? (n) => global.moduleExists(n) : () => false;
     Object.keys(__ui).forEach(k => {
@@ -142,17 +145,30 @@ try {
 } catch(e) { /* ignore */ }
 `;
 
+const BUNDLER_CONTEXT_IMPORT = `import '${BUNDLER_CONTEXT_VIRTUAL_ID}';\n`;
+
+/** The module's code; `hmrActive` drops the bundler context import. */
+export function createUiRegistrationCode(flavor: 'typescript' | 'javascript', opts: { hmrActive?: boolean } = {}): string {
+	const code = flavor === 'typescript' ? TS_REGISTRATION_CODE : JS_REGISTRATION_CODE;
+	return opts.hmrActive ? code.replace(BUNDLER_CONTEXT_IMPORT, '') : code;
+}
+
 export function createUiRegistrationPlugin(flavor: 'typescript' | 'javascript'): Plugin {
+	let hmrActive = false;
 	return {
 		name: `ns-ui-registration-${flavor === 'typescript' ? 'ts' : 'js'}`,
 		enforce: 'pre',
+		configResolved(config) {
+			// Same condition as `baseConfig`'s `hmrActive`, which wires this plugin.
+			hmrActive = config.mode === 'development' && !!getCliFlags().hmr;
+		},
 		resolveId(id) {
 			if (id === UI_REGISTRATION_VIRTUAL_ID) return RESOLVED_ID;
 			return null;
 		},
 		load(id) {
 			if (id !== RESOLVED_ID) return null;
-			return { code: flavor === 'typescript' ? TS_REGISTRATION_CODE : JS_REGISTRATION_CODE, map: null } as any;
+			return { code: createUiRegistrationCode(flavor, { hmrActive }), map: null } as any;
 		},
 	};
 }

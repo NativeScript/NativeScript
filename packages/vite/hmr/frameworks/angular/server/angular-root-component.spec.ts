@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { decodeAngularComponentUpdateId, isAngularRootComponentUpdate, isSameAngularModuleRel, resolveBootstrapRootComponent, toExtensionlessModuleRel } from './angular-root-component.js';
+import { isSameAngularModuleRel, resolveBootstrapRootComponent, toExtensionlessModuleRel } from './angular-root-component.js';
 
 const STANDALONE_MAIN = `
 import { bootstrapApplication, runNativeScriptAngularApp } from '@nativescript/angular';
@@ -69,44 +69,5 @@ describe('resolveBootstrapRootComponent', () => {
 	it('returns null when the bootstrapped symbol has no resolvable import', () => {
 		const source = `const AppComponent = class {};\nbootstrapApplication(AppComponent, {});`;
 		expect(resolveBootstrapRootComponent({ entrySource: source, entryRel: '/src/main.ts' })).toBeNull();
-	});
-});
-
-describe('decodeAngularComponentUpdateId', () => {
-	it('decodes Analog encodeURIComponent(relativePath@ClassName) ids', () => {
-		const id = encodeURIComponent('src/app/app.component.ts@AppComponent');
-		expect(decodeAngularComponentUpdateId(id)).toEqual({ moduleRel: '/src/app/app.component', className: 'AppComponent' });
-	});
-	it('tolerates non-encoded ids and missing class names', () => {
-		expect(decodeAngularComponentUpdateId('src/app/app.component.ts')).toEqual({ moduleRel: '/src/app/app.component', className: '' });
-	});
-	it('returns null for empty/invalid input', () => {
-		expect(decodeAngularComponentUpdateId('')).toBeNull();
-		expect(decodeAngularComponentUpdateId(undefined)).toBeNull();
-		expect(decodeAngularComponentUpdateId(42)).toBeNull();
-	});
-});
-
-describe('isAngularRootComponentUpdate', () => {
-	const root = { moduleRel: '/src/app/app.component', className: 'AppComponent' };
-
-	it('matches the root component by module path', () => {
-		const id = encodeURIComponent('src/app/app.component.ts@AppComponent');
-		expect(isAngularRootComponentUpdate(root, id)).toBe(true);
-	});
-
-	it('matches the root component by class name when the path base differs', () => {
-		const id = encodeURIComponent('apps/demo/src/app/app.component.ts@AppComponent');
-		// Path differs (monorepo base), but class name still identifies the root.
-		expect(isAngularRootComponentUpdate(root, id)).toBe(true);
-	});
-
-	it('does not match a non-root component', () => {
-		const id = encodeURIComponent('src/app/home/home.component.ts@HomeComponent');
-		expect(isAngularRootComponentUpdate(root, id)).toBe(false);
-	});
-
-	it('is false when no root is known', () => {
-		expect(isAngularRootComponentUpdate(null, encodeURIComponent('src/app/app.component.ts@AppComponent'))).toBe(false);
 	});
 });

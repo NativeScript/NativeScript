@@ -60,22 +60,12 @@ describe('shouldSuppressViteWarning', () => {
 		});
 	});
 
-	describe('vendor bundle diagnostics (legacy coverage)', () => {
-		it('drops eval warnings attributed to the @nativescript/vendor virtual module', () => {
-			expect(shouldSuppressViteWarning('Use of eval is discouraged in "@nativescript/vendor"')).toBe(true);
-			expect(shouldSuppressViteWarning('Use of eval is discouraged in @nativescript/vendor virtual')).toBe(true);
-		});
-
-		it('keeps eval warnings for arbitrary modules', () => {
+	describe('eval and annotation warnings', () => {
+		it('keeps eval warnings', () => {
 			expect(shouldSuppressViteWarning('Use of eval in /abs/my-app/src/some-file.ts')).toBe(false);
 		});
 
-		it('drops annotation/license position warnings for the vendor bundle', () => {
-			expect(shouldSuppressViteWarning('Comment "/*! LEGAL */" in "@nativescript/vendor" contains an annotation that Rollup cannot interpret')).toBe(true);
-			expect(shouldSuppressViteWarning('position of the comment in "@nativescript/vendor"')).toBe(true);
-		});
-
-		it('keeps annotation warnings for other modules', () => {
+		it('keeps annotation warnings', () => {
 			expect(shouldSuppressViteWarning('Comment in "my-pkg" contains an annotation that Rollup cannot interpret')).toBe(false);
 		});
 	});
@@ -160,15 +150,5 @@ describe('shouldSuppressViteWarning', () => {
 				expect(shouldSuppressViteWarning(msg), `should NOT suppress: ${JSON.stringify(msg)}`).toBe(false);
 			}
 		});
-	});
-});
-
-describe('shouldSuppressViteInfo', () => {
-	it('drops the stock web-client HMR verdicts, which never apply to a device session', async () => {
-		const { shouldSuppressViteInfo } = await import('./logging.js');
-		expect(shouldSuppressViteInfo('page reload src/octane/driver.ts')).toBe(true);
-		expect(shouldSuppressViteInfo('hmr update /src/app.tsx')).toBe(true);
-		expect(shouldSuppressViteInfo('  VITE v8.2.2  ready in 1007 ms')).toBe(false);
-		expect(shouldSuppressViteInfo('server restarted.')).toBe(false);
 	});
 });

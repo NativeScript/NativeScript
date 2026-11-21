@@ -1,12 +1,7 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { formatBootTimeline, publishBootTrace, type BootTrace } from './boot-timeline.js';
-import { getGlobalScope } from './global-scope.js';
+import { describe, expect, it } from 'vitest';
+import { formatBootTimeline, type BootTrace } from './boot-timeline.js';
 
 describe('boot-timeline', () => {
-	afterEach(() => {
-		delete getGlobalScope().__NS_BOOT_TRACE__;
-	});
-
 	describe('formatBootTimeline', () => {
 		it('renders an ok status with all segments present', () => {
 			const trace: BootTrace = {
@@ -98,40 +93,6 @@ describe('boot-timeline', () => {
 			const trace: BootTrace = { t0: 1000, t1: 1000 };
 			const line = formatBootTimeline(trace);
 			expect(line).toBe('[ns-boot] ok total=0ms');
-		});
-	});
-
-	describe('publishBootTrace', () => {
-		it('writes the trace onto globalThis.__NS_BOOT_TRACE__', () => {
-			const trace: BootTrace = {
-				t0: 1000,
-				t1: 1234,
-				session: { ok: true, ms: 50 },
-			};
-
-			publishBootTrace(trace);
-
-			expect(getGlobalScope().__NS_BOOT_TRACE__).toBe(trace);
-		});
-
-		it('never throws when globalThis is frozen', () => {
-			// Freezing globalThis is extreme, but we simulate by defining the
-			// target property as read-only and ensuring publishBootTrace
-			// swallows the resulting TypeError.
-			Object.defineProperty(globalThis, '__NS_BOOT_TRACE__', {
-				value: 'locked',
-				writable: false,
-				configurable: true,
-			});
-
-			expect(() => publishBootTrace({ t0: 1 })).not.toThrow();
-
-			// Clean up the non-writable property so other tests aren't affected.
-			Object.defineProperty(globalThis, '__NS_BOOT_TRACE__', {
-				value: undefined,
-				writable: true,
-				configurable: true,
-			});
 		});
 	});
 });

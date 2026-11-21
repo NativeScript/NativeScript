@@ -1,79 +1,51 @@
-import { describe, it, expect } from 'vitest';
-import path from 'path';
-import { computeClientImportSpecifier, createNsDevClientBootstrapCode, createNsDevSessionDescriptor } from './vite-plugin.js';
+import { describe, it, expect, vi } from 'vitest';
 
-describe('ns-hmr-client vite plugin path handling', () => {
-	it('keeps a clean project-relative POSIX path on POSIX-like roots', () => {
-		const projectRoot = '/Users/test/app';
-		const clientFsPath = '/Users/test/app/node_modules/@nativescript/vite/hmr/client/index.js';
+vi.mock('./server-origin.js', () => ({ getServerOrigin: () => 'http://192.168.1.5:5173' }));
 
-		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
+import { allowDeviceHost, allowServedDirs, corePackageDir, createNsDevClientModuleCode, createNsDevSessionDescriptor, nsViteClientPlugin, pinWebSocketToken, resolveViteHmrWsUrl, type ViteHmrWsConfig } from './vite-plugin.js';
 
-		expect(result).toBe('/ns/m/node_modules/@nativescript/vite/hmr/client/index.js');
+function wsConfig(server: Partial<ViteHmrWsConfig['server']> & { ws?: unknown }, extra: Partial<Pick<ViteHmrWsConfig, 'base' | 'webSocketToken'>> = {}): ViteHmrWsConfig {
+	return { base: '/', webSocketToken: 'tok-1', ...extra, server: { port: 5173, hmr: undefined, ...server } } as ViteHmrWsConfig;
+}
+
+describe('resolveViteHmrWsUrl', () => {
+	it('joins base and the ws path on the server origin, with the token', () => {
+		expect(resolveViteHmrWsUrl('http://192.168.1.5:5173', wsConfig({ ws: { path: '/vite-hmr' } }))).toBe('ws://192.168.1.5:5173/vite-hmr?token=tok-1');
+		expect(resolveViteHmrWsUrl('http://192.168.1.5:5173', wsConfig({ ws: { path: 'vite-hmr' } }, { base: '/app/' }))).toBe('ws://192.168.1.5:5173/app/vite-hmr?token=tok-1');
 	});
 
-	it('falls back to file URL when relative becomes absolute (Windows-like different drive)', () => {
-		// Simulate a scenario where projectRoot and clientFsPath are on different drives.
-		// On real Windows, path.relative('C:/proj', 'D:/lib/file.js') is an absolute path
-		// starting with the target drive (e.g. 'D:/lib/file.js').
-		const projectRoot = 'C:/project/root';
-		const clientFsPath = 'D:/ns-vite-demo/node_modules/@nativescript/vite/hmr/client/index.js';
-
-		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
-
-		// On non-Windows hosts, Node's path.relative may not simulate the
-		// cross-drive behavior. The important contract is: when the computed
-		// relative path is absolute, we do NOT generate an import like '/D:/...'
-		// that would later resolve to 'D:\\D:\\...'. In that case we use a
-		// file URL; otherwise we leave the relative specifier alone.
-		if (path.sep === '\\') {
-			// Windows: expect file URL behavior
-			expect(result.startsWith('file://')).toBe(true);
-		}
-		expect(result.includes('nativescript/vite/hmr/client/index.js')).toBe(true);
+	it('reads server.hmr when server.ws is not an options object (Vite 8.0)', () => {
+		expect(resolveViteHmrWsUrl('http://10.0.2.2:5173', wsConfig({ hmr: { path: '/vite-hmr' } }))).toBe('ws://10.0.2.2:5173/vite-hmr?token=tok-1');
 	});
 
-	it('handles Windows-style same-drive paths as project-relative POSIX', () => {
-		const projectRoot = 'D:/ns-vite-demo';
-		const clientFsPath = 'D:/ns-vite-demo/node_modules/@nativescript/vite/hmr/client/index.js';
-
-		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
-
-		// When on the same drive, relative path should be node_modules/... and we normalize to POSIX.
-		expect(result).toBe('/ns/m/node_modules/@nativescript/vite/hmr/client/index.js');
+	it('uses wss for an https origin and the ws port when it differs from the server port', () => {
+		expect(resolveViteHmrWsUrl('https://dev.example.com:8443', wsConfig({ port: 8443, ws: { path: '/vite-hmr', port: 24678 } }))).toBe('wss://dev.example.com:24678/vite-hmr?token=tok-1');
+		expect(resolveViteHmrWsUrl('http://127.0.0.1:5173', wsConfig({ ws: { path: '/vite-hmr', port: 5173 } }))).toBe('ws://127.0.0.1:5173/vite-hmr?token=tok-1');
 	});
 
-	it('routes hoisted workspace node_modules through /ns/m/ when node_modules sits above the project root', () => {
-		// Nx / pnpm / Yarn workspaces hoist node_modules to the workspace root. With the
-		// previous logic, path.relative produced "../../node_modules/..." which the
-		// device's URL constructor collapses to a raw "/node_modules/..." URL — bypassing
-		// the AST normalizer that strips /@vite/client. This regression test guards the
-		// monorepo path so the import always lands on /ns/m/node_modules/... .
-		const projectRoot = '/Users/me/repo/apps/my-app';
-		const clientFsPath = '/Users/me/repo/node_modules/@nativescript/vite/hmr/client/index.js';
-
-		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
-
-		expect(result).toBe('/ns/m/node_modules/@nativescript/vite/hmr/client/index.js');
+	it('URL-encodes the token and falls back to the base path', () => {
+		expect(resolveViteHmrWsUrl('http://127.0.0.1:5173', wsConfig({}, { webSocketToken: 'a+b/c=' }))).toBe('ws://127.0.0.1:5173/?token=a%2Bb%2Fc%3D');
 	});
+});
 
-	it('routes pnpm-style nested node_modules through their last node_modules segment', () => {
-		const projectRoot = '/Users/me/repo/apps/my-app';
-		const clientFsPath = '/Users/me/repo/node_modules/.pnpm/@nativescript+vite@8.0.0/node_modules/@nativescript/vite/hmr/client/index.js';
-
-		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
-
-		// We use the LAST /node_modules/ segment so the resolved /ns/m/ route still
-		// matches the actual file the dev server would serve under that virtual path.
-		expect(result).toBe('/ns/m/node_modules/@nativescript/vite/hmr/client/index.js');
+describe('pinWebSocketToken', () => {
+	it("keeps the process's first token for every later config, and publishes it each time", () => {
+		const first = { webSocketToken: 'first' };
+		const restarted = { webSocketToken: 'minted-on-restart' };
+		const publish = vi.fn();
+		pinWebSocketToken(first, publish);
+		pinWebSocketToken(restarted, publish);
+		expect(restarted.webSocketToken).toBe('first');
+		expect(publish.mock.calls).toEqual([['first'], ['first']]);
 	});
 });
 
 describe('createNsDevSessionDescriptor', () => {
-	it('builds a URL-native session descriptor from the request host', () => {
+	it('builds the descriptor from the given origin and Vite HMR socket', () => {
 		const descriptor = createNsDevSessionDescriptor({
 			projectRoot: '/Users/test/app',
-			requestHost: '192.168.1.5:5173',
+			origin: 'http://192.168.1.5:5173/',
+			wsUrl: 'ws://192.168.1.5:5173/vite-hmr?token=tok-1',
 			platform: 'ios',
 			sessionId: 'session-123',
 			mainEntryPathname: '/src/main.ts',
@@ -82,14 +54,12 @@ describe('createNsDevSessionDescriptor', () => {
 		expect(descriptor).toEqual({
 			sessionId: 'session-123',
 			origin: 'http://192.168.1.5:5173',
-			// Canonical (untagged) entry URL — module identity IS the URL.
-			// The boot-progress snippet is injected self-gating by the /ns/m
-			// module server, so no `__ns_boot__` decoration is needed.
-			entryUrl: 'http://192.168.1.5:5173/ns/m/src/main.ts',
-			clientUrl: 'http://192.168.1.5:5173/__ns_dev__/client',
-			wsUrl: 'ws://192.168.1.5:5173/ns-hmr',
+			entryUrl: 'http://192.168.1.5:5173/src/main.ts',
+			clientUrl: 'http://192.168.1.5:5173/@id/__x00__virtual:ns-dev-client',
+			wsUrl: 'ws://192.168.1.5:5173/vite-hmr?token=tok-1',
+			wsProtocol: 'vite-hmr',
 			platform: 'ios',
-			runtimeConfigUrl: 'http://192.168.1.5:5173/ns/import-map.json',
+			runtimeConfigUrl: 'http://192.168.1.5:5173/__ns_dev__/import-map.mjs',
 			hostModules: ['ns-host://runtime', 'ns-host://style-adapter'],
 			features: {
 				fullReload: true,
@@ -97,143 +67,134 @@ describe('createNsDevSessionDescriptor', () => {
 			},
 		});
 	});
+});
 
-	it('switches protocols when the dev server is secure', () => {
-		const descriptor = createNsDevSessionDescriptor({
-			projectRoot: '/Users/test/app',
-			requestHost: 'dev.example.com:8443',
-			platform: 'visionos',
-			sessionId: 'session-456',
-			secure: true,
-			mainEntryPathname: '/src/app.ts',
-		});
-
-		expect(descriptor.origin).toBe('https://dev.example.com:8443');
-		expect(descriptor.entryUrl).toBe('https://dev.example.com:8443/ns/m/src/app.ts');
-		expect(descriptor.clientUrl).toBe('https://dev.example.com:8443/__ns_dev__/client');
-		expect(descriptor.wsUrl).toBe('wss://dev.example.com:8443/ns-hmr');
-		expect(descriptor.runtimeConfigUrl).toBe('https://dev.example.com:8443/ns/import-map.json');
-		expect(descriptor.platform).toBe('visionos');
+describe('corePackageDir', () => {
+	it('cuts an installed core entry at the package directory', () => {
+		expect(corePackageDir('/app/node_modules/@nativescript/core/index.js')).toBe('/app/node_modules/@nativescript/core');
 	});
 
-	it('preserves the boot-tag wrapper when the caller passes a fully-qualified /ns/m/ entry pathname', () => {
-		// Some callers (e.g. legacy custom shims) construct the canonical
-		// /ns/m/<rel> mirror themselves before handing it in. We still want
-		// the boot tag applied so the cold-boot snippet propagates; the
-		// `slice('/ns/m'.length)` math has to insert the tag in front of
-		// the existing /ns/m segment without doubling it.
-		const descriptor = createNsDevSessionDescriptor({
-			projectRoot: '/Users/test/app',
-			requestHost: 'localhost:5173',
-			platform: 'ios',
-			sessionId: 'session-789',
-			mainEntryPathname: '/ns/m/src/entrypoints/main.ts',
-		});
-
-		expect(descriptor.entryUrl).toBe('http://localhost:5173/ns/m/src/entrypoints/main.ts');
+	it('uses the entry directory for a workspace core', () => {
+		expect(corePackageDir('/repo/packages/core/index.ts')).toBe('/repo/packages/core');
 	});
 });
 
-describe('createNsDevClientBootstrapCode', () => {
-	it('generates a single-url websocket client for deterministic runtime sessions', () => {
-		const code = createNsDevClientBootstrapCode({
-			origin: 'http://192.168.1.5:5173',
-			wsUrl: 'ws://192.168.1.5:5173/ns-hmr',
-			clientImport: '/ns/m/node_modules/@nativescript/vite/hmr/client/index.js',
-			verbose: true,
-		});
+const ORIGIN = 'http://192.168.1.5:5173';
+const START = {
+	wsUrl: 'ws://192.168.1.5:5173/vite-hmr?token=tok-1',
+	wsProtocol: 'vite-hmr',
+	entryUrl: `${ORIGIN}/src/main.ts`,
+	origin: ORIGIN,
+};
 
-		expect(code).toContain('const __NS_BROWSER_RUNTIME_WS_URL__ = "ws://192.168.1.5:5173/ns-hmr";');
-		expect(code).toContain('const __NS_BROWSER_RUNTIME_ORIGIN__ = "http://192.168.1.5:5173";');
-		expect(code).toContain('const __NS_BROWSER_RUNTIME_CLIENT_IMPORT__ = "http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/client/index.js";');
-		expect(code).toContain('import { installVendorBootstrap as __nsBrowserRuntimeInstallVendorBootstrap } from "http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js";');
-		expect(code).toContain('import { vendorManifest as __nsBrowserRuntimeVendorManifest, __nsVendorModuleMap as __nsBrowserRuntimeVendorModuleMap } from "http://192.168.1.5:5173/@nativescript/vendor.mjs";');
-		expect(code).toContain('globalThis.__NS_HMR_APP_CSS__');
-		// CSS apply is pure JS now: prefer the HTTP core realm applier,
-		// fall back to Application.addCss via the vendor realm.
-		expect(code).toContain('globalThis.__NS_HMR_APPLY_CSS__');
-		expect(code).toContain('Application.addCss');
-		// Last-resort cold-boot CSS fallback for monorepo / per-module core
-		// boots where the vendor bundle has no @nativescript/core: install the
-		// entry-runtime's HTTP-core-realm applier against the canonical
-		// (unversioned) /ns/core bridge URL.
-		expect(code).toContain('import("http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js")');
-		expect(code).toContain('import("http://192.168.1.5:5173/ns/core")');
-		expect(code).toContain('installHttpCoreCssSupport');
-		// CSS updates delegate to the shared client css-handler (single
-		// fetch+apply pipeline, honors per-update tags); the inline path is
-		// only a global-updates fallback when that import fails.
-		expect(code).toContain('import("http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/client/css-handler.js")');
-		expect(code).toContain('skipped component CSS update');
-		expect(code).not.toContain('__nsApplyStyleUpdate');
-		// The JS hot registry installs before the entry graph evaluates.
-		expect(code).toContain('installNsHotRegistry');
-		expect(code).toContain("console.info('[ns-entry] app.css applied in HTTP core realm');");
-		expect(code).not.toContain('__nsBrowserRuntimeConfigureRuntime');
-		expect(code).not.toContain('/ns/import-map.json');
-		expect(code).not.toContain('configureLoader({');
-		expect(code).toContain('__nsBrowserRuntimeEnsureVendorBootstrap();');
-		expect(code).not.toContain('__NS_BROWSER_RUNTIME_VENDOR_BUNDLE_URL__');
-		expect(code).not.toContain('__NS_BROWSER_RUNTIME_VENDOR_BOOTSTRAP_URL__');
-		expect(code).not.toContain('__NS_HMR_BROWSER_RUNTIME_VENDOR_HASH__');
-		expect(code).not.toContain('__NS_HMR_BROWSER_RUNTIME_CLIENT_ERROR__');
-		expect(code).toContain('__NS_HMR_BROWSER_RUNTIME_DELEGATED__');
-		expect(code).toContain('__NS_HMR_BROWSER_RUNTIME_SOCKET_READY__');
-		expect(code).toContain('__NS_HMR_BROWSER_RUNTIME_GRAPH_VERSION__');
-		expect(code).toContain('__NS_HMR_CLIENT_SOCKET_READY__');
-		expect(code).toContain("resolved.searchParams.set('ns_hmr_role', role);");
-		expect(code).toContain("const __NS_BROWSER_RUNTIME_FALLBACK_WS_URL__ = __nsBrowserRuntimeWithSocketRole(__NS_BROWSER_RUNTIME_WS_URL__, 'bootstrap');");
-		expect(code).toContain("const __NS_BROWSER_RUNTIME_FULL_CLIENT_WS_URL__ = __nsBrowserRuntimeWithSocketRole(__NS_BROWSER_RUNTIME_WS_URL__, 'full');");
-		expect(code).toContain('import(__NS_BROWSER_RUNTIME_CLIENT_IMPORT__)');
-		expect(code).toContain('start({ wsUrl: __NS_BROWSER_RUNTIME_FULL_CLIENT_WS_URL__ });');
-		expect(code.indexOf('__nsBrowserRuntimeEnsureVendorBootstrap();')).toBeLessThan(code.indexOf('if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__)'));
-		expect(code).toContain('const ws = new WebSocketCtor(__NS_BROWSER_RUNTIME_FALLBACK_WS_URL__);');
-		expect(code).toContain("console.info('[ns-browser-runtime-client] connected', __NS_BROWSER_RUNTIME_FALLBACK_WS_URL__);");
-		expect(code).toContain("if (msg.type === 'ns:angular-update') {");
-		expect(code).toContain("console.info('[ns-browser-runtime-client] boot complete observed; starting full HMR client');");
-		expect(code).toContain("console.warn('[ns-browser-runtime-client] boot completion was not observed; full HMR client start is still pending');");
-		expect(code).toContain("console.info('[ns-browser-runtime-client] delegated to full HMR client; closing bootstrap fallback socket'");
-		expect(code).toContain("console.warn('[ns-browser-runtime-client] full HMR client did not confirm websocket readiness; keeping bootstrap fallback active');");
-		expect(code).toContain('__nsBrowserRuntimeTrackDelegation();');
-		expect(code).not.toContain('__nsBrowserRuntimeReload(');
-		expect(code).toContain('__nsBrowserRuntimeHandleSocketMessage');
-		expect(code).not.toContain('10.0.2.2');
-		expect(code).not.toContain('orderedHosts');
+describe('createNsDevClientModuleCode', () => {
+	it('starts the HMR client with the server-baked options once boot completes', () => {
+		const code = createNsDevClientModuleCode(START);
+		expect(code).toContain(`const startOptions = ${JSON.stringify(START)};`);
+		expect(code).toContain("import('@nativescript/vite/hmr/client/index.js')");
+		expect(code).toContain('.then((mod) => mod.start(startOptions))');
+		expect(code).toContain('if (!nsDev().bootComplete) {');
+		expect(code).not.toContain('WebSocket');
 	});
 
-	it('publishes a deferred client-strategy readiness promise before the app entry can navigate', () => {
-		// The full client (and its strategy) loads only after boot-complete,
-		// which flips after the app entry evaluates. The wrapper evaluates
-		// before the entry, so it owns the promise `/ns/rt` awaits.
-		const code = createNsDevClientBootstrapCode({
-			wsUrl: 'ws://127.0.0.1:5173/__ns_dev__/ws',
-			origin: 'http://127.0.0.1:5173',
-			clientImport: '/ns/m/node_modules/@nativescript/vite/hmr/client/index.js',
-		});
-		const deferredAt = code.indexOf('globalThis.__NS_CLIENT_STRATEGY_READY__ = new Promise');
-		// The first `__nsBrowserRuntimeConnectSocket();` in the emitted code sits
-		// inside the reconnect timer's function body, not the boot call site —
-		// take the last occurrence, which is the top-level boot call.
-		const socketAt = code.lastIndexOf('__nsBrowserRuntimeConnectSocket();');
-		expect(deferredAt).toBeGreaterThan(-1);
-		expect(deferredAt).toBeLessThan(socketAt);
-		expect(code).toContain('globalThis.__NS_CLIENT_STRATEGY_RESOLVE__ = resolve');
-		// A failed full-client start must settle it, never leave callers hanging.
-		expect(code).toContain('globalThis.__NS_CLIENT_STRATEGY_RESOLVE__?.()');
-		// So must an entry import failure observed by the boot poller.
-		expect(code).toContain('else if (globalThis.__NS_ENTRY_ERROR__)');
+	it('starts the HMR client once booted, with no launch-notification replay and no stylesheet', () => {
+		const code = createNsDevClientModuleCode(START);
+		expect(code).toContain('startHmrClientAfterBoot();\n');
+		expect(code).not.toContain('LaunchNotification');
+		expect(code).not.toContain('Css');
 	});
 
-	it('installs seeded app.css in the /ns/core realm before the app entry evaluates', () => {
-		const code = createNsDevClientBootstrapCode({
-			wsUrl: 'ws://127.0.0.1:5173/__ns_dev__/ws',
-			origin: 'http://127.0.0.1:5173',
-			clientImport: '/ns/m/node_modules/@nativescript/vite/hmr/client/index.js',
+	it('names every import by bare specifier, for import analysis to write its URL', () => {
+		const code = createNsDevClientModuleCode(START);
+		const specifiers = [...code.matchAll(/\bfrom '([^']+)'|import\('([^']+)'\)/g)].map((m) => m[1] ?? m[2]);
+		expect(specifiers).toEqual(['@nativescript/vite/hmr/shared/runtime/dev-globals.js', '@nativescript/vite/hmr/client/index.js']);
+	});
+});
+
+describe('nsHmrClientVitePlugin middleware', () => {
+	const SERVER_ORIGIN = 'http://192.168.1.5:5173';
+
+	async function serve(pathname: string) {
+		// A fresh module instance: the pinned webSocketToken is module state.
+		vi.resetModules();
+		const { nsHmrClientVitePlugin } = await import('./vite-plugin.js');
+		const middlewares: Array<(req: any, res: any, next: () => void) => unknown> = [];
+		const server: any = {
+			config: { root: '/app', base: '/', webSocketToken: 'tok-1', define: {}, logger: { info: () => {}, warn: () => {}, error: () => {} }, server: { port: 5173, hmr: { path: '/vite-hmr' }, fs: { allow: [] }, allowedHosts: [] } },
+			middlewares: { use: (fn: any) => middlewares.push(fn), stack: [] },
+			watcher: { on: () => {} },
+			ws: { send: () => {} },
+			environments: { client: { pluginContainer: { resolveId: async () => ({ id: '/app/node_modules/@nativescript/core/index.js' }) } } },
+		};
+		const plugin = nsHmrClientVitePlugin({ platform: 'android' });
+		(plugin.configResolved as any)(server.config);
+		(plugin.configureServer as any)(server);
+		let body = '';
+		const res: any = { setHeader: () => {}, end: (chunk: string) => (body = chunk) };
+		const req = { url: pathname, method: 'GET', headers: { host: 'evil.example:9999' } };
+		for (const middleware of middlewares) {
+			let calledNext = false;
+			await middleware(req, res, () => (calledNext = true));
+			if (!calledNext) break;
+		}
+		return body;
+	}
+
+	it('builds the session from the server origin, not the Host header', async () => {
+		const session = JSON.parse(/^export default ([\s\S]*);\n$/.exec(await serve('/__ns_dev__/session.mjs'))![1]);
+		expect(session.origin).toBe(SERVER_ORIGIN);
+		expect(session.entryUrl).toBe(`${SERVER_ORIGIN}/src/app.ts`);
+		expect(session.wsUrl).toBe('ws://192.168.1.5:5173/vite-hmr?token=tok-1');
+		expect(session.wsProtocol).toBe('vite-hmr');
+	});
+});
+
+describe('nsViteClientPlugin', () => {
+	it("answers Vite's aliased /@vite/client id with the NativeScript client, in the client environment only", async () => {
+		const plugin = nsViteClientPlugin();
+		const aliased = '/@fs/repo/node_modules/vite/dist/client/client.mjs';
+		(plugin.configResolved as any)({
+			root: '/app',
+			resolve: {
+				alias: [
+					{ find: /^\/?@vite\/env/, replacement: '/@fs/repo/node_modules/vite/dist/client/env.mjs' },
+					{ find: /^\/?@vite\/client/, replacement: aliased },
+				],
+			},
 		});
-		expect(code).toContain('import { installHttpCoreCssSupport as __nsBrowserRuntimeInstallHttpCoreCssSupport } from "http://127.0.0.1:5173/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js";');
-		const installAt = code.indexOf('__nsBrowserRuntimeInstallHttpCoreCssSupport(__nsBrowserRuntimeCoreBridge, false);');
-		expect(installAt).toBeGreaterThan(-1);
-		// Top-level, ahead of the boot-complete poller that replays it lazily.
-		expect(installAt).toBeLessThan(code.indexOf('if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__)'));
+		const resolve = async (specifier: string) => ({ id: `/app/node_modules/${specifier}?v=abc` });
+		const resolveId = (id: string, environment = 'client') => (plugin.resolveId as any).call({ environment: { name: environment }, resolve }, id, undefined, {});
+		expect(await resolveId(aliased)).toBe('/app/node_modules/@nativescript/vite/hmr/client/thin-vite-client.js');
+		expect(await resolveId('/@vite/client')).toBe('/app/node_modules/@nativescript/vite/hmr/client/thin-vite-client.js');
+		expect(await resolveId('/@fs/repo/node_modules/vite/dist/client/env.mjs')).toBeNull();
+		expect(await resolveId(aliased, 'ssr')).toBeNull();
+	});
+});
+
+describe('allowServedDirs', () => {
+	it('adds each directory once, without a trailing slash', () => {
+		const config = { server: { fs: { allow: ['/app'] } } };
+		allowServedDirs(config, ['/does-not-exist/pkg/', '/does-not-exist/pkg']);
+		expect(config.server.fs.allow).toEqual(['/app', '/does-not-exist/pkg']);
+	});
+});
+
+describe('allowDeviceHost', () => {
+	it('allows an NS_HMR_HOST hostname, with or without a port', () => {
+		const config = { server: { allowedHosts: [] as string[] | true } };
+		allowDeviceHost(config, 'dev-mac.local:5173');
+		allowDeviceHost(config, 'dev-mac.local');
+		expect(config.server.allowedHosts).toEqual(['dev-mac.local']);
+	});
+
+	it('leaves IPs, unset hosts and allowedHosts: true alone', () => {
+		const config = { server: { allowedHosts: [] as string[] | true } };
+		allowDeviceHost(config, '192.168.1.5');
+		allowDeviceHost(config, '[::1]:5173');
+		allowDeviceHost(config, undefined);
+		expect(config.server.allowedHosts).toEqual([]);
+		const open = { server: { allowedHosts: true as const } };
+		allowDeviceHost(open, 'dev-mac.local');
+		expect(open.server.allowedHosts).toBe(true);
 	});
 });

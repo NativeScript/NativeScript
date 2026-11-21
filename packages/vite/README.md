@@ -162,10 +162,11 @@ The TypeScript compiler is loaded only when a source needs the `@NativeClass` ES
 
 ### Flavors from other packages
 
-A framework can ship its own flavor — config helper, server strategy and device-side
-client strategy — as a package, using `@nativescript/vite/framework` and
-`@nativescript/vite/hmr/client/framework.js`. `init` and flavor detection pick it up from a
-`nativescript.vite` declaration in that package's `package.json`. The Octane flavor,
+A framework can ship its own flavor as a package: a config helper that calls
+`registerFrameworkFlavor` and `baseConfig` from `@nativescript/vite/framework` and adds the
+framework's own Vite plugin, which provides HMR through Vite's standard protocol and
+`import.meta.hot`. `init` and flavor detection pick it up from a `nativescript.vite`
+declaration in that package's `package.json`. The Octane flavor,
 [`@nativescript-community/vite-octane`](https://github.com/nativescript-community/octane), is built this way:
 
 ```ts

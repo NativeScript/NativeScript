@@ -8,10 +8,6 @@
  * `eachDescendant` from the app root. Restyling only the app root therefore
  * leaves an open sheet showing the stylesheet it was presented with, and the
  * hot update looks like it silently did nothing.
- *
- * Every CSS applier funnels through here so the three of them (the client
- * handler, the entry runtime's core-realm applier, and the browser-runtime
- * fallback) cannot drift apart on which roots they refresh.
  */
 
 /** Minimal shape of the core views this touches — the realm rule forbids importing them. */

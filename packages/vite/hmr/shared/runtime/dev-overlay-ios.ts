@@ -11,7 +11,7 @@
  */
 
 import { type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
-import { formatStatusText, getHmrDevOverlayPosition, getOverlayGlobal, type HmrOverlayRuntimeState, type IosOverlayRefs } from './dev-overlay-shared.js';
+import { formatStatusText, HMR_OVERLAY_POSITION, getOverlayGlobal, getRuntimeState, type HmrOverlayRuntimeState, type IosOverlayRefs, MAX_CODE_LINES, runOverlayAction } from './dev-overlay-shared.js';
 
 /**
  * Returns the UIWindow level we use for the live/connection overlay. We lift
@@ -40,7 +40,13 @@ export type IosOverlayLayout = {
 	panel: IosRect;
 	title: IosRect;
 	status: IosRect;
+	/** Zero height when there is no code block. */
+	code: IosRect;
+	/** Zero height when there is no action button. */
+	action: IosRect;
 };
+
+const ACTION_BUTTON_HEIGHT = 36;
 
 /**
  * Layout math for the live overlay when it runs inside its own UIWindow.
@@ -57,7 +63,7 @@ export type IosOverlayLayout = {
  *   - 'center': original modal placement (vertically centered, clamped
  *               so it never crosses the top safe-area inset).
  */
-export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: number; safeInsets?: IosSafeInsets | null; titleHeight: number; statusHeight: number; maxPanelWidth?: number; horizontalMargin?: number; panelPadding?: number; interLabelSpacing?: number; minTopInset?: number; position?: HmrOverlayPosition; toastVerticalInset?: number }): IosOverlayLayout {
+export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: number; safeInsets?: IosSafeInsets | null; titleHeight: number; statusHeight: number; codeHeight?: number; actionHeight?: number; maxPanelWidth?: number; horizontalMargin?: number; panelPadding?: number; interLabelSpacing?: number; minTopInset?: number; position?: HmrOverlayPosition; toastVerticalInset?: number }): IosOverlayLayout {
 	const viewWidth = Math.max(0, Number(input.viewWidth) || 0);
 	const viewHeight = Math.max(0, Number(input.viewHeight) || 0);
 	const safeInsets: IosSafeInsets = {
@@ -68,15 +74,15 @@ export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: 
 	};
 	const titleHeight = Math.max(0, Number(input.titleHeight) || 0);
 	const statusHeight = Math.max(0, Number(input.statusHeight) || 0);
+	const codeHeight = Math.max(0, Number(input.codeHeight) || 0);
+	const actionHeight = Math.max(0, Number(input.actionHeight) || 0);
 	const horizontalMargin = Math.max(0, Number(input.horizontalMargin ?? 24));
 	const maxPanelWidth = Math.max(0, Number(input.maxPanelWidth ?? 340));
 	const panelPadding = Math.max(0, Number(input.panelPadding ?? 16));
 	const interLabelSpacing = Math.max(0, Number(input.interLabelSpacing ?? 10));
 	const minTopInset = Math.max(0, Number(input.minTopInset ?? 20));
-	// Default to 'center' on the pure function so the existing
-	// snapshot/layout tests remain stable; the runtime call site
-	// (layoutIosOverlayRefs) reads the configured position from
-	// `getHmrDevOverlayPosition()` and forwards it explicitly.
+	// The runtime call site (layoutIosOverlayRefs) always passes
+	// `HMR_OVERLAY_POSITION`.
 	const position: HmrOverlayPosition = input.position ?? 'center';
 	// Distance between the panel and the safe-area edge in toast
 	// modes. 8pt mirrors the typical iOS notification chip inset and
@@ -88,7 +94,11 @@ export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: 
 	const innerWidth = Math.max(0, panelWidth - 2 * panelPadding);
 
 	const spacing = titleHeight > 0 && statusHeight > 0 ? interLabelSpacing : 0;
-	const panelHeight = panelPadding * 2 + titleHeight + spacing + statusHeight;
+	const statusBottom = panelPadding + titleHeight + spacing + statusHeight;
+	const codeY = codeHeight > 0 ? statusBottom + interLabelSpacing : statusBottom;
+	const codeBottom = codeY + codeHeight;
+	const actionY = actionHeight > 0 ? codeBottom + interLabelSpacing : codeBottom;
+	const panelHeight = actionY + actionHeight + panelPadding;
 	const panelX = Math.max(0, (viewWidth - panelWidth) / 2);
 
 	let panelY: number;
@@ -120,11 +130,28 @@ export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: 
 			width: innerWidth,
 			height: statusHeight,
 		},
+		code: { x: panelPadding, y: codeY, width: innerWidth, height: codeHeight },
+		action: { x: panelPadding, y: actionY, width: innerWidth, height: actionHeight },
 	};
+}
+
+/**
+ * Whether the overlay window takes a touch at `point` (window coordinates).
+ * The centered overlay blocks the app; a toast takes touches only on its
+ * action button, so everything around the chip still reaches the app.
+ */
+export function iosOverlayCapturesTouch(point: { x: number; y: number } | null | undefined, input: { blocking: boolean; actionHitRect: IosRect | null }): boolean {
+	if (input.blocking) return true;
+	const rect = input.actionHitRect;
+	if (!rect || !point) return false;
+	const x = Number(point.x);
+	const y = Number(point.y);
+	return x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height;
 }
 
 type IosOverlayHost = {
 	UIWindow: any;
+	UIButton?: any;
 	UIViewController: any;
 	UIView: any;
 	UILabel: any;
@@ -147,6 +174,7 @@ export function getIosOverlayHost(): IosOverlayHost | null {
 	}
 	return {
 		UIWindow: g.UIWindow,
+		UIButton: g.UIButton,
 		UIViewController: g.UIViewController,
 		UIView: g.UIView,
 		UILabel: g.UILabel,
@@ -179,6 +207,59 @@ function findActiveWindowScene(host: IosOverlayHost): any | null {
 	return null;
 }
 
+let passThroughWindowClass: any;
+
+// A UIWindow that refuses the touches `iosOverlayCapturesTouch` rejects, so
+// UIKit hit-tests the windows below it (the app). Defined once per process:
+// an Objective-C class name can only be registered once.
+function getPassThroughWindowClass(UIWindow: any): any {
+	if (passThroughWindowClass !== undefined) return passThroughWindowClass;
+	passThroughWindowClass = null;
+	try {
+		if (typeof UIWindow.extend === 'function') {
+			passThroughWindowClass = UIWindow.extend(
+				{
+					pointInsideWithEvent(point: { x: number; y: number }) {
+						const refs = getRuntimeState().iosRefs;
+						return !!refs && iosOverlayCapturesTouch(point, { blocking: HMR_OVERLAY_POSITION === 'center', actionHitRect: refs.actionHitRect });
+					},
+				},
+				{ name: 'NSViteHmrOverlayWindow' },
+			);
+		}
+	} catch (err) {
+		console.warn('[ns-hmr-overlay] pass-through overlay window unavailable:', (err as any)?.message || err);
+	}
+	return passThroughWindowClass;
+}
+
+const UI_CONTROL_STATE_NORMAL = 0;
+const UI_CONTROL_EVENT_TOUCH_UP_INSIDE = 1 << 6;
+const UI_BUTTON_TYPE_SYSTEM = 1;
+
+/** Wires `onTap` to the button. Returns the action or target, which the caller must keep alive: UIKit holds a target weakly. */
+function bindIosButtonTap(button: any, onTap: () => void): any {
+	const g = getOverlayGlobal();
+	try {
+		if (g.UIAction && typeof g.UIAction.actionWithHandler === 'function' && typeof button.addActionForControlEvents === 'function') {
+			const action = g.UIAction.actionWithHandler(() => onTap());
+			button.addActionForControlEvents(action, UI_CONTROL_EVENT_TOUCH_UP_INSIDE);
+			return action;
+		}
+	} catch {}
+	try {
+		if (g.NSObject && typeof g.NSObject.extend === 'function') {
+			const Target = g.NSObject.extend({ onTap: () => onTap() }, { exposedMethods: { onTap: { returns: g.interop?.types?.void, params: [] } } });
+			const target = Target.new();
+			button.addTargetActionForControlEvents(target, 'onTap', UI_CONTROL_EVENT_TOUCH_UP_INSIDE);
+			return target;
+		}
+	} catch (err) {
+		console.warn('[ns-hmr-overlay] iOS overlay button unavailable:', (err as any)?.message || err);
+	}
+	return null;
+}
+
 function buildIosOverlayRefs(state: HmrOverlayRuntimeState): IosOverlayRefs | null {
 	const host = getIosOverlayHost();
 	if (!host) return null;
@@ -195,7 +276,8 @@ function buildIosOverlayRefs(state: HmrOverlayRuntimeState): IosOverlayRefs | nu
 
 	try {
 		const { UIWindow, UIViewController, UIView, UILabel, UIColor, UIFont } = host;
-		const window = UIWindow.alloc().initWithWindowScene(scene);
+		const WindowClass = getPassThroughWindowClass(UIWindow);
+		const window = (WindowClass || UIWindow).alloc().initWithWindowScene(scene);
 		window.windowLevel = computeIosOverlayWindowLevel(host.UIWindowLevelAlert ?? null);
 		window.backgroundColor = UIColor.clearColor;
 		window.hidden = true;
@@ -242,6 +324,35 @@ function buildIosOverlayRefs(state: HmrOverlayRuntimeState): IosOverlayRefs | nu
 		statusLabel.textColor = UIColor.darkGrayColor;
 		panel.addSubview(statusLabel);
 
+		const codeLabel = UILabel.new();
+		codeLabel.numberOfLines = MAX_CODE_LINES;
+		codeLabel.textAlignment = 0; // NSTextAlignmentLeft
+		codeLabel.font = (typeof UIFont.monospacedSystemFontOfSizeWeight === 'function' ? UIFont.monospacedSystemFontOfSizeWeight(11, 0) : null) || (typeof UIFont.fontWithNameSize === 'function' ? UIFont.fontWithNameSize('Menlo', 11) : null) || UIFont.systemFontOfSize(11);
+		codeLabel.hidden = true;
+		panel.addSubview(codeLabel);
+
+		const refsHolder: { refs?: IosOverlayRefs } = {};
+		let actionButton: any = null;
+		let actionHandler: any = null;
+		if (host.UIButton) {
+			try {
+				actionButton = host.UIButton.buttonWithType(UI_BUTTON_TYPE_SYSTEM);
+				actionButton.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0.7, 0.1, 0.06, 1);
+				actionButton.setTitleColorForState(UIColor.whiteColor, UI_CONTROL_STATE_NORMAL);
+				actionButton.titleLabel.font = UIFont.boldSystemFontOfSize(14);
+				try {
+					actionButton.layer.cornerRadius = 8;
+				} catch {}
+				actionButton.hidden = true;
+				actionHandler = bindIosButtonTap(actionButton, () => runOverlayAction(refsHolder.refs?.currentAction));
+				if (actionHandler) panel.addSubview(actionButton);
+				else actionButton = null;
+			} catch {
+				actionButton = null;
+				actionHandler = null;
+			}
+		}
+
 		// Subtle drop-shadow so the toast chip reads against light app
 		// content (white-on-white is invisible). The error / centered
 		// branches still get the dim backdrop, so the shadow is mostly
@@ -258,16 +369,23 @@ function buildIosOverlayRefs(state: HmrOverlayRuntimeState): IosOverlayRefs | nu
 		// applySnapshotToIosRefs when the snapshot triggers a slide-in
 		// or slide-out. They start in the "hidden" state so the very
 		// first visible snapshot animates in cleanly.
-		return {
+		const refs: IosOverlayRefs = {
 			window,
 			controller,
 			backdrop,
 			panel,
 			titleLabel,
 			statusLabel,
+			codeLabel,
+			actionButton,
+			actionHandler,
+			actionHitRect: null,
+			passThrough: !!WindowClass,
 			wasVisible: false,
-			currentPosition: getHmrDevOverlayPosition(),
+			currentPosition: HMR_OVERLAY_POSITION,
 		};
+		refsHolder.refs = refs;
+		return refs;
 	} catch (err) {
 		console.warn('[ns-hmr-overlay] iOS overlay construction failed:', (err as any)?.message || err);
 		return null;
@@ -311,6 +429,9 @@ function layoutIosOverlayRefs(refs: IosOverlayRefs, position: HmrOverlayPosition
 		const innerWidth = Math.max(0, Math.min(maxPanelWidth, viewWidth - 2 * horizontalMargin - safeInsets.left - safeInsets.right) - 2 * panelPadding);
 		const titleFit = refs.titleLabel.sizeThatFits({ width: innerWidth, height: 10000 }) || { height: 0 };
 		const statusFit = refs.statusLabel.sizeThatFits({ width: innerWidth, height: 10000 }) || { height: 0 };
+		const codeShown = !!refs.codeLabel && !refs.codeLabel.hidden;
+		const codeFit = codeShown ? refs.codeLabel.sizeThatFits({ width: innerWidth, height: 10000 }) || { height: 0 } : { height: 0 };
+		const actionShown = !!refs.actionButton && !refs.actionButton.hidden;
 
 		const layout = computeIosOverlayLayout({
 			viewWidth,
@@ -318,6 +439,8 @@ function layoutIosOverlayRefs(refs: IosOverlayRefs, position: HmrOverlayPosition
 			safeInsets,
 			titleHeight: Number(titleFit.height) || 0,
 			statusHeight: Number(statusFit.height) || 0,
+			codeHeight: Number(codeFit.height) || 0,
+			actionHeight: actionShown ? ACTION_BUTTON_HEIGHT : 0,
 			maxPanelWidth,
 			horizontalMargin,
 			panelPadding,
@@ -333,6 +456,11 @@ function layoutIosOverlayRefs(refs: IosOverlayRefs, position: HmrOverlayPosition
 		refs.panel.frame = toCgRect(layout.panel);
 		refs.titleLabel.frame = toCgRect(layout.title);
 		refs.statusLabel.frame = toCgRect(layout.status);
+		if (codeShown) refs.codeLabel.frame = toCgRect(layout.code);
+		if (actionShown) refs.actionButton.frame = toCgRect(layout.action);
+		// The panel is a direct subview of the window-filling root view, so
+		// panel coordinates offset by the panel origin are window coordinates.
+		refs.actionHitRect = actionShown ? { x: layout.panel.x + layout.action.x, y: layout.panel.y + layout.action.y, width: layout.action.width, height: layout.action.height } : null;
 		return layout;
 	} catch (err) {
 		console.warn('[ns-hmr-overlay] iOS overlay layout failed:', (err as any)?.message || err);
@@ -462,7 +590,7 @@ export function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: Hm
 		// the dev session.
 		const visible = snapshot.visible && (snapshot.mode === 'connection' || snapshot.mode === 'update');
 		const wasVisible = !!refs.wasVisible;
-		const position = getHmrDevOverlayPosition();
+		const position = HMR_OVERLAY_POSITION;
 		const previousPosition = refs.currentPosition;
 		const isToast = position !== 'center';
 
@@ -470,9 +598,16 @@ export function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: Hm
 		// the user can keep tapping the app while the HMR chip is
 		// shown. In centered mode we keep the blocking
 		// behaviour (the dim backdrop is itself a hint to wait).
+		const hasAction = visible && !!snapshot.action && !!refs.actionButton;
 		try {
-			refs.window.userInteractionEnabled = !isToast;
+			// The pass-through window decides per point (`iosOverlayCapturesTouch`).
+			// A plain UIWindow can only take all touches or none, so it blocks the
+			// app while an action is shown rather than leave the button dead.
+			refs.window.userInteractionEnabled = refs.passThrough ? true : !isToast || hasAction;
 		} catch {}
+
+		refs.currentAction = hasAction ? snapshot.action : undefined;
+		if (!hasAction) refs.actionHitRect = null;
 
 		if (!visible) {
 			// Animate out before hiding the window so the dismissal
@@ -495,6 +630,14 @@ export function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: Hm
 		refs.window.hidden = false;
 		refs.titleLabel.text = snapshot.title || '';
 		refs.statusLabel.text = formatStatusText(snapshot);
+		if (refs.codeLabel) {
+			refs.codeLabel.text = snapshot.code || '';
+			refs.codeLabel.hidden = !snapshot.code;
+		}
+		if (refs.actionButton) {
+			refs.actionButton.setTitleForState(snapshot.action?.label || '', UI_CONTROL_STATE_NORMAL);
+			refs.actionButton.hidden = !hasAction;
+		}
 
 		const host = getIosOverlayHost();
 		if (host) {
@@ -507,6 +650,7 @@ export function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: Hm
 					refs.panel.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(1, 0.96, 0.96, 1);
 					refs.titleLabel.textColor = UIColor.colorWithRedGreenBlueAlpha(0.7, 0.1, 0.06, 1);
 					refs.statusLabel.textColor = UIColor.colorWithRedGreenBlueAlpha(0.7, 0.1, 0.06, 0.9);
+					if (refs.codeLabel) refs.codeLabel.textColor = UIColor.colorWithRedGreenBlueAlpha(0.7, 0.1, 0.06, 0.9);
 				} else if (isSuccess) {
 					// Slightly more saturated green panel + dark-green
 					// text. The previous 0.94/0.99/0.95 background was

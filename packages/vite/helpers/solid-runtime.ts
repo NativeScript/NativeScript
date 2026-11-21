@@ -8,8 +8,7 @@ import path from 'node:path';
  * prod build exports it as `undefined`.
  *
  * Deliberately narrow — enabling the `development` condition globally breaks
- * packages whose dev entries are environment-ambiguous stubs (see the
- * conditions note in hmr/shared/vendor/manifest.ts).
+ * packages whose dev entries are environment-ambiguous stubs.
  */
 export const SOLID_RUNTIME_PACKAGES: readonly string[] = ['solid-js', '@solidjs/signals', '@solidjs/universal', '@solidjs/web'];
 
@@ -94,18 +93,6 @@ export function resolveSolidDevEntry(pkgName: string, fromDir: string): SolidDev
 	}
 	devEntryCache.set(pkgDir, result);
 	return result;
-}
-
-/** `solid-js` dev entry relative to its package dir; falls back to the legacy layout. */
-export function getSolidJsDevEntryRelPath(fromDir: string): string {
-	return resolveSolidDevEntry('solid-js', fromDir)?.relPath ?? LEGACY_SOLID_JS_DEV_ENTRY;
-}
-
-/** `/ns/m/node_modules/<pkg>/<dev entry>` for a Solid runtime package, or null. */
-export function getSolidDevEntryNsmPath(pkgName: string, fromDir: string): string | null {
-	if (pkgName === 'solid-js') return `/ns/m/node_modules/solid-js/${getSolidJsDevEntryRelPath(fromDir)}`;
-	const entry = resolveSolidDevEntry(pkgName, fromDir);
-	return entry ? `/ns/m/node_modules/${pkgName}/${entry.relPath}` : null;
 }
 
 export function clearSolidDevEntryCache(): void {

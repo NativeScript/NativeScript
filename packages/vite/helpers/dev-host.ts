@@ -16,7 +16,7 @@
  *     `adb reverse` (usbmuxd's `iproxy` forwards host→device only, the
  *     wrong direction for a device-side fetch). The first HTTP ESM
  *     import in `bundle.mjs` dies with
- *     `HTTP import failed: http://localhost:5173/ns/core/xhr (status=0)`
+ *     `HTTP import failed: http://localhost:5173/... (status=0)`
  *     before any user code runs. The standard route is the host's LAN IP over
  *     a shared network. Because the Simulator shares the host's
  *     network stack, it reaches that LAN IP exactly as well as
@@ -61,7 +61,7 @@
  *     `NS_HMR_HOST=<ip>` or `NS_HMR_PREFER_LAN_HOST=1`.
  *
  * Without this normalization, `bundle.mjs` ships with statically
- * embedded URLs like `http://0.0.0.0:5173/ns/core/xhr` and the very
+ * embedded URLs like `http://0.0.0.0:5173/...` and the very
  * first dynamic import during Application boot fails with
  * `status=0 (network unreachable)` on Android, killing the runtime
  * before any user code runs.
@@ -97,6 +97,7 @@
  */
 
 import os from 'node:os';
+import net from 'node:net';
 import path from 'node:path';
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -113,8 +114,8 @@ const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
  * dev servers that switch ports across restarts get a clean attempt
  * each time. The cache is required because every entry point that
  * embeds a device-reachable URL (the bundle.mjs boot path, the
- * `/ns/core/*` external resolver, the websocket URL emitter, the
- * served-module rewriter) hits `resolveDeviceReachable*` — if we
+ * core external resolver, the websocket URL emitter, the device
+ * module route) hits `resolveDeviceReachable*` — if we
  * spawned `adb reverse` on every call we'd fork ~half a dozen
  * subprocesses per Vite startup and the cold-boot would slow
  * noticeably.
@@ -772,7 +773,7 @@ export interface DeviceOriginResolution extends DeviceHostResolution {
  * Convenience wrapper that returns the full `protocol://host:port`
  * origin string alongside the host-resolution metadata. The vast
  * majority of callers want the assembled origin to splice into a
- * `/ns/...` URL, so this saves them the trivial template string.
+ * device URL, so this saves them the trivial template string.
  *
  * When the resolved host already includes a `:port` suffix (a common
  * shape for `NS_HMR_HOST=tunnel.example.com:5173`), we split it back
@@ -811,6 +812,11 @@ function splitHostAndPort(rawHost: string, fallbackPort: number): { host: string
 			}
 			return { host: bracketed, port: fallbackPort };
 		}
+	}
+
+	// A bare IPv6 literal has no port to split off.
+	if (net.isIPv6(rawHost)) {
+		return { host: `[${rawHost}]`, port: fallbackPort };
 	}
 
 	// `host:port` for IPv4 / DNS names. We deliberately do NOT split on
