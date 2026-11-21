@@ -47,8 +47,6 @@ function initializeNativeClasses(): void {
 	class TabChangeListenerImpl extends java.lang.Object implements android.widget.TabHost.OnTabChangeListener {
 		constructor(public owner: SegmentedBar) {
 			super();
-
-			return global.__native(this);
 		}
 
 		onTabChanged(id: string): void {
@@ -69,8 +67,6 @@ function initializeNativeClasses(): void {
 	class TabContentFactoryImpl extends java.lang.Object implements android.widget.TabHost.TabContentFactory {
 		constructor(public owner: SegmentedBar) {
 			super();
-
-			return global.__native(this);
 		}
 
 		createTabContent(tag: string): android.view.View {
@@ -92,8 +88,6 @@ function initializeNativeClasses(): void {
 	class TabHostImpl extends android.widget.TabHost {
 		constructor(context: android.content.Context, attrs: android.util.AttributeSet) {
 			super(context, attrs);
-
-			return global.__native(this);
 		}
 
 		public onAttachedToWindow(): void {
