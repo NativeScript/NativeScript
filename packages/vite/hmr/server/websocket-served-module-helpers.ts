@@ -1,7 +1,11 @@
 import { parse as babelParse } from '@babel/parser';
+import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { existsSync, readFileSync } from 'fs';
 import * as path from 'path';
+import { parseAst } from 'vite';
+
+const babelTraverse: any = (traverse as any)?.default || (traverse as any);
 
 import * as PAT from './constants.js';
 import { isDeepCoreSubpath } from './core-sanitize.js';
@@ -130,41 +134,90 @@ export type TopLevelImportRecord = {
 	namedBindings: Array<{ importedName: string; text: string }>;
 };
 
+/**
+ * Top-level statements via Vite's native (Oxc) parser. Babel's block-comment
+ * line tracking rescans to the next line break for every comment, so long
+ * minified lines with many comments parse quadratically. Returns null when
+ * Oxc rejects the code so callers can fall back to Babel.
+ */
+export function parseTopLevelStatements(code: string): any[] | null {
+	try {
+		const ast = parseAst(code, { lang: 'tsx' }) as any;
+		return Array.isArray(ast?.body) ? ast.body : null;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Static import sources and whether each asks for a default binding.
+ */
+export function collectStaticImportDefaultIntents(code: string): Array<{ src: string; wantsDefault: boolean }> {
+	const body = parseTopLevelStatements(code);
+	if (body) {
+		const imports: Array<{ src: string; wantsDefault: boolean }> = [];
+		for (const node of body) {
+			if (node?.type !== 'ImportDeclaration' || typeof node.source?.value !== 'string') continue;
+			imports.push({
+				src: node.source.value,
+				wantsDefault: Array.isArray(node.specifiers) && node.specifiers.some((s: any) => s?.type === 'ImportDefaultSpecifier'),
+			});
+		}
+		return imports;
+	}
+	const ast = babelParse(code, {
+		sourceType: 'module',
+		plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
+	}) as any;
+	const imports: Array<{ src: string; wantsDefault: boolean }> = [];
+	babelTraverse(ast, {
+		ImportDeclaration(p: any) {
+			const src = p.node.source.value;
+			if (typeof src !== 'string') return;
+			imports.push({ src, wantsDefault: p.node.specifiers.some((s: any) => s.type === 'ImportDefaultSpecifier') });
+		},
+	});
+	return imports;
+}
+
 export function collectTopLevelImportRecords(code: string): TopLevelImportRecord[] {
 	if (!code || typeof code !== 'string' || !/\bimport\b/.test(code)) {
 		return [];
 	}
 
-	try {
-		const ast = babelParse(code, {
-			sourceType: 'module',
-			plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
-		}) as any;
-		const body = ast?.program?.body;
-		if (!Array.isArray(body)) {
-			return [];
-		}
-
-		return body
-			.filter((node: any) => t.isImportDeclaration(node) && typeof node.start === 'number' && typeof node.end === 'number' && typeof node.source?.value === 'string')
-			.map((node: any) => ({
-				start: node.start as number,
-				end: node.end as number,
-				text: code.slice(node.start as number, node.end as number),
-				source: node.source.value as string,
-				hasOnlyNamedSpecifiers: Array.isArray(node.specifiers) && node.specifiers.length > 0 && node.specifiers.every((spec: any) => t.isImportSpecifier(spec)),
-				namedBindings: Array.isArray(node.specifiers)
-					? node.specifiers
-							.filter((spec: any) => t.isImportSpecifier(spec) && typeof spec.start === 'number' && typeof spec.end === 'number')
-							.map((spec: any) => ({
-								importedName: t.isIdentifier(spec.imported) ? spec.imported.name : String(spec.imported?.value || ''),
-								text: code.slice(spec.start as number, spec.end as number),
-							}))
-					: [],
-			}));
-	} catch {
+	let body = parseTopLevelStatements(code);
+	if (!body) {
+		try {
+			body =
+				(
+					babelParse(code, {
+						sourceType: 'module',
+						plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
+					}) as any
+				)?.program?.body ?? null;
+		} catch {}
+	}
+	if (!Array.isArray(body)) {
 		return [];
 	}
+
+	return body
+		.filter((node: any) => node?.type === 'ImportDeclaration' && typeof node.start === 'number' && typeof node.end === 'number' && typeof node.source?.value === 'string')
+		.map((node: any) => ({
+			start: node.start as number,
+			end: node.end as number,
+			text: code.slice(node.start as number, node.end as number),
+			source: node.source.value as string,
+			hasOnlyNamedSpecifiers: Array.isArray(node.specifiers) && node.specifiers.length > 0 && node.specifiers.every((spec: any) => spec?.type === 'ImportSpecifier'),
+			namedBindings: Array.isArray(node.specifiers)
+				? node.specifiers
+						.filter((spec: any) => spec?.type === 'ImportSpecifier' && typeof spec.start === 'number' && typeof spec.end === 'number')
+						.map((spec: any) => ({
+							importedName: spec.imported?.type === 'Identifier' ? spec.imported.name : String(spec.imported?.value || ''),
+							text: code.slice(spec.start as number, spec.end as number),
+						}))
+				: [],
+		}));
 }
 
 export function hoistTopLevelStaticImports(code: string): string {
