@@ -5,6 +5,10 @@ import { addHeader } from './http-request-internal-common';
 import { isMainThread, dispatchToMainThread } from '../../utils/mainthread-helper';
 export { addHeader } from './http-request-internal-common';
 
+// Headers WinRT only takes on the body (HttpContentHeaderCollection): the message's own collection
+// refuses them, so a JSON body went out as HttpStringContent's default text/plain.
+const CONTENT_HEADERS = new Set(['content-type', 'content-encoding', 'content-language', 'content-disposition', 'content-location', 'content-md5', 'content-range', 'expires', 'last-modified']);
+
 export function requestInternal<T extends object>(options: HttpRequestOptions, contentHandler?: T): Promise<HttpResponse<BaseHttpContent & T>> {
 	return new Promise<HttpResponse<BaseHttpContent & T>>((resolve, reject) => {
 		if (!options.url) {
@@ -18,8 +22,16 @@ export function requestInternal<T extends object>(options: HttpRequestOptions, c
 			const method = new Windows.Web.Http.HttpMethod(options.method || 'GET');
 			const requestMessage = new Windows.Web.Http.HttpRequestMessage(method, uri);
 
+			const contentHeaders: [string, string][] = [];
 			if (options.headers) {
 				for (const key in options.headers) {
+					const name = key.toLowerCase();
+					// (WinRT sets the length from the body)
+					if (name === 'content-length') continue;
+					if (CONTENT_HEADERS.has(name)) {
+						contentHeaders.push([key, options.headers[key] + '']);
+						continue;
+					}
 					try {
 						requestMessage.Headers.TryAppendWithoutValidation(key, options.headers[key] + '');
 					} catch { }
@@ -35,6 +47,17 @@ export function requestInternal<T extends object>(options: HttpRequestOptions, c
 					const writer = new Windows.Storage.Streams.DataWriter();
 					writer.WriteBytes(new Uint8Array(options.content as ArrayBuffer) as never);
 					requestMessage.Content = new Windows.Web.Http.HttpBufferContent(writer.DetachBuffer());
+				}
+			}
+
+			const body = requestMessage.Content;
+			if (body) {
+				for (const [key, value] of contentHeaders) {
+					try {
+						// replaces the default the content set (text/plain for a string)
+						if (body.Headers.HasKey(key)) body.Headers.Remove(key);
+						body.Headers.TryAppendWithoutValidation(key, value);
+					} catch { }
 				}
 			}
 
