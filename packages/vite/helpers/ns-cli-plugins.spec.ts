@@ -77,6 +77,7 @@ describe('devServerAddressOf', () => {
 		const { devServerAddressOf } = await import('./ns-cli-plugins.js');
 		expect(devServerAddressOf({ port: 5173, host: '0.0.0.0' })).toEqual({ port: 5173, host: undefined, https: false });
 		expect(devServerAddressOf({ host: true })).toEqual({ port: 5173, host: undefined, https: false });
+		expect(devServerAddressOf({ host: '::' })).toEqual({ port: 5173, host: undefined, https: false });
 		expect(devServerAddressOf({ port: 5180, host: '192.168.1.5', https: {} })).toEqual({ port: 5180, host: '192.168.1.5', https: true });
 	});
 });

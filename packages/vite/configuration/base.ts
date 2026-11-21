@@ -362,12 +362,13 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			? {
 					// Bind all interfaces so every consumer can connect: Android
 					// emulator NAT / adb-reverse, the iOS Simulator (loopback),
-					// AND physical devices fetching over the LAN. Vite prints
-					// both `Local:` and `Network:` URLs with this bind, so the
-					// LAN address devices use is visible at startup. The URL
-					// host devices are told to use is decided separately by
-					// `resolveDeviceReachableHost`. `NS_HMR_HOST` overrides.
-					host: process.env.NS_HMR_HOST || '0.0.0.0',
+					// physical devices over the LAN, AND an iPhone over the USB
+					// tunnel, whose host-side address is IPv6. `true` leaves the
+					// address to Node: dual-stack `::`, or `0.0.0.0` where IPv6
+					// can't bind. The host devices are told to use is decided
+					// separately by `resolveDeviceReachableHost` (`NS_HMR_HOST`
+					// sets that, never this bind).
+					host: true,
 					// The CLI picks a free port per platform session and hands
 					// it in as `NS_HMR_PORT`; that same port is baked into
 					// `bundle.mjs` and tunnelled with `adb reverse`, so Vite

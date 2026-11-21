@@ -1,5 +1,6 @@
+import net from 'node:net';
 import type { ViteDevServer } from 'vite';
-import { resolveDeviceReachableOrigin, type DevHostPlatform } from '../../helpers/dev-host.js';
+import { isWildcardHost, resolveDeviceReachableOrigin, type DevHostPlatform } from '../../helpers/dev-host.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
 
 /**
@@ -60,7 +61,7 @@ function computeServerOrigin(server: ViteDevServer): string {
 	// etc.). We deliberately do NOT consult `resolvedUrls.network[0]`
 	// here — see the doc comment above for why.
 	const hostCfg = server.config.server?.host;
-	const fallbackHost = typeof hostCfg === 'string' && hostCfg && hostCfg !== '0.0.0.0' ? hostCfg : platform === 'android' ? '10.0.2.2' : '127.0.0.1';
+	const fallbackHost = typeof hostCfg === 'string' && !isWildcardHost(hostCfg) ? (net.isIPv6(hostCfg) ? `[${hostCfg}]` : hostCfg) : platform === 'android' ? '10.0.2.2' : '127.0.0.1';
 	const origin = `${protocol}://${fallbackHost}:${port}`;
 	if (!/^https?:\/\/[\w\-.:\[\]]+$/.test(origin)) {
 		console.warn('[hmr][origin] invariant failed for constructed origin:', origin);

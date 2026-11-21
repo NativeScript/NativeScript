@@ -97,6 +97,7 @@
  */
 
 import os from 'node:os';
+import net from 'node:net';
 import path from 'node:path';
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -811,6 +812,11 @@ function splitHostAndPort(rawHost: string, fallbackPort: number): { host: string
 			}
 			return { host: bracketed, port: fallbackPort };
 		}
+	}
+
+	// A bare IPv6 literal has no port to split off.
+	if (net.isIPv6(rawHost)) {
+		return { host: `[${rawHost}]`, port: fallbackPort };
 	}
 
 	// `host:port` for IPv4 / DNS names. We deliberately do NOT split on

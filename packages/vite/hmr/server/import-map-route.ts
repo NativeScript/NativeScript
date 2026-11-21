@@ -123,7 +123,7 @@ export function registerImportMapRoute(server: ViteDevServer, options: RegisterI
 				return;
 			}
 
-			// Never the request's `Host` header: the server binds 0.0.0.0, so a
+			// Never the request's `Host` header: the server binds every interface, so a
 			// spoofed Host would rewrite the origin of every device module URL.
 			const origin = getServerOrigin(server);
 
