@@ -98,7 +98,7 @@ export var test_value_Inherited_after_revert = function () {
 	TKUnit.assertEqual(btn.color.hex, '#FF0000', 'color property');
 };
 
-// TODO: Add missing inherit support for non-inherited properties
+// A keyword set from code only releases the local value; see test_css_inherit_* for the stylesheet keyword.
 export var test_value_after_inherit = function () {
 	let page = helper.getCurrentPage();
 	let btn = new Button();
@@ -129,4 +129,37 @@ export var test_value_Inherited_after_inherit = function () {
 	TKUnit.assertEqual(btn.color.hex, '#0000FF', 'color property');
 	(btn as any).color = 'inherit';
 	TKUnit.assertEqual(btn.color.hex, '#FF0000', 'color property');
+};
+
+export var test_css_inherit_on_non_inherited_property = function () {
+	let page = helper.getCurrentPage();
+	let btn = new Button();
+	let testStack = new StackLayout();
+
+	page.css = 'StackLayout { background-color: #FF0000; margin-top: 7; } Button { background-color: inherit; margin-top: inherit; }';
+
+	page.content = testStack;
+	testStack.addChild(btn);
+
+	TKUnit.assertEqual(btn.backgroundColor.hex, '#FF0000', 'backgroundColor property');
+	TKUnit.assertEqual(btn.marginTop, 7, 'marginTop property');
+
+	testStack.backgroundColor = new Color('#0000FF');
+	testStack.marginTop = 3;
+	TKUnit.assertEqual(btn.backgroundColor.hex, '#0000FF', 'backgroundColor property follows the parent');
+	TKUnit.assertEqual(btn.marginTop, 3, 'marginTop property follows the parent');
+};
+
+export var test_css_inherit_on_shorthand = function () {
+	let page = helper.getCurrentPage();
+	let btn = new Button();
+	let testStack = new StackLayout();
+
+	page.css = 'StackLayout { border-color: #FF0000; } Button { border-color: inherit; }';
+
+	page.content = testStack;
+	testStack.addChild(btn);
+
+	TKUnit.assertEqual((<Color>btn.borderTopColor).hex, '#FF0000', 'borderTopColor property');
+	TKUnit.assertEqual((<Color>btn.borderLeftColor).hex, '#FF0000', 'borderLeftColor property');
 };
