@@ -1,4 +1,4 @@
-import type { LoaderContext } from 'webpack';
+import { sources, type LoaderContext } from 'webpack';
 
 // Extremely conservative textual pre-pass to neutralize any top-level '@NativeClass' decorator
 // before TypeScript compilation while leaving a marker for the transformer to detect and
@@ -29,10 +29,28 @@ export default function nativeClassStripLoader(
 	}
 
 	// We only want to neutralize the decorator and leave a detectable marker for the transformer.
-	const stripped = content.replace(
-		DECORATOR_SINGLE_RE,
-		(m, prefix) => `${prefix || '\n'}/*__NativeClass__*/\n`,
+	// Every newline of the match is kept, so later lines keep their positions.
+	const source = new sources.ReplaceSource(
+		map
+			? new sources.SourceMapSource(content, this.resourcePath, map)
+			: new sources.OriginalSource(content, this.resourcePath),
 	);
+	let changed = false;
+	for (const match of content.matchAll(DECORATOR_SINGLE_RE)) {
+		const [m, prefix] = match;
+		const newlines = m.slice(prefix.length).split('\n').length - 1;
+		source.replace(
+			match.index + prefix.length,
+			match.index + m.length - 1,
+			`/*__NativeClass__*/${'\n'.repeat(newlines)}`,
+		);
+		changed = true;
+	}
 
-	this.callback(null, stripped, map);
+	if (!changed) {
+		this.callback(null, content, map);
+		return;
+	}
+	const { source: stripped, map: strippedMap } = source.sourceAndMap();
+	this.callback(null, stripped as string, strippedMap as any);
 }

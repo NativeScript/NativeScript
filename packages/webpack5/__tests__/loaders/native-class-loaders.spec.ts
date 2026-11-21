@@ -23,6 +23,9 @@ function createDownlevelContext(
 			if (err) throw err;
 			onDone(source || '', warnings);
 		},
+		async() {
+			return this.callback.bind(this);
+		},
 	} as any;
 }
 
