@@ -12,7 +12,7 @@ import { Trace } from '../../trace';
 import { SharedTransition, SharedTransitionAnimationType } from '../transition/shared-transition';
 
 interface TransitionListener {
-	new (entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener;
+	new (entry: ExpandedEntry): ExpandedTransitionListener;
 }
 
 const defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
@@ -28,10 +28,7 @@ let TransitionListener = lazy(() => {
 	@Interfaces([(<any>androidx).transition.Transition.TransitionListener])
 	class TransitionListenerImpl extends java.lang.Object implements androidx.transition.Transition.TransitionListener {
 		public entry: WeakRef<ExpandedEntry>;
-		constructor(
-			entry: ExpandedEntry,
-			public transition: androidx.transition.Transition,
-		) {
+		constructor(entry: ExpandedEntry) {
 			super();
 			this.entry = new WeakRef(entry);
 		}
@@ -96,6 +93,12 @@ let AnimationListener: android.animation.Animator.AnimatorListener;
 
 interface ExpandedTransitionListener extends androidx.transition.Transition.TransitionListener {
 	entry: WeakRef<ExpandedEntry>;
+}
+
+// The transition holds its listener from Java, so the listener must not reference
+// the transition back: a JS <-> Java cycle that no collector can see through.
+interface AttachedTransitionListener {
+	listener: ExpandedTransitionListener;
 	transition: androidx.transition.Transition;
 }
 
@@ -106,10 +109,10 @@ interface ExpandedAnimator extends android.animation.Animator {
 }
 
 export interface ExpandedEntry extends BackstackEntry {
-	enterTransitionListener?: ExpandedTransitionListener;
-	exitTransitionListener?: ExpandedTransitionListener;
-	reenterTransitionListener?: ExpandedTransitionListener;
-	returnTransitionListener?: ExpandedTransitionListener;
+	enterTransitionListener?: AttachedTransitionListener;
+	exitTransitionListener?: AttachedTransitionListener;
+	reenterTransitionListener?: AttachedTransitionListener;
+	returnTransitionListener?: AttachedTransitionListener;
 
 	enterAnimator?: ExpandedAnimator;
 	exitAnimator?: ExpandedAnimator;
@@ -437,8 +440,8 @@ function notifySharedTransition(id: number, eventName: string) {
 
 // Transition listener can't be static because
 // android is cloning transitions and we can't expand them :(
-function getTransitionListener(entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener {
-	return new (TransitionListener())(entry, transition);
+function getTransitionListener(entry: ExpandedEntry): ExpandedTransitionListener {
+	return new (TransitionListener())(entry);
 }
 
 function addToWaitingQueue(entry: ExpandedEntry): void {
@@ -452,14 +455,14 @@ function addToWaitingQueue(entry: ExpandedEntry): void {
 	entries.add(entry);
 }
 
-function cloneExpandedTransitionListener(expandedTransitionListener: ExpandedTransitionListener) {
-	if (!expandedTransitionListener) {
+function cloneExpandedTransitionListener(attachedListener: AttachedTransitionListener) {
+	if (!attachedListener) {
 		return null;
 	}
 
-	const cloneTransition = expandedTransitionListener.transition.clone();
+	const cloneTransition = attachedListener.transition.clone();
 
-	return addNativeTransitionListener(expandedTransitionListener.entry.deref(), cloneTransition);
+	return addNativeTransitionListener(attachedListener.listener.entry.deref(), cloneTransition);
 }
 
 function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: boolean): void {
@@ -469,7 +472,7 @@ function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: bo
 		const exitTransition = fragment.getExitTransition();
 		if (exitTransition) {
 			if (removeListener) {
-				exitTransition.removeListener(exitListener);
+				exitTransition.removeListener(exitListener.listener);
 			}
 
 			fragment.setExitTransition(null);
@@ -488,7 +491,7 @@ function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: bo
 		const reenterTransition = fragment.getReenterTransition();
 		if (reenterTransition) {
 			if (removeListener) {
-				reenterTransition.removeListener(reenterListener);
+				reenterTransition.removeListener(reenterListener.listener);
 			}
 
 			fragment.setReenterTransition(null);
@@ -561,7 +564,7 @@ function clearTransitions(entry: ExpandedEntry, removeListener: boolean): void {
 		const enterTransition = fragment.getEnterTransition();
 		if (enterTransition) {
 			if (removeListener) {
-				enterTransition.removeListener(enterListener);
+				enterTransition.removeListener(enterListener.listener);
 			}
 
 			fragment.setEnterTransition(null);
@@ -580,7 +583,7 @@ function clearTransitions(entry: ExpandedEntry, removeListener: boolean): void {
 		const returnTransition = fragment.getReturnTransition();
 		if (returnTransition) {
 			if (removeListener) {
-				returnTransition.removeListener(returnListener);
+				returnTransition.removeListener(returnListener.listener);
 			}
 
 			fragment.setReturnTransition(null);
@@ -757,11 +760,11 @@ function setUpNativeTransition(navigationTransition: NavigationTransition, nativ
 	nativeTransition.setInterpolator(interpolator);
 }
 
-export function addNativeTransitionListener(entry: ExpandedEntry, nativeTransition: androidx.transition.Transition): ExpandedTransitionListener {
-	const listener = getTransitionListener(entry, nativeTransition);
+export function addNativeTransitionListener(entry: ExpandedEntry, nativeTransition: androidx.transition.Transition): AttachedTransitionListener {
+	const listener = getTransitionListener(entry);
 	nativeTransition.addListener(listener);
 
-	return listener;
+	return { listener, transition: nativeTransition };
 }
 
 function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: BackstackEntry): void {
