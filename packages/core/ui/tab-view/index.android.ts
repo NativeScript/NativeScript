@@ -21,7 +21,7 @@ const PRIMARY_COLOR = 'colorPrimary';
 const DEFAULT_ELEVATION = 4;
 
 interface PagerAdapter {
-	new (owner: WeakRef<TabView>): androidx.viewpager.widget.PagerAdapter;
+	new (owner: WeakRef<TabView>): androidx.viewpager.widget.PagerAdapter & { items: Array<TabViewItemDefinition> };
 }
 
 const TABID = '_tabId';
@@ -536,15 +536,17 @@ export class TabView extends TabViewBase {
 			accentColor = 0x00ffffff;
 		}
 
+		// Kept on this view rather than as JS properties of the native views: a native
+		// view referencing its own child (whose parent is that native view) is a cycle.
 		nativeView.addView(viewPager);
-		(<any>nativeView).viewPager = viewPager;
+		this._viewPager = viewPager;
 
 		const adapter = new PagerAdapter(new WeakRef(this));
 		viewPager.setAdapter(adapter);
-		(<any>viewPager).adapter = adapter;
+		this._pagerAdapter = adapter;
 
 		nativeView.addView(tabLayout);
-		(<any>nativeView).tabLayout = tabLayout;
+		this._tabLayout = tabLayout;
 
 		setElevation(nativeView, tabLayout);
 
@@ -565,13 +567,7 @@ export class TabView extends TabViewBase {
 			this._androidViewId = android.view.View.generateViewId();
 		}
 
-		const nativeView: any = this.nativeViewProtected;
-		this._tabLayout = (<any>nativeView).tabLayout;
-
-		const viewPager: androidx.viewpager.widget.ViewPager = (<any>nativeView).viewPager;
-		viewPager.setId(this._androidViewId);
-		this._viewPager = viewPager;
-		this._pagerAdapter = (<any>viewPager).adapter;
+		this._viewPager.setId(this._androidViewId);
 	}
 
 	public _loadUnloadTabItems(newIndex: number) {
