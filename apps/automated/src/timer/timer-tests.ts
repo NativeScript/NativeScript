@@ -1,5 +1,6 @@
 import * as TKUnit from '../tk-unit';
 import * as timer from '@nativescript/core/timer';
+import { Utils } from '@nativescript/core';
 
 // >> timer-require
 // require("globals");
@@ -51,7 +52,7 @@ export function test_setTimeout_extraArgs() {
 			// << (hide)
 		},
 		0,
-		rnd
+		rnd,
 	);
 	// << timer-set-zero-args
 
@@ -152,6 +153,25 @@ export function test_setInterval_callbackCalledDuringPeriod(done) {
 	// << timer-set-expression
 }
 
+export function test_setInterval_keepsFiringAcrossGarbageCollection(done) {
+	let counter = 0;
+	const id = timer.setInterval(() => {
+		counter++;
+		if (counter === 2) {
+			for (let i = 0; i < 3; i++) {
+				Utils.GC();
+				if (__ANDROID__) {
+					java.lang.System.gc();
+					java.lang.System.runFinalization();
+				}
+			}
+		} else if (counter === 4) {
+			timer.clearInterval(id);
+			done(null);
+		}
+	}, 20);
+}
+
 export function test_setInterval_callbackCalledWithExtraArgs(done) {
 	let counter: number = 0;
 	const rnd: number = Math.random();
@@ -168,7 +188,7 @@ export function test_setInterval_callbackCalledWithExtraArgs(done) {
 			}
 		},
 		250,
-		rnd
+		rnd,
 	);
 }
 
