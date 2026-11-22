@@ -1,6 +1,6 @@
 import '../../globals';
 import { setActivityCallbacks } from '.';
-import { getActivityCallbacks } from './activity-callbacks-store';
+import { getActivityCallbacks, _unpinActivity } from './activity-callbacks-store';
 import { Application } from '../../application';
 import { isEmbedded } from '../embedding';
 const EMPTY_FN = () => {};
@@ -105,7 +105,11 @@ if (!isEmbedded()) {
 
 		onDestroy(): void {
 			const activity = this.getActivity();
-			getActivityCallbacks(activity).onDestroy(activity, EMPTY_FN);
+			try {
+				getActivityCallbacks(activity).onDestroy(activity, EMPTY_FN);
+			} finally {
+				_unpinActivity(activity);
+			}
 		},
 
 		onPostResume(): void {

@@ -7,7 +7,7 @@ export const IOSHelper = 0;
 
 const androidxGraphics = androidx.core.graphics;
 
-// Colors applied through a color filter cannot be read back from the drawable.
+// Color-filter colors cannot be read back from the drawable.
 const drawableFilterColors = new WeakMap<android.graphics.drawable.Drawable, number>();
 
 export class AndroidHelper {

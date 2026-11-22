@@ -19,7 +19,7 @@ import { NativeWindowEvents } from '../../native-window/native-window-interfaces
 import { AndroidNativeWindow } from '../../native-window/native-window.android';
 import { isEmbedded, setEmbeddedView } from '../embedding';
 import { CALLBACKS, FRAMEID, framesCache, setFragmentCallbacks } from './frame-helper-for-android';
-import { getActivityCallbacks, isNativeScriptActivity, _hasBackPressedCallback, _markBackPressedCallback, _registerActivityCallbacks } from './activity-callbacks-store';
+import { getActivityCallbacks, isNativeScriptActivity, _hasBackPressedCallback, _markBackPressedCallback, _pinActivity, _registerActivityCallbacks } from './activity-callbacks-store';
 import { SDK_VERSION } from '../../utils';
 
 export * from './frame-common';
@@ -1183,7 +1183,9 @@ export function setActivityCallbacks(activity: androidx.appcompat.app.AppCompatA
 	const callbacks = new ActivityCallbacksImplementation();
 	_registerActivityCallbacks(activity, callbacks);
 	// Embedded hosts are plain Java activities; custom activities read this._callbacks.
-	if (!isEmbedded()) {
+	if (isEmbedded()) {
+		_pinActivity(activity);
+	} else {
 		activity[CALLBACKS] = callbacks;
 	}
 	if (OnBackPressedCallback && !_hasBackPressedCallback(activity)) {
