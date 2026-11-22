@@ -1227,15 +1227,11 @@ export abstract class ViewBase extends Observable {
 						this._isPaddingRelative = nativeView.isPaddingRelative();
 					}
 
+					// Plugins whose native view is not an android.view.View pre-seed defaultPaddings.
 					let result: any /* android.graphics.Rect */ = DEFAULT_VIEW_PADDINGS.get(className) || (<any>nativeView).defaultPaddings;
 					if (result === undefined) {
-						DEFAULT_VIEW_PADDINGS.set(className, org.nativescript.widgets.ViewHelper.getPadding(nativeView));
-						(<any>nativeView).defaultPaddings = DEFAULT_VIEW_PADDINGS.get(className);
-						result = DEFAULT_VIEW_PADDINGS.get(className);
-					}
-
-					if (!nativeView.defaultPaddings) {
-						nativeView.defaultPaddings = DEFAULT_VIEW_PADDINGS.get(className);
+						result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
+						DEFAULT_VIEW_PADDINGS.set(className, result);
 					}
 
 					this._setDefaultPaddings(result);

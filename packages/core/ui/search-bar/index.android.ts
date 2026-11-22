@@ -111,6 +111,8 @@ export class SearchBar extends SearchBarBase {
 	nativeViewProtected: androidx.appcompat.widget.SearchView;
 	private _searchTextView: android.widget.TextView;
 	private _searchPlate: android.widget.LinearLayout;
+	private _queryTextListener: androidx.appcompat.widget.SearchView.OnQueryTextListener & { owner: SearchBar };
+	private _closeListener: androidx.appcompat.widget.SearchView.OnCloseListener & { owner: SearchBar };
 
 	public dismissSoftInput() {
 		ad.dismissSoftInput(this.nativeViewProtected);
@@ -145,20 +147,21 @@ export class SearchBar extends SearchBarBase {
 		initializeNativeClasses();
 		const queryTextListener = new QueryTextListener(this);
 		nativeView.setOnQueryTextListener(queryTextListener);
-		(<any>nativeView).queryTextListener = queryTextListener;
+		this._queryTextListener = <SearchBar['_queryTextListener']>queryTextListener;
 
 		const closeListener = new CloseListener(this);
 		nativeView.setOnCloseListener(closeListener);
-		(<any>nativeView).closeListener = closeListener;
+		this._closeListener = <SearchBar['_closeListener']>closeListener;
 	}
 
 	public disposeNativeView() {
-		const nativeView: any = this.nativeViewProtected;
-		if (nativeView.closeListener) {
-			nativeView.closeListener.owner = null;
+		if (this._closeListener) {
+			this._closeListener.owner = null;
+			this._closeListener = null;
 		}
-		if (nativeView.queryTextListener) {
-			nativeView.queryTextListener.owner = null;
+		if (this._queryTextListener) {
+			this._queryTextListener.owner = null;
+			this._queryTextListener = null;
 		}
 		this._searchPlate = null;
 		this._searchTextView = null;

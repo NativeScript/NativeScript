@@ -25,7 +25,6 @@ import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, 
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
-import { NativeScriptAndroidView } from '../../utils';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -618,8 +617,15 @@ export class View extends ViewCommon {
 	private layoutChangeListener: android.view.View.OnLayoutChangeListener;
 	private _rootManager: androidx.fragment.app.FragmentManager;
 	private insetListenerIsSet: boolean;
+	// undefined means not captured yet; null is a captured "no background".
+	private _cachedDrawable: android.graphics.drawable.Drawable | null;
+	private _cachedDrawableNativeView: android.view.View;
 
 	nativeViewProtected: android.view.View;
+
+	private _getCachedDrawable(nativeView: android.view.View): android.graphics.drawable.Drawable | null | undefined {
+		return this._cachedDrawableNativeView === nativeView ? this._cachedDrawable : undefined;
+	}
 
 	// TODO: Implement unobserve that detach the touchListener.
 	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
@@ -889,6 +895,8 @@ export class View extends ViewCommon {
 		if (this.insetListenerIsSet) {
 			this.clearInsetListener();
 		}
+		this._cachedDrawable = undefined;
+		this._cachedDrawableNativeView = undefined;
 		super.disposeNativeView();
 	}
 
@@ -1650,14 +1658,15 @@ export class View extends ViewCommon {
 	}
 
 	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: android.graphics.drawable.Drawable) {
-		const nativeView = <NativeScriptAndroidView>this.nativeViewProtected;
+		const nativeView = this.nativeViewProtected;
+		const cachedDrawable = this._getCachedDrawable(nativeView);
 
 		if (onlyColor) {
 			const backgroundColor = background.color.android;
 
 			if (isBorderDrawable) {
 				// We need to duplicate the drawable or we lose the "default" cached drawable
-				backgroundDrawable = nativeView._cachedDrawable != null ? AndroidHelper.getCopyOrDrawable(nativeView._cachedDrawable, nativeView.getResources()) : null;
+				backgroundDrawable = cachedDrawable != null ? AndroidHelper.getCopyOrDrawable(cachedDrawable, nativeView.getResources()) : null;
 				nativeView.setBackground(backgroundDrawable);
 			}
 
@@ -1684,7 +1693,7 @@ export class View extends ViewCommon {
 
 			if (background.isEmpty()) {
 				// Reset background to default if not already set
-				const defaultDrawable = nativeView._cachedDrawable ?? null;
+				const defaultDrawable = cachedDrawable ?? null;
 				if (backgroundDrawable !== defaultDrawable) {
 					nativeView.setBackground(defaultDrawable);
 				}
@@ -1736,7 +1745,7 @@ export class View extends ViewCommon {
 	}
 
 	protected onBackgroundOrBorderPropertyChanged() {
-		const nativeView = <NativeScriptAndroidView>this.nativeViewProtected;
+		const nativeView = this.nativeViewProtected;
 		if (!nativeView) {
 			return;
 		}
@@ -1745,15 +1754,15 @@ export class View extends ViewCommon {
 		const drawable = nativeView.getBackground();
 		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
 
-		// Use undefined as not set. getBackground will never return undefined only Drawable or null;
-		if (nativeView._cachedDrawable === undefined) {
-			nativeView._cachedDrawable = drawable;
+		if (this._cachedDrawableNativeView !== nativeView) {
+			this._cachedDrawableNativeView = nativeView;
+			this._cachedDrawable = drawable;
 		}
 
 		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW) {
 			// Clear background if we're clearing the box shadow
 			if (drawable instanceof org.nativescript.widgets.BoxShadowDrawable) {
-				nativeView.setBackground(nativeView._cachedDrawable ?? null);
+				nativeView.setBackground(this._cachedDrawable ?? null);
 			}
 		}
 

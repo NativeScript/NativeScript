@@ -35,6 +35,7 @@ function initializeCheckedChangeListener(): void {
 export class Switch extends SwitchBase {
 	nativeViewProtected: android.widget.Switch;
 	public checked: boolean;
+	private _checkedChangeListener: android.widget.CompoundButton.OnCheckedChangeListener & { owner: Switch };
 
 	public createNativeView() {
 		return new android.widget.Switch(this._context);
@@ -46,13 +47,13 @@ export class Switch extends SwitchBase {
 		initializeCheckedChangeListener();
 		const listener = new CheckedChangeListener(this);
 		nativeView.setOnCheckedChangeListener(listener);
-		(<any>nativeView).listener = listener;
+		this._checkedChangeListener = <Switch['_checkedChangeListener']>listener;
 	}
 
 	public disposeNativeView() {
-		const nativeView: any = this.nativeViewProtected;
-		if (nativeView.listener) {
-			nativeView.listener.owner = null;
+		if (this._checkedChangeListener) {
+			this._checkedChangeListener.owner = null;
+			this._checkedChangeListener = null;
 		}
 		super.disposeNativeView();
 	}

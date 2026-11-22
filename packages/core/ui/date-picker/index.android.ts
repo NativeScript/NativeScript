@@ -59,6 +59,7 @@ function initializeDateChangedListener(): void {
 export class DatePicker extends DatePickerBase {
 	nativeViewProtected: android.widget.DatePicker;
 	timePicker: TimePicker;
+	private _dateChangedListener: android.widget.DatePicker.OnDateChangedListener & { owner: DatePicker };
 
 	public createNativeView() {
 		const picker = new android.widget.DatePicker(this._context);
@@ -73,7 +74,7 @@ export class DatePicker extends DatePickerBase {
 		const nativeView = this.nativeViewProtected;
 		const listener = new DateChangedListener(this);
 		nativeView.init(this.year, this.month - 1, this.day, listener);
-		(<any>nativeView).listener = listener;
+		this._dateChangedListener = <DatePicker['_dateChangedListener']>listener;
 		if (this.showTime) {
 			this.timePicker = new TimePicker();
 			this.timePicker.width = this.width;
@@ -89,8 +90,9 @@ export class DatePicker extends DatePickerBase {
 		if (this.timePicker) {
 			this.timePicker.disposeNativeView();
 		}
-		if ((<any>this.nativeViewProtected)?.listener) {
-			(<any>this.nativeViewProtected).listener.owner = null;
+		if (this._dateChangedListener) {
+			this._dateChangedListener.owner = null;
+			this._dateChangedListener = null;
 		}
 		super.disposeNativeView();
 	}

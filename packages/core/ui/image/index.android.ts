@@ -59,6 +59,7 @@ export class Image extends ImageBase {
 	declare nativeViewProtected: org.nativescript.widgets.ImageView;
 
 	public useCache = true;
+	private _imageLoadedListener: org.nativescript.widgets.image.Worker.OnImageLoadedListener & { owner: Image };
 
 	public createNativeView() {
 		if (!AndroidImageView) {
@@ -74,12 +75,13 @@ export class Image extends ImageBase {
 		const nativeView = this.nativeViewProtected;
 		const listener = new ImageLoadedListener(this);
 		nativeView.setImageLoadedListener(listener);
-		(<any>nativeView).listener = listener;
+		this._imageLoadedListener = <Image['_imageLoadedListener']>listener;
 	}
 
 	public disposeNativeView() {
-		if ((<any>this.nativeViewProtected)?.listener) {
-			(<any>this.nativeViewProtected).listener.owner = null;
+		if (this._imageLoadedListener) {
+			this._imageLoadedListener.owner = null;
+			this._imageLoadedListener = null;
 		}
 		super.disposeNativeView();
 	}

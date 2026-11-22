@@ -1,8 +1,9 @@
 import { CoreTypes } from '../core-types';
 import { profile } from '../profiling';
 import type { View } from '../ui/core/view';
-import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
+import { NavigationEntry } from '../ui/frame/frame-common';
 import { isEmbedded } from '../ui/embedding';
+import { getActivityCallbacks, isNativeScriptActivity } from '../ui/frame/activity-callbacks-store';
 import { SDK_VERSION } from '../utils/constants';
 import { android as androidUtils, dataSerialize } from '../utils';
 import { ApplicationCommon } from './application-common';
@@ -94,7 +95,7 @@ function initNativeScriptLifecycleCallbacks() {
 				Application.android.setStartActivity(activity);
 			}
 
-			if (!this.nativescriptActivity && 'isNativeScriptActivity' in activity) {
+			if (!this.nativescriptActivity && isNativeScriptActivity(activity)) {
 				this.nativescriptActivity = activity;
 			}
 
@@ -206,7 +207,7 @@ function initNativeScriptLifecycleCallbacks() {
 
 			// `onActivityCreated` registers a window for every activity in the process, so the
 			// window's role cannot tell a NativeScript activity from a third-party one.
-			if ('isNativeScriptActivity' in activity) {
+			if (isNativeScriptActivity(activity)) {
 				Application.android._setWindowActive(nativeWindow, false, activity);
 			}
 
@@ -794,7 +795,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			.filter((window) => window.state === 'attached' && !window._surfaceGone)
 			.map((window) => (window as AndroidNativeWindow).activity);
 		// startActivity/foregroundActivity can be third-party (SDK) activities, which must never be relaunched as a window.
-		const startActivity = [this.startActivity, this.foregroundActivity, ...windowActivities].find((activity) => activity && 'isNativeScriptActivity' in activity && !activity.isFinishing() && !activity.isDestroyed());
+		const startActivity = [this.startActivity, this.foregroundActivity, ...windowActivities].find((activity) => isNativeScriptActivity(activity) && !activity.isFinishing() && !activity.isDestroyed());
 
 		if (startActivity) {
 			intent.setClass(context, startActivity.getClass());
@@ -833,7 +834,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		if (!activity) {
 			return undefined;
 		}
-		const callbacks: AndroidActivityCallbacks = activity['_callbacks'];
+		const callbacks = getActivityCallbacks(activity);
 
 		setRootView(callbacks ? callbacks.getRootView() : undefined);
 		return getRootView();
@@ -848,7 +849,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		}
 
 		// this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
-		const callbacks: AndroidActivityCallbacks = activity['_callbacks'];
+		const callbacks = getActivityCallbacks(activity);
 		if (!callbacks) {
 			throw new Error('Cannot find android activity callbacks.');
 		}

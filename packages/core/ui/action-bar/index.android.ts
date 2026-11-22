@@ -145,6 +145,7 @@ export class NavigationButton extends ActionItem {}
 
 export class ActionBar extends ActionBarBase {
 	private _android: AndroidActionBarSettings;
+	private _menuItemClickListener: androidx.appcompat.widget.Toolbar.OnMenuItemClickListener & { owner: WeakRef<ActionBar> };
 	public nativeViewProtected: androidx.appcompat.widget.Toolbar;
 
 	constructor() {
@@ -176,12 +177,13 @@ export class ActionBar extends ActionBarBase {
 		initializeMenuItemClickListener();
 		const menuItemClickListener = new MenuItemClickListener(this);
 		nativeView.setOnMenuItemClickListener(menuItemClickListener);
-		(<any>nativeView).menuItemClickListener = menuItemClickListener;
+		this._menuItemClickListener = <ActionBar['_menuItemClickListener']>menuItemClickListener;
 	}
 
 	public disposeNativeView() {
-		if ((<any>this.nativeViewProtected)?.menuItemClickListener) {
-			(<any>this.nativeViewProtected).menuItemClickListener.owner = null;
+		if (this._menuItemClickListener) {
+			this._menuItemClickListener.owner = null;
+			this._menuItemClickListener = null;
 		}
 		super.disposeNativeView();
 	}

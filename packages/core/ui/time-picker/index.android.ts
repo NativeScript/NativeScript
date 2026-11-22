@@ -49,8 +49,7 @@ export class TimePicker extends TimePickerBase {
 		initializeTimeChangedListener();
 		const listener = new TimeChangedListener(this);
 		nativeView.setOnTimeChangedListener(listener);
-		(<any>nativeView).listener = listener;
-		const calendar = ((<any>nativeView).calendar = java.util.Calendar.getInstance());
+		const calendar = java.util.Calendar.getInstance();
 
 		const hour = hourProperty.isSet(this) ? this.hour : calendar.get(java.util.Calendar.HOUR_OF_DAY);
 		const minute = minuteProperty.isSet(this) ? this.minute : calendar.get(java.util.Calendar.MINUTE);

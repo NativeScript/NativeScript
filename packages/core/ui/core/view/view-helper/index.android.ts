@@ -7,6 +7,9 @@ export const IOSHelper = 0;
 
 const androidxGraphics = androidx.core.graphics;
 
+// Colors applied through a color filter cannot be read back from the drawable.
+const drawableFilterColors = new WeakMap<android.graphics.drawable.Drawable, number>();
+
 export class AndroidHelper {
 	static getDrawableColor(drawable: android.graphics.drawable.Drawable): Color {
 		if (!drawable) {
@@ -20,8 +23,7 @@ export class AndroidHelper {
 		} else if (drawable instanceof android.graphics.drawable.ColorDrawable) {
 			color = drawable.getColor();
 		} else {
-			// This is a way to retrieve drawable color when set using color filter
-			color = (drawable as any)._backgroundColor;
+			color = drawableFilterColors.get(drawable);
 		}
 
 		return new Color(color);
@@ -33,9 +35,7 @@ export class AndroidHelper {
 			drawable.setColor(color);
 		} else {
 			drawable.setColorFilter(androidxGraphics.BlendModeColorFilterCompat.createBlendModeColorFilterCompat(color, blendMode ?? androidxGraphics.BlendModeCompat.SRC_IN));
-
-			// This is a way to retrieve drawable color when set using color filter
-			(drawable as any)._backgroundColor = color;
+			drawableFilterColors.set(drawable, color);
 		}
 	}
 
@@ -45,9 +45,7 @@ export class AndroidHelper {
 			drawable.setColor(-1);
 		} else {
 			drawable.clearColorFilter();
-
-			// This is a way to retrieve drawable color when set using color filter
-			delete (drawable as any)._backgroundColor;
+			drawableFilterColors.delete(drawable);
 		}
 	}
 
