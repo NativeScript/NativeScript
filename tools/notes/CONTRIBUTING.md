@@ -34,7 +34,7 @@ Help us keep a healthy and open community. We expect all participants in this pr
 ## <a name="pr"></a> Submitting a PR
 
 Before you begin:
-* Read and sign the [NativeScript Contribution License Agreement](http://www.nativescript.org/cla).
+* Read the [NativeScript Contributor License Agreement (CLA)](https://github.com/NativeScript/.github/blob/master/CLA.md). First-time contributors can sign directly on their pull request by commenting `I have read the CLA and I hereby sign the CLA`.
 * Make sure there is an issue for the bug or feature you will be working on.
 
 Following these steps is the best way to get you code included in the project:

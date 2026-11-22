@@ -1,0 +1,42 @@
+name: ✍️ CLA
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+  issue_comment:
+    types:
+      - created
+      - edited
+      - deleted
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cla:
+    name: CLA
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request != null &&
+        github.event.comment.user.type == 'User' &&
+        (
+          contains(github.event.comment.body, 'I hereby sign the CLA') ||
+          (
+            github.event.action == 'edited' &&
+            contains(github.event.changes.body.from, 'I hereby sign the CLA')
+          )
+        )
+      )
+    uses: NativeScript/.github/.github/workflows/cla.yml@master
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
