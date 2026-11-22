@@ -56,8 +56,6 @@ function initializeNativeClasses() {
 
 		constructor() {
 			super();
-
-			return global.__native(this);
 		}
 
 		static newInstance(tabId: number, index: number): TabFragmentImplementation {
@@ -158,8 +156,6 @@ function initializeNativeClasses() {
 
 		constructor(private owner: WeakRef<TabView>) {
 			super();
-
-			return global.__native(this);
 		}
 
 		getCount() {

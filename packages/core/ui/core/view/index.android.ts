@@ -136,8 +136,6 @@ function initializeTouchListener(): void {
 		constructor(owner: View) {
 			super();
 			this.owner = new WeakRef(owner);
-
-			return global.__native(this);
 		}
 
 		onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
@@ -182,8 +180,6 @@ function initializeDialogFragment() {
 
 				this.getOnBackPressedDispatcher().addCallback(this, callback);
 			}
-
-			return global.__native(this);
 		}
 
 		public onDetachedFromWindow(): void {
@@ -233,8 +229,6 @@ function initializeDialogFragment() {
 
 		constructor() {
 			super();
-
-			return global.__native(this);
 		}
 		public onCreate(savedInstanceState: android.os.Bundle) {
 			super.onCreate(savedInstanceState);
