@@ -184,13 +184,13 @@ export function _isCssShorthand(cssName: string): boolean {
  * when the property is not a shorthand, the value still has to be evaluated per
  * view (`var()`/`calc()`), or it does not parse.
  */
-export function _expandCssShorthand(cssName: string, value: string): [string, any][] | undefined {
+export function _expandCssShorthand(cssName: string, value: string, preserveMath = false): [string, any][] | undefined {
 	const converter = cssShorthandConverters.get(cssName);
 	if (!converter) {
 		return undefined;
 	}
 
-	if (typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value))) {
+	if (typeof value === 'string' && (isCssVariableExpression(value) || (!preserveMath && isCssCalcExpression(value)))) {
 		return undefined;
 	}
 
@@ -221,7 +221,7 @@ export function isCssVariableExpression(value: string) {
 	return value.includes('var(--');
 }
 
-export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
+export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string, preserveMath = false): string {
 	if (typeof value !== 'string') {
 		return value;
 	}
@@ -252,12 +252,12 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 		const commaIdx = body.indexOf(',');
 		const cssVariableName = (commaIdx === -1 ? body : body.substring(0, commaIdx)).trim();
 		const fallback = commaIdx === -1 ? '' : body.substring(commaIdx + 1).trim();
-		let cssVariableValue = view.style.getCssVariable(cssVariableName);
+		let cssVariableValue = view.style.getCssVariable(cssVariableName, preserveMath);
 		if (typeof cssVariableValue === 'string' && cssVariableValue.trim() === 'initial') {
 			cssVariableValue = null;
 		}
 		if (cssVariableValue === null && fallback) {
-			cssVariableValue = _evaluateCssVariableExpression(view, cssName, fallback);
+			cssVariableValue = _evaluateCssVariableExpression(view, cssName, fallback, preserveMath);
 		}
 
 		if (!cssVariableValue || cssVariableValue === 'unset') {

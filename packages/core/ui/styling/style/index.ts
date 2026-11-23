@@ -37,6 +37,10 @@ export interface CommonLayoutParams {
 export class Style extends Observable {
 	private unscopedCssVariables = new Map<string, string>();
 	private scopedCssVariables = new Map<string, string>();
+	private rawScopedCssVariables?: Map<string, string | null>;
+
+	/** When true for a declaration, pass math to its converter after CSS variable substitution. */
+	public preserveCssMath?: (property: string) => boolean;
 
 	constructor(ownerView: ViewBase | WeakRef<ViewBase>) {
 		super();
@@ -49,8 +53,13 @@ export class Style extends Observable {
 		}
 	}
 
-	public setScopedCssVariable(varName: string, value: string): void {
+	public setScopedCssVariable(varName: string, value: string, rawValue: string | null = value): void {
 		this.scopedCssVariables.set(varName, value);
+		if (rawValue !== value) {
+			(this.rawScopedCssVariables ??= new Map()).set(varName, rawValue);
+		} else {
+			this.rawScopedCssVariables?.delete(varName);
+		}
 	}
 
 	public setUnscopedCssVariable(varName: string, value: string): void {
@@ -59,13 +68,14 @@ export class Style extends Observable {
 
 	public removeScopedCssVariable(varName: string): void {
 		this.scopedCssVariables.delete(varName);
+		this.rawScopedCssVariables?.delete(varName);
 	}
 
 	public removeUnscopedCssVariable(varName: string): void {
 		this.unscopedCssVariables.delete(varName);
 	}
 
-	public getCssVariable(varName: string): string | null {
+	public getCssVariable(varName: string, preserveMath = false): string | null {
 		const view = this.view;
 		if (!view) {
 			return null;
@@ -76,6 +86,9 @@ export class Style extends Observable {
 		}
 
 		if (this.scopedCssVariables.has(varName)) {
+			if (preserveMath && this.rawScopedCssVariables?.has(varName)) {
+				return this.rawScopedCssVariables.get(varName);
+			}
 			return this.scopedCssVariables.get(varName);
 		}
 
@@ -83,11 +96,12 @@ export class Style extends Observable {
 			return null;
 		}
 
-		return view.parent.style.getCssVariable(varName);
+		return view.parent.style.getCssVariable(varName, preserveMath);
 	}
 
 	public resetScopedCssVariables() {
 		this.scopedCssVariables.clear();
+		this.rawScopedCssVariables?.clear();
 	}
 
 	public resetUnscopedCssVariables() {

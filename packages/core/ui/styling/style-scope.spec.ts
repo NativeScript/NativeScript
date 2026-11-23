@@ -3,6 +3,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { StyleScope, applyInlineStyle, addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from './style-scope';
 import { StackLayout } from '../layouts/stack-layout';
 import { Label } from '../label';
+import { CssProperty, ShorthandProperty } from '../core/properties';
+import { Style } from './style';
 
 /**
  * Counts how many times css applies a value to a style property, by wrapping the
@@ -50,6 +52,40 @@ function styledWithParent(css: string, parentClassName: string): { view: any; pa
 
 	return { view, parent, scope };
 }
+
+describe('Style.preserveCssMath', () => {
+	const paint = new CssProperty<Style, string>({ name: 'rawPaint', cssName: 'raw-paint' });
+	paint.register(Style);
+	new ShorthandProperty<Style, string>({
+		name: 'rawPaintShorthand',
+		cssName: 'raw-paint-shorthand',
+		getter() {
+			return this[paint.name];
+		},
+		converter(value) {
+			return [[paint, value]];
+		},
+	}).register(Style);
+
+	it('substitutes inherited variables without reducing the selected expression', () => {
+		const { view, parent } = styledWithParent('.root { --paint: var(--base); --base: calc(0.2 + 0.3); } label { raw-paint: var(--paint); opacity: var(--paint); }', 'root');
+		view.style.preserveCssMath = (name: string) => name === 'raw-paint';
+		parent._cssState.onLoaded();
+		view._cssState.onLoaded();
+		expect(parent.style.getCssVariable('--paint')).toBe('0.5');
+		expect(view.style.rawPaint).toBe('calc(0.2 + 0.3)');
+		expect(view.style.opacity).toBe(0.5);
+	});
+
+	it('passes math through pending shorthands and keeps longhand priority', () => {
+		const { view } = styled('label { --base: 2px; raw-paint-shorthand: calc(var(--base) + 2px); raw-paint: 3px; }');
+		view.style.preserveCssMath = (name: string) => name === 'raw-paint-shorthand';
+		view._cssState.onLoaded();
+		expect(view.style.rawPaint).toBe('3px');
+		applyInlineStyle(view, 'raw-paint-shorthand: var(--missing, calc(2px + 2px));');
+		expect(view.style.rawPaint).toBe('calc(2px + 2px)');
+	});
+});
 
 describe('CssState.setPropertyValues', () => {
 	it('applies matched declarations', () => {
