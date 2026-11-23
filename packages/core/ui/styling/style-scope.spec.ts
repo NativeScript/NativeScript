@@ -87,6 +87,63 @@ describe('Style.preserveCssMath', () => {
 	});
 });
 
+describe('view-specific shorthand conversion', () => {
+	const horizontal = new CssProperty<Style, string>({ name: 'testHorizontal', cssName: 'test-horizontal' });
+	const vertical = new CssProperty<Style, string>({ name: 'testVertical', cssName: 'test-vertical' });
+	horizontal.register(Style);
+	vertical.register(Style);
+	const rawStyles = new WeakSet<Style>();
+	let parsed: string[] = [];
+	new ShorthandProperty<Style, string>({
+		name: 'testDirection',
+		cssName: 'test-direction',
+		getter() {
+			return this[horizontal.name];
+		},
+		converter(value) {
+			if (typeof value === 'string') {
+				parsed.push(value);
+			}
+			return [
+				[horizontal, value],
+				[vertical, value],
+			];
+		},
+		converterForStyle(value, style) {
+			return rawStyles.has(style) ? [[horizontal, value]] : undefined;
+		},
+	}).register(Style);
+
+	it('defers literal declarations and converts only for the matching view', () => {
+		parsed = [];
+		const css = 'label { test-direction: left; test-vertical: up; }';
+		const { view } = styled(css);
+		rawStyles.add(view.style);
+		expect(parsed).toEqual([]);
+		view._cssState.onLoaded();
+		expect(view.style.testHorizontal).toBe('left');
+		expect(view.style.testVertical).toBe('up');
+		expect(parsed).toEqual([]);
+
+		const { view: plainView } = styled(css);
+		plainView._cssState.onLoaded();
+		expect(plainView.style.testHorizontal).toBe('left');
+		expect(plainView.style.testVertical).toBe('up');
+		expect(parsed).toEqual(['left']);
+	});
+
+	it('preserves math and resolves variables before passing the value to the selected converter', () => {
+		parsed = [];
+		const { view } = styled('label { --base: 20px; test-direction: calc(var(--base) + 10px); }');
+		rawStyles.add(view.style);
+		view.style.preserveCssMath = (name) => name === 'test-direction';
+		view._cssState.onLoaded();
+		expect(view.style.testHorizontal).toBe('calc(20px + 10px)');
+		expect(view.style.testVertical).toBeUndefined();
+		expect(parsed).toEqual([]);
+	});
+});
+
 describe('CssState.setPropertyValues', () => {
 	it('applies matched declarations', () => {
 		const { view } = styled('label { color: red; }');

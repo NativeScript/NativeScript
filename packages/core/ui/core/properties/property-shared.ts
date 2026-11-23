@@ -1,6 +1,8 @@
 // Shared property types, interfaces, and value helpers for properties and view-base modules.
 // Only put platform-agnostic logic here.
 
+import type { Style } from '../../styling/style';
+
 /**
  * Value specifying that Property should be set to its initial value.
  */
@@ -31,6 +33,8 @@ export interface ShorthandPropertyOptions<P> {
 	readonly name: string;
 	readonly cssName: string;
 	readonly converter: (value: string | P) => [any, any][];
+	/** Defer stylesheet conversion until the target style is known. Return undefined to use converter. */
+	readonly converterForStyle?: (value: string, style: Style) => [any, any][] | undefined;
 	readonly getter: (this: any) => string | P;
 }
 // TODO: revisit this after circular dependency issues are resolved to see if types can be retained.

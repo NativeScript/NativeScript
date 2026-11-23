@@ -12,7 +12,7 @@ import { calc } from '@csstools/css-calc';
 export { unsetValue } from './property-shared';
 
 const cssPropertyNames: string[] = [];
-const cssShorthandConverters = new Map<string, (value: string) => [any, any][]>();
+const cssShorthands = new Map<string, Pick<ShorthandPropertyOptions<string>, 'converter' | 'converterForStyle'>>();
 const cssShorthandLonghands = new Map<string, string[]>();
 // Bumped per shorthand registration, so rules parsed before it can still expand it.
 let cssShorthandsVersion = 0;
@@ -124,7 +124,7 @@ function getCssShorthandLonghands(cssName: string): string[] | undefined {
 		return known;
 	}
 
-	const converter = cssShorthandConverters.get(cssName);
+	const converter = cssShorthands.get(cssName)?.converter;
 	if (!converter) {
 		return undefined;
 	}
@@ -176,17 +176,17 @@ export function _getCssShorthandsVersion(): number {
 
 /** Whether `cssName` is a registered shorthand. */
 export function _isCssShorthand(cssName: string): boolean {
-	return cssShorthandConverters.has(cssName);
+	return cssShorthands.has(cssName);
 }
 
 /**
  * Expand a shorthand declaration into its longhand declarations, or `undefined`
  * when the property is not a shorthand, the value still has to be evaluated per
- * view (`var()`/`calc()`), or it does not parse.
+ * view, or it does not parse.
  */
-export function _expandCssShorthand(cssName: string, value: string, preserveMath = false): [string, any][] | undefined {
-	const converter = cssShorthandConverters.get(cssName);
-	if (!converter) {
+export function _expandCssShorthand(cssName: string, value: string, preserveMath = false, style?: Style): [string, any][] | undefined {
+	const shorthand = cssShorthands.get(cssName);
+	if (!shorthand || (shorthand.converterForStyle && !style)) {
 		return undefined;
 	}
 
@@ -195,7 +195,7 @@ export function _expandCssShorthand(cssName: string, value: string, preserveMath
 	}
 
 	try {
-		const converted = converter(value);
+		const converted = (style && shorthand.converterForStyle?.(value, style)) ?? shorthand.converter(value);
 		const expanded: [string, any][] = [];
 		for (let i = 0, length = converted.length; i < length; i++) {
 			expanded.push([converted[i][0].cssLocalName, converted[i][1]]);
@@ -1451,7 +1451,8 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = `${options.cssName}`;
-		cssShorthandConverters.set(options.cssName, options.converter as (value: string) => [any, any][]);
+		cssShorthands.set(options.cssName, options);
+		cssShorthandLonghands.delete(options.cssName);
 		cssShorthandsVersion++;
 
 		const converter = options.converter;

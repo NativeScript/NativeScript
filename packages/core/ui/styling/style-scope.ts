@@ -109,7 +109,7 @@ function resolvePendingSubstitution(view: ViewBase, pending: CssPendingSubstitut
 		return CssState.emptyPropertyBag;
 	}
 
-	const expanded = _expandCssShorthand(pending.shorthand, value, preserveMath);
+	const expanded = _expandCssShorthand(pending.shorthand, value, preserveMath, view.style);
 	if (!expanded) {
 		Trace.write(`Failed to expand shorthand [${pending.shorthand}] resolved to [${value}] for ${view}.`, Trace.categories.Style, Trace.messageType.warn);
 
