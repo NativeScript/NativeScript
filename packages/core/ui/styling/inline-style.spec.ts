@@ -3,6 +3,19 @@ import { describe, it, expect } from 'vitest';
 import { StyleScope } from './style-scope';
 import { StackLayout } from '../layouts/stack-layout';
 import { Label } from '../label';
+import { _expandCssShorthand, _getStyleProperties } from '../core/properties';
+import '../layouts/flexbox-layout';
+import '../action-bar';
+
+function isEqual(a: unknown, b: unknown): boolean {
+	try {
+		expect(a).toEqual(b);
+
+		return true;
+	} catch {
+		return false;
+	}
+}
 
 function loaded(css: string): { view: any; root: any } {
 	const scope = new StyleScope();
@@ -218,5 +231,145 @@ describe('inline style assignment', () => {
 		view.style = '';
 
 		expect(view.style.marginTop).toBe(10);
+	});
+});
+
+const shorthandCases: [string, string, string][] = [
+	['margin', '1 2 3 4', '5 6 7 8'],
+	['padding', '1 2 3 4', '5 6 7 8'],
+	['gap', '5 6', '7 8'],
+	['transform', 'translate(5, 6) scale(2, 3) rotate(45)', 'translate(7, 8) scale(4, 5) rotate(90)'],
+	['background', 'red url("~/a.png") no-repeat center', 'blue url("~/b.png") repeat-x left'],
+	['border-color', 'red green blue yellow', 'yellow blue green red'],
+	['border-width', '1 2 3 4', '5 6 7 8'],
+	['border-radius', '1 2 3 4', '5 6 7 8'],
+	['font', 'italic bold 12 Arial', 'normal 300 14 Courier'],
+	['flex-flow', 'column wrap', 'row-reverse wrap-reverse'],
+	['flex', '2 3', '4 5'],
+	['android-content-inset', '1 2', '3 4'],
+];
+
+function longhandsOf(shorthand: string, value: string): string[] {
+	const expanded = _expandCssShorthand(shorthand, value);
+	expect(expanded, `${shorthand}: ${value} expands`).toBeTruthy();
+
+	return expanded.map(([longhand]) => longhand);
+}
+
+function propertyName(cssName: string): string {
+	return _getStyleProperties().find((p) => p.cssLocalName === cssName)?.name ?? cssName;
+}
+
+describe('inline style assignment with shorthands', () => {
+	describe.each(shorthandCases)('%s', (shorthand, value, otherValue) => {
+		it('applies, then unsets every longhand when dropped', () => {
+			const { view } = loaded('');
+			const longhands = longhandsOf(shorthand, value);
+
+			view.style = `${shorthand}: ${value}`;
+			expect(longhands.some((l) => !isEqual(view.style[l], defaults.style[l]))).toBe(true);
+
+			view.style = 'color: red';
+
+			for (const l of longhands) {
+				expect(view.style[l], l).toEqual(defaults.style[l]);
+			}
+		});
+
+		it('falls back to the stylesheet longhands when dropped', () => {
+			const css = `label { ${shorthand}: ${otherValue}; }`;
+			const { view } = loaded(css);
+			const { view: reference } = loaded(css);
+			const longhands = longhandsOf(shorthand, value);
+
+			view.style = `${shorthand}: ${value}`;
+			view.style = '';
+
+			for (const l of longhands) {
+				expect(view.style[l], l).toEqual(reference.style[l]);
+			}
+		});
+
+		it('moves each longhand at most once when the shorthand value changes', () => {
+			const { view } = loaded('');
+			view.style = `${shorthand}: ${value}`;
+
+			const changes = longhandsOf(shorthand, otherValue).map((l) => changeValues(view.style, `${propertyName(l)}Change`));
+			view.style = `${shorthand}: ${otherValue}`;
+
+			for (const values of changes) {
+				expect(values.length).toBeLessThanOrEqual(1);
+			}
+		});
+	});
+
+	it('lets a later longhand override the shorthand within one string', () => {
+		const { view } = loaded('');
+
+		view.style = 'margin: 4; margin-top: 8';
+		expect(view.style.marginTop).toBe(8);
+		expect(view.style.marginLeft).toBe(4);
+
+		view.style = 'margin-top: 8; margin: 4';
+		expect(view.style.marginTop).toBe(4);
+	});
+
+	it('keeps only the overriding longhand when narrowed to it', () => {
+		const { view } = loaded('');
+		view.style = 'margin: 4; margin-top: 8';
+
+		const marginTopChanges = changeValues(view.style, 'marginTopChange');
+		view.style = 'margin-top: 8';
+
+		expect(view.style.marginTop).toBe(8);
+		expect(view.style.marginLeft).toEqual(defaults.style.marginLeft);
+		expect(marginTopChanges).toEqual([]);
+	});
+
+	it('keeps a longhand of one shorthand when narrowed to it from the shorthand', () => {
+		const { view } = loaded('');
+		view.style = 'border-width: 2';
+
+		const topChanges = changeValues(view.style, 'borderTopWidthChange');
+		view.style = 'border-top-width: 2';
+
+		expect(view.style.borderTopWidth).toBe(2);
+		expect(view.style.borderLeftWidth).toEqual(defaults.style.borderLeftWidth);
+		expect(topChanges).toEqual([]);
+	});
+
+	it('resets a longhand the shorthand stops expanding to', () => {
+		const { view } = loaded('');
+
+		view.style = 'flex-flow: column wrap';
+		expect(view.style.flexWrap).toBe('wrap');
+
+		view.style = 'flex-flow: column';
+
+		expect(view.style.flexDirection).toBe('column');
+		expect(view.style.flexWrap).toEqual(defaults.style.flexWrap);
+	});
+
+	it('unsets the previous longhands when the shorthand becomes unparsable', () => {
+		const { view } = loaded('');
+		view.style = 'margin: 4';
+
+		view.style = 'margin: oops';
+
+		expect(view.style.marginTop).toEqual(defaults.style.marginTop);
+		expect(view.style.marginLeft).toEqual(defaults.style.marginLeft);
+	});
+
+	it('applies longhands after a css-wide keyword shorthand', () => {
+		const { view } = loaded('label { margin: 6; }');
+
+		view.style = 'margin: 4';
+		view.style = 'margin: unset';
+		expect(view.style.marginTop).toBe(6);
+
+		view.style = 'margin-top: 3';
+
+		expect(view.style.marginTop).toBe(3);
+		expect(view.style.marginLeft).toBe(6);
 	});
 });
