@@ -42,6 +42,36 @@ const enum ValueSource {
 /** `sourceKey` of every registered `CssProperty`, by css name. */
 const cssValueSourceKeys: Record<string, symbol> = Object.create(null);
 
+/** A style property registered on `Style`. */
+export type _RegisteredStyleProperty = CssProperty<any, any> | CssAnimationProperty<any, any> | ShorthandProperty<any, any>;
+
+const registeredStyleProperties = new Map<string, _RegisteredStyleProperty>();
+let registeredStylePropertiesVersion = 0;
+
+function registerStyleProperty(property: _RegisteredStyleProperty): void {
+	// A property registered without a css name has no css surface.
+	if (!property.cssLocalName) {
+		return;
+	}
+	registeredStyleProperties.set(property.cssLocalName, property);
+	registeredStylePropertiesVersion++;
+}
+
+/** The style property registered under a css name, longhand or shorthand. */
+export function _getRegisteredStyleProperty(cssName: string): _RegisteredStyleProperty | undefined {
+	return registeredStyleProperties.get(cssName);
+}
+
+/** Every registered style property, in registration order. */
+export function _getRegisteredStyleProperties(): IterableIterator<_RegisteredStyleProperty> {
+	return registeredStyleProperties.values();
+}
+
+/** Changes whenever a style property is registered. */
+export function _getRegisteredStylePropertiesVersion(): number {
+	return registeredStylePropertiesVersion;
+}
+
 /**
  * Whether the style still carries what the cascade last wrote for the property.
  * A `CssProperty` keeps one value: a local value both suppresses the css write and
@@ -148,6 +178,11 @@ function getCssShorthandLonghands(cssName: string): string[] | undefined {
 
 		return undefined;
 	}
+}
+
+/** The longhand css names of a registered shorthand, or `undefined`. */
+export function _getCssShorthandLonghands(cssName: string): readonly string[] | undefined {
+	return getCssShorthandLonghands(cssName);
 }
 
 /**
@@ -958,11 +993,15 @@ export class CssProperty<T extends Style, U> {
 	public readonly defaultValueKey: symbol;
 	public readonly defaultValue: U;
 
+	/** Serializes a typed value to css; `serializeCssValue` is used when unset. */
+	public valueSerializer?: (value: U) => string;
+
 	public overrideHandlers: (options: CssPropertyOptions<T, U>) => void;
 
 	constructor(options: CssPropertyOptions<T, U>) {
 		const propertyName = options.name;
 		this.name = propertyName;
+		this.valueSerializer = options.valueSerializer;
 
 		// Guard against undefined cssName
 		if (options.cssName) {
@@ -997,6 +1036,8 @@ export class CssProperty<T extends Style, U> {
 		let valueConverter = options.valueConverter;
 		let overrideConverter = false;
 
+		const property = this;
+
 		this.overrideHandlers = function (options: CssPropertyOptions<T, U>) {
 			if (typeof options.equalityComparer !== 'undefined') {
 				equalityComparer = options.equalityComparer;
@@ -1011,9 +1052,10 @@ export class CssProperty<T extends Style, U> {
 				valueConverter = options.valueConverter;
 				overrideConverter = true;
 			}
+			if (typeof options.valueSerializer !== 'undefined') {
+				property.valueSerializer = options.valueSerializer;
+			}
 		};
-
-		const property = this;
 
 		function setLocalValue(this: T, newValue: U | string): void {
 			const view = this.viewRef.get();
@@ -1223,10 +1265,21 @@ export class CssProperty<T extends Style, U> {
 		}
 
 		cssValueSourceKeys[this.cssLocalName] = this.sourceKey;
+		registerStyleProperty(this);
 	}
 
 	public isSet(instance: T): boolean {
 		return this.key in instance;
+	}
+
+	/** Whether the style holds a local value for the property. */
+	public _isLocalValueSet(instance: T): boolean {
+		return instance[this.sourceKey] === ValueSource.Local;
+	}
+
+	/** The local value, meaningful only while `_isLocalValueSet` holds. */
+	public _getLocalValue(instance: T): U {
+		return instance[this.name];
 	}
 }
 CssProperty.prototype.isStyleProperty = true;
@@ -1245,6 +1298,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 	public readonly defaultValueKey: symbol;
 	public readonly key: symbol;
 	private readonly source: symbol;
+	private readonly localValueKey: symbol;
 
 	public readonly defaultValue: U;
 
@@ -1256,9 +1310,13 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 
 	public _valueConverter?: (value: string) => any;
 
+	/** Serializes a typed value to css; `serializeCssValue` is used when unset. */
+	public valueSerializer?: (value: U) => string;
+
 	constructor(options: CssAnimationPropertyOptions<T, U>) {
 		const propertyName = options.name;
 		this.name = propertyName;
+		this.valueSerializer = options.valueSerializer;
 
 		if (options.cssName) {
 			cssPropertyNames.push(options.cssName);
@@ -1287,6 +1345,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 
 		const cssValue = Symbol(cssName);
 		const styleValue = Symbol(`local:${propertyName}`);
+		this.localValueKey = styleValue;
 		const keyframeValue = Symbol(keyframeName);
 		const computedValue = Symbol('computed-value:' + propertyName);
 		this.key = computedValue;
@@ -1421,6 +1480,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 				Object.defineProperty(cls.prototype, options.cssName, stylePropertyDescriptor);
 			}
 			Object.defineProperty(cls.prototype, keyframeName, keyframePropertyDescriptor);
+			registerStyleProperty(this);
 		};
 	}
 
@@ -1450,6 +1510,19 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 
 	public isSet(instance: T): boolean {
 		return instance[this.source] !== ValueSource.Default;
+	}
+
+	/** Whether the style holds a local value for the property, even while a keyframe overrides it. */
+	public _isLocalValueSet(instance: T): boolean {
+		const value = instance[this.localValueKey];
+
+		// A reset keeps the written keyword in the local slot.
+		return value !== '' && !isResetValue(value);
+	}
+
+	/** The local value, meaningful only while `_isLocalValueSet` holds. */
+	public _getLocalValue(instance: T): U {
+		return instance[this.localValueKey];
 	}
 }
 CssAnimationProperty.prototype.isStyleProperty = true;
@@ -1491,6 +1564,9 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
 				overrideConverter = true;
+			}
+			if (typeof options.valueSerializer !== 'undefined') {
+				property.valueSerializer = options.valueSerializer;
 			}
 		};
 
@@ -1745,6 +1821,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 		if (this.cssLocalName !== this.cssName) {
 			Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
 		}
+		registerStyleProperty(this);
 
 		// Nothing is defined on `PropertyBag`: shorthands are expanded while parsing,
 		// and the var()/calc() ones that do reach the bag must stay unconverted.

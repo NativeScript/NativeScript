@@ -21,6 +21,11 @@ export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
 
 export interface CssPropertyOptions<T, U> extends PropertyOptions<T, U> {
 	readonly cssName: string;
+	/**
+	 * Serializes a typed value to the css string the property's converter parses back.
+	 * Defaults to `serializeCssValue`.
+	 */
+	readonly valueSerializer?: (value: U) => string;
 }
 // TODO: revisit this after circular dependency issues are resolved to see if types can be retained.
 // export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
@@ -48,6 +53,11 @@ export interface CssAnimationPropertyOptions<T, U> {
 	readonly equalityComparer?: (x: U, y: U) => boolean;
 	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
 	readonly valueConverter?: (value: string) => U;
+	/**
+	 * Serializes a typed value to the css string the property's converter parses back.
+	 * Defaults to `serializeCssValue`.
+	 */
+	readonly valueSerializer?: (value: U) => string;
 }
 
 export function isCssUnsetValue(value: any): boolean {
