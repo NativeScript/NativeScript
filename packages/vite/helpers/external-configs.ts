@@ -1,4 +1,4 @@
-import type { Plugin, UserConfig } from 'vite';
+import type { Plugin, PluginOption, UserConfig } from 'vite';
 import { mergeConfig } from 'vite';
 import path from 'path';
 import fs from 'fs';
@@ -62,26 +62,45 @@ async function collectExternalConfigs(): Promise<UserConfig[]> {
 	return merges;
 }
 
+function loadExternalConfigs(): Promise<UserConfig[]> {
+	cached ??= collectExternalConfigs();
+	return cached;
+}
+
 /**
- * Vite plugin that merges every dependency's optional `nativescript.vite.mjs`
- * config into the build.
+ * Vite plugins that apply every dependency's optional `nativescript.vite.mjs`
+ * config to the build.
  *
- * Discovery runs in the plugin's `config` hook — which Vite awaits — rather than
- * synchronously while assembling the base config. That is what lets ESM configs
- * (including ones using top-level await, which can't be `require()`d) load via
- * `import()` and still apply, without forcing the config factory or any app's
- * `vite.config.ts` to become async.
+ * Discovery runs only once Vite resolves the config — which it awaits — rather
+ * than synchronously while assembling the base config. That is what lets ESM
+ * configs (including ones using top-level await, which can't be `require()`d)
+ * load via `import()` and still apply, without forcing the config factory or
+ * any app's `vite.config.ts` to become async.
+ *
+ * Vite ignores `plugins` returned from a `config` hook, so each config's
+ * `plugins` are contributed through a thenable entry that Vite flattens into
+ * the plugin list; everything else is merged by the `config` hook.
  */
-export function externalConfigsPlugin(): Plugin {
-	return {
+export function externalConfigsPlugin(): PluginOption[] {
+	const configPlugin: Plugin = {
 		name: 'ns-external-configs',
 		async config() {
-			cached ??= collectExternalConfigs();
-			const merges = await cached;
+			const merges = await loadExternalConfigs();
 			if (!merges.length) {
 				return undefined;
 			}
-			return merges.reduce<UserConfig>((acc, config) => mergeConfig(acc, config), {});
+			return merges.reduce<UserConfig>((acc, { plugins: _plugins, ...config }) => mergeConfig(acc, config), {});
 		},
 	};
+
+	// Vite only calls `.then` on plugin entries, so a thenable keeps discovery
+	// lazy instead of starting it whenever the base config is built.
+	const externalPlugins: PromiseLike<PluginOption[]> = {
+		then: (onfulfilled, onrejected) =>
+			loadExternalConfigs()
+				.then((configs) => configs.map((config) => config.plugins ?? []))
+				.then(onfulfilled, onrejected),
+	};
+
+	return [configPlugin, externalPlugins as Promise<PluginOption[]>];
 }

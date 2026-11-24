@@ -346,9 +346,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		plugins: [
 			// Must stay first: Vite stubs `node:` builtins for the browser otherwise.
 			nativescriptBuiltinModules(),
-			// Merge any dependency-provided `nativescript.vite.mjs` configs. Runs
-			// in an awaited `config` hook so ESM configs load correctly.
-			externalConfigsPlugin(),
+			// Apply any dependency-provided `nativescript.vite.mjs` configs.
+			...externalConfigsPlugin(),
 			// Under HMR, rewrite every bare `@nativescript/core*` specifier to
 			// the full /ns/core HTTP URL so bundle.mjs contains NO bundled copy
 			// of the core runtime (see helpers/ns-core-external-urls.ts).
