@@ -39,6 +39,11 @@
 			"import": "./hmr/frameworks/solid/client/app-runtime.js",
 			"default": "./hmr/frameworks/solid/client/app-runtime.js"
 		},
+		"./svelte": {
+			"types": "./configuration/svelte.d.ts",
+			"import": "./configuration/svelte.js",
+			"default": "./configuration/svelte.js"
+		},
 		"./vue": {
 			"types": "./configuration/vue.d.ts",
 			"import": "./configuration/vue.js",
@@ -121,6 +126,7 @@
 	"peerDependencies": {
 		"@analogjs/vite-plugin-angular": "^2.0.0",
 		"@angular/build": "^21.0.0 || ^22.0.0",
+		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@vitejs/plugin-vue": "^6.0.5",
 		"@vitejs/plugin-vue-jsx": "^5.1.5",
 		"@vue/compiler-sfc": "^3.5.0",
@@ -134,6 +140,9 @@
 			"optional": true
 		},
 		"@angular/build": {
+			"optional": true
+		},
+		"@sveltejs/vite-plugin-svelte": {
 			"optional": true
 		},
 		"@vitejs/plugin-vue": {
@@ -161,6 +170,7 @@
 	"devDependencies": {
 		"@analogjs/vite-plugin-angular": "^2.0.0",
 		"@angular/build": "^21.0.0",
+		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"@types/css": "^0.0.38",
 		"@types/node": "^24.9.1",
 		"@vitejs/plugin-vue": "^6.0.5",

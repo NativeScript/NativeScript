@@ -44,7 +44,7 @@ npx nativescript-vite init
 
 This will:
 
-- Generate a `vite.config.mts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript — or a flavor a dependency declares, see below) and the corresponding helper subpath from `@nativescript/vite`.
+- Generate a `vite.config.mts` using the detected project flavor (Angular, Vue, React, Solid, Svelte, TypeScript, or JavaScript — or a flavor a dependency declares, see below) and the corresponding helper subpath from `@nativescript/vite`.
 - Add the dependency `@valor/nativescript-websockets`.
 - Append `.ns-vite-build` to `.gitignore` if it is not already present.
 
@@ -149,8 +149,22 @@ Framework-specific configs should be imported from their matching subpaths to av
 import { angularConfig } from '@nativescript/vite/angular';
 import { reactConfig } from '@nativescript/vite/react';
 import { solidConfig } from '@nativescript/vite/solid';
+import { svelteConfig } from '@nativescript/vite/svelte';
 import { vueConfig } from '@nativescript/vite/vue';
 ```
+
+### Svelte
+
+`svelteConfig` builds Svelte 5 apps (Svelte 5.59+ for `@nativescript-community/svelte-native` 5, which uses Svelte's custom renderer API). Install the compiler plugin alongside it:
+
+```sh
+npm i -D @sveltejs/vite-plugin-svelte svelte
+```
+
+Compiler options and preprocessors are read from the project's `svelte.config.js` by `@sveltejs/vite-plugin-svelte`, so the `experimental.customRenderer` and `preprocess` entries svelte-native documents go there, not in the Vite config. The helper resolves `svelte` to its client runtime (`svelte-custom-renderer` condition) and adds `.svelte` / `.<platform>.svelte` to the resolved extensions.
+
+- **Svelte 4 is not supported.** The helper reads the `svelte` version installed in the project and stops with an error for anything below 5: the only `@sveltejs/vite-plugin-svelte` line that compiles Svelte 4 (3.x) requires Vite 5. Keep Svelte 4 projects on `@nativescript/webpack`.
+- **HMR is not supported yet.** Run with `--no-hmr` (`ns debug ios --no-hmr`); the helper stops with an error when an HMR session is requested. A package that registers a `svelte` flavor through `registerFrameworkFlavor` lifts this.
 
 Plain JavaScript apps use the JavaScript helper and do not need `typescript` installed:
 
