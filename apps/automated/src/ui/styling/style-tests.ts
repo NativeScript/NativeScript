@@ -885,6 +885,27 @@ export function test_setInlineStyle_setsLocalValues() {
 	});
 }
 
+export function test_setInlineStyle_replacesPreviousDeclarations() {
+	const testButton = new Button();
+	testButton.text = 'Test';
+	const stack = new StackLayout();
+	stack.addChild(testButton);
+
+	helper.buildUIAndRunTest(
+		stack,
+		function (views: Array<View>) {
+			(<any>testButton).style = 'color: red; margin-top: 20;';
+			helper.assertViewColor(testButton, '#FF0000');
+			TKUnit.assertEqual(testButton.style.marginTop, 20, 'inline margin-top');
+
+			(<any>testButton).style = 'color: blue;';
+			helper.assertViewColor(testButton, '#0000FF');
+			TKUnit.assertEqual(testButton.style.marginTop, 8, 'margin-top should fall back to the stylesheet');
+		},
+		{ pageCss: 'button { margin-top: 8; }' },
+	);
+}
+
 export function test_setStyle_throws() {
 	const testButton = new Button();
 

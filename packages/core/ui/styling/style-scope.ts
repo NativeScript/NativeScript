@@ -1541,26 +1541,68 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 	return importSourceParts.join(path.separator);
 }
 
+// Holds longhand names, as declarations are expanded while parsing.
+const inlineStyleProperties = new WeakMap<ViewBase, Set<string>>();
+
+function setInlineValue(view: ViewBase, property: string, value: unknown): void {
+	if (property in view.style) {
+		view.style[property] = value;
+	} else {
+		view[property] = value;
+	}
+}
+
+function unsetInlineValue(view: ViewBase, property: string): void {
+	try {
+		setInlineValue(view, property, unsetValue);
+	} catch (e) {
+		Trace.write(`Failed to unset property [${property}] on ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
+	}
+}
+
 export const applyInlineStyle = profile('applyInlineStyle', function applyInlineStyle(view: ViewBase, styleStr: string) {
 	const localStyle = `local { ${styleStr} }`;
 	const inlineRuleSet = CSSSource.fromSource(localStyle).selectors;
+	const declarations = inlineRuleSet[0].declarations;
 
 	// Reset unscoped css-variables
 	view.style.resetUnscopedCssVariables();
 
+	let declared: Set<string>;
 	// Set all the css-variables first, so we can be sure they are up-to-date
-	inlineRuleSet[0].declarations.forEach((d) => {
+	declarations.forEach((d) => {
 		// Use the actual property name so that a local value is set.
 		const property = d.property;
 		if (isCssVariable(property)) {
 			view.style.setUnscopedCssVariable(property, d.value);
+		} else {
+			if (!declared) {
+				declared = new Set();
+			}
+			declared.add(property);
 		}
 	});
 
+	// Like the web's cssText, a new string replaces every previous inline declaration.
+	const previous = inlineStyleProperties.get(view);
+	if (previous) {
+		previous.forEach((property) => {
+			if (!declared?.has(property)) {
+				unsetInlineValue(view, property);
+			}
+		});
+	}
+	if (declared) {
+		inlineStyleProperties.set(view, declared);
+	} else if (previous) {
+		inlineStyleProperties.delete(view);
+	}
+
 	// Pending-substitution longhands share one placeholder - resolve it once.
 	let resolvedShorthands: Map<CssPendingSubstitution, Record<string, unknown>>;
+	let applied: Set<string>;
 
-	inlineRuleSet[0].declarations.forEach((d) => {
+	declarations.forEach((d) => {
 		// Use the actual property name so that a local value is set.
 		const property = d.property;
 		try {
@@ -1586,15 +1628,28 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 				value = evaluateCssExpressions(view, property, d.value);
 			}
 
-			if (property in view.style) {
-				view.style[property] = value;
-			} else {
-				view[property] = value;
+			setInlineValue(view, property, value);
+			if (!applied) {
+				applied = new Set();
 			}
+			applied.add(property);
 		} catch (e) {
 			Trace.write(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
 		}
 	});
+
+	// A property whose every declaration was invalid counts as not declared.
+	declared?.forEach((property) => {
+		if (!applied?.has(property)) {
+			declared.delete(property);
+			if (previous?.has(property)) {
+				unsetInlineValue(view, property);
+			}
+		}
+	});
+	if (declared?.size === 0) {
+		inlineStyleProperties.delete(view);
+	}
 
 	// This is needed in case of changes to css-variable or css-calc expressions.
 	view._onCssStateChange();
