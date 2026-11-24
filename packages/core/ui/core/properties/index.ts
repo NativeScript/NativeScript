@@ -46,7 +46,7 @@ const cssValueSourceKeys: Record<string, symbol> = Object.create(null);
 export type _RegisteredStyleProperty = CssProperty<any, any> | CssAnimationProperty<any, any> | ShorthandProperty<any, any>;
 
 const registeredStyleProperties = new Map<string, _RegisteredStyleProperty>();
-let registeredStylePropertiesVersion = 0;
+const styleRegistrationListeners: ((property: _RegisteredStyleProperty) => void)[] = [];
 
 function registerStyleProperty(property: _RegisteredStyleProperty): void {
 	// A property registered without a css name has no css surface.
@@ -54,7 +54,15 @@ function registerStyleProperty(property: _RegisteredStyleProperty): void {
 		return;
 	}
 	registeredStyleProperties.set(property.cssLocalName, property);
-	registeredStylePropertiesVersion++;
+	for (let i = 0, length = styleRegistrationListeners.length; i < length; i++) {
+		styleRegistrationListeners[i](property);
+	}
+}
+
+/** Calls the listener for every style property registered so far and every later one. */
+export function _onStylePropertyRegistered(listener: (property: _RegisteredStyleProperty) => void): void {
+	styleRegistrationListeners.push(listener);
+	registeredStyleProperties.forEach((property) => listener(property));
 }
 
 /** The style property registered under a css name, longhand or shorthand. */
@@ -65,11 +73,6 @@ export function _getRegisteredStyleProperty(cssName: string): _RegisteredStylePr
 /** Every registered style property, in registration order. */
 export function _getRegisteredStyleProperties(): IterableIterator<_RegisteredStyleProperty> {
 	return registeredStyleProperties.values();
-}
-
-/** Changes whenever a style property is registered. */
-export function _getRegisteredStylePropertiesVersion(): number {
-	return registeredStylePropertiesVersion;
 }
 
 /**
@@ -1724,8 +1727,12 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 	public readonly sourceKey: symbol;
 
+	/** Composes serialized longhands into the shorthand; see `ShorthandPropertyOptions.valueSerializer`. */
+	public readonly valueSerializer?: (longhands: string[]) => string;
+
 	constructor(options: ShorthandPropertyOptions<P>) {
 		this.name = options.name;
+		this.valueSerializer = options.valueSerializer;
 
 		const key = Symbol(this.name + ':propertyKey');
 		this.key = key;

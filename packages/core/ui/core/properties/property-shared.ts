@@ -37,6 +37,11 @@ export interface ShorthandPropertyOptions<P> {
 	readonly cssName: string;
 	readonly converter: (value: string | P) => [any, any][];
 	readonly getter: (this: any) => string | P;
+	/**
+	 * Composes the serialized longhands, in the converter's order, into a shorthand value.
+	 * Defaults to the box notation for four longhands and to joining them with spaces otherwise.
+	 */
+	readonly valueSerializer?: (longhands: string[]) => string;
 }
 // TODO: revisit this after circular dependency issues are resolved to see if types can be retained.
 // export interface ShorthandPropertyOptions<P> {

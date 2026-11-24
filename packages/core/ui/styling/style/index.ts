@@ -95,6 +95,11 @@ export class Style extends Observable {
 		this.unscopedCssVariables.clear();
 	}
 
+	/** The css-variables declared inline on this view, by name. */
+	public _getUnscopedCssVariables(): ReadonlyMap<string, string> {
+		return this.unscopedCssVariables;
+	}
+
 	toString() {
 		const view = this.viewRef.get();
 		if (!view) {
