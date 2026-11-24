@@ -276,7 +276,7 @@ describe('window content resolution', () => {
 			const reopened = new TestWindow('window-2', true);
 
 			app._resolveWindowContent(window, request);
-			app.notify({ eventName: app.exitEvent, object: app });
+			app.notifyExit();
 			app._resolveWindowContent(reopened, { window: reopened, isPrimary: true });
 
 			expect(launched).toHaveBeenCalledTimes(2);

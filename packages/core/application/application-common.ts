@@ -154,7 +154,8 @@ export class ApplicationCommon {
 	 * so it also fires on a background launch where no window is created.
 	 *
 	 * Guaranteed ordering: `ready` -> `windowOpen` -> raw connect/create events -> content
-	 * resolution (the legacy `launch` bridge runs here, for the first window only) ->
+	 * resolution (the legacy `launch` bridge runs here, for the first window and the first
+	 * one after `exit`) ->
 	 * `contentLoaded` -> `activate`/`displayed`.
 	 */
 	readonly readyEvent = 'ready';
@@ -274,11 +275,6 @@ export class ApplicationCommon {
 			const rootView = this.getRootView();
 			this.livesync(rootView, context);
 		};
-
-		// The process can outlive an exit and open a new window, which has to fire launch again.
-		this.on(this.exitEvent, () => {
-			this._launchBridgeConsumed = false;
-		});
 	}
 
 	/**
@@ -738,11 +734,25 @@ export class ApplicationCommon {
 	}
 
 	/**
+	 * @internal - raises `exit` and re-arms the legacy `launch` bridge, since the process
+	 * can outlive the exit and open a new first window.
+	 */
+	notifyExit(data?: Partial<ApplicationEventData>): void {
+		this._launchBridgeConsumed = false;
+
+		this.notify(<ApplicationEventData>{
+			eventName: this.exitEvent,
+			object: this,
+			...data,
+		});
+	}
+
+	/**
 	 * @internal - produces the content for a window that has none.
 	 *
 	 * Resolution order: the window content resolver, then the legacy `launch` event
-	 * (offered to the first window that asks for content and to no other), then the
-	 * application main entry. A resolver or a `launch` handler returning `null` takes
+	 * (offered to the first window that asks for content, and again to the first one after
+	 * `exit`), then the application main entry. A resolver or a `launch` handler returning `null` takes
 	 * ownership of the content, so nothing else is tried. A missing main entry leaves
 	 * the window empty instead of throwing, because content can still arrive later
 	 * through `run()`/`resetRootView()`.
