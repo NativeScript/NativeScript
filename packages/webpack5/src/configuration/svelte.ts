@@ -21,13 +21,18 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const isSvelte5 = (getSvelteMajorVersion() ?? 0) >= 5;
 
 	if (isSvelte5) {
-		// Without these conditions Svelte 5 resolves to its server build.
+		// Without svelte-custom-renderer Svelte 5 resolves to its server build.
 		config.resolve.set('conditionNames', [
 			'svelte-custom-renderer',
 			'svelte',
-			'browser',
 			'...',
 		]);
+
+		// Svelte's requestAnimationFrame loop (transitions, motion) needs esm-env's BROWSER.
+		config.module
+			.rule('svelte-esm-env')
+			.test(/[\\/]node_modules[\\/]esm-env[\\/]/)
+			.resolve.set('conditionNames', ['browser', '...']);
 	} else {
 		// target('node') is the default but causes svelte-loader to detect it as a "server" render, disabling HMR
 		// electron-main sneaks us past the target == 'node' check and gets us HMR

@@ -72,10 +72,23 @@ describe('svelte 5 configuration', () => {
 		expect(config.resolve.get('conditionNames')).toEqual([
 			'svelte-custom-renderer',
 			'svelte',
-			'browser',
 			'...',
 		]);
 		expect(config.get('target')).toBe('node');
+	});
+
+	it('applies the browser condition only to esm-env', () => {
+		init({ ios: true });
+		const config = withSvelteVersion('5.59.0', () => svelte(new Config()));
+		const rule = config.module.rule('svelte-esm-env');
+
+		expect(rule.get('test').test('/app/node_modules/esm-env/index.js')).toBe(
+			true,
+		);
+		expect(rule.get('test').test('/app/node_modules/svelte/src/index.js')).toBe(
+			false,
+		);
+		expect(rule.resolve.get('conditionNames')).toEqual(['browser', '...']);
 	});
 
 	it('passes svelte.config.js compilerOptions through without svelte-hmr', () => {

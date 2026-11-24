@@ -38,7 +38,6 @@ exports[`svelte 5 configuration for android 1`] = `
     conditionNames: [
       'svelte-custom-renderer',
       'svelte',
-      'browser',
       '...'
     ],
     alias: {
@@ -225,6 +224,16 @@ exports[`svelte 5 configuration for android 1`] = `
             }
           }
         ]
+      },
+      /* config.module.rule('svelte-esm-env') */
+      {
+        test: /[\\\\/]node_modules[\\\\/]esm-env[\\\\/]/,
+        resolve: {
+          conditionNames: [
+            'browser',
+            '...'
+          ]
+        }
       },
       /* config.module.rule('svelte') */
       {
@@ -419,7 +428,6 @@ exports[`svelte 5 configuration for ios 1`] = `
     conditionNames: [
       'svelte-custom-renderer',
       'svelte',
-      'browser',
       '...'
     ],
     alias: {
@@ -606,6 +614,16 @@ exports[`svelte 5 configuration for ios 1`] = `
             }
           }
         ]
+      },
+      /* config.module.rule('svelte-esm-env') */
+      {
+        test: /[\\\\/]node_modules[\\\\/]esm-env[\\\\/]/,
+        resolve: {
+          conditionNames: [
+            'browser',
+            '...'
+          ]
+        }
       },
       /* config.module.rule('svelte') */
       {
