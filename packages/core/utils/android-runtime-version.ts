@@ -1,11 +1,12 @@
-const semverPattern = /^(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
+const semverPattern = /^(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
 /**
- * Whether a `major.minor.patch[-prerelease]` version string is strictly greater than the given release.
+ * Whether a `major.minor.patch[-prerelease]` version string is at or above the given release.
+ * Prereleases of the release itself are lower than it, as in semver.
  * @param version Version to test; anything that is not a parsable version string yields false.
- * @returns True only for a parsable version above `major.minor.patch`.
+ * @returns True only for a parsable version at or above `major.minor.patch`.
  */
-export function isVersionGreaterThan(version: unknown, major: number, minor: number, patch: number): boolean {
+export function isVersionAtLeast(version: unknown, major: number, minor: number, patch: number): boolean {
 	if (typeof version !== 'string') {
 		return false;
 	}
@@ -21,8 +22,7 @@ export function isVersionGreaterThan(version: unknown, major: number, minor: num
 		}
 	}
 
-	// Equal core version: the release is not greater, and its prereleases are lower.
-	return false;
+	return match[4] === undefined;
 }
 
 let typedArrayToByteArray: boolean | undefined;
@@ -33,7 +33,7 @@ let typedArrayToByteArray: boolean | undefined;
  */
 export function runtimeCopiesTypedArraysToByteArrays(): boolean {
 	if (typedArrayToByteArray === undefined) {
-		typedArrayToByteArray = isVersionGreaterThan((global as any).__runtimeVersion, 9, 1, 2);
+		typedArrayToByteArray = isVersionAtLeast((global as any).__runtimeVersion, 9, 1, 2);
 	}
 
 	return typedArrayToByteArray;
