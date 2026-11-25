@@ -1,0 +1,15 @@
+{
+	"version": 1,
+	"document": "docs/legal/individual-cla.md",
+	"allowlist": {
+		"github": [],
+		"email": []
+	},
+	"signers": [
+		{
+			"github": "mrichtsfeld",
+			"signedAt": "2026-11-25",
+			"cla": "individual"
+		}
+	]
+}
