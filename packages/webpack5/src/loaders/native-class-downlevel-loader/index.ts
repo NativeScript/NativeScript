@@ -22,7 +22,7 @@ interface Candidate {
 interface DownleveledClass {
 	code: string;
 	map: any;
-	// Lines added in front of the transpiled class (the IIFE wrapper).
+	// Lines added in front of the transpiled class (separator newline and IIFE wrapper).
 	leadingLines: number;
 }
 
@@ -106,6 +106,9 @@ function downlevelClass(
 	} catch (e) {
 		// ignore parsing safety guard failures – fallback to raw transpiled
 	}
+	// transpileModule drops the leading newline; keep statements apart.
+	transpiled = `\n${transpiled}`;
+	leadingLines += 1;
 	if (process.env.NATIVECLASS_DEBUG) {
 		loader.emitWarning(
 			new Error(
