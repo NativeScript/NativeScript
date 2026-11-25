@@ -91,4 +91,36 @@ class Foo extends NSObject {}
 		expect(errors).toEqual([]);
 		expect(output).toMatch(/const a = 1\s*\n\s*var /);
 	});
+
+	it('downlevels a native class nested inside another native class', async () => {
+		const input = `/*__NativeClass__*/
+class Outer extends NSObject {
+	make() {
+		/*__NativeClass__*/
+		class Inner extends NSObject {
+			get value() {
+				return 1;
+			}
+		}
+		return Inner;
+	}
+}
+`;
+		const output = await new Promise<string>((resolve) =>
+			downlevelLoader.call(createDownlevelContext(resolve), input),
+		);
+		const { diagnostics } = ts.transpileModule(output, {
+			fileName: '/check.js',
+			reportDiagnostics: true,
+		});
+		const errors = diagnostics.map((d) =>
+			ts.flattenDiagnosticMessageText(d.messageText, '\n'),
+		);
+		expect(errors).toEqual([]);
+		expect(output).toMatch(/var Outer = /);
+		expect(output).toMatch(/var Inner = /);
+		expect(output).not.toMatch(/^\s*class /m);
+		expect(output).not.toContain('/*__NativeClass__*/');
+		expect(output).toMatch(/"value"[\s\S]*?enumerable: true/);
+	});
 });
