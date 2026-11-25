@@ -57,7 +57,7 @@ export default [
 		},
 	},
 	{
-		files: ['**/references.d.ts'],
+		files: ['**/references.d.ts', 'apps/automated/reference.d.ts'],
 		rules: {
 			'@typescript-eslint/triple-slash-reference': 'off',
 		},
