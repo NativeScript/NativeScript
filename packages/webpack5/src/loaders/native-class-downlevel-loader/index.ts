@@ -22,7 +22,7 @@ interface Candidate {
 interface DownleveledClass {
 	code: string;
 	map: any;
-	// Lines added in front of the transpiled class (the IIFE wrapper).
+	// Lines added in front of the transpiled class (separator newline and IIFE wrapper).
 	leadingLines: number;
 }
 
