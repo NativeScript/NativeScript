@@ -3,7 +3,7 @@ import { addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from '@nativescript
 
 let page: Page;
 let playLabel: Label;
-let CSSTag = 'css-playground';
+const CSSTag = 'css-playground';
 
 export function navigatingTo(args: EventData) {
 	page = <Page>args.object;
