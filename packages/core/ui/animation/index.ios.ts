@@ -894,10 +894,11 @@ export class Animation extends AnimationBase {
 
 			const outerShadowLayers = nativeView.outerShadowContainerLayer.sublayers;
 			if (outerShadowLayers?.count) {
-				const { maskPath, shadowPath } = iosBackground.generateShadowLayerPaths(view, bounds);
+				const boxShadows = view.style.backgroundInternal.getBoxShadows();
 
 				for (let i = 0, count = outerShadowLayers.count; i < count; i++) {
 					const shadowLayer = outerShadowLayers[i];
+					const { maskPath, shadowPath } = iosBackground.generateShadowLayerPaths(view, boxShadows[i], bounds);
 
 					shadowLayer.addAnimationForKey(
 						this._createBasicAnimation(
