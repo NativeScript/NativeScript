@@ -79,7 +79,7 @@ export function isGesture(eventOrGestureName: string): boolean {
 
 // TODO: Make this instance function so that we dont need public static tapEvent = "tap"
 // in controls. They will just override this one and provide their own event support.
-export function isEventOrGesture(name: string, view: ViewBase): boolean {
+export function isEventOrGesture(name: string, view: ViewBase | object): boolean {
 	if (typeof name === 'string') {
 		const eventOrGestureName = getEventOrGestureName(name);
 		const evt = `${eventOrGestureName}Event`;
@@ -363,15 +363,19 @@ export class Binding {
 			let context;
 			const targetInstance = this.target.get();
 			const addedProps = [];
+			const compiled = this.options.compiled;
+			const closure = compiled ? (isBackConvert ? compiled.back : compiled.get) : undefined;
 			try {
 				let exp;
-				try {
-					exp = parseExpression(expression);
-				} catch (e) {
-					result = new Error(e + ' at ' + targetInstance);
+				if (!closure) {
+					try {
+						exp = parseExpression(expression);
+					} catch (e) {
+						result = new Error(e + ' at ' + targetInstance);
+					}
 				}
 
-				if (exp) {
+				if (closure || exp) {
 					context = (this.source && this.source.get && this.source.get()) || global;
 					const resources = bindableResources.get();
 					for (const prop in resources) {
@@ -383,7 +387,8 @@ export class Binding {
 
 					// For expressions, there are also cases when binding must be updated after component is loaded (e.g. ListView)
 					if (this.prepareContextForExpression(targetInstance, context, expression, addedProps)) {
-						result = convertExpressionToValue(exp, context, isBackConvert, changedModel ? changedModel : context);
+						const changed = changedModel ? changedModel : context;
+						result = closure ? closure(context, changed) : convertExpressionToValue(exp, context, isBackConvert, changed);
 					} else {
 						targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
 						targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
