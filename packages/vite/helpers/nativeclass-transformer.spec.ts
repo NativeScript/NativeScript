@@ -70,6 +70,11 @@ const NO_DECORATOR_TS = `
 export class Foo { bar() {} }
 `;
 
+function syntaxErrors(code: string) {
+	const { diagnostics } = ts.transpileModule(code, { fileName: '/check.js', reportDiagnostics: true });
+	return (diagnostics ?? []).map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'));
+}
+
 describe('NativeClass transformer helper', () => {
 	it('removes @NativeClass and emits ES5 for decorated classes', () => {
 		const res = transformNativeClassSource(SAMPLE_TS, '/app/src/sample.ts');
@@ -157,6 +162,39 @@ export class BetaImpl extends NSObject { b() { return 2 } }
 			// the class must still be present/exported in some form
 			expect(code).toContain(name);
 		}
+	});
+
+	it('keeps a statement without semicolon apart from the downleveled class', () => {
+		const res = transformNativeClassSource(`const a = 1\n@NativeClass()\nclass Foo extends NSObject {}\n`, '/app/src/no-semicolon.ts');
+		expect(res).toBeTruthy();
+		const code = res!.code;
+		expect(syntaxErrors(code)).toEqual([]);
+		expect(code).toMatch(/const a = 1\s*\n\s*var Foo = /);
+	});
+
+	it('downlevels a native class nested inside another native class', () => {
+		const NESTED_NATIVE_TS = `
+@NativeClass()
+class Outer extends NSObject {
+	make() {
+		@NativeClass()
+		class Inner extends NSObject {
+			get value() {
+				return 1;
+			}
+		}
+		return Inner;
+	}
+}
+`;
+		const res = transformNativeClassSource(NESTED_NATIVE_TS, '/app/src/nested-native.ts');
+		expect(res).toBeTruthy();
+		const code = res!.code;
+		expect(syntaxErrors(code)).toEqual([]);
+		expect(code).toMatch(/var Outer = /);
+		expect(code).toMatch(/var Inner = /);
+		expect(code).not.toMatch(/^\s*class /m);
+		expect(code).toMatch(/"value"[\s\S]*?enumerable: true/);
 	});
 
 	it('returns null for sources without @NativeClass', () => {

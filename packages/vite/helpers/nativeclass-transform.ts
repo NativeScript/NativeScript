@@ -155,7 +155,10 @@ export function transformNativeClassSource(code: string, fileName: string) {
 							cleaned += `\nexport { ${name} };\n`;
 						}
 					}
-					edits.push({ start: fullStart, end: node.end, text: cleaned });
+					// transpileModule drops the leading newline; keep statements apart.
+					edits.push({ start: fullStart, end: node.end, text: `\n${cleaned}` });
+					// Downleveling the outer class also downlevels any marked class inside it.
+					return;
 				}
 			}
 			ts.forEachChild(node, collect);
