@@ -71,7 +71,7 @@
 	"namedInputs": {
 		"default": ["{projectRoot}/**/*", "sharedGlobals"],
 		"sharedGlobals": ["{workspaceRoot}/workspace.json", "{workspaceRoot}/tsconfig.json", "{workspaceRoot}/nx.json"],
-		"production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/jest.config.[jt]s", "!{projectRoot}/src/test-setup.[jt]s"]
+		"production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/jest.config.[jt]s", "!{projectRoot}/src/test-setup.[jt]s", "!{projectRoot}/eslint.config.mjs"]
 	},
 	"targetDefaults": {
 		"build": {
