@@ -534,7 +534,7 @@ export class LabelTest extends testModule.UITest<Label> {
 		TKUnit.assertEqual(label.text, secondExpValue);
 	}
 
-	private expectedTextAlignment: 'right' = 'right';
+	private expectedTextAlignment = 'right' as const;
 	public testLocalTextAlignmentFromCss() {
 		const label = this.testView;
 		this.testPage.css = 'label { text-align: ' + this.expectedTextAlignment + '; }';

@@ -2,7 +2,7 @@
 import * as fpsMeter from '@nativescript/core/fps-meter';
 // << fps-meter-require
 
-export var test_DummyTestForSnippetOnly0 = function () {
+export const test_DummyTestForSnippetOnly0 = function () {
 	// >> fps-meter-logging
 	const callbackId = fpsMeter.addCallback(function (fps: number, minFps: number) {
 		console.info('fps=' + fps + ' minFps=' + minFps);

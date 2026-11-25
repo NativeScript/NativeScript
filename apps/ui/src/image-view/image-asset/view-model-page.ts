@@ -42,4 +42,4 @@ export class ImageViewModel extends observable.Observable {
 		_cameraImageSrc = value;
 	}
 }
-export var imageViewModel = new ImageViewModel();
+export const imageViewModel = new ImageViewModel();

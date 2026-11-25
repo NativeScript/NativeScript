@@ -98,11 +98,10 @@ export function test_backAndForwardParentPage_nestedFrames() {
 	const back = (pages) => Frame.topmost().goBack(Frame.topmost().backStack[Frame.topmost().backStack.length - pages]);
 	const currentPageMustBe = (tag) => TKUnit.assertEqual(Frame.topmost().currentPage['tag'], tag, 'Expected current page to be ' + tag + ' it was ' + Frame.topmost().currentPage['tag'] + ' instead.');
 
-	let parentPage1, parentPage2, innerPage1, innerPage2;
-	innerPage1 = page('InnerPage1');
-	innerPage2 = page('InnerPage2');
-	parentPage1 = page('ParentPage1');
-	parentPage2 = parentPage('ParentPage2', innerPage1);
+	const innerPage1 = page('InnerPage1');
+	const innerPage2 = page('InnerPage2');
+	const parentPage1 = page('ParentPage1');
+	const parentPage2 = parentPage('ParentPage2', innerPage1);
 
 	helper.waitUntilNavigatedTo(parentPage1, () => topmost.navigate({ create: () => parentPage1 }));
 	currentPageMustBe('ParentPage1');

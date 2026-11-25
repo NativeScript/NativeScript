@@ -2,49 +2,49 @@
 import * as TKUnit from '../tk-unit';
 import * as types from '@nativescript/core/utils/types';
 
-export var test_XMLHttpRequest_isDefined = function () {
+export const test_XMLHttpRequest_isDefined = function () {
 	TKUnit.assert(types.isDefined(global['XMLHttpRequest']), 'XMLHttpRequest should be defined!');
 };
 
 let xhr = new XMLHttpRequest();
 
-export var test_XMLHttpRequest_open_isDefined = function () {
+export const test_XMLHttpRequest_open_isDefined = function () {
 	TKUnit.assert(types.isFunction(xhr.open), 'XMLHttpRequest.open should be defined!');
 };
 
-export var test_XMLHttpRequest_send_isDefined = function () {
+export const test_XMLHttpRequest_send_isDefined = function () {
 	TKUnit.assert(types.isFunction(xhr.send), 'XMLHttpRequest.send should be defined!');
 };
 
-export var test_XMLHttpRequest_setRequestHeader_isDefined = function () {
+export const test_XMLHttpRequest_setRequestHeader_isDefined = function () {
 	TKUnit.assert(types.isFunction(xhr.setRequestHeader), 'XMLHttpRequest.setRequestHeader should be defined!');
 };
 
-export var test_XMLHttpRequest_getAllResponseHeaders_isDefined = function () {
+export const test_XMLHttpRequest_getAllResponseHeaders_isDefined = function () {
 	TKUnit.assert(types.isFunction(xhr.getAllResponseHeaders), 'XMLHttpRequest.getAllResponseHeaders should be defined!');
 };
 
-export var test_XMLHttpRequest_getResponseHeader_isDefined = function () {
+export const test_XMLHttpRequest_getResponseHeader_isDefined = function () {
 	TKUnit.assert(types.isFunction(xhr.getResponseHeader), 'XMLHttpRequest.getResponseHeader should be defined!');
 };
 
-export var test_XMLHttpRequest_overrideMimeType_isDefined = function () {
+export const test_XMLHttpRequest_overrideMimeType_isDefined = function () {
 	TKUnit.assert(types.isFunction(xhr.overrideMimeType), 'XMLHttpRequest.overrideMimeType should be defined!');
 };
 
-export var test_XMLHttpRequest_readyState_isDefined = function () {
+export const test_XMLHttpRequest_readyState_isDefined = function () {
 	TKUnit.assert(types.isNumber(xhr.readyState), 'XMLHttpRequest.readyState should be defined!');
 };
 
-export var test_XMLHttpRequest_responseText_isDefined = function () {
+export const test_XMLHttpRequest_responseText_isDefined = function () {
 	TKUnit.assert(types.isString(xhr.responseText), 'XMLHttpRequest.responseText should be defined!');
 };
 
-export var test_XMLHttpRequest_responseType_isDefined = function () {
+export const test_XMLHttpRequest_responseType_isDefined = function () {
 	TKUnit.assert(types.isString(xhr.responseType), 'XMLHttpRequest.responseType should be defined!');
 };
 
-export var test_XMLHttpRequest_readyStateShouldChange = function (done) {
+export const test_XMLHttpRequest_readyStateShouldChange = function (done) {
 	let count = 0;
 	// <snippet module="xhr" title="xhr">
 	// ### Check readyState
@@ -82,7 +82,7 @@ export var test_XMLHttpRequest_readyStateShouldChange = function (done) {
 	// </snippet>
 };
 
-export var test_XMLHttpRequest_headersSentAndReceivedProperly = function (done) {
+export const test_XMLHttpRequest_headersSentAndReceivedProperly = function (done) {
 	// <snippet module="xhr" title="xhr">
 	// ### Send/receive headers
 	// ``` JavaScript
@@ -107,7 +107,7 @@ export var test_XMLHttpRequest_headersSentAndReceivedProperly = function (done) 
 	// </snippet>
 };
 
-export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) {
+export const test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) {
 	// <snippet module="xhr" title="xhr">
 	// ### Send/receive JSON
 	// ``` JavaScript
@@ -132,7 +132,7 @@ export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) 
 	// </snippet>
 };
 
-export var test_XMLHttpRequest_FormDataContentSentAndReceivedProperly = function (done) {
+export const test_XMLHttpRequest_FormDataContentSentAndReceivedProperly = function (done) {
 	// <snippet module="xhr" title="xhr">
 	// ### Send/receive FormData
 	// ``` JavaScript
@@ -163,7 +163,7 @@ export var test_XMLHttpRequest_FormDataContentSentAndReceivedProperly = function
 	// </snippet>
 };
 
-export var test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (done) {
+export const test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (done) {
 	let flag = false;
 	// <snippet module="xhr" title="xhr">
 	// ### Abort request
@@ -184,7 +184,7 @@ export var test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (d
 	done(null);
 };
 
-export var test_XMLHttpRequest_requestShouldBePossibleAfterAbortedOpen = function (done) {
+export const test_XMLHttpRequest_requestShouldBePossibleAfterAbortedOpen = function (done) {
 	xhr = new XMLHttpRequest();
 	xhr.open('POST', 'https://http-echo.nativescript.org/post');
 	xhr.setRequestHeader('Content-Type', 'application/json');
@@ -205,7 +205,7 @@ export var test_XMLHttpRequest_requestShouldBePossibleAfterAbortedOpen = functio
 	xhr.send(JSON.stringify({ MyVariableOne: 'ValueOne', MyVariableTwo: 'ValueTwo' }));
 };
 
-export var test_XMLHttpRequest_requestShouldntBePossibleAfterAbortedSentRequest = function () {
+export const test_XMLHttpRequest_requestShouldntBePossibleAfterAbortedSentRequest = function () {
 	xhr = new XMLHttpRequest();
 	xhr.open('POST', 'https://http-echo.nativescript.org/post');
 	xhr.setRequestHeader('Content-Type', 'application/json');
@@ -400,7 +400,7 @@ export function test_getResponseHeader() {
 	TKUnit.assertEqual(xhr.getResponseHeader('Content-Type'), 'application/json');
 }
 
-export var test_XMLHttpRequest_contentReceivedArrayBufferProperly = function (done) {
+export const test_XMLHttpRequest_contentReceivedArrayBufferProperly = function (done) {
 	// <snippet module="xhr" title="xhr">
 	// ### Receive Blob
 	// ``` JavaScript
@@ -426,7 +426,7 @@ export var test_XMLHttpRequest_contentReceivedArrayBufferProperly = function (do
 	// </snippet>
 };
 
-export var test_XMLHttpRequest_contentReceivedBlobProperly = function (done) {
+export const test_XMLHttpRequest_contentReceivedBlobProperly = function (done) {
 	// <snippet module="xhr" title="xhr">
 	// ### Receive Blob
 	// ``` JavaScript

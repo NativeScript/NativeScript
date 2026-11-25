@@ -59,7 +59,7 @@ export function test_SelectingTabsAfterGarbageCollection_CreatesTheirContent() {
 	});
 }
 
-export var testWhenSegmentedBarIsCreatedItemsAreUndefined = function () {
+export const testWhenSegmentedBarIsCreatedItemsAreUndefined = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
 		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		const expectedValue = undefined;
@@ -68,7 +68,7 @@ export var testWhenSegmentedBarIsCreatedItemsAreUndefined = function () {
 	});
 };
 
-export var testWhenSegmentedBarIsCreatedSelectedIndexIsUndefined = function () {
+export const testWhenSegmentedBarIsCreatedSelectedIndexIsUndefined = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
 		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		const expectedValue = -1;
@@ -77,7 +77,7 @@ export var testWhenSegmentedBarIsCreatedSelectedIndexIsUndefined = function () {
 	});
 };
 
-export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
+export const testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
 		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		segmentedBar.items = _createItems(10);
@@ -87,7 +87,7 @@ export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreate
 	});
 };
 
-export var testWhenItemsAreBoundTheTextColorIsPreserved = function () {
+export const testWhenItemsAreBoundTheTextColorIsPreserved = function () {
 	const segmentedBar = _createSegmentedBar();
 	segmentedBar.color = new Color('red');
 
@@ -113,7 +113,7 @@ export var testWhenItemsAreBoundTheTextColorIsPreserved = function () {
 	});
 };
 
-export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
+export const testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
 		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		segmentedBar.items = [];
@@ -123,7 +123,7 @@ export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function 
 	});
 };
 
-export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
+export const testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
 		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		// >> article-creating-segmentedbar-items
@@ -145,7 +145,7 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
 		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		segmentedBar.items = _createItems(10);
@@ -159,7 +159,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
 		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		segmentedBar.items = _createItems(10);
@@ -171,7 +171,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
 		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		segmentedBar.items = _createItems(10);
@@ -183,7 +183,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
 	});
 };
 
-export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
+export const testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
 	const segmentedBar = _createSegmentedBar();
 	const expectedValue = 10;
 	segmentedBar.items = _createItems(expectedValue);
@@ -195,7 +195,7 @@ export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
 	});
 };
 
-export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
+export const testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
 	const segmentedBar = _createSegmentedBar();
 	segmentedBar.items = _createItems(10);
 	const expectedValue = 9;
@@ -207,7 +207,7 @@ export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = functio
 	});
 };
 
-export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = function () {
+export const testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = function () {
 	let oldIndex;
 	let newIndex;
 	const segmentedBar = _createSegmentedBar();
@@ -236,7 +236,7 @@ export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = funct
 	});
 };
 
-export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSetNative = function () {
+export const testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSetNative = function () {
 	let oldIndex;
 	let newIndex;
 	const segmentedBar = _createSegmentedBar();
@@ -265,7 +265,7 @@ export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSetNative =
 	});
 };
 
-export var testSelectedIndexChangedIsRaisedCorrectlyIfItemsNotBound = function () {
+export const testSelectedIndexChangedIsRaisedCorrectlyIfItemsNotBound = function () {
 	const segmentedBar = _createSegmentedBar();
 	let newSelectedIndex = 0;
 	segmentedBar.on(segmentedBarModule.SegmentedBar.selectedIndexChangedEvent, () => {

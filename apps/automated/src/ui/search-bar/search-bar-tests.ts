@@ -29,7 +29,7 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(() => new searchBarModule.SearchBar());
 }
 
-export var testSearchBarHintColor = function () {
+export const testSearchBarHintColor = function () {
 	helper.buildUIAndRunTest(_createSearchBarFunc(), function (views: Array<viewModule.View>) {
 		const searchBar = <searchBarModule.SearchBar>views[0];
 
@@ -51,7 +51,7 @@ export var testSearchBarHintColor = function () {
 	});
 };
 
-export var testSearchBarTextFieldBackgroundColor = function () {
+export const testSearchBarTextFieldBackgroundColor = function () {
 	helper.buildUIAndRunTest(_createSearchBarFunc(), function (views: Array<viewModule.View>) {
 		const searchBar = <searchBarModule.SearchBar>views[0];
 
@@ -73,7 +73,7 @@ export var testSearchBarTextFieldBackgroundColor = function () {
 	});
 };
 
-export var testSearchBarFontSize = function () {
+export const testSearchBarFontSize = function () {
 	helper.buildUIAndRunTest(_createSearchBarFunc(), function (views: Array<viewModule.View>) {
 		const searchBar = <searchBarModule.SearchBar>views[0];
 
@@ -81,15 +81,14 @@ export var testSearchBarFontSize = function () {
 		searchBar.hint = 'hint font-size test';
 
 		const expectedValue = 30;
-		let actualValue;
 
 		searchBar.style.fontSize = expectedValue;
-		actualValue = searchBarTestsNative.getNativeFontSize(searchBar);
+		const actualValue = searchBarTestsNative.getNativeFontSize(searchBar);
 		TKUnit.assertAreClose(actualValue, expectedValue, 0.2);
 	});
 };
 
-export var testSearchBarPropertiesWithCSS = function () {
+export const testSearchBarPropertiesWithCSS = function () {
 	helper.buildUIAndRunTest(
 		_createSearchBarFunc(),
 		function (views: Array<viewModule.View>) {

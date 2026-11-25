@@ -29,7 +29,7 @@ function _createItems(count: number): Array<TabViewItem> {
 function _createListView(): ListView {
 	const listView = new ListView();
 	listView.id = 'ListView';
-	const items = Array.apply(null, Array(10)).map(function (_, i) {
+	const items = [...Array(10)].map(function (_, i) {
 		return i;
 	});
 

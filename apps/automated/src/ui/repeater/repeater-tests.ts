@@ -256,8 +256,8 @@ export function test_usingAppLevelConvertersInRepeaterItems() {
 		toView: function (value, format) {
 			let result = format;
 			const day = value.getDate();
-			result = result.replace('DD', month < 10 ? '0' + day : day);
-			var month = value.getMonth() + 1;
+			result = result.replace('DD', day < 10 ? '0' + day : day);
+			const month = value.getMonth() + 1;
 			result = result.replace('MM', month < 10 ? '0' + month : month);
 			result = result.replace('YYYY', value.getFullYear());
 
@@ -451,7 +451,7 @@ export function test_BindingRepeaterToASimpleArrayWithExpression() {
 	helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export var test_RepeaterItemsGestureBindings = function () {
+export const test_RepeaterItemsGestureBindings = function () {
 	const testFunc = function (page: Page) {
 		const repeater = <Repeater>page.getViewById('repeater');
 		let hasObservers = false;
@@ -474,7 +474,7 @@ export var test_RepeaterItemsGestureBindings = function () {
 	helper.navigateToModuleAndRunTest('ui/repeater/repeaterItems-bindingToGestures-page', null, testFunc);
 };
 
-export var test_RepeaterItemsBindingsShouldWork = function () {
+export const test_RepeaterItemsBindingsShouldWork = function () {
 	const testFunc = function (page: Page) {
 		const repeater = <Repeater>page.getViewById('repeater');
 		const expectedText = page.bindingContext['items'];

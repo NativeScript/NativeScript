@@ -17,7 +17,7 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(_createTextFieldFunc);
 }
 
-var _createTextFieldFunc = function (): TextField {
+const _createTextFieldFunc = function (): TextField {
 	// >> creating-textfield
 	const textField = new TextField();
 	// << creating-textfield
@@ -26,7 +26,7 @@ var _createTextFieldFunc = function (): TextField {
 	return textField;
 };
 
-export var testSetText = function () {
+export const testSetText = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -40,7 +40,7 @@ export var testSetText = function () {
 	});
 };
 
-export var testSetTextNull = function () {
+export const testSetTextNull = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -52,7 +52,7 @@ export var testSetTextNull = function () {
 	});
 };
 
-export var testSetTextUndefined = function () {
+export const testSetTextUndefined = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -64,7 +64,7 @@ export var testSetTextUndefined = function () {
 	});
 };
 
-export var testSetTextToZero = function () {
+export const testSetTextToZero = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -85,7 +85,7 @@ function createFormattedString(value: any): FormattedString {
 	return result;
 }
 
-export var testSetTextWithSpan = function () {
+export const testSetTextWithSpan = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -97,7 +97,7 @@ export var testSetTextWithSpan = function () {
 	});
 };
 
-export var testSetTextNullWithSpan = function () {
+export const testSetTextNullWithSpan = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -109,7 +109,7 @@ export var testSetTextNullWithSpan = function () {
 	});
 };
 
-export var testSetTextUndefinedWithSpan = function () {
+export const testSetTextUndefinedWithSpan = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -121,7 +121,7 @@ export var testSetTextUndefinedWithSpan = function () {
 	});
 };
 
-export var testSetTextToZeroWithSpan = function () {
+export const testSetTextToZeroWithSpan = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -134,7 +134,7 @@ export var testSetTextToZeroWithSpan = function () {
 };
 
 /* tslint:disable */
-export var testSetHintToNumber = function () {
+export const testSetHintToNumber = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		const expectedValue = 1;
@@ -148,7 +148,7 @@ export var testSetHintToNumber = function () {
 	});
 };
 /* tslint:enable */
-export var testBindTextDirectlyToModel = function () {
+export const testBindTextDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -186,7 +186,7 @@ export function test_set_color() {
 	}
 }
 
-export var testBindTextToBindingContext = function () {
+export const testBindTextToBindingContext = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		const page = <Page>views[1];
@@ -210,7 +210,7 @@ export var testBindTextToBindingContext = function () {
 	});
 };
 
-export var testTextIsUpdatedWhenUserTypes = function () {
+export const testTextIsUpdatedWhenUserTypes = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		textField.updateTextTrigger = 'focusLost';
@@ -223,7 +223,7 @@ export var testTextIsUpdatedWhenUserTypes = function () {
 	});
 };
 
-export var testTextWrittenByTextChangeListenerIsNotRepeatedByTheKeystroke = function () {
+export const testTextWrittenByTextChangeListenerIsNotRepeatedByTheKeystroke = function () {
 	// Android's TextWatcher reports after the edit is applied, so only the iOS
 	// delegate can apply a keystroke on top of what the listener wrote.
 	if (!isIOS) {
@@ -244,7 +244,7 @@ export var testTextWrittenByTextChangeListenerIsNotRepeatedByTheKeystroke = func
 	});
 };
 
-export var testSetHint = function () {
+export const testSetHint = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -258,7 +258,7 @@ export var testSetHint = function () {
 	});
 };
 
-export var testBindHintDirectlyToModel = function () {
+export const testBindHintDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -285,7 +285,7 @@ export var testBindHintDirectlyToModel = function () {
 	});
 };
 
-export var testBindHintToBindingConext = function () {
+export const testBindHintToBindingConext = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		const page = <Page>views[1];
@@ -309,7 +309,7 @@ export var testBindHintToBindingConext = function () {
 	});
 };
 
-export var testSetSecure = function () {
+export const testSetSecure = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -323,7 +323,7 @@ export var testSetSecure = function () {
 	});
 };
 
-export var testSetSecureAndKeyboardTypeNumber = function () {
+export const testSetSecureAndKeyboardTypeNumber = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -336,7 +336,7 @@ export var testSetSecureAndKeyboardTypeNumber = function () {
 	});
 };
 
-export var testSetKeyboardTypeNumberAndSecure = function () {
+export const testSetKeyboardTypeNumberAndSecure = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -349,7 +349,7 @@ export var testSetKeyboardTypeNumberAndSecure = function () {
 	});
 };
 
-export var testSetSecureAndKeyboardTypeDecimal = function () {
+export const testSetSecureAndKeyboardTypeDecimal = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -362,7 +362,7 @@ export var testSetSecureAndKeyboardTypeDecimal = function () {
 	});
 };
 
-export var testSetKeyboardTypeDecimalAndSecure = function () {
+export const testSetKeyboardTypeDecimalAndSecure = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -375,7 +375,7 @@ export var testSetKeyboardTypeDecimalAndSecure = function () {
 	});
 };
 
-export var testBindSecureDirectlyToModel = function () {
+export const testBindSecureDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 
@@ -402,7 +402,7 @@ export var testBindSecureDirectlyToModel = function () {
 	});
 };
 
-export var testBindSecureToBindingConext = function () {
+export const testBindSecureToBindingConext = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		const page = <Page>views[1];
@@ -427,10 +427,10 @@ export var testBindSecureToBindingConext = function () {
 };
 
 // iOS only
-export var testBindCloseOnReturnToBindingConext = function () {
+export const testBindCloseOnReturnToBindingConext = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		if (!isIOS) {
-			TKUnit.assert(true === true);
+			TKUnit.assert(true);
 
 			return;
 		}
@@ -459,10 +459,10 @@ export var testBindCloseOnReturnToBindingConext = function () {
 };
 
 // iOS only
-export var testDontCloseOnReturn = function () {
+export const testDontCloseOnReturn = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		if (!isIOS) {
-			TKUnit.assert(true === true);
+			TKUnit.assert(true);
 
 			return;
 		}
@@ -481,10 +481,10 @@ export var testDontCloseOnReturn = function () {
 };
 
 // iOS only
-export var testCloseOnReturn = function () {
+export const testCloseOnReturn = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		if (!isIOS) {
-			TKUnit.assert(true === true);
+			TKUnit.assert(true);
 
 			return;
 		}
@@ -500,10 +500,10 @@ export var testCloseOnReturn = function () {
 };
 
 // iOS only
-export var testCloseOnReturnByDefault = function () {
+export const testCloseOnReturnByDefault = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		if (!isIOS) {
-			TKUnit.assert(true === true);
+			TKUnit.assert(true);
 
 			return;
 		}
@@ -518,7 +518,7 @@ export var testCloseOnReturnByDefault = function () {
 };
 
 const expectedFontSize = 42;
-export var testLocalFontSizeFromCss = function () {
+export const testLocalFontSizeFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		const page = <Page>views[1];
@@ -529,7 +529,7 @@ export var testLocalFontSizeFromCss = function () {
 	});
 };
 
-export var testNativeFontSizeFromCss = function () {
+export const testNativeFontSizeFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		const page = <Page>views[1];
@@ -540,7 +540,7 @@ export var testNativeFontSizeFromCss = function () {
 	});
 };
 
-export var testNativeFontSizeFromLocal = function () {
+export const testNativeFontSizeFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		textField.style.fontSize = expectedFontSize;
@@ -552,7 +552,7 @@ export var testNativeFontSizeFromLocal = function () {
 
 const expectedColorHex = '#FF0000FF';
 const expectedNormalizedColorHex = '#FF0000';
-export var testLocalColorFromCss = function () {
+export const testLocalColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		const page = <Page>views[1];
@@ -563,7 +563,7 @@ export var testLocalColorFromCss = function () {
 	});
 };
 
-export var testNativeColorFromCss = function () {
+export const testNativeColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		const page = <Page>views[1];
@@ -574,7 +574,7 @@ export var testNativeColorFromCss = function () {
 	});
 };
 
-export var testNativeColorFromLocal = function () {
+export const testNativeColorFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		textField.style.color = new Color(expectedColorHex);
@@ -586,7 +586,7 @@ export var testNativeColorFromLocal = function () {
 
 const expectedBackgroundColorHex = '#00FF00FF';
 const expectedNormalizedBackgroundColorHex = '#00FF00';
-export var testLocalBackgroundColorFromCss = function () {
+export const testLocalBackgroundColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		const page = <Page>views[1];
@@ -597,7 +597,7 @@ export var testLocalBackgroundColorFromCss = function () {
 	});
 };
 
-export var testNativeBackgroundColorFromCss = function () {
+export const testNativeBackgroundColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		const page = <Page>views[1];
@@ -610,7 +610,7 @@ export var testNativeBackgroundColorFromCss = function () {
 	});
 };
 
-export var testNativeBackgroundColorFromLocal = function () {
+export const testNativeBackgroundColorFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const textField = <TextField>views[0];
 		textField.style.backgroundColor = new Color(expectedBackgroundColorHex);
@@ -622,8 +622,8 @@ export var testNativeBackgroundColorFromLocal = function () {
 	});
 };
 
-const expectedTextAlignment: 'right' = 'right';
-export var testLocalTextAlignmentFromCss = function () {
+const expectedTextAlignment = 'right' as const;
+export const testLocalTextAlignmentFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const view = <TextField>views[0];
 		const page = <Page>views[1];
@@ -634,7 +634,7 @@ export var testLocalTextAlignmentFromCss = function () {
 	});
 };
 
-export var testNativeTextAlignmentFromCss = function () {
+export const testNativeTextAlignmentFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const view = <TextField>views[0];
 		const page = <Page>views[1];
@@ -645,7 +645,7 @@ export var testNativeTextAlignmentFromCss = function () {
 	});
 };
 
-export var testNativeTextAlignmentFromLocal = function () {
+export const testNativeTextAlignmentFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		const view = <TextField>views[0];
 		view.style.textAlignment = expectedTextAlignment;
@@ -665,7 +665,7 @@ export var testNativeTextAlignmentFromLocal = function () {
 // 	);
 // };
 
-export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = function () {
+export const test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = function () {
 	const firstSpan = new Span();
 	firstSpan.fontSize = 10;
 	firstSpan.text = 'First';

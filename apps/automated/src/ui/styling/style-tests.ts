@@ -138,17 +138,14 @@ export function test_type_selector() {
 
 	page.style.color = unsetValue;
 
-	let btn: Button;
-	let label: Label;
-
 	// >> article-using-type-selector
 	page.css = 'button { background-color: red; }';
 
 	//// Will be styled
-	btn = new Button();
+	const btn: Button = new Button();
 
 	//// Won't be styled
-	label = new Label();
+	const label: Label = new Label();
 	// << article-using-type-selector
 
 	const stack = new StackLayout();
@@ -163,18 +160,16 @@ export function test_type_selector() {
 
 export function test_class_selector() {
 	const page = helper.getClearCurrentPage();
-	let btnWithClass: Button;
-	let btnWithNoClass: Button;
 
 	// >> article-using-class-selector
 	page.css = '.test { color: red; }';
 
 	//// Will be styled
-	btnWithClass = new Button();
+	const btnWithClass: Button = new Button();
 	btnWithClass.className = 'test';
 
 	//// Won't be styled
-	btnWithNoClass = new Button();
+	const btnWithNoClass: Button = new Button();
 	// << article-using-class-selector
 
 	const stack = new StackLayout();
@@ -218,12 +213,11 @@ export function test_class_selector_with_escape_characters() {
 
 export function test_multiple_class_selector() {
 	const page = helper.getClearCurrentPage();
-	let btnWithClasses: Button;
 
 	page.css = '.style1 { color: red; } .style2 { background-color: blue; } ';
 
 	//// Will be styled
-	btnWithClasses = new Button();
+	const btnWithClasses: Button = new Button();
 	btnWithClasses.className = 'style1 style2';
 
 	const stack = new StackLayout();
@@ -255,18 +249,16 @@ export function test_class_selector_overwriting() {
 export function test_id_selector() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btnWithId: Button;
-	let btnWithNoId: Button;
 
 	// >> article-using-id-selector
 	page.css = '#myButton { color: red; }';
 
 	//// Will be styled
-	btnWithId = new Button();
+	const btnWithId: Button = new Button();
 	btnWithId.id = 'myButton';
 
 	//// Won't be styled
-	btnWithNoId = new Button();
+	const btnWithNoId: Button = new Button();
 	// << article-using-id-selector
 
 	const stack = new StackLayout();
@@ -281,18 +273,16 @@ export function test_id_selector() {
 export function test_not_pseudo_class_selector() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btnWithId: Button;
-	let btnWithNoId: Button;
 
 	// >> article-using-not-pseudo-class-selector
 	page.css = 'Button:not(#myButton) { color: red; }';
 
 	//// Will be styled
-	btnWithNoId = new Button();
+	const btnWithNoId: Button = new Button();
 	// << article-using-not-pseudo-class-selector
 
 	//// Won't be styled
-	btnWithId = new Button();
+	const btnWithId: Button = new Button();
 	btnWithId.id = 'myButton';
 
 	const stack = new StackLayout();
@@ -307,18 +297,16 @@ export function test_not_pseudo_class_selector() {
 export function test_is_pseudo_class_selector() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btnWithId: Button;
-	let btnWithNoId: Button;
 
 	// >> article-using-is-pseudo-class-selector
 	page.css = 'Button:is(#myButton) { color: red; }';
 
 	//// Will be styled
-	btnWithId = new Button();
+	const btnWithId: Button = new Button();
 	btnWithId.id = 'myButton';
 
 	//// Won't be styled
-	btnWithNoId = new Button();
+	const btnWithNoId: Button = new Button();
 	// << article-using-is-pseudo-class-selector
 
 	const stack = new StackLayout();
@@ -333,18 +321,16 @@ export function test_is_pseudo_class_selector() {
 export function test_where_pseudo_class_selector() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btnWithId: Button;
-	let btnWithNoId: Button;
 
 	// >> article-using-where-pseudo-class-selector
 	page.css = 'Button:where(#myButton) { color: red; }';
 
 	//// Will be styled
-	btnWithId = new Button();
+	const btnWithId: Button = new Button();
 	btnWithId.id = 'myButton';
 
 	//// Won't be styled
-	btnWithNoId = new Button();
+	const btnWithNoId: Button = new Button();
 	// << article-using-where-pseudo-class-selector
 
 	const stack = new StackLayout();
@@ -359,18 +345,16 @@ export function test_where_pseudo_class_selector() {
 export function test_where_pseudo_class_selector_zero_specificity() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btnWithId: Button;
-	let btnWithNoId: Button;
 
 	// >> article-using-where-pseudo-class-selector-zero-specificity
 	page.css = '#myButton { color: green; } Button:where(#myButton) { color: red; }';
 
 	//// Will be styled
-	btnWithId = new Button();
+	const btnWithId: Button = new Button();
 	btnWithId.id = 'myButton';
 
 	//// Won't be styled
-	btnWithNoId = new Button();
+	const btnWithNoId: Button = new Button();
 	// << article-using-where-pseudo-class-selector-zero-specificity
 
 	const stack = new StackLayout();
@@ -387,11 +371,10 @@ export function test_where_pseudo_class_selector_zero_specificity() {
 export function test_state_selector() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btn: Button;
 	const testStack = new StackLayout();
 	page.content = testStack;
 
-	btn = new Button();
+	const btn: Button = new Button();
 	testStack.addChild(btn);
 
 	page.css = ':pressed { color: red; }';
@@ -402,13 +385,12 @@ export function test_state_selector() {
 export function test_type_and_state_selector() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btn: Button;
 
 	// >>article-using-state-selector
 	page.css = 'button:pressed { color: red; }';
 
 	//// Will be red when pressed
-	btn = new Button();
+	const btn: Button = new Button();
 	// << article-using-state-selector
 	const stack = new StackLayout();
 	page.content = stack;
@@ -467,8 +449,6 @@ export function test_id_and_state_selector() {
 export function test_matching_media_query_selector() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btnWithId: Button;
-	let btnWithNoId: Button;
 
 	// >> article-using-matching-media-query-selector
 	page.css = `@media only screen and (max-width: ${Screen.mainScreen.widthDIPs}) {
@@ -478,11 +458,11 @@ export function test_matching_media_query_selector() {
 	}`;
 
 	//// Will be styled
-	btnWithId = new Button();
+	const btnWithId: Button = new Button();
 	btnWithId.id = 'myButton';
 
 	//// Won't be styled
-	btnWithNoId = new Button();
+	const btnWithNoId: Button = new Button();
 	// << article-using-matching-media-query-selector
 
 	const stack = new StackLayout();
@@ -497,8 +477,6 @@ export function test_matching_media_query_selector() {
 export function test_non_matching_media_query_selector() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btnWithId: Button;
-	let btnWithNoId: Button;
 
 	// >> article-using-non-matching-media-query-selector
 	page.css = `@media only screen and (max-width: ${Screen.mainScreen.widthDIPs - 1}) {
@@ -508,11 +486,11 @@ export function test_non_matching_media_query_selector() {
 	}`;
 
 	//// Will be styled
-	btnWithId = new Button();
+	const btnWithId: Button = new Button();
 	btnWithId.id = 'myButton';
 
 	//// Won't be styled
-	btnWithNoId = new Button();
+	const btnWithNoId: Button = new Button();
 	// << article-using-non-matching-media-query-selector
 
 	const stack = new StackLayout();
@@ -527,8 +505,6 @@ export function test_non_matching_media_query_selector() {
 export function test_matching_nested_media_query_selector() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btnWithId: Button;
-	let btnWithNoId: Button;
 
 	// >> article-using-matching-nested-media-query-selector
 	page.css = `
@@ -541,11 +517,11 @@ export function test_matching_nested_media_query_selector() {
 	}`;
 
 	//// Will be styled
-	btnWithId = new Button();
+	const btnWithId: Button = new Button();
 	btnWithId.id = 'myButton';
 
 	//// Won't be styled
-	btnWithNoId = new Button();
+	const btnWithNoId: Button = new Button();
 	// << article-using-matching-nested-media-query-selector
 
 	const stack = new StackLayout();
@@ -560,8 +536,6 @@ export function test_matching_nested_media_query_selector() {
 export function test_non_matching_nested_media_query_selector() {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btnWithId: Button;
-	let btnWithNoId: Button;
 
 	// >> article-using-non-matching-nested-media-query-selector
 	page.css = `
@@ -574,11 +548,11 @@ export function test_non_matching_nested_media_query_selector() {
 	}`;
 
 	//// Will be styled
-	btnWithId = new Button();
+	const btnWithId: Button = new Button();
 	btnWithId.id = 'myButton';
 
 	//// Won't be styled
-	btnWithNoId = new Button();
+	const btnWithNoId: Button = new Button();
 	// << article-using-non-matching-nested-media-query-selector
 
 	const stack = new StackLayout();
@@ -834,21 +808,18 @@ export function test_selector_priorities_6() {
 function testSelectorsPrioritiesTemplate(css: string) {
 	const page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
-	let btn: Button;
-	let btnWithClass: Button;
-	let btnWithId: Button;
 
 	const testStack = new StackLayout();
 	page.content = testStack;
 
-	btn = new Button();
+	const btn: Button = new Button();
 	testStack.addChild(btn);
 
-	btnWithClass = new Button();
+	const btnWithClass: Button = new Button();
 	btnWithClass.className = 'button-class';
 	testStack.addChild(btnWithClass);
 
-	btnWithId = new Button();
+	const btnWithId: Button = new Button();
 	btnWithId.className = 'button-class';
 	btnWithId.id = 'myButton';
 	testStack.addChild(btnWithId);

@@ -6,7 +6,7 @@ import * as fs from '@nativescript/core/file-system';
 import * as TKUnit from '../tk-unit';
 import { Application, isIOS, Device, platformNames, isAndroid } from '@nativescript/core';
 
-export var testPathNormalize = function () {
+export const testPathNormalize = function () {
 	// >> file-system-normalize
 	const documents = fs.knownFolders.documents();
 	const testPath = '///test.txt';
@@ -19,7 +19,7 @@ export var testPathNormalize = function () {
 	// << file-system-normalize
 };
 
-export var testPathJoin = function () {
+export const testPathJoin = function () {
 	// >> file-system-multiple-args
 	const documents = fs.knownFolders.documents();
 	// Generate a path like <documents.path>/myFiles/test.txt
@@ -31,7 +31,7 @@ export var testPathJoin = function () {
 	// << file-system-multiple-args
 };
 
-export var testPathSeparator = function () {
+export const testPathSeparator = function () {
 	// >> file-system-separator
 	// An OS dependent path separator, "\" or "/".
 	const separator = fs.path.separator;
@@ -42,7 +42,7 @@ export var testPathSeparator = function () {
 	// << file-system-separator
 };
 
-export var testFileFromPath = function () {
+export const testFileFromPath = function () {
 	// >> file-system-create
 	const documents = fs.knownFolders.documents();
 	const path = fs.path.join(documents.path, 'FileFromPath.txt');
@@ -76,7 +76,7 @@ export var testFileFromPath = function () {
 	// << file-system-create
 };
 
-export var testFolderFromPath = function () {
+export const testFolderFromPath = function () {
 	// >> file-system-create-folder
 	const path = fs.path.join(fs.knownFolders.documents().path, 'music');
 	const folder = fs.Folder.fromPath(path);
@@ -88,7 +88,7 @@ export var testFolderFromPath = function () {
 	// << file-system-create-folder
 };
 
-export var testFileWrite = function () {
+export const testFileWrite = function () {
 	// >> file-system-write-string
 	const documents = fs.knownFolders.documents();
 	const file = documents.getFile('Test_Write.txt');
@@ -121,7 +121,7 @@ export var testFileWrite = function () {
 	// << file-system-write-string
 };
 
-export var testGetFile = function () {
+export const testGetFile = function () {
 	// >> file-system-create-file
 	const documents = fs.knownFolders.documents();
 	const file = documents.getFile('NewFileToCreate.txt');
@@ -133,7 +133,7 @@ export var testGetFile = function () {
 	// << file-system-create-file
 };
 
-export var testGetFolder = function () {
+export const testGetFolder = function () {
 	// >> file-system-get-folder
 	const documents = fs.knownFolders.documents();
 	const folder = documents.getFolder('NewFolderToCreate');
@@ -145,7 +145,7 @@ export var testGetFolder = function () {
 	// << file-system-get-folder
 };
 
-export var testFileRead = function () {
+export const testFileRead = function () {
 	// >> file-system-example-text
 	const documents = fs.knownFolders.documents();
 	const myFile = documents.getFile('Test_Write.txt');
@@ -265,7 +265,7 @@ export function testFileReadWriteBinaryAsync() {
 	// << file-system-read-binary-async
 }
 
-export var testGetKnownFolders = function () {
+export const testGetKnownFolders = function () {
 	// >> file-system-known-folders
 	// Getting the application's 'documents' folder.
 	const documents = fs.knownFolders.documents();
@@ -305,7 +305,7 @@ function _testIOSSpecificKnownFolder(knownFolderName: string) {
 	}
 }
 
-export var testIOSSpecificKnownFolders = function () {
+export const testIOSSpecificKnownFolders = function () {
 	if (__IOS__) {
 		_testIOSSpecificKnownFolder('library');
 		_testIOSSpecificKnownFolder('developer');
@@ -318,7 +318,7 @@ export var testIOSSpecificKnownFolders = function () {
 	}
 };
 
-export var testGetEntities = function () {
+export const testGetEntities = function () {
 	// >> file-system-folders-content
 	const documents = fs.knownFolders.documents();
 	// >> (hide)
@@ -329,6 +329,7 @@ export var testGetEntities = function () {
 
 	// IMPORTANT: console.log is mocked to make the snippet pretty.
 	const globalConsole = console;
+	// eslint-disable-next-line no-var -- hoisting makes globalConsole read this (undefined) instead of throwing in the TDZ
 	var console = {
 		log: function (file) {
 			if (file === 'Test.txt') {
@@ -363,7 +364,7 @@ export var testGetEntities = function () {
 	// << file-system-folders-content
 };
 
-export var testEnumEntities = function () {
+export const testEnumEntities = function () {
 	// >> file-system-enum-content
 	const documents = fs.knownFolders.documents();
 	// >> (hide)
@@ -409,7 +410,7 @@ export var testEnumEntities = function () {
 	// << file-system-enum-content
 };
 
-export var testGetParent = function () {
+export const testGetParent = function () {
 	// >> file-system-parent
 	const documents = fs.knownFolders.documents();
 	const file = documents.getFile('Test.txt');
@@ -425,7 +426,7 @@ export var testGetParent = function () {
 	// << file-system-parent
 };
 
-export var testFileNameExtension = function () {
+export const testFileNameExtension = function () {
 	// >> file-system-extension
 	const documents = fs.knownFolders.documents();
 	const file = documents.getFile('Test.txt');
@@ -441,7 +442,7 @@ export var testFileNameExtension = function () {
 	// << file-system-extension
 };
 
-export var testFileExists = function () {
+export const testFileExists = function () {
 	// >> file-system-fileexists
 	const documents = fs.knownFolders.documents();
 	const filePath = fs.path.join(documents.path, 'Test.txt');
@@ -456,7 +457,7 @@ export var testFileExists = function () {
 	// << file-system-fileexists
 };
 
-export var testFolderExists = function () {
+export const testFolderExists = function () {
 	// >> file-system-folderexists
 	const documents = fs.knownFolders.documents();
 	let exists = fs.Folder.exists(documents.path);
@@ -468,7 +469,7 @@ export var testFolderExists = function () {
 	// << file-system-folderexists
 };
 
-export var testContainsFile = function () {
+export const testContainsFile = function () {
 	const folder = fs.knownFolders.documents();
 	const file = folder.getFile('Test.txt');
 
@@ -480,7 +481,7 @@ export var testContainsFile = function () {
 	file.remove();
 };
 
-export var testFileRename = function () {
+export const testFileRename = function () {
 	// >> file-system-renaming
 	const documents = fs.knownFolders.documents();
 	const file = documents.getFile('Test.txt');
@@ -504,7 +505,7 @@ export var testFileRename = function () {
 	// << file-system-renaming
 };
 
-export var testFolderRename = function () {
+export const testFolderRename = function () {
 	// >> file-system-renaming-folder
 	const folder = fs.knownFolders.documents();
 	const myFolder = folder.getFolder('Test__');
@@ -528,7 +529,7 @@ export var testFolderRename = function () {
 	// << file-system-renaming-folder
 };
 
-export var testFileRemove = function () {
+export const testFileRemove = function () {
 	// >> file-system-remove-file
 	const documents = fs.knownFolders.documents();
 	const file = documents.getFile('AFileToRemove.txt');
@@ -549,7 +550,7 @@ export var testFileRemove = function () {
 	// << file-system-remove-file
 };
 
-export var testFolderRemove = function () {
+export const testFolderRemove = function () {
 	// >> file-system-remove-folder
 	const documents = fs.knownFolders.documents();
 	const file = documents.getFolder('AFolderToRemove');
@@ -571,7 +572,7 @@ export var testFolderRemove = function () {
 	// << file-system-remove-folder
 };
 
-export var testFolderClear = function () {
+export const testFolderClear = function () {
 	// >> file-system-clear-folder
 	const documents = fs.knownFolders.documents();
 	const folder = documents.getFolder('testFolderEmpty');
@@ -605,7 +606,7 @@ export var testFolderClear = function () {
 };
 
 // misc
-export var testKnownFolderRename = function () {
+export const testKnownFolderRename = function () {
 	// You can rename known folders in android - so skip this test.
 	if (!Application.android) {
 		const folder = fs.knownFolders.documents();

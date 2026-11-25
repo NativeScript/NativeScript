@@ -16,7 +16,7 @@ function assertInState(view: view.View, state: string, knownStates: string[]): v
 		});
 }
 
-export var test_goToVisualState = function () {
+export const test_goToVisualState = function () {
 	const test = function (views: Array<view.View>) {
 		(<page.Page>views[0]).css = 'button:hovered { color: red; background-color: orange } button:pressed { color: white; background-color: black }';
 
@@ -42,7 +42,7 @@ export var test_goToVisualState = function () {
 	helper.do_PageTest_WithButton(test);
 };
 
-export var test_goToVisualState_NoState_ShouldResetStyledProperties = function () {
+export const test_goToVisualState_NoState_ShouldResetStyledProperties = function () {
 	const test = function (views: Array<view.View>) {
 		(<page.Page>views[0]).css = 'button:hovered { color: red; background-color: orange }';
 
@@ -68,7 +68,7 @@ export var test_goToVisualState_NoState_ShouldResetStyledProperties = function (
 	helper.do_PageTest_WithButton(test);
 };
 
-export var test_goToVisualState_NoState_ShouldGoToNormal = function () {
+export const test_goToVisualState_NoState_ShouldGoToNormal = function () {
 	const test = function (views: Array<view.View>) {
 		(<page.Page>views[0]).css = 'button { color: orange; background-color: black } button:hovered { color: red; background-color: orange }';
 
@@ -95,7 +95,7 @@ export var test_goToVisualState_NoState_ShouldGoToNormal = function () {
 	helper.do_PageTest_WithButton(test);
 };
 
-export var test_addVisualState = function () {
+export const test_addVisualState = function () {
 	const test = function (views: Array<view.View>) {
 		(<page.Page>views[0]).css = 'button:hovered { color: red; background-color: orange } button:pressed { color: white }';
 
@@ -122,7 +122,7 @@ export var test_addVisualState = function () {
 	helper.do_PageTest_WithButton(test);
 };
 
-export var test_removeVisualState = function () {
+export const test_removeVisualState = function () {
 	const test = function (views: Array<view.View>) {
 		(<page.Page>views[0]).css = 'button { background-color: yellow; color: green } button:pressed { background-color: red; color: white }';
 

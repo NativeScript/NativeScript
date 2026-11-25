@@ -1,7 +1,7 @@
 import * as TKUnit from '../tk-unit';
 import { knownFolders, path, File, Folder } from '@nativescript/core';
 
-export var test_UTF8_BOM_is_not_returned = function () {
+export const test_UTF8_BOM_is_not_returned = function () {
 	const folder1 = path.join(knownFolders.documents().path, 'file-system-access-tests');
 	if (!Folder.exists(folder1)) {
 		Folder.fromPath(folder1);
@@ -21,7 +21,7 @@ export var test_UTF8_BOM_is_not_returned = function () {
 	}
 };
 
-export var test_file_exists_on_folder = function () {
+export const test_file_exists_on_folder = function () {
 	const folder1 = path.join(knownFolders.documents().path, 'file-system-access-tests');
 	if (!Folder.exists(folder1)) {
 		Folder.fromPath(folder1);
@@ -40,7 +40,7 @@ export var test_file_exists_on_folder = function () {
 	TKUnit.assertTrue(File.exists(filePath), 'File.exists() returned false for folder!');
 };
 
-export var test_leading_slash_is_not_returned = function () {
+export const test_leading_slash_is_not_returned = function () {
 	const parts = ['app', 'tns_modules', 'fileName'];
 	const expected = parts.join('/');
 	const filePath = path.join(...parts);

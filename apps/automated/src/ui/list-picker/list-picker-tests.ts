@@ -29,7 +29,7 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(() => new listPickerModule.ListPicker());
 }
 
-export var testWhenlistPickerIsCreatedItemsAreUndefined = function () {
+export const testWhenlistPickerIsCreatedItemsAreUndefined = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		const listPicker = <listPickerModule.ListPicker>views[0];
 		const expectedValue = undefined;
@@ -38,7 +38,7 @@ export var testWhenlistPickerIsCreatedItemsAreUndefined = function () {
 	});
 };
 
-export var testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
+export const testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		const listPicker = <listPickerModule.ListPicker>views[0];
 		const expectedValue = -1;
@@ -47,7 +47,7 @@ export var testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
 	});
 };
 
-export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
+export const testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
@@ -57,7 +57,7 @@ export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreate
 	});
 };
 
-export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
+export const testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = [];
@@ -67,7 +67,7 @@ export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function 
 	});
 };
 
-export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
+export const testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		const listPicker = <listPickerModule.ListPicker>views[0];
 		// >> article-binding-listpickeritems
@@ -79,7 +79,7 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
@@ -93,7 +93,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
@@ -105,7 +105,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
@@ -117,7 +117,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
 	});
 };
 
-export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
+export const testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
 	const listPicker = _createListPicker();
 	const expectedValue = 10;
 	listPicker.items = _createItems(expectedValue);
@@ -129,7 +129,7 @@ export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
 	});
 };
 
-export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
+export const testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
 	const listPicker = _createListPicker();
 	listPicker.items = _createItems(10);
 	const expectedValue = 9;
@@ -164,7 +164,7 @@ export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = functio
 //     });
 // }
 
-export var testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = function () {
+export const testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = function () {
 	const listPicker = _createListPicker();
 	const mainPage = helper.getCurrentPage();
 	listPicker.items = _createItems(2);
@@ -178,7 +178,7 @@ export var testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = funct
 	TKUnit.assertEqual(actualValue, expectedValue);
 };
 
-export var test_Android_MaxValueIsOneLessThanItemsCount = function () {
+export const test_Android_MaxValueIsOneLessThanItemsCount = function () {
 	if (!Application.android) {
 		return;
 	}
@@ -192,7 +192,7 @@ export var test_Android_MaxValueIsOneLessThanItemsCount = function () {
 	});
 };
 
-export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function () {
+export const test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function () {
 	if (!Application.android) {
 		return;
 	}
@@ -205,7 +205,7 @@ export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function
 	});
 };
 
-export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly = function () {
+export const test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly = function () {
 	if (!Application.android) {
 		return;
 	}
@@ -238,7 +238,7 @@ export function test_Android_EditTextIsUpdatedAfterGarbageCollection() {
 	});
 }
 
-export var test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = function () {
+export const test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = function () {
 	if (!Application.android) {
 		return;
 	}

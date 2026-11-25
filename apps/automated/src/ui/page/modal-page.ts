@@ -1,7 +1,7 @@
 ﻿import * as TKUnit from '../../tk-unit';
 import { Frame, Page, ShownModallyData } from '@nativescript/core';
 
-export var modalPage: Page;
+export let modalPage: Page;
 export function onShowingModally(args) {
 	modalPage = <Page>args.object;
 	args.object.showingModally = true;

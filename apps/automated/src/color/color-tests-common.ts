@@ -4,7 +4,7 @@ const Color = colorModule.Color;
 // << color-require
 import * as TKUnit from '../tk-unit';
 
-export var test_Hex_Color = function () {
+export const test_Hex_Color = function () {
 	// >> color-hex
 	// Creates the red color
 	const color = new Color('#FF0000');
@@ -17,7 +17,7 @@ export var test_Hex_Color = function () {
 	TKUnit.assertEqual(color.argb, 0xffff0000, 'Color.argb not properly parsed');
 };
 
-export var test_Hex_rgba_Color = function () {
+export const test_Hex_rgba_Color = function () {
 	// >> color-hex-rgba
 	// Creates the red color
 	const color = new Color('#FF0000FF');
@@ -30,7 +30,7 @@ export var test_Hex_rgba_Color = function () {
 	TKUnit.assertEqual(color.argb, 0xffff0000, 'Color.argb not properly parsed');
 };
 
-export var test_ShortHex_Color = function () {
+export const test_ShortHex_Color = function () {
 	// >> color-hex-short
 	// Creates the color #FF8800
 	const color = new Color('#F80');
@@ -43,7 +43,7 @@ export var test_ShortHex_Color = function () {
 	TKUnit.assertEqual(color.argb, 0xffff8800, 'Color.argb not properly parsed');
 };
 
-export var test_ShortHex_rgba_Color = function () {
+export const test_ShortHex_rgba_Color = function () {
 	// >> color-hex-short-rgba
 	// Creates the color #FF8800
 	const color = new Color('#F80F');
@@ -56,7 +56,7 @@ export var test_ShortHex_rgba_Color = function () {
 	TKUnit.assertEqual(color.argb, 0xffff8800, 'Color.argb not properly parsed');
 };
 
-export var test_Argb_Color = function () {
+export const test_Argb_Color = function () {
 	// >> color-rgb
 	// Creates the color with 100 alpha, 255 red, 100 green, 100 blue
 	const color = new Color(100, 255, 100, 100);
@@ -69,7 +69,7 @@ export var test_Argb_Color = function () {
 	TKUnit.assertEqual(color.argb, 0x64ff6464, 'Color.argb not properly parsed');
 };
 
-export var test_ArgbInt_Color = function () {
+export const test_ArgbInt_Color = function () {
 	// >> color-rgb-single
 	// Creates the color with 100 alpha, 100 red, 100 green, 100 blue
 	const color = new Color(0x64646464);
@@ -82,7 +82,7 @@ export var test_ArgbInt_Color = function () {
 	TKUnit.assertEqual(color.argb, 0x64646464, 'Color.argb not properly parsed');
 };
 
-export var test_rgb_Color_CSS = function () {
+export const test_rgb_Color_CSS = function () {
 	// <snippet module="color" title="color">
 	// ### Creating a Color from four RGB values
 	// ``` JavaScript
@@ -98,7 +98,7 @@ export var test_rgb_Color_CSS = function () {
 	TKUnit.assertEqual(color.argb, 0xffff6464, 'Color.argb not properly parsed');
 };
 
-export var test_rgb_Color_CSS_lvl4 = function () {
+export const test_rgb_Color_CSS_lvl4 = function () {
 	const alpha = 0.5;
 	const expected = 0x80;
 	// <snippet module="color" title="color">
@@ -116,7 +116,7 @@ export var test_rgb_Color_CSS_lvl4 = function () {
 	TKUnit.assertEqual(color.argb, 0x80ff6464, 'Color.argb not properly parsed');
 };
 
-export var test_rgba_Color_CSS = function () {
+export const test_rgba_Color_CSS = function () {
 	const alpha = 0.5;
 	const expected = 0x80;
 	// <snippet module="color" title="color">
@@ -134,7 +134,7 @@ export var test_rgba_Color_CSS = function () {
 	TKUnit.assertEqual(color.argb, 0x80ff6464, 'Color.argb not properly parsed');
 };
 
-export var test_Color_isValid = function () {
+export const test_Color_isValid = function () {
 	const color = new Color('#FF0000');
 
 	TKUnit.assertEqual(Color.isValid(color), true, 'Failed to validate color instance');

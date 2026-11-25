@@ -288,4 +288,4 @@ export class SettingsViewModel extends observable.Observable {
 			});
 	}
 }
-export var settingsViewModel = new SettingsViewModel();
+export const settingsViewModel = new SettingsViewModel();

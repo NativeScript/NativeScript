@@ -1,7 +1,7 @@
 /* tslint:disable:no-unused-variable */
 import { GestureEventData, Label, PanGestureEventData, PinchGestureEventData, SwipeGestureEventData, RotationGestureEventData } from '@nativescript/core';
 
-export var test_DummyTestForSnippetOnly01 = function () {
+export const test_DummyTestForSnippetOnly01 = function () {
 	// >> gestures-double-tap-alt
 	const label = new Label();
 	const observer = label.on('doubleTap', function (args: GestureEventData) {
@@ -10,7 +10,7 @@ export var test_DummyTestForSnippetOnly01 = function () {
 	// << gestures-double-tap-alt
 };
 
-export var test_DummyTestForSnippetOnly11 = function () {
+export const test_DummyTestForSnippetOnly11 = function () {
 	// >> gestures-long-press-alt
 	const label = new Label();
 	const observer = label.on('longPress', function (args: GestureEventData) {
@@ -19,7 +19,7 @@ export var test_DummyTestForSnippetOnly11 = function () {
 	// << gestures-long-press-alt
 };
 
-export var test_DummyTestForSnippetOnly22 = function () {
+export const test_DummyTestForSnippetOnly22 = function () {
 	// >> gestures-pan-alt
 	const label = new Label();
 	const observer = label.on('pan', function (args: PanGestureEventData) {
@@ -28,7 +28,7 @@ export var test_DummyTestForSnippetOnly22 = function () {
 	// << gestures-pan-alt
 };
 
-export var test_DummyTestForSnippetOnly33 = function () {
+export const test_DummyTestForSnippetOnly33 = function () {
 	// >> gestures-pan-pinch-alt
 	const label = new Label();
 	const observer = label.on('pinch', function (args: PinchGestureEventData) {
@@ -37,7 +37,7 @@ export var test_DummyTestForSnippetOnly33 = function () {
 	// << gestures-pan-pinch-alt
 };
 
-export var test_DummyTestForSnippetOnly44 = function () {
+export const test_DummyTestForSnippetOnly44 = function () {
 	// >> gestures-rotation-alt
 	const label = new Label();
 	const observer = label.on('rotation', function (args: RotationGestureEventData) {
@@ -46,7 +46,7 @@ export var test_DummyTestForSnippetOnly44 = function () {
 	// << gestures-rotation-alt
 };
 
-export var test_DummyTestForSnippetOnly55 = function () {
+export const test_DummyTestForSnippetOnly55 = function () {
 	// >> gestures-swipe-alt
 	const label = new Label();
 	const observer = label.on('swipe', function (args: SwipeGestureEventData) {
@@ -55,7 +55,7 @@ export var test_DummyTestForSnippetOnly55 = function () {
 	// << gestures-swipe-alt
 };
 
-export var test_DummyTestForSnippetOnly66 = function () {
+export const test_DummyTestForSnippetOnly66 = function () {
 	// >> gestures-tap-alt
 	const label = new Label();
 	const observer = label.on('tap', function (args: GestureEventData) {
@@ -64,7 +64,7 @@ export var test_DummyTestForSnippetOnly66 = function () {
 	// << gestures-tap-alt
 };
 
-export var test_DummyTestForSnippetOnly88 = function () {
+export const test_DummyTestForSnippetOnly88 = function () {
 	// >> gestures-string
 	const label = new Label();
 	const observer = label.on('tap, doubleTap, longPress', function (args: GestureEventData) {
@@ -73,7 +73,7 @@ export var test_DummyTestForSnippetOnly88 = function () {
 	// << gestures-string
 };
 
-export var test_DummyTestForSnippetOnly9 = function () {
+export const test_DummyTestForSnippetOnly9 = function () {
 	// >> gestures-events-string
 	const label = new Label();
 	const observer = label.on('loaded, tap, longPress', function (args: GestureEventData) {

@@ -12,15 +12,15 @@ import lazy from '@nativescript/core/utils/lazy';
 const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 const appFolder = fs.knownFolders.currentApp().path;
 
-export var test_XmlParser_IsDefined = function () {
+export const test_XmlParser_IsDefined = function () {
 	TKUnit.assertNotEqual(xmlModule.XmlParser, undefined, 'Class XmlParser should be defined!');
 };
 
-export var test_ParserEventType_IsDefined = function () {
+export const test_ParserEventType_IsDefined = function () {
 	TKUnit.assertNotEqual(xmlModule.ParserEventType, undefined, 'Class ParserEventType should be defined!');
 };
 
-export var test_XmlParser_ElementsWithoutAttributesDoNotReportThem = function () {
+export const test_XmlParser_ElementsWithoutAttributesDoNotReportThem = function () {
 	let attributes;
 	const xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
 		switch (event.eventType) {
@@ -33,7 +33,7 @@ export var test_XmlParser_ElementsWithoutAttributesDoNotReportThem = function ()
 	TKUnit.assertEqual(attributes, undefined, 'Expected result: undefined; Actual result: ' + attributes + ';');
 };
 
-export var test_XmlParser_EntityReferencesAreDecoded = function () {
+export const test_XmlParser_EntityReferencesAreDecoded = function () {
 	let data;
 	const xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
 		switch (event.eventType) {
@@ -46,7 +46,7 @@ export var test_XmlParser_EntityReferencesAreDecoded = function () {
 	TKUnit.assert(data === '<>"&\'', 'Expected result: <>"&\'; Actual result: ' + data + ';');
 };
 
-export var test_XmlParser_EntityReferencesInAttributeValuesAreDecoded = function () {
+export const test_XmlParser_EntityReferencesInAttributeValuesAreDecoded = function () {
 	let data;
 	const xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
 		switch (event.eventType) {
@@ -59,7 +59,7 @@ export var test_XmlParser_EntityReferencesInAttributeValuesAreDecoded = function
 	TKUnit.assert(data === '<>"&\'', 'Expected result: <>"&\'; Actual result: ' + data + ';');
 };
 
-export var test_XmlParser_UnicodeEntitiesAreDecoded = function () {
+export const test_XmlParser_UnicodeEntitiesAreDecoded = function () {
 	let data;
 	const xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
 		switch (event.eventType) {
@@ -72,7 +72,7 @@ export var test_XmlParser_UnicodeEntitiesAreDecoded = function () {
 	TKUnit.assert(data === '\uD83E\uDD23\u2713', 'Expected result: \uD83E\uDD23\u2713; Actual result: ' + data + ';');
 };
 
-export var test_XmlParser_UnicodeEntitiesInAttributeValuesAreDecoded = function () {
+export const test_XmlParser_UnicodeEntitiesInAttributeValuesAreDecoded = function () {
 	let data;
 	const xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
 		switch (event.eventType) {
@@ -85,7 +85,7 @@ export var test_XmlParser_UnicodeEntitiesInAttributeValuesAreDecoded = function 
 	TKUnit.assert(data === '\uD83E\uDD23\u2713', 'Expected result: \uD83E\uDD23\u2713; Actual result: ' + data + ';');
 };
 
-export var test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs = function () {
+export const test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs = function () {
 	let e;
 	const xmlParser = new xmlModule.XmlParser(
 		function (event: xmlModule.ParserEvent) {
@@ -99,7 +99,7 @@ export var test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs = function () {
 	TKUnit.assert(e !== undefined, 'Expected result: error; Actual result: ' + e + ';');
 };
 
-export var test_XmlParser_IntegrationTest = function () {
+export const test_XmlParser_IntegrationTest = function () {
 	if (isIOS && sdkVersion() < 10) {
 		return;
 	}
@@ -119,9 +119,8 @@ export var test_XmlParser_IntegrationTest = function () {
 	xmlString = xmlString.replace(/(\r\n|\n|\r)/gm, '\n');
 	xmlParser.parse(xmlString);
 
-	let expectedResult: string;
 	file = fs.File.fromPath(appFolder + '/assets/xml.expected');
-	expectedResult = file.readTextSync();
+	const expectedResult: string = file.readTextSync();
 
 	let i;
 	const maxLength = Math.max(actualResult.length, expectedResult.length);
@@ -136,8 +135,8 @@ export var test_XmlParser_IntegrationTest = function () {
 			actualCharCode = 'undefined';
 		}
 
-		var expectedChar;
-		var expectedCharCode;
+		let expectedChar;
+		let expectedCharCode;
 		if (i <= expectedResult.length) {
 			expectedChar = expectedResult.charAt(i);
 			expectedCharCode = expectedResult.charCodeAt(i);
@@ -150,12 +149,12 @@ export var test_XmlParser_IntegrationTest = function () {
 	}
 };
 
-export var test_XmlParser_DummyDocumentationTest = function () {
+export const test_XmlParser_DummyDocumentationTest = function () {
 	// >> xml-parser-snippet
 	const onEventCallback = function (event: xmlModule.ParserEvent) {
 		switch (event.eventType) {
-			case xmlModule.ParserEventType.StartElement:
-				var message = event.eventType + ' ' + event.elementName;
+			case xmlModule.ParserEventType.StartElement: {
+				let message = event.eventType + ' ' + event.elementName;
 				if (event.attributes) {
 					message += ', Attributes:';
 					for (const attributeName in event.attributes) {
@@ -166,17 +165,19 @@ export var test_XmlParser_DummyDocumentationTest = function () {
 				}
 				//console.log(message);
 				break;
+			}
 
 			case xmlModule.ParserEventType.EndElement:
 				//console.log(event.eventType + " " + event.elementName);
 				break;
 
-			case xmlModule.ParserEventType.Text:
-				var significantText = event.data.trim();
+			case xmlModule.ParserEventType.Text: {
+				const significantText = event.data.trim();
 				if (significantText !== '') {
 					//console.log(event.eventType + "=\"" + significantText + "\"");
 				}
 				break;
+			}
 		}
 	};
 
@@ -198,7 +199,7 @@ export var test_XmlParser_DummyDocumentationTest = function () {
 	// << xml-parser-snippet
 };
 
-export var test_XmlParser_NamespacesTest = function () {
+export const test_XmlParser_NamespacesTest = function () {
 	if (isIOS && sdkVersion() < 10) {
 		return;
 	}

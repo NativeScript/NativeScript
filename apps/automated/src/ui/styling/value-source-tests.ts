@@ -1,7 +1,7 @@
 import * as helper from '../../ui-helper';
 import { Color, Button, StackLayout, unsetValue } from '@nativescript/core';
 
-export var test_value_Inherited_after_unset = function () {
+export const test_value_Inherited_after_unset = function () {
 	const page = helper.getCurrentPage();
 	page.css = 'StackLayout { color: #FF0000; } .blue { color: #0000FF; }';
 	const btn = new Button();
@@ -14,7 +14,7 @@ export var test_value_Inherited_after_unset = function () {
 	helper.assertViewColor(btn, '#FF0000');
 };
 
-export var test_value_Inherited_stronger_than_Default = function () {
+export const test_value_Inherited_stronger_than_Default = function () {
 	const page = helper.getCurrentPage();
 	const btn = new Button();
 	const testStack = new StackLayout();
@@ -25,7 +25,7 @@ export var test_value_Inherited_stronger_than_Default = function () {
 	page.css = '';
 };
 
-export var test_value_Css_stronger_than_Inherited = function () {
+export const test_value_Css_stronger_than_Inherited = function () {
 	const page = helper.getCurrentPage();
 	const testStack = new StackLayout();
 	page.content = testStack;

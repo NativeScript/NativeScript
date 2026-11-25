@@ -1,50 +1,50 @@
 import { FlexboxLayout, Button, View, unsetValue, Length, PercentLength, Label, Builder, isIOS } from '@nativescript/core';
 
 export namespace FlexDirection {
-	export const ROW: 'row' = 'row';
-	export const ROW_REVERSE: 'row-reverse' = 'row-reverse';
-	export const COLUMN: 'column' = 'column';
-	export const COLUMN_REVERSE: 'column-reverse' = 'column-reverse';
+	export const ROW = 'row' as const;
+	export const ROW_REVERSE = 'row-reverse' as const;
+	export const COLUMN = 'column' as const;
+	export const COLUMN_REVERSE = 'column-reverse' as const;
 }
 
 export namespace FlexWrap {
-	export const NOWRAP: 'nowrap' = 'nowrap';
-	export const WRAP: 'wrap' = 'wrap';
-	export const WRAP_REVERSE: 'wrap-reverse' = 'wrap-reverse';
+	export const NOWRAP = 'nowrap' as const;
+	export const WRAP = 'wrap' as const;
+	export const WRAP_REVERSE = 'wrap-reverse' as const;
 }
 
 export namespace JustifyContent {
-	export const FLEX_START: 'flex-start' = 'flex-start';
-	export const FLEX_END: 'flex-end' = 'flex-end';
-	export const CENTER: 'center' = 'center';
-	export const SPACE_BETWEEN: 'space-between' = 'space-between';
-	export const SPACE_AROUND: 'space-around' = 'space-around';
+	export const FLEX_START = 'flex-start' as const;
+	export const FLEX_END = 'flex-end' as const;
+	export const CENTER = 'center' as const;
+	export const SPACE_BETWEEN = 'space-between' as const;
+	export const SPACE_AROUND = 'space-around' as const;
 }
 
 export namespace AlignItems {
-	export const FLEX_START: 'flex-start' = 'flex-start';
-	export const FLEX_END: 'flex-end' = 'flex-end';
-	export const CENTER: 'center' = 'center';
-	export const BASELINE: 'baseline' = 'baseline';
-	export const STRETCH: 'stretch' = 'stretch';
+	export const FLEX_START = 'flex-start' as const;
+	export const FLEX_END = 'flex-end' as const;
+	export const CENTER = 'center' as const;
+	export const BASELINE = 'baseline' as const;
+	export const STRETCH = 'stretch' as const;
 }
 
 export namespace AlignContent {
-	export const FLEX_START: 'flex-start' = 'flex-start';
-	export const FLEX_END: 'flex-end' = 'flex-end';
-	export const CENTER: 'center' = 'center';
-	export const SPACE_BETWEEN: 'space-between' = 'space-between';
-	export const SPACE_AROUND: 'space-around' = 'space-around';
-	export const STRETCH: 'stretch' = 'stretch';
+	export const FLEX_START = 'flex-start' as const;
+	export const FLEX_END = 'flex-end' as const;
+	export const CENTER = 'center' as const;
+	export const SPACE_BETWEEN = 'space-between' as const;
+	export const SPACE_AROUND = 'space-around' as const;
+	export const STRETCH = 'stretch' as const;
 }
 
 export namespace AlignSelf {
-	export const AUTO: 'auto' = 'auto';
-	export const FLEX_START: 'flex-start' = 'flex-start';
-	export const FLEX_END: 'flex-end' = 'flex-end';
-	export const CENTER: 'center' = 'center';
-	export const BASELINE: 'baseline' = 'baseline';
-	export const STRETCH: 'stretch' = 'stretch';
+	export const AUTO = 'auto' as const;
+	export const FLEX_START = 'flex-start' as const;
+	export const FLEX_END = 'flex-end' as const;
+	export const CENTER = 'center' as const;
+	export const BASELINE = 'baseline' as const;
+	export const STRETCH = 'stretch' as const;
 }
 
 import * as TKUnit from '../../tk-unit';

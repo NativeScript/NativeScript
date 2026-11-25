@@ -18,7 +18,7 @@ const _createHtmlViewFunc = function (): htmlViewModule.HtmlView {
 	return htmlView;
 };
 
-export var testLoadHTMLString = function () {
+export const testLoadHTMLString = function () {
 	const page = helper.getCurrentPage();
 	const htmlView = _createHtmlViewFunc();
 	page.content = htmlView;

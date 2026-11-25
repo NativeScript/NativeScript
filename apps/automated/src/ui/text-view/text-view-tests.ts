@@ -24,7 +24,7 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(_createTextViewFunc);
 }
 
-var _createTextViewFunc = function (): TextView {
+const _createTextViewFunc = function (): TextView {
 	// >> text-view-create
 	const textView = new TextView();
 	// << text-view-create
@@ -33,7 +33,7 @@ var _createTextViewFunc = function (): TextView {
 	return textView;
 };
 
-export var testSetText = function () {
+export const testSetText = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 
@@ -47,7 +47,7 @@ export var testSetText = function () {
 	});
 };
 
-export var testSetTextNull = function () {
+export const testSetTextNull = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 
@@ -59,7 +59,7 @@ export var testSetTextNull = function () {
 	});
 };
 
-export var testSetTextUndefined = function () {
+export const testSetTextUndefined = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 
@@ -83,7 +83,7 @@ export function test_set_color() {
 	}
 }
 
-export var testBindTextDirectlyToModel = function () {
+export const testBindTextDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 
@@ -110,7 +110,7 @@ export var testBindTextDirectlyToModel = function () {
 	});
 };
 
-export var testBindTextToBindingContext = function () {
+export const testBindTextToBindingContext = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		const page = <Page>views[1];
@@ -134,7 +134,7 @@ export var testBindTextToBindingContext = function () {
 	});
 };
 
-export var testTextIsUpdatedWhenUserTypes = function () {
+export const testTextIsUpdatedWhenUserTypes = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		textView.updateTextTrigger = 'focusLost';
@@ -147,7 +147,7 @@ export var testTextIsUpdatedWhenUserTypes = function () {
 	});
 };
 
-export var testSetHint = function () {
+export const testSetHint = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		textView.text = '';
@@ -162,7 +162,7 @@ export var testSetHint = function () {
 	});
 };
 
-export var testBindHintDirectlyToModel = function () {
+export const testBindHintDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		textView.text = '';
@@ -190,7 +190,7 @@ export var testBindHintDirectlyToModel = function () {
 	});
 };
 
-export var testBindHintToBindingConext = function () {
+export const testBindHintToBindingConext = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		textView.text = '';
@@ -215,7 +215,7 @@ export var testBindHintToBindingConext = function () {
 	});
 };
 
-export var testHintPlusTextiOS = function () {
+export const testHintPlusTextiOS = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		if (!textView.ios) {
@@ -239,7 +239,7 @@ export var testHintPlusTextiOS = function () {
 	});
 };
 
-export var testHintColoriOS = function () {
+export const testHintColoriOS = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		if (!textView.ios) {
@@ -250,8 +250,6 @@ export var testHintColoriOS = function () {
 		textView.color = new Color('red');
 		textView.hint = 'hint';
 
-		let expectedValue;
-		let expectedNormalizedValue;
 		let actualValue;
 
 		actualValue = textViewTestsNative.getNativeColor(textView).hex;
@@ -260,14 +258,14 @@ export var testHintColoriOS = function () {
 
 		textView.text = 'text';
 
-		expectedValue = '#FF0000FF'; // red
-		expectedNormalizedValue = '#FF0000';
+		const expectedValue = '#FF0000FF'; // red
+		const expectedNormalizedValue = '#FF0000';
 		actualValue = textViewTestsNative.getNativeColor(textView).hex;
 		TKUnit.assert(actualValue === expectedNormalizedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedNormalizedValue);
 	});
 };
 
-export var testSetEditable = function () {
+export const testSetEditable = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 
@@ -281,7 +279,7 @@ export var testSetEditable = function () {
 	});
 };
 
-export var testBindEditableDirectlyToModel = function () {
+export const testBindEditableDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 
@@ -308,7 +306,7 @@ export var testBindEditableDirectlyToModel = function () {
 	});
 };
 
-export var testBindEditableToBindingConext = function () {
+export const testBindEditableToBindingConext = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		const page = <Page>views[1];
@@ -332,7 +330,7 @@ export var testBindEditableToBindingConext = function () {
 	});
 };
 
-export var testSetMaxLines = function () {
+export const testSetMaxLines = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 
@@ -345,7 +343,7 @@ export var testSetMaxLines = function () {
 };
 
 const expectedFontSize = 42;
-export var testLocalFontSizeFromCss = function () {
+export const testLocalFontSizeFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		const page = <Page>views[1];
@@ -356,7 +354,7 @@ export var testLocalFontSizeFromCss = function () {
 	});
 };
 
-export var testNativeFontSizeFromCss = function () {
+export const testNativeFontSizeFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		const page = <Page>views[1];
@@ -367,7 +365,7 @@ export var testNativeFontSizeFromCss = function () {
 	});
 };
 
-export var testNativeFontSizeFromLocal = function () {
+export const testNativeFontSizeFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		textView.style.fontSize = expectedFontSize;
@@ -378,7 +376,7 @@ export var testNativeFontSizeFromLocal = function () {
 };
 
 const expectedLineHeight = 10;
-export var testLocalLineHeightFromCss = function () {
+export const testLocalLineHeightFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		const page = <Page>views[1];
@@ -391,7 +389,7 @@ export var testLocalLineHeightFromCss = function () {
 
 const expectedColorHex = '#FF0000FF';
 const expectedNormalizedColorHex = '#FF0000';
-export var testLocalColorFromCss = function () {
+export const testLocalColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		const page = <Page>views[1];
@@ -402,7 +400,7 @@ export var testLocalColorFromCss = function () {
 	});
 };
 
-export var testNativeColorFromCss = function () {
+export const testNativeColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		const page = <Page>views[1];
@@ -413,7 +411,7 @@ export var testNativeColorFromCss = function () {
 	});
 };
 
-export var testNativeColorFromLocal = function () {
+export const testNativeColorFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		textView.style.color = new Color(expectedColorHex);
@@ -425,7 +423,7 @@ export var testNativeColorFromLocal = function () {
 
 const expectedBackgroundColorHex = '#00FF00FF';
 const expectedNormalizedBackgroundColorHex = '#00FF00';
-export var testLocalBackgroundColorFromCss = function () {
+export const testLocalBackgroundColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		const page = <Page>views[1];
@@ -436,7 +434,7 @@ export var testLocalBackgroundColorFromCss = function () {
 	});
 };
 
-export var testNativeBackgroundColorFromCss = function () {
+export const testNativeBackgroundColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		const page = <Page>views[1];
@@ -449,7 +447,7 @@ export var testNativeBackgroundColorFromCss = function () {
 	});
 };
 
-export var testNativeBackgroundColorFromLocal = function () {
+export const testNativeBackgroundColorFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const textView = <TextView>views[0];
 		textView.style.backgroundColor = new Color(expectedBackgroundColorHex);
@@ -461,8 +459,8 @@ export var testNativeBackgroundColorFromLocal = function () {
 	});
 };
 
-const expectedTextAlignment: 'right' = 'right';
-export var testLocalTextAlignmentFromCss = function () {
+const expectedTextAlignment = 'right' as const;
+export const testLocalTextAlignmentFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const view = <TextView>views[0];
 		const page = <Page>views[1];
@@ -473,7 +471,7 @@ export var testLocalTextAlignmentFromCss = function () {
 	});
 };
 
-export var testNativeTextAlignmentFromCss = function () {
+export const testNativeTextAlignmentFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const view = <TextView>views[0];
 		const page = <Page>views[1];
@@ -484,7 +482,7 @@ export var testNativeTextAlignmentFromCss = function () {
 	});
 };
 
-export var testNativeTextAlignmentFromLocal = function () {
+export const testNativeTextAlignmentFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 		const view = <TextView>views[0];
 		view.style.textAlignment = expectedTextAlignment;

@@ -301,8 +301,7 @@ export function testBase64Encode_JPEG_With_Quality() {
 
 export function testLoadFromBase64Encode_JPEG() {
 	// >> imagesource-from-base-string
-	let img: ImageSource;
-	img = ImageSource.fromBase64Sync(jpgImageAsBase64String);
+	const img: ImageSource = ImageSource.fromBase64Sync(jpgImageAsBase64String);
 	// << imagesource-from-base-string
 
 	TKUnit.assert(img !== null, 'Actual: ' + img);
@@ -324,8 +323,7 @@ export function testLoadFromBase64Encode_PNG() {
 }
 
 export function testLoadFromFontIconCode() {
-	let img: ImageSource;
-	img = ImageSource.fromFontIconCodeSync('F10B', Font.default.withFontFamily('FontAwesome'), new Color('red'));
+	const img: ImageSource = ImageSource.fromFontIconCodeSync('F10B', Font.default.withFontFamily('FontAwesome'), new Color('red'));
 
 	TKUnit.assert(img !== null, 'Actual: ' + img);
 	TKUnit.assert(img.width !== null, 'img.width');

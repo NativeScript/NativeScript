@@ -8,7 +8,7 @@ const noStringKey: string = 'noStringKey';
 const noBoolKey: string = 'noBoolKey';
 const noNumberKey: string = 'noNumberKey';
 
-export var testBoolean = function () {
+export const testBoolean = function () {
 	appSettings.setBoolean(boolKey, false);
 	const boolValueBefore = appSettings.getBoolean(boolKey);
 	TKUnit.assert(false === boolValueBefore, 'Cannot set boolean to false, currently it is: ' + appSettings.getBoolean(boolKey));
@@ -21,21 +21,21 @@ export var testBoolean = function () {
 	TKUnit.assert(true === appSettings.getBoolean(boolKey), 'Cannot set boolean to true (no default)');
 };
 
-export var testString = function () {
+export const testString = function () {
 	appSettings.setString('stringKey', 'String value');
 	const stringValue = appSettings.getString('stringKey');
 
 	TKUnit.assert('String value' === stringValue, 'Cannot set string value');
 };
 
-export var testNumber = function () {
+export const testNumber = function () {
 	appSettings.setNumber('numberKey', 54.321);
 	const value = parseFloat(appSettings.getNumber('numberKey').toFixed(3));
 
 	TKUnit.assert(54.321 === value, 'Cannot set number value 54.321 != ' + value);
 };
 
-export var testDefaults = function () {
+export const testDefaults = function () {
 	const defaultValue = appSettings.getString('noStringKey', 'No string value');
 	// will return "No string value" if there is no value for "noStringKey"
 
@@ -44,7 +44,7 @@ export var testDefaults = function () {
 	TKUnit.assert(123.45 === appSettings.getNumber(noNumberKey, 123.45), 'Bad default number value');
 };
 
-export var testDefaultsWithNoDefaultValueProvided = function () {
+export const testDefaultsWithNoDefaultValueProvided = function () {
 	const defaultValue = appSettings.getString('noStringKey');
 	// will return undefined if there is no value for "noStringKey"
 
@@ -54,7 +54,7 @@ export var testDefaultsWithNoDefaultValueProvided = function () {
 	TKUnit.assertEqual(appSettings.getNumber(noNumberKey), undefined, 'Default number value is not undefined');
 };
 
-export var testHasKey = function () {
+export const testHasKey = function () {
 	const hasKey = appSettings.hasKey('noBoolKey');
 	// will return false if there is no value for "noBoolKey"
 
@@ -67,7 +67,7 @@ export var testHasKey = function () {
 	TKUnit.assert(!appSettings.hasKey(numberKey), 'There is no key: ' + numberKey);
 };
 
-export var testRemove = function () {
+export const testRemove = function () {
 	appSettings.remove('boolKey');
 
 	TKUnit.assert(!appSettings.hasKey(boolKey), 'Failed to remove key: ' + boolKey);
@@ -79,7 +79,7 @@ export var testRemove = function () {
 	TKUnit.assert(!appSettings.hasKey(numberKey), 'Failed to remove key: ' + numberKey);
 };
 
-export var testClear = function () {
+export const testClear = function () {
 	appSettings.clear();
 
 	TKUnit.assert(!appSettings.hasKey(boolKey), 'Failed to remove key: ' + boolKey);
@@ -87,7 +87,7 @@ export var testClear = function () {
 	TKUnit.assert(!appSettings.hasKey(numberKey), 'Failed to remove key: ' + numberKey);
 };
 
-export var testFlush = function () {
+export const testFlush = function () {
 	appSettings.setString(stringKey, 'String value');
 
 	const flushed = appSettings.flush();
@@ -97,7 +97,7 @@ export var testFlush = function () {
 	TKUnit.assert(appSettings.hasKey(stringKey), 'There is no key: ' + stringKey);
 };
 
-export var testAllKeys = function () {
+export const testAllKeys = function () {
 	appSettings.setString(stringKey, 'String value');
 	appSettings.setBoolean(boolKey, true);
 	appSettings.setNumber(numberKey, 22);
@@ -108,7 +108,7 @@ export var testAllKeys = function () {
 	TKUnit.assert(allKeys.indexOf(numberKey) !== -1, `${numberKey} is missing from .allKeys()`);
 };
 
-export var testInvalidKey = function () {
+export const testInvalidKey = function () {
 	try {
 		appSettings.hasKey(undefined);
 		TKUnit.assert(false, 'There is a key undefined');
@@ -134,7 +134,7 @@ export var testInvalidKey = function () {
 	appSettings.hasKey('string');
 };
 
-export var testInvalidValue = function () {
+export const testInvalidValue = function () {
 	try {
 		// @ts-ignore
 		appSettings.setBoolean(boolKey, 'str');

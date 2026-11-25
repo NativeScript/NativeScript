@@ -5,7 +5,7 @@ function loadViewModel() {
 	viewModel.set('testProperty', 'Alabala');
 }
 
-var viewModel = new observable.Observable();
+const viewModel = new observable.Observable();
 
 loadViewModel();
 

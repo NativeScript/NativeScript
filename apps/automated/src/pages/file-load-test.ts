@@ -6,7 +6,6 @@ export function createPage() {
 
 	const moduleName = 'tests/pages/files/test';
 
-	ModuleNameResolver;
 	const resolver = new ModuleNameResolver({
 		width: 400,
 		height: 600,

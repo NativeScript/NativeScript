@@ -32,7 +32,7 @@ export function setNativeSelectedIndex(bar: segmentedBarModule.SegmentedBar, ind
 	(<android.widget.TabHost>bar.android).setCurrentTab(index);
 }
 
-export var checkBackgroundColorUpdatedAfterItemSelected = function (bar: segmentedBarModule.SegmentedBar): boolean {
+export const checkBackgroundColorUpdatedAfterItemSelected = function (bar: segmentedBarModule.SegmentedBar): boolean {
 	let isValid = 0;
 	bar.selectedIndex = 0;
 	bar.selectedTextColor = new Color('green');
