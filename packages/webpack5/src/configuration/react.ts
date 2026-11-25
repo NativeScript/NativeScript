@@ -13,7 +13,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const production = mode === 'production';
 
 	// todo: use env
-	let isAnySourceMapEnabled = true;
+	const isAnySourceMapEnabled = true;
 
 	config.resolve.extensions.prepend('.tsx').prepend(`.${platform}.tsx`);
 	config.resolve.alias.set('react-dom', 'react-nativescript');
