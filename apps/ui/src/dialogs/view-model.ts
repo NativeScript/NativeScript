@@ -1,7 +1,7 @@
 ﻿import * as dialogs from '@nativescript/core/ui/dialogs';
 import * as observable from '@nativescript/core/data/observable';
 
-var name = 'Harold Finch';
+let name = 'Harold Finch';
 
 export class SettingsViewModel extends observable.Observable {
 	get name(): string {

@@ -1,7 +1,7 @@
 import { alert } from '@nativescript/core/ui/dialogs';
 
 export function onTap() {
-	var options = {
+	const options = {
 		title: 'Race selection',
 		message: 'Race chosen: Unicorn',
 		okButtonText: 'OK',

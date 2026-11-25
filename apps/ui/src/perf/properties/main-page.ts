@@ -7,7 +7,7 @@ import * as tests from './tests';
 const c = [10, 100, 1000, 10000, 100000];
 
 function getStack(stack: StackLayout): StackLayout {
-	let p = new StackLayout();
+	const p = new StackLayout();
 	stack.removeChildren();
 	stack.addChild(p);
 
@@ -21,11 +21,11 @@ export function onNavigatingFrom() {
 }
 
 export function onTap3(args) {
-	let btn = <Button>args.object;
+	const btn = <Button>args.object;
 	const p = btn.page.getViewById<StackLayout>('placeholder');
 	btn.text = 'Start tests...';
 
-	let result = btn.page.getViewById<TextView>('result');
+	const result = btn.page.getViewById<TextView>('result');
 
 	result.text = '';
 
@@ -41,7 +41,7 @@ export function onTap3(args) {
 	});
 	track(text);
 
-	let tasks = [
+	const tasks = [
 		() => track(tests.setBackgroundColor(c)),
 		() => track(tests.setBackgroundColor(c, getStack(p))),
 		() => track(tests.setBindingContext(c)),

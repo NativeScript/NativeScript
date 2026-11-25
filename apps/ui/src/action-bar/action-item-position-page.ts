@@ -3,7 +3,7 @@ import { Page } from '@nativescript/core/ui/page';
 import * as observable from '@nativescript/core/data/observable';
 
 export function navigatingTo(args: EventData) {
-	let page = <Page>args.object;
+	const page = <Page>args.object;
 	page.bindingContext = new ActionItemPostitionView();
 }
 
@@ -33,7 +33,7 @@ export class ActionItemPostitionView extends observable.Observable {
 	}
 
 	public change() {
-		let index = this._count++ % 3;
+		const index = this._count++ % 3;
 		this.text = this._values[index];
 	}
 }

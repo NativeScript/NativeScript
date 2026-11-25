@@ -13,14 +13,14 @@ const possibleValues = [
 let currentIndex = 0;
 
 export function buttonTap(args: EventData) {
-	let page = (<TextBase>args.object).page;
-	let lbl = <TextBase>page.getViewById('Label');
-	let btn = <TextBase>page.getViewById('Button');
-	let textField = <TextBase>page.getViewById('TextField');
-	let textView = <TextBase>page.getViewById('TextView');
+	const page = (<TextBase>args.object).page;
+	const lbl = <TextBase>page.getViewById('Label');
+	const btn = <TextBase>page.getViewById('Button');
+	const textField = <TextBase>page.getViewById('TextField');
+	const textView = <TextBase>page.getViewById('TextView');
 
-	let newIndex = currentIndex++ % possibleValues.length;
-	let newValue = possibleValues[newIndex];
+	const newIndex = currentIndex++ % possibleValues.length;
+	const newValue = possibleValues[newIndex];
 
 	lbl.textShadow = parseCSSShadow(newValue);
 	btn.textShadow = parseCSSShadow(newValue);

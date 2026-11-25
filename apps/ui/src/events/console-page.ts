@@ -5,15 +5,15 @@ import * as textViewModule from '@nativescript/core/ui/text-view';
 import * as buttonModule from '@nativescript/core/ui/button';
 
 export function createPage() {
-	var stackLayout = new stackLayoutModule.StackLayout();
-	var label = new labelModule.Label();
+	const stackLayout = new stackLayoutModule.StackLayout();
+	const label = new labelModule.Label();
 	label.text = 'CONSOLE MODULE';
-	var textView = new textViewModule.TextView();
+	const textView = new textViewModule.TextView();
 	textView.text = 'Check out the console output.';
 	stackLayout.addChild(label);
 	stackLayout.addChild(textView);
 
-	var page = new pageModule.Page();
+	const page = new pageModule.Page();
 	page.on(pageModule.Page.loadedEvent, function () {
 		pageLoaded();
 	});
@@ -27,11 +27,11 @@ export function pageLoaded() {
 	console.log('### TEST START ###');
 	console.time('Time');
 
-	var undef;
-	var num = -1;
-	var str = 'text';
-	var obj = { name: 'John', age: 34 };
-	var button = new buttonModule.Button();
+	let undef;
+	const num = -1;
+	const str = 'text';
+	const obj = { name: 'John', age: 34 };
+	const button = new buttonModule.Button();
 
 	console.log(true);
 	console.log(false);
