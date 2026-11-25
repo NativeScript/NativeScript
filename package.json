@@ -29,7 +29,7 @@
 		"@csstools/css-parser-algorithms": "^3.0.4",
 		"@csstools/css-tokenizer": "^3.0.3",
 		"@nativescript/hook": "^3.0.4",
-		"@nativescript/nx": "23.0.0-rc.0",
+		"@nativescript/nx": "^24.0.0",
 		"@nstudio/focus": "^20.0.2",
 		"@nstudio/nps-i": "~2.0.0",
 		"@nx/devkit": "24.0.7",
