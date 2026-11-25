@@ -12,6 +12,10 @@ export default [
 				{
 					enforceBuildableLibDependency: true,
 					allow: [],
+					// Nx records require() as a dynamic dependency, so one platform-conditional
+					// require() of a core module would flag every static core import in that project.
+					// Apps bundle core whole; it is never code-split.
+					checkDynamicDependenciesExceptions: ['@nativescript/core', '@nativescript/core/**'],
 					depConstraints: [
 						{
 							sourceTag: '*',
