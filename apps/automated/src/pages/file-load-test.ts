@@ -1,13 +1,13 @@
 import { Page, Label, knownFolders, path, ModuleNameResolver } from '@nativescript/core';
 
 export function createPage() {
-	var page = new Page();
-	var lbl = new Label();
+	const page = new Page();
+	const lbl = new Label();
 
-	var moduleName = 'tests/pages/files/test';
+	const moduleName = 'tests/pages/files/test';
 
 	ModuleNameResolver;
-	var resolver = new ModuleNameResolver({
+	const resolver = new ModuleNameResolver({
 		width: 400,
 		height: 600,
 		os: 'android',
@@ -15,10 +15,10 @@ export function createPage() {
 	});
 
 	// Current app full path.
-	var currentAppPath = knownFolders.currentApp().path;
-	var moduleNamePath = path.join(currentAppPath, moduleName);
+	const currentAppPath = knownFolders.currentApp().path;
+	const moduleNamePath = path.join(currentAppPath, moduleName);
 
-	var fileName = resolver.resolveModuleName(moduleNamePath, 'xml');
+	const fileName = resolver.resolveModuleName(moduleNamePath, 'xml');
 	lbl.text = fileName;
 	lbl.textWrap = true;
 

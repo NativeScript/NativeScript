@@ -2,21 +2,21 @@ import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
 import { isIOS, isAndroid, Label, StackLayout, Frame, Page, ListView, ItemEventData, TabView, TabViewItem, Button } from '@nativescript/core';
 
-var ASYNC = 2;
+const ASYNC = 2;
 
 function _createTabView(): TabView {
-	var tabView = new TabView();
+	const tabView = new TabView();
 	tabView.id = 'TabView';
 
 	return tabView;
 }
 
 function _createItems(count: number): Array<TabViewItem> {
-	var items = new Array<TabViewItem>();
-	for (var i = 0; i < count; i++) {
-		var label = new Label();
+	const items = new Array<TabViewItem>();
+	for (let i = 0; i < count; i++) {
+		const label = new Label();
 		label.text = 'Tab ' + i;
-		var tabEntry = new TabViewItem();
+		const tabEntry = new TabViewItem();
 		tabEntry.title = 'Tab ' + i;
 		tabEntry.view = label;
 		tabEntry['index'] = i;
@@ -27,14 +27,14 @@ function _createItems(count: number): Array<TabViewItem> {
 }
 
 function _createListView(): ListView {
-	var listView = new ListView();
+	const listView = new ListView();
 	listView.id = 'ListView';
-	var items = Array.apply(null, Array(10)).map(function (_, i) {
+	const items = Array.apply(null, Array(10)).map(function (_, i) {
 		return i;
 	});
 
 	listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
-		var button = <Button>args.view;
+		let button = <Button>args.view;
 		if (!button) {
 			button = new Button();
 			button.on(Button.tapEvent, _clickHandlerFactory(args.index));
@@ -52,10 +52,10 @@ function _createListView(): ListView {
 
 function _clickHandlerFactory(index: number) {
 	return function () {
-		var pageFactory = function (): Page {
-			var detailsLabel = new Label();
+		const pageFactory = function (): Page {
+			const detailsLabel = new Label();
 			detailsLabel.text = 'Details Page ' + index;
-			var detailsPage = new Page();
+			const detailsPage = new Page();
 			detailsPage.id = 'details-page';
 			detailsPage.content = detailsLabel;
 
@@ -82,13 +82,13 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
 
 	const pageFactory = function (): Page {
 		tabView = _createTabView();
-		let items = Array<TabViewItem>();
-		let tabViewitem = new TabViewItem();
+		const items = Array<TabViewItem>();
+		const tabViewitem = new TabViewItem();
 		tabViewitem.title = 'Item1';
 		tabViewitem.view = _createFrameView();
 		items.push(tabViewitem);
 
-		let tabViewitem2 = new TabViewItem();
+		const tabViewitem2 = new TabViewItem();
 		tabViewitem2.title = 'Item2';
 		tabViewitem2.view = _createFrameView();
 		items.push(tabViewitem2);
@@ -118,22 +118,22 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
 }
 
 export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere() {
-	var topFrame = Frame.topmost();
+	const topFrame = Frame.topmost();
 
 	let tabViewPage: Page;
 	let tabView: TabView;
 
-	let pageFactory = function (): Page {
+	const pageFactory = function (): Page {
 		tabView = _createTabView();
-		let items = Array<TabViewItem>();
+		const items = Array<TabViewItem>();
 		let tabViewitem = new TabViewItem();
 		tabViewitem.title = 'List';
 		tabViewitem.view = _createListView();
 		items.push(tabViewitem);
 
-		let label = new Label();
+		const label = new Label();
 		label.text = 'About';
-		let aboutLayout = new StackLayout();
+		const aboutLayout = new StackLayout();
 		aboutLayout.id = 'AboutLayout';
 		aboutLayout.addChild(label);
 		tabViewitem = new TabViewItem();
@@ -150,7 +150,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
 		return tabViewPage;
 	};
 
-	let rootPage = helper.getCurrentPage();
+	const rootPage = helper.getCurrentPage();
 
 	helper.navigateWithHistory(pageFactory);
 	TKUnit.waitUntilReady(() => topFrame.currentPage === tabViewPage);
@@ -180,7 +180,7 @@ function tabViewIsFullyLoaded(tabView: TabView): boolean {
 	}
 
 	if (tabView.android) {
-		var viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
+		const viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
 		if (viewPager.getChildCount() === 0) {
 			return false;
 		}
@@ -190,12 +190,12 @@ function tabViewIsFullyLoaded(tabView: TabView): boolean {
 }
 
 export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
-	let topFrame = Frame.topmost();
-	let rootPage = helper.getCurrentPage();
+	const topFrame = Frame.topmost();
+	const rootPage = helper.getCurrentPage();
 
-	let itemCount = 2;
-	let loadedEventsCount = [0, 0];
-	let unloadedEventsCount = [0, 0];
+	const itemCount = 2;
+	const loadedEventsCount = [0, 0];
+	const unloadedEventsCount = [0, 0];
 
 	const tabView = _createTabView();
 	tabView.items = _createItems(itemCount);
@@ -255,10 +255,10 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: TabView) {
 	if (tabView.android) {
-		var viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
-		var androidListView = <android.widget.ListView>viewPager.getChildAt(0);
-		var stackLayout = <org.nativescript.widgets.StackLayout>androidListView.getChildAt(0);
-		var button = <android.widget.Button>stackLayout.getChildAt(0);
+		const viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
+		const androidListView = <android.widget.ListView>viewPager.getChildAt(0);
+		const stackLayout = <org.nativescript.widgets.StackLayout>androidListView.getChildAt(0);
+		const button = <android.widget.Button>stackLayout.getChildAt(0);
 		button.performClick();
 	} else {
 		const tableView = <UITableView>tabView.ios.selectedViewController.view.subviews[0];

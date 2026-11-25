@@ -2,10 +2,10 @@ import * as helper from '../../ui-helper';
 import { Color, Button, StackLayout, unsetValue } from '@nativescript/core';
 
 export var test_value_Inherited_after_unset = function () {
-	let page = helper.getCurrentPage();
+	const page = helper.getCurrentPage();
 	page.css = 'StackLayout { color: #FF0000; } .blue { color: #0000FF; }';
-	let btn = new Button();
-	let testStack = new StackLayout();
+	const btn = new Button();
+	const testStack = new StackLayout();
 	page.content = testStack;
 	testStack.addChild(btn);
 	btn.className = 'blue';
@@ -15,9 +15,9 @@ export var test_value_Inherited_after_unset = function () {
 };
 
 export var test_value_Inherited_stronger_than_Default = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 	page.content = testStack;
 	testStack.addChild(btn);
 	page.css = 'stackLayout { color: red; }';
@@ -26,11 +26,11 @@ export var test_value_Inherited_stronger_than_Default = function () {
 };
 
 export var test_value_Css_stronger_than_Inherited = function () {
-	let page = helper.getCurrentPage();
-	let testStack = new StackLayout();
+	const page = helper.getCurrentPage();
+	const testStack = new StackLayout();
 	page.content = testStack;
 
-	let btn = new Button();
+	const btn = new Button();
 	testStack.addChild(btn);
 	page.css = 'stackLayout { color: red; } button { color: blue; }';
 
@@ -38,11 +38,11 @@ export var test_value_Css_stronger_than_Inherited = function () {
 };
 
 export function test_value_Local_stronger_than_Css() {
-	let testPage = helper.getCurrentPage();
-	let testStack = new StackLayout();
+	const testPage = helper.getCurrentPage();
+	const testStack = new StackLayout();
 	testPage.content = testStack;
 
-	let btn = new Button();
+	const btn = new Button();
 	testStack.addChild(btn);
 	testPage.css = 'button { color: red; }';
 

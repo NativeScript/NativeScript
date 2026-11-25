@@ -69,15 +69,15 @@ export var test_BindingExpressions_GroupingParenthesis = function () {
 };
 
 export var assertElementString = function (elementId: string, value: any) {
-	var element: textFieldModule.TextField = <textFieldModule.TextField>Frame.topmost().currentPage.getViewById(elementId);
+	const element: textFieldModule.TextField = <textFieldModule.TextField>Frame.topmost().currentPage.getViewById(elementId);
 	if (element.text.toString() !== value) {
 		throw new Error(' Actual: ' + element.text.toString() + ' Expected: ' + value);
 	}
 };
 
 export var assertElementValueIsNaN = function (elementId: string) {
-	var element: textFieldModule.TextField = <textFieldModule.TextField>Frame.topmost().currentPage.getViewById(elementId);
-	var value: any = element.text;
+	const element: textFieldModule.TextField = <textFieldModule.TextField>Frame.topmost().currentPage.getViewById(elementId);
+	const value: any = element.text;
 	if (isNaN(value) !== true) {
 		throw new Error(' Actual: ' + value + ' is not NaN');
 	}

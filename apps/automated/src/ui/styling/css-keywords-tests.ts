@@ -3,9 +3,9 @@ import * as TKUnit from '../../tk-unit';
 import { Color, Button, StackLayout } from '@nativescript/core';
 
 export var test_value_after_initial = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { background-color: #FF0000; }';
 
@@ -19,9 +19,9 @@ export var test_value_after_initial = function () {
 };
 
 export var test_value_Inherited_after_initial = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { color: #FF0000; }';
 
@@ -35,9 +35,9 @@ export var test_value_Inherited_after_initial = function () {
 };
 
 export var test_value_after_unset = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { background-color: #FF0000; }';
 
@@ -51,9 +51,9 @@ export var test_value_after_unset = function () {
 };
 
 export var test_value_Inherited_after_unset = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { color: #FF0000; }';
 
@@ -67,9 +67,9 @@ export var test_value_Inherited_after_unset = function () {
 };
 
 export var test_value_after_revert = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { background-color: #FF0000; }';
 
@@ -83,9 +83,9 @@ export var test_value_after_revert = function () {
 };
 
 export var test_value_Inherited_after_revert = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { color: #FF0000; }';
 
@@ -100,9 +100,9 @@ export var test_value_Inherited_after_revert = function () {
 
 // TODO: Add missing inherit support for non-inherited properties
 export var test_value_after_inherit = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { background-color: #FF0000; }';
 
@@ -116,9 +116,9 @@ export var test_value_after_inherit = function () {
 };
 
 export var test_value_Inherited_after_inherit = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { color: #FF0000; }';
 

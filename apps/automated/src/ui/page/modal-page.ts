@@ -8,7 +8,7 @@ export function onShowingModally(args) {
 }
 
 export function onShownModally(args: ShownModallyData) {
-	let page = <Page>args.object;
+	const page = <Page>args.object;
 	TKUnit.assertNotNull(page);
 	if (args.context) {
 		args.context.shownModally = true;

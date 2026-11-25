@@ -87,8 +87,8 @@ export function testBackgroundImage() {
 
 export function checkNativeBackgroundColor(v: View): boolean {
 	if (v.ios instanceof UILabel) {
-		var cgColor1 = (<UILabel>v.ios).layer.backgroundColor;
-		var cgColor2 = (<UIColor>(<Color>v.backgroundColor)?.ios)?.CGColor;
+		const cgColor1 = (<UILabel>v.ios).layer.backgroundColor;
+		const cgColor2 = (<UIColor>(<Color>v.backgroundColor)?.ios)?.CGColor;
 
 		if (v.backgroundColor) {
 			return v.backgroundColor && !!CGColorEqualToColor(cgColor1, cgColor2);
@@ -108,8 +108,8 @@ export function checkNativeBackgroundImage(v: View): boolean {
 }
 
 export function testBackgroundInternalChangedOnceOnResize() {
-	let root = helper.getCurrentPage();
-	let layout = new MyGrid();
+	const root = helper.getCurrentPage();
+	const layout = new MyGrid();
 	layout.className = 'myClass';
 	layout.backgroundColor = new Color(255, 255, 0, 0);
 
@@ -117,7 +117,7 @@ export function testBackgroundInternalChangedOnceOnResize() {
 	root.content = layout;
 
 	function trackCount() {
-		let result = layout.backgroundDrawCount;
+		const result = layout.backgroundDrawCount;
 		layout.backgroundDrawCount = 0;
 
 		return result;
@@ -141,7 +141,7 @@ export function testBackgroundInternalChangedOnceOnResize() {
 }
 
 export function test_automation_text_set_to_native() {
-	var newButton = new Button();
+	const newButton = new Button();
 	newButton.automationText = 'Button1';
 	newButton.accessibilityLabel = 'Button1';
 	helper.getCurrentPage().content = newButton;

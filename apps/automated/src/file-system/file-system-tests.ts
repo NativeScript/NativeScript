@@ -8,12 +8,12 @@ import { Application, isIOS, Device, platformNames, isAndroid } from '@nativescr
 
 export var testPathNormalize = function () {
 	// >> file-system-normalize
-	var documents = fs.knownFolders.documents();
-	var testPath = '///test.txt';
+	const documents = fs.knownFolders.documents();
+	const testPath = '///test.txt';
 	// Get a normalized path such as <folder.path>/test.txt from <folder.path>///test.txt
-	var normalizedPath = fs.path.normalize(documents.path + testPath);
+	const normalizedPath = fs.path.normalize(documents.path + testPath);
 	// >> (hide)
-	var expected = documents.path + '/test.txt';
+	const expected = documents.path + '/test.txt';
 	TKUnit.assert(normalizedPath === expected);
 	// << (hide)
 	// << file-system-normalize
@@ -21,11 +21,11 @@ export var testPathNormalize = function () {
 
 export var testPathJoin = function () {
 	// >> file-system-multiple-args
-	var documents = fs.knownFolders.documents();
+	const documents = fs.knownFolders.documents();
 	// Generate a path like <documents.path>/myFiles/test.txt
-	var path = fs.path.join(documents.path, 'myFiles', 'test.txt');
+	const path = fs.path.join(documents.path, 'myFiles', 'test.txt');
 	// >> (hide)
-	var expected = documents.path + '/myFiles/test.txt';
+	const expected = documents.path + '/myFiles/test.txt';
 	TKUnit.assert(path === expected);
 	// << (hide)
 	// << file-system-multiple-args
@@ -34,9 +34,9 @@ export var testPathJoin = function () {
 export var testPathSeparator = function () {
 	// >> file-system-separator
 	// An OS dependent path separator, "\" or "/".
-	var separator = fs.path.separator;
+	const separator = fs.path.separator;
 	// >> (hide)
-	var expected = '/';
+	const expected = '/';
 	TKUnit.assert(separator === expected);
 	// << (hide)
 	// << file-system-separator
@@ -44,9 +44,9 @@ export var testPathSeparator = function () {
 
 export var testFileFromPath = function () {
 	// >> file-system-create
-	var documents = fs.knownFolders.documents();
-	var path = fs.path.join(documents.path, 'FileFromPath.txt');
-	var file = fs.File.fromPath(path);
+	const documents = fs.knownFolders.documents();
+	const path = fs.path.join(documents.path, 'FileFromPath.txt');
+	const file = fs.File.fromPath(path);
 
 	// Writing text to the file.
 	file.writeText('Something').then(
@@ -78,8 +78,8 @@ export var testFileFromPath = function () {
 
 export var testFolderFromPath = function () {
 	// >> file-system-create-folder
-	var path = fs.path.join(fs.knownFolders.documents().path, 'music');
-	var folder = fs.Folder.fromPath(path);
+	const path = fs.path.join(fs.knownFolders.documents().path, 'music');
+	const folder = fs.Folder.fromPath(path);
 	// >> (hide)
 	TKUnit.assert(<any>folder, 'Folder.getFolder API not working.');
 	TKUnit.assert(fs.Folder.exists(folder.path), 'Folder.getFolder API not working.');
@@ -90,8 +90,8 @@ export var testFolderFromPath = function () {
 
 export var testFileWrite = function () {
 	// >> file-system-write-string
-	var documents = fs.knownFolders.documents();
-	var file = documents.getFile('Test_Write.txt');
+	const documents = fs.knownFolders.documents();
+	const file = documents.getFile('Test_Write.txt');
 
 	// Writing text to the file.
 	file.writeText('Something').then(
@@ -123,8 +123,8 @@ export var testFileWrite = function () {
 
 export var testGetFile = function () {
 	// >> file-system-create-file
-	var documents = fs.knownFolders.documents();
-	var file = documents.getFile('NewFileToCreate.txt');
+	const documents = fs.knownFolders.documents();
+	const file = documents.getFile('NewFileToCreate.txt');
 	// >> (hide)
 	TKUnit.assert(<any>file, 'File.getFile API not working.');
 	TKUnit.assert(fs.File.exists(file.path), 'File.getFile API not working.');
@@ -135,8 +135,8 @@ export var testGetFile = function () {
 
 export var testGetFolder = function () {
 	// >> file-system-get-folder
-	var documents = fs.knownFolders.documents();
-	var folder = documents.getFolder('NewFolderToCreate');
+	const documents = fs.knownFolders.documents();
+	const folder = documents.getFolder('NewFolderToCreate');
 	// >> (hide)
 	TKUnit.assert(<any>folder, 'Folder.getFolder API not working.');
 	TKUnit.assert(fs.Folder.exists(folder.path), 'Folder.getFolder API not working.');
@@ -147,10 +147,10 @@ export var testGetFolder = function () {
 
 export var testFileRead = function () {
 	// >> file-system-example-text
-	var documents = fs.knownFolders.documents();
-	var myFile = documents.getFile('Test_Write.txt');
+	const documents = fs.knownFolders.documents();
+	const myFile = documents.getFile('Test_Write.txt');
 
-	var written: boolean;
+	let written: boolean;
 	// Writing text to the file.
 	myFile.writeText('Something').then(
 		function () {
@@ -268,13 +268,13 @@ export function testFileReadWriteBinaryAsync() {
 export var testGetKnownFolders = function () {
 	// >> file-system-known-folders
 	// Getting the application's 'documents' folder.
-	var documents = fs.knownFolders.documents();
+	const documents = fs.knownFolders.documents();
 	// >> (hide)
 	TKUnit.assert(<any>documents, 'Could not retrieve the Documents known folder.');
 	TKUnit.assert(documents.isKnown, 'The Documents folder should have its isKnown property set to true.');
 	// << (hide)
 	// Getting the application's 'temp' folder.
-	var temp = fs.knownFolders.temp();
+	const temp = fs.knownFolders.temp();
 	// >> (hide)
 	TKUnit.assert(<any>temp, 'Could not retrieve the Temporary known folder.');
 	TKUnit.assert(temp.isKnown, 'The Temporary folder should have its isKnown property set to true.');
@@ -285,7 +285,7 @@ export var testGetKnownFolders = function () {
 function _testIOSSpecificKnownFolder(knownFolderName: string) {
 	let knownFolder: fs.Folder;
 	let createdFile: fs.File;
-	let testFunc = function testFunc() {
+	const testFunc = function testFunc() {
 		knownFolder = fs.knownFolders.ios[knownFolderName]();
 		if (knownFolder) {
 			createdFile = knownFolder.getFile('createdFile');
@@ -320,15 +320,15 @@ export var testIOSSpecificKnownFolders = function () {
 
 export var testGetEntities = function () {
 	// >> file-system-folders-content
-	var documents = fs.knownFolders.documents();
+	const documents = fs.knownFolders.documents();
 	// >> (hide)
-	var file = documents.getFile('Test.txt');
-	var file1 = documents.getFile('Test1.txt');
+	const file = documents.getFile('Test.txt');
+	const file1 = documents.getFile('Test1.txt');
 
-	var fileFound, file1Found;
+	let fileFound, file1Found;
 
 	// IMPORTANT: console.log is mocked to make the snippet pretty.
-	var globalConsole = console;
+	const globalConsole = console;
 	var console = {
 		log: function (file) {
 			if (file === 'Test.txt') {
@@ -365,17 +365,17 @@ export var testGetEntities = function () {
 
 export var testEnumEntities = function () {
 	// >> file-system-enum-content
-	var documents = fs.knownFolders.documents();
+	const documents = fs.knownFolders.documents();
 	// >> (hide)
-	var file = documents.getFile('Test.txt');
-	var file1 = documents.getFile('Test1.txt');
-	var testFolder = documents.getFolder('testFolder');
-	var nestedFile = testFolder.getFile('Nested.txt');
-	var fileFound = false;
-	var file1Found = false;
-	var testFolderFound = false;
-	var nestedFileFound = false;
-	var console = {
+	const file = documents.getFile('Test.txt');
+	const file1 = documents.getFile('Test1.txt');
+	const testFolder = documents.getFolder('testFolder');
+	const nestedFile = testFolder.getFile('Nested.txt');
+	let fileFound = false;
+	let file1Found = false;
+	let testFolderFound = false;
+	let nestedFileFound = false;
+	const console = {
 		log: function (file) {
 			if (file === 'Test.txt') {
 				fileFound = true;
@@ -411,13 +411,13 @@ export var testEnumEntities = function () {
 
 export var testGetParent = function () {
 	// >> file-system-parent
-	var documents = fs.knownFolders.documents();
-	var file = documents.getFile('Test.txt');
+	const documents = fs.knownFolders.documents();
+	const file = documents.getFile('Test.txt');
 	// >> (hide)
 	TKUnit.assert(<any>file, 'Failed to create file in the Documents folder.');
 	// << (hide)
 	// The parent folder of the file would be the documents folder.
-	var parent = file.parent;
+	const parent = file.parent;
 	// >> (hide)
 	TKUnit.assert(documents === parent, 'The parent folder should be the Documents folder.');
 	file.remove();
@@ -427,12 +427,12 @@ export var testGetParent = function () {
 
 export var testFileNameExtension = function () {
 	// >> file-system-extension
-	var documents = fs.knownFolders.documents();
-	var file = documents.getFile('Test.txt');
+	const documents = fs.knownFolders.documents();
+	const file = documents.getFile('Test.txt');
 	// Getting the file name "Test.txt".
-	var fileName = file.name;
+	const fileName = file.name;
 	// Getting the file extension "txt".
-	var fileExtension = file.extension;
+	const fileExtension = file.extension;
 	// >> (hide)
 	TKUnit.assert(fileName === 'Test.txt', 'Wrong file name.');
 	TKUnit.assert(fileExtension === 'txt', 'Wrong extension.');
@@ -443,12 +443,12 @@ export var testFileNameExtension = function () {
 
 export var testFileExists = function () {
 	// >> file-system-fileexists
-	var documents = fs.knownFolders.documents();
-	var filePath = fs.path.join(documents.path, 'Test.txt');
-	var exists = fs.File.exists(filePath);
+	const documents = fs.knownFolders.documents();
+	const filePath = fs.path.join(documents.path, 'Test.txt');
+	let exists = fs.File.exists(filePath);
 	// >> (hide)
 	TKUnit.assert(!exists, 'File.exists API not working.');
-	var file = documents.getFile('Test.txt');
+	const file = documents.getFile('Test.txt');
 	exists = fs.File.exists(file.path);
 	TKUnit.assert(exists, 'File.exists API not working.');
 	file.remove();
@@ -458,8 +458,8 @@ export var testFileExists = function () {
 
 export var testFolderExists = function () {
 	// >> file-system-folderexists
-	var documents = fs.knownFolders.documents();
-	var exists = fs.Folder.exists(documents.path);
+	const documents = fs.knownFolders.documents();
+	let exists = fs.Folder.exists(documents.path);
 	// >> (hide)
 	TKUnit.assert(exists, 'Folder.exists API not working.');
 	exists = fs.Folder.exists(documents.path + '_');
@@ -469,10 +469,10 @@ export var testFolderExists = function () {
 };
 
 export var testContainsFile = function () {
-	var folder = fs.knownFolders.documents();
-	var file = folder.getFile('Test.txt');
+	const folder = fs.knownFolders.documents();
+	const file = folder.getFile('Test.txt');
 
-	var contains = folder.contains('Test.txt');
+	let contains = folder.contains('Test.txt');
 	TKUnit.assert(contains, 'Folder.contains API not working.');
 	contains = folder.contains('Test_xxx.txt');
 	TKUnit.assert(!contains, 'Folder.contains API not working.');
@@ -482,8 +482,8 @@ export var testContainsFile = function () {
 
 export var testFileRename = function () {
 	// >> file-system-renaming
-	var documents = fs.knownFolders.documents();
-	var file = documents.getFile('Test.txt');
+	const documents = fs.knownFolders.documents();
+	const file = documents.getFile('Test.txt');
 
 	file.rename('Test_renamed.txt').then(
 		function (result) {
@@ -506,8 +506,8 @@ export var testFileRename = function () {
 
 export var testFolderRename = function () {
 	// >> file-system-renaming-folder
-	var folder = fs.knownFolders.documents();
-	var myFolder = folder.getFolder('Test__');
+	const folder = fs.knownFolders.documents();
+	const myFolder = folder.getFolder('Test__');
 
 	myFolder.rename('Something').then(
 		function (result) {
@@ -530,8 +530,8 @@ export var testFolderRename = function () {
 
 export var testFileRemove = function () {
 	// >> file-system-remove-file
-	var documents = fs.knownFolders.documents();
-	var file = documents.getFile('AFileToRemove.txt');
+	const documents = fs.knownFolders.documents();
+	const file = documents.getFile('AFileToRemove.txt');
 	file.remove().then(
 		function (result) {
 			// Success removing the file.
@@ -551,8 +551,8 @@ export var testFileRemove = function () {
 
 export var testFolderRemove = function () {
 	// >> file-system-remove-folder
-	var documents = fs.knownFolders.documents();
-	var file = documents.getFolder('AFolderToRemove');
+	const documents = fs.knownFolders.documents();
+	const file = documents.getFolder('AFolderToRemove');
 	// Remove a folder and recursively its content.
 	file.remove().then(
 		function (result) {
@@ -573,13 +573,13 @@ export var testFolderRemove = function () {
 
 export var testFolderClear = function () {
 	// >> file-system-clear-folder
-	var documents = fs.knownFolders.documents();
-	var folder = documents.getFolder('testFolderEmpty');
+	const documents = fs.knownFolders.documents();
+	const folder = documents.getFolder('testFolderEmpty');
 	// >> (hide)
 	folder.getFile('Test1.txt');
 	folder.getFile('Test2.txt');
-	var subfolder = folder.getFolder('subfolder');
-	var emptied;
+	const subfolder = folder.getFolder('subfolder');
+	let emptied;
 	// << (hide)
 	folder.clear().then(
 		function () {
@@ -608,7 +608,7 @@ export var testFolderClear = function () {
 export var testKnownFolderRename = function () {
 	// You can rename known folders in android - so skip this test.
 	if (!Application.android) {
-		var folder = fs.knownFolders.documents();
+		const folder = fs.knownFolders.documents();
 		folder.rename('Something').then(
 			function (result) {
 				TKUnit.assert(false, 'Known folders should not be renamed.');
@@ -621,9 +621,9 @@ export var testKnownFolderRename = function () {
 };
 
 export function testKnownFolderRemove(done) {
-	var result;
+	let result;
 
-	var knownFolder = fs.knownFolders.temp();
+	const knownFolder = fs.knownFolders.temp();
 
 	knownFolder.remove().then(
 		function () {
@@ -636,8 +636,8 @@ export function testKnownFolderRemove(done) {
 }
 
 export function test_FSEntity_Properties() {
-	var documents = fs.knownFolders.documents();
-	var file = documents.getFile('Test_File.txt');
+	const documents = fs.knownFolders.documents();
+	const file = documents.getFile('Test_File.txt');
 
 	TKUnit.assert(file.extension === 'txt', 'FileEntity.extension not working.');
 	TKUnit.assert(file.isLocked === false, 'FileEntity.isLocked not working.');
@@ -650,7 +650,7 @@ export function test_FSEntity_Properties() {
 }
 
 export function test_FileSize(done) {
-	var file = fs.knownFolders.documents().getFile('Test_File_Size.txt');
+	const file = fs.knownFolders.documents().getFile('Test_File_Size.txt');
 	file
 		.writeText('Hello World!')
 		.then(() => {
@@ -663,7 +663,7 @@ export function test_FileSize(done) {
 }
 
 export function test_UnlockAfterWrite(done) {
-	var file = fs.knownFolders.documents().getFile('Test_File_Lock.txt');
+	const file = fs.knownFolders.documents().getFile('Test_File_Lock.txt');
 	file
 		.writeText('Hello World!')
 		.then(() => {
@@ -679,9 +679,9 @@ export function test_UnlockAfterWrite(done) {
 }
 
 export function test_CreateParentOnNewFile(done) {
-	var documentsFolderName = fs.knownFolders.documents().path;
-	var tempFileName = fs.path.join(documentsFolderName, 'folder1', 'folder2', 'Test_File_Create_Parent.txt');
-	var file = fs.File.fromPath(tempFileName);
+	const documentsFolderName = fs.knownFolders.documents().path;
+	const tempFileName = fs.path.join(documentsFolderName, 'folder1', 'folder2', 'Test_File_Create_Parent.txt');
+	const file = fs.File.fromPath(tempFileName);
 	file
 		.writeText('Hello World!')
 		.then(() => {
@@ -692,9 +692,9 @@ export function test_CreateParentOnNewFile(done) {
 }
 
 export function test_FolderClear_RemovesEmptySubfolders(done) {
-	let documents = fs.knownFolders.documents();
-	let rootFolder = documents.getFolder('rootFolder');
-	let emptySubfolder = rootFolder.getFolder('emptySubfolder');
+	const documents = fs.knownFolders.documents();
+	const rootFolder = documents.getFolder('rootFolder');
+	const emptySubfolder = rootFolder.getFolder('emptySubfolder');
 	TKUnit.assertTrue(fs.Folder.exists(emptySubfolder.path), 'emptySubfolder should exist before parent folder is cleared.');
 	rootFolder
 		.clear()
@@ -728,7 +728,7 @@ export function test_FileCopy(done) {
 }
 
 export function testAndroidCreate() {
-	let testFunc = function testFunc() {
+	const testFunc = function testFunc() {
 		const file = fs.File.android.createFile({
 			directory: fs.AndroidDirectory.DOWNLOADS,
 			name: `${Date.now()}.txt`,

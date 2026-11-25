@@ -5,7 +5,7 @@ import * as utils from '@nativescript/core/utils';
 function getTextView(bar: android.widget.SearchView): android.widget.TextView {
 	if (bar) {
 		const pkgName = bar.getContext().getPackageName();
-		var id = bar.getContext().getResources().getIdentifier('search_src_text', 'id', pkgName);
+		const id = bar.getContext().getResources().getIdentifier('search_src_text', 'id', pkgName);
 		if (id) {
 			return <android.widget.TextView>bar.findViewById(id);
 		}
@@ -15,7 +15,7 @@ function getTextView(bar: android.widget.SearchView): android.widget.TextView {
 }
 
 export function getNativeHintColor(searchBar: searchBarModule.SearchBar): colorModule.Color {
-	var textView = getTextView(searchBar.android);
+	const textView = getTextView(searchBar.android);
 
 	if (textView) {
 		return new colorModule.Color(textView.getHintTextColors().getDefaultColor());
@@ -25,7 +25,7 @@ export function getNativeHintColor(searchBar: searchBarModule.SearchBar): colorM
 }
 
 export function getNativeTextFieldBackgroundColor(searchBar: searchBarModule.SearchBar): colorModule.Color {
-	var textView = getTextView(searchBar.android);
+	const textView = getTextView(searchBar.android);
 
 	if (textView) {
 		return new colorModule.Color((<android.graphics.drawable.ColorDrawable>textView.getBackground()).getColor());
@@ -35,7 +35,7 @@ export function getNativeTextFieldBackgroundColor(searchBar: searchBarModule.Sea
 }
 
 export function getNativeFontSize(searchBar: searchBarModule.SearchBar): number {
-	var textView = getTextView(searchBar.android);
+	const textView = getTextView(searchBar.android);
 
 	if (textView) {
 		return textView.getTextSize() / utils.layout.getDisplayDensity();

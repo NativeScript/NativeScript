@@ -4,7 +4,7 @@ import * as connectivity from '@nativescript/core/connectivity';
 
 export var test_DummyTestForSnippetOnly0 = function () {
 	// >> connectivity-type
-	var connectionType = connectivity.getConnectionType();
+	const connectionType = connectivity.getConnectionType();
 	switch (connectionType) {
 		case connectivity.connectionType.none:
 			//console.log("No connection");

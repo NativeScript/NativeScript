@@ -5,7 +5,7 @@ export class TestPageModule extends PageModule.Page {
 	constructor() {
 		super();
 
-		var label = new LabelModule.Label();
+		const label = new LabelModule.Label();
 		label.text = 'Label created within a page module.';
 
 		this.content = label;

@@ -16,9 +16,9 @@ import * as searchBarModule from '@nativescript/core/ui/search-bar';
 //```
 // </snippet>
 
-var _createSearchBarFunc = function (): searchBarModule.SearchBar {
+const _createSearchBarFunc = function (): searchBarModule.SearchBar {
 	// >> article-creating-searchbar
-	var searchBar = new searchBarModule.SearchBar();
+	const searchBar = new searchBarModule.SearchBar();
 	// << article-creating-searchbar
 	searchBar.text = 'searchBar';
 
@@ -31,13 +31,13 @@ export function test_recycling() {
 
 export var testSearchBarHintColor = function () {
 	helper.buildUIAndRunTest(_createSearchBarFunc(), function (views: Array<viewModule.View>) {
-		var searchBar = <searchBarModule.SearchBar>views[0];
+		const searchBar = <searchBarModule.SearchBar>views[0];
 
 		searchBar.text = '';
 		searchBar.hint = 'hint color test';
 
-		var expectedNormalizedValue;
-		var actualValue;
+		let expectedNormalizedValue;
+		let actualValue;
 
 		searchBar.textFieldHintColor = new colorModule.Color('blue');
 		expectedNormalizedValue = '#0000FF'; // blue
@@ -53,13 +53,13 @@ export var testSearchBarHintColor = function () {
 
 export var testSearchBarTextFieldBackgroundColor = function () {
 	helper.buildUIAndRunTest(_createSearchBarFunc(), function (views: Array<viewModule.View>) {
-		var searchBar = <searchBarModule.SearchBar>views[0];
+		const searchBar = <searchBarModule.SearchBar>views[0];
 
 		searchBar.text = '';
 		searchBar.hint = '';
 
-		var expectedNormalizedValue;
-		var actualValue;
+		let expectedNormalizedValue;
+		let actualValue;
 
 		searchBar.textFieldBackgroundColor = new colorModule.Color('blue');
 		expectedNormalizedValue = '#0000FF'; // blue
@@ -75,13 +75,13 @@ export var testSearchBarTextFieldBackgroundColor = function () {
 
 export var testSearchBarFontSize = function () {
 	helper.buildUIAndRunTest(_createSearchBarFunc(), function (views: Array<viewModule.View>) {
-		var searchBar = <searchBarModule.SearchBar>views[0];
+		const searchBar = <searchBarModule.SearchBar>views[0];
 
 		searchBar.text = '';
 		searchBar.hint = 'hint font-size test';
 
-		var expectedValue = 30;
-		var actualValue;
+		const expectedValue = 30;
+		let actualValue;
 
 		searchBar.style.fontSize = expectedValue;
 		actualValue = searchBarTestsNative.getNativeFontSize(searchBar);
@@ -93,7 +93,7 @@ export var testSearchBarPropertiesWithCSS = function () {
 	helper.buildUIAndRunTest(
 		_createSearchBarFunc(),
 		function (views: Array<viewModule.View>) {
-			var searchBar = <searchBarModule.SearchBar>views[0];
+			const searchBar = <searchBarModule.SearchBar>views[0];
 
 			searchBar.text = '';
 			searchBar.hint = 'hint css test';
@@ -118,13 +118,13 @@ export var testSearchBarPropertiesWithCSS = function () {
             font-size: 30;
         }
     `,
-		}
+		},
 	);
 };
 
 export function test_DummyTestForSnippetOnly() {
 	// >> article-searching
-	var searchBar = new searchBarModule.SearchBar();
+	const searchBar = new searchBarModule.SearchBar();
 	searchBar.on(searchBarModule.SearchBar.submitEvent, function (args: EventData) {
 		console.log('Search for ' + (<searchBarModule.SearchBar>args.object).text);
 	});

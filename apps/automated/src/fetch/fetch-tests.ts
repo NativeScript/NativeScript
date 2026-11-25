@@ -96,8 +96,8 @@ export var test_fetch_arraybuffer = function (done: (err: Error, res?: string) =
 };
 
 export var test_fetch_fail_invalid_url = function (done) {
-	var completed: boolean;
-	var isReady = function () {
+	let completed: boolean;
+	const isReady = function () {
 		return completed;
 	};
 
@@ -122,7 +122,7 @@ export var test_fetch_response_status = function (done) {
 	fetch('https://http-echo.nativescript.org/get')
 		.then(function (response) {
 			// Argument (response) is Response!
-			var statusCode = response.status;
+			const statusCode = response.status;
 			// >> (hide)
 			TKUnit.assert(types.isDefined(statusCode), 'response.status should be defined! Actual result is: ' + statusCode);
 			done(null);
@@ -153,7 +153,7 @@ export var test_fetch_headers_sent = function (done) {
 		headers: new Headers({ 'Content-Type': 'application/json' }),
 	})
 		.then(function (response) {
-			var result = response.headers;
+			const result = response.headers;
 			TKUnit.assert(result.get('Content-Type') === 'application/json', 'Headers not sent/received properly! Actual result is: ' + result);
 			done(null);
 		})
@@ -161,7 +161,7 @@ export var test_fetch_headers_sent = function (done) {
 };
 
 export var test_fetch_post_form_data = function (done) {
-	var data = new FormData();
+	const data = new FormData();
 	data.append('MyVariableOne', 'ValueOne');
 	data.append('MyVariableTwo', 'ValueTwo');
 

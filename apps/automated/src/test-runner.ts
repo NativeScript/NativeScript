@@ -333,16 +333,16 @@ function printRunTestStats() {
 	const failedTestInfo = [];
 	const slowTests = new Array<string>();
 
-	let allTests = testsQueue.filter((t) => t.isTest);
+	const allTests = testsQueue.filter((t) => t.isTest);
 
 	allTests.forEach((testCase, i, arr) => {
-		let testName = testCase.testName;
+		const testName = testCase.testName;
 		if (!testCase.isPassed) {
 			failedTestCount++;
 			failedTestInfo.push(testName + ' FAILED: ' + testCase.errorMessage);
 		}
 
-		let duration = (testCase.duration / 1000).toFixed(2);
+		const duration = (testCase.duration / 1000).toFixed(2);
 		if (testCase.duration > 500) {
 			slowTests.push(`${testName}: ${duration}s`);
 		}
@@ -374,8 +374,8 @@ function generateTestFile(allTests: TestInfo[]) {
 
 	const testCases = new Array<string>();
 	allTests.forEach((testCase, i, arr) => {
-		let testName = testCase.testName;
-		let duration = (testCase.duration / 1000).toFixed(2);
+		const testName = testCase.testName;
+		const duration = (testCase.duration / 1000).toFixed(2);
 
 		testCases.push(`<testcase classname="${Device.os}" name="${testName}" time="${duration}">`);
 		if (!testCase.isPassed) {
@@ -435,19 +435,19 @@ function showReportPage(finalMessage: string) {
 }
 
 function startLog(): void {
-	let testsName: string = this.name;
+	const testsName: string = this.name;
 	TKUnit.write('START ' + testsName + ' TESTS.', Trace.messageType.info);
 	this.start = TKUnit.time();
 }
 
 function log(): void {
-	let testsName: string = this.name;
-	let duration = TKUnit.time() - this.start;
+	const testsName: string = this.name;
+	const duration = TKUnit.time() - this.start;
 	TKUnit.write(testsName + ' COMPLETED for ' + duration.toFixed(2) + ' BACKSTACK DEPTH: ' + Frame.topmost().backStack.length, Trace.messageType.info);
 }
 
 function getAllProperties(obj: any) {
-	let properties = new Set<string>();
+	const properties = new Set<string>();
 	let currentObj = obj;
 	do {
 		Object.getOwnPropertyNames(currentObj).map((item) => properties.add(item));

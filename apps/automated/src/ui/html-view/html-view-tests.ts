@@ -10,17 +10,17 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(() => new htmlViewModule.HtmlView());
 }
 
-var _createHtmlViewFunc = function (): htmlViewModule.HtmlView {
+const _createHtmlViewFunc = function (): htmlViewModule.HtmlView {
 	// >> htmlview-create
-	var htmlView = new htmlViewModule.HtmlView();
+	const htmlView = new htmlViewModule.HtmlView();
 
 	// << htmlview-create
 	return htmlView;
 };
 
 export var testLoadHTMLString = function () {
-	let page = helper.getCurrentPage();
-	let htmlView = _createHtmlViewFunc();
+	const page = helper.getCurrentPage();
+	const htmlView = _createHtmlViewFunc();
 	page.content = htmlView;
 
 	// >> htmlview-using

@@ -1,20 +1,20 @@
 import { ApplicationSettings as appSettings } from '@nativescript/core';
 import * as TKUnit from '../tk-unit';
 
-var stringKey: string = 'stringKey';
-var boolKey: string = 'boolKey';
-var numberKey: string = 'numberKey';
-var noStringKey: string = 'noStringKey';
-var noBoolKey: string = 'noBoolKey';
-var noNumberKey: string = 'noNumberKey';
+const stringKey: string = 'stringKey';
+const boolKey: string = 'boolKey';
+const numberKey: string = 'numberKey';
+const noStringKey: string = 'noStringKey';
+const noBoolKey: string = 'noBoolKey';
+const noNumberKey: string = 'noNumberKey';
 
 export var testBoolean = function () {
 	appSettings.setBoolean(boolKey, false);
-	var boolValueBefore = appSettings.getBoolean(boolKey);
+	const boolValueBefore = appSettings.getBoolean(boolKey);
 	TKUnit.assert(false === boolValueBefore, 'Cannot set boolean to false, currently it is: ' + appSettings.getBoolean(boolKey));
 
 	appSettings.setBoolean('boolKey', true);
-	var boolValue = appSettings.getBoolean('boolKey', false);
+	const boolValue = appSettings.getBoolean('boolKey', false);
 
 	TKUnit.assert(true === boolValue, 'Cannot set boolean to true');
 
@@ -23,20 +23,20 @@ export var testBoolean = function () {
 
 export var testString = function () {
 	appSettings.setString('stringKey', 'String value');
-	var stringValue = appSettings.getString('stringKey');
+	const stringValue = appSettings.getString('stringKey');
 
 	TKUnit.assert('String value' === stringValue, 'Cannot set string value');
 };
 
 export var testNumber = function () {
 	appSettings.setNumber('numberKey', 54.321);
-	var value = parseFloat(appSettings.getNumber('numberKey').toFixed(3));
+	const value = parseFloat(appSettings.getNumber('numberKey').toFixed(3));
 
 	TKUnit.assert(54.321 === value, 'Cannot set number value 54.321 != ' + value);
 };
 
 export var testDefaults = function () {
-	var defaultValue = appSettings.getString('noStringKey', 'No string value');
+	const defaultValue = appSettings.getString('noStringKey', 'No string value');
 	// will return "No string value" if there is no value for "noStringKey"
 
 	TKUnit.assert('No string value' === defaultValue, 'Bad default string value');
@@ -45,7 +45,7 @@ export var testDefaults = function () {
 };
 
 export var testDefaultsWithNoDefaultValueProvided = function () {
-	var defaultValue = appSettings.getString('noStringKey');
+	const defaultValue = appSettings.getString('noStringKey');
 	// will return undefined if there is no value for "noStringKey"
 
 	TKUnit.assertEqual(defaultValue, undefined, 'Default string value is not undefined');
@@ -55,7 +55,7 @@ export var testDefaultsWithNoDefaultValueProvided = function () {
 };
 
 export var testHasKey = function () {
-	var hasKey = appSettings.hasKey('noBoolKey');
+	const hasKey = appSettings.hasKey('noBoolKey');
 	// will return false if there is no value for "noBoolKey"
 
 	TKUnit.assert(!hasKey, 'There is a key: ' + noBoolKey);
@@ -90,7 +90,7 @@ export var testClear = function () {
 export var testFlush = function () {
 	appSettings.setString(stringKey, 'String value');
 
-	var flushed = appSettings.flush();
+	const flushed = appSettings.flush();
 	// will return boolean indicating whether flush to disk was successful
 
 	TKUnit.assert(flushed, 'Flush failed: ' + flushed);
@@ -102,7 +102,7 @@ export var testAllKeys = function () {
 	appSettings.setBoolean(boolKey, true);
 	appSettings.setNumber(numberKey, 22);
 
-	var allKeys = appSettings.getAllKeys();
+	const allKeys = appSettings.getAllKeys();
 	TKUnit.assert(allKeys.indexOf(stringKey) !== -1, `${stringKey} is missing from .allKeys()`);
 	TKUnit.assert(allKeys.indexOf(boolKey) !== -1, `${boolKey} is missing from .allKeys()`);
 	TKUnit.assert(allKeys.indexOf(numberKey) !== -1, `${numberKey} is missing from .allKeys()`);

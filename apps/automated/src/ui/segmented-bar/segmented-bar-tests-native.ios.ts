@@ -5,9 +5,9 @@ export function getNativeItemsCount(bar: segmentedBarModule.SegmentedBar): numbe
 }
 
 export function checkNativeItemsTextColor(bar: segmentedBarModule.SegmentedBar): boolean {
-	var attrs = (<UISegmentedControl>bar.nativeViewProtected).titleTextAttributesForState(UIControlState.Normal);
-	var nativeViewColor = bar.color && attrs && attrs.valueForKey(NSForegroundColorAttributeName);
-	var barColor = bar.color.ios;
+	const attrs = (<UISegmentedControl>bar.nativeViewProtected).titleTextAttributesForState(UIControlState.Normal);
+	const nativeViewColor = bar.color && attrs && attrs.valueForKey(NSForegroundColorAttributeName);
+	const barColor = bar.color.ios;
 
 	return barColor.isEqual(nativeViewColor);
 }

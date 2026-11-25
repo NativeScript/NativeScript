@@ -5,7 +5,7 @@ import * as types from '@nativescript/core/utils/types';
 import * as helper from '../../ui-helper';
 
 function assertInState(view: view.View, state: string, knownStates: string[]): void {
-	let pseudo = view.cssPseudoClasses;
+	const pseudo = view.cssPseudoClasses;
 	if (state) {
 		TKUnit.assert(pseudo.has(state), 'Expected view ' + view + ' to have pseudo class ' + state);
 	}
@@ -17,10 +17,10 @@ function assertInState(view: view.View, state: string, knownStates: string[]): v
 }
 
 export var test_goToVisualState = function () {
-	var test = function (views: Array<view.View>) {
+	const test = function (views: Array<view.View>) {
 		(<page.Page>views[0]).css = 'button:hovered { color: red; background-color: orange } button:pressed { color: white; background-color: black }';
 
-		var btn = views[1];
+		const btn = views[1];
 
 		assertInState(btn, null, ['hovered', 'pressed']);
 
@@ -43,10 +43,10 @@ export var test_goToVisualState = function () {
 };
 
 export var test_goToVisualState_NoState_ShouldResetStyledProperties = function () {
-	var test = function (views: Array<view.View>) {
+	const test = function (views: Array<view.View>) {
 		(<page.Page>views[0]).css = 'button:hovered { color: red; background-color: orange }';
 
-		var btn = views[1];
+		const btn = views[1];
 		assertInState(btn, null, ['hovered', 'pressed']);
 
 		btn._goToVisualState('hovered');
@@ -69,10 +69,10 @@ export var test_goToVisualState_NoState_ShouldResetStyledProperties = function (
 };
 
 export var test_goToVisualState_NoState_ShouldGoToNormal = function () {
-	var test = function (views: Array<view.View>) {
+	const test = function (views: Array<view.View>) {
 		(<page.Page>views[0]).css = 'button { color: orange; background-color: black } button:hovered { color: red; background-color: orange }';
 
-		var btn = views[1];
+		const btn = views[1];
 
 		assertInState(btn, null, ['hovered', 'pressed']);
 
@@ -96,10 +96,10 @@ export var test_goToVisualState_NoState_ShouldGoToNormal = function () {
 };
 
 export var test_addVisualState = function () {
-	var test = function (views: Array<view.View>) {
+	const test = function (views: Array<view.View>) {
 		(<page.Page>views[0]).css = 'button:hovered { color: red; background-color: orange } button:pressed { color: white }';
 
-		var btn = views[1];
+		const btn = views[1];
 
 		assertInState(btn, btn.defaultVisualState, ['hovered', 'pressed', btn.defaultVisualState]);
 
@@ -123,10 +123,10 @@ export var test_addVisualState = function () {
 };
 
 export var test_removeVisualState = function () {
-	var test = function (views: Array<view.View>) {
+	const test = function (views: Array<view.View>) {
 		(<page.Page>views[0]).css = 'button { background-color: yellow; color: green } button:pressed { background-color: red; color: white }';
 
-		var btn = views[1];
+		const btn = views[1];
 
 		btn._addVisualState('pressed');
 
