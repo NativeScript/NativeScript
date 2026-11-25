@@ -13,7 +13,7 @@ export function initAppForModuleResolver() {
 }
 
 export interface ModuleNameResolverType {
-	resolveModuleName(path: string, ext: string): string;
+	resolveModuleName(path: string, ext: string): string | null;
 	clearCache(): void;
 }
 
