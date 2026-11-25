@@ -6,7 +6,7 @@
  * the reference path above will get rewritten and break on compilation unless kept here
  * Once issue is resolve we can remove this index.d.ts from repo and go back to auto generation on tsc
  */
-export type { NativeScriptConfig } from './config';
+export type { NativeScriptConfig, IConfigPlatform } from './config';
 
 export * from './application';
 export { androidRegisterBroadcastReceiver, androidUnregisterBroadcastReceiver, androidRegisteredReceivers, iosAddNotificationObserver, iosRemoveNotificationObserver, iosNotificationObservers } from './application/helpers';
