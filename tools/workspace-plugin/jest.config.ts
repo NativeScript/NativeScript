@@ -1,4 +1,3 @@
-/* eslint-disable */
 module.exports = {
 	displayName: 'workspace-plugin',
 	preset: '../../jest.preset.js',
