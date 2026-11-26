@@ -162,11 +162,6 @@ export class Frame extends FrameBase {
 			return;
 		}
 
-		// _onAttachedToWindow navigates once the parent frame's fragment is added
-		if (this.isWaitingForParentFrameFragment()) {
-			return;
-		}
-
 		// in case the activity is "reset" using resetRootView or disposed we must wait for
 		// the attachedToWindow event to make the first navigation or it will crash
 		// https://github.com/NativeScript/NativeScript/commit/9dd3e1a8076e5022e411f2f2eeba34aabc68d112
@@ -185,6 +180,11 @@ export class Frame extends FrameBase {
 		}
 
 		const manager = this._getFragmentManager();
+		// _onAttachedToWindow navigates once the parent's fragment is added
+		if (!manager) {
+			return;
+		}
+
 		const entry = this._currentEntry;
 		const isNewEntry = !this._cachedTransitionState || entry !== this._cachedTransitionState.entry;
 
@@ -228,36 +228,6 @@ export class Frame extends FrameBase {
 		}
 
 		return null;
-	}
-
-	public _getFragmentManager(): androidx.fragment.app.FragmentManager {
-		// a nested frame must not fall back to the Activity's FragmentManager, which has no container for it
-		if (!this._manager && this.isWaitingForParentFrameFragment()) {
-			return null;
-		}
-
-		return super._getFragmentManager();
-	}
-
-	private isWaitingForParentFrameFragment(): boolean {
-		if ((this as any)._dialogFragment) {
-			return false;
-		}
-
-		let view: any = this.parent;
-		while (view) {
-			if (view._dialogFragment) {
-				return false;
-			}
-
-			if (view._hasFragments) {
-				return view instanceof Frame && !view._getChildFragmentManager();
-			}
-
-			view = view.parent;
-		}
-
-		return false;
 	}
 
 	public _onRootViewReset(): void {
@@ -730,7 +700,7 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 	public fragmentForPage(entry: BackstackEntry): any {
 		const tag = entry && entry.fragmentTag;
 		if (tag) {
-			return this.owner._getFragmentManager().findFragmentByTag(tag);
+			return this.owner._getFragmentManager()?.findFragmentByTag(tag);
 		}
 
 		return undefined;

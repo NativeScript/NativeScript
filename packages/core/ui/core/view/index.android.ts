@@ -739,6 +739,11 @@ export class View extends ViewCommon {
 				if (view._hasFragments) {
 					if (frameOrTabViewItemFound) {
 						manager = view._getChildFragmentManager();
+						// The parent's fragment is not added yet, so wait for it
+						if (!manager) {
+							return null;
+						}
+
 						break;
 					}
 
