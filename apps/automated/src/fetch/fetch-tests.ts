@@ -202,3 +202,28 @@ export var test_fetch_post_json = function (done) {
 const failOnError = function (done: (err: Error, res?: string) => void) {
 	return (e) => done(e);
 };
+
+function paddedJsonBytes(): Uint8Array<ArrayBuffer> {
+	const json = JSON.stringify({ MyVariableOne: 'ValueOne', MyVariableTwo: 'ValueTwo' });
+	const padded = new Uint8Array(json.length + 8).fill('x'.charCodeAt(0));
+	for (let i = 0; i < json.length; i++) {
+		padded[i + 4] = json.charCodeAt(i);
+	}
+
+	return padded.subarray(4, 4 + json.length);
+}
+
+export var test_fetch_post_typed_array = function (done) {
+	fetch('https://http-echo.nativescript.org/post', {
+		method: 'POST',
+		headers: new Headers({ 'Content-Type': 'application/json' }),
+		body: paddedJsonBytes(),
+	})
+		.then((r) => r.json())
+		.then(function (r) {
+			TKUnit.assertEqual(r.json?.['MyVariableOne'], 'ValueOne', 'Content not sent properly!');
+			TKUnit.assertEqual(r.json?.['MyVariableTwo'], 'ValueTwo', 'Content not sent properly!');
+			done(null);
+		})
+		.catch((e) => done(e));
+};
