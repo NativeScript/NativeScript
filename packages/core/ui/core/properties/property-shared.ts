@@ -57,6 +57,14 @@ export function isCssUnsetValue(value: any): boolean {
 // These run at the top of every property setter, so the common case of setting
 // a non-string value (number, boolean, Color, object) must bail out after a
 // single typeof check instead of comparing against each reset keyword.
+/**
+ * Whether a written value releases the property's value instead of setting one.
+ *
+ * Written from code (`view.style.backgroundColor = 'inherit'`), every keyword only
+ * releases the local value. Unlike an inline CSS declaration, a keyword set from code
+ * never outranks the stylesheet; that is intended. Only the stylesheet's `inherit`
+ * resolves to the parent's value.
+ */
 export function isResetValue(value: any): boolean {
 	if (typeof value !== 'string') {
 		return value === unsetValue;
