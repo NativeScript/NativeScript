@@ -1,7 +1,7 @@
 import { getNativeScriptGlobals } from '../../globals/global-utils';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, _expandCssShorthand, _isCssPendingSubstitution, _isCssValueStillApplied, CssPendingSubstitution, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { _evaluateCssVariableExpression, _evaluateCssExpressions as evaluateCssExpressions, _isCssPendingSubstitution, _isCssValueStillApplied, _reevaluateLocalCssExpressions, _setLocalCssShorthandValue, _substituteCssShorthand, _SubstitutedCssShorthand, CssPendingSubstitution, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 
@@ -98,53 +98,6 @@ function keyframesArrayFromCSS(keyframes: Keyframes, view?: ViewBase): KeyframeI
 const kebabCasePattern = /-([a-z])/g;
 const kebabCaseReplacementFunc = (g: string) => g[1].toUpperCase();
 const pattern = /('|")(.*?)\1/;
-
-/**
- * Parse a pending-substitution shorthand once its expression has been evaluated
- * against the view; a value that does not survive evaluation leaves its longhands unset.
- */
-function resolvePendingSubstitution(view: ViewBase, pending: CssPendingSubstitution): Record<string, unknown> {
-	const value = evaluateCssExpressions(view, pending.shorthand, pending.value);
-	if (value === unsetValue) {
-		return CssState.emptyPropertyBag;
-	}
-
-	const expanded = _expandCssShorthand(pending.shorthand, value);
-	if (!expanded) {
-		Trace.write(`Failed to expand shorthand [${pending.shorthand}] resolved to [${value}] for ${view}.`, Trace.categories.Style, Trace.messageType.warn);
-
-		return CssState.emptyPropertyBag;
-	}
-
-	const resolved: Record<string, unknown> = {};
-	for (let i = 0, length = expanded.length; i < length; i++) {
-		resolved[expanded[i][0]] = expanded[i][1];
-	}
-
-	return resolved;
-}
-
-/**
- * Evaluate css-variable and css-calc expressions
- */
-function evaluateCssExpressions(view: ViewBase, property: string, value: string) {
-	const newValue = _evaluateCssVariableExpression(view, property, value);
-	if (newValue === 'unset') {
-		return unsetValue;
-	}
-
-	value = newValue;
-
-	try {
-		value = _evaluateCssCalcExpression(value);
-	} catch (e) {
-		Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
-
-		return unsetValue;
-	}
-
-	return value;
-}
 
 function evaluateCssVariable(view: ViewBase, name: string, value: string): string | null {
 	const evaluated = evaluateCssExpressions(view, name, value);
@@ -1111,7 +1064,7 @@ export class CssState {
 
 			let resolved = resolvedShorthands.get(pending);
 			if (!resolved) {
-				resolved = resolvePendingSubstitution(view, pending);
+				resolved = _substituteCssShorthand(view, pending).values;
 				resolvedShorthands.set(pending, resolved);
 			}
 
@@ -1177,6 +1130,11 @@ export class CssState {
 
 		this._appliedPropertyValues = newPropertyValues;
 		this._appliedLocalValueVersion = view.style._localValueVersion;
+
+		// Local expressions resolved to unset fall back to the values recorded above.
+		if (view.style._localCssExpressions) {
+			_reevaluateLocalCssExpressions(view);
+		}
 	}
 
 	private subscribeForDynamicUpdates(): void {
@@ -1606,7 +1564,7 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 	}
 
 	// Pending-substitution longhands share one placeholder - resolve it once.
-	let resolvedShorthands: Map<CssPendingSubstitution, Record<string, unknown>>;
+	let resolvedShorthands: Map<CssPendingSubstitution, _SubstitutedCssShorthand>;
 	let applied: Set<string>;
 
 	declarations.forEach((d) => {
@@ -1618,7 +1576,6 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 				return;
 			}
 
-			let value: unknown;
 			if (_isCssPendingSubstitution(d.value)) {
 				if (!resolvedShorthands) {
 					resolvedShorthands = new Map();
@@ -1626,16 +1583,18 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 
 				let resolved = resolvedShorthands.get(d.value);
 				if (!resolved) {
-					resolved = resolvePendingSubstitution(view, d.value);
+					resolved = _substituteCssShorthand(view, d.value);
 					resolvedShorthands.set(d.value, resolved);
 				}
 
-				value = property in resolved ? resolved[property] : unsetValue;
+				_setLocalCssShorthandValue(view.style, property, d.value, resolved);
+			} else if (property in view.style) {
+				// The style setter substitutes var()/calc() and keeps them current.
+				view.style[property] = d.value;
 			} else {
-				value = evaluateCssExpressions(view, property, d.value);
+				view[property] = evaluateCssExpressions(view, property, d.value);
 			}
 
-			setInlineValue(view, property, value);
 			if (!applied) {
 				applied = new Set();
 			}
