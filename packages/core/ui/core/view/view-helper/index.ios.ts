@@ -634,7 +634,8 @@ export class IOSHelper {
 
 		if (viewControllerView) {
 			safeArea = viewControllerView.safeAreaLayoutGuide.layoutFrame;
-			fullscreen = viewControllerView.frame;
+			// safeArea and inWindow are relative to the controller view, not its superview.
+			fullscreen = viewControllerView.bounds;
 			controllerInWindow = viewControllerView.convertPointToView(viewControllerView.bounds.origin, null);
 		} else if (scrollView) {
 			const insets = scrollView.safeAreaInsets;
