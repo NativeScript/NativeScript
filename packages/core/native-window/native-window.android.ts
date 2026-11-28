@@ -1,8 +1,7 @@
 import type { View } from '../ui/core/view';
 import { CoreTypes } from '../core-types';
 import { SDK_VERSION } from '../utils/constants';
-import type { AndroidActivityCallbacks } from '../ui/frame/frame-common';
-import { CALLBACKS } from '../ui/frame/frame-constants';
+import { getActivityCallbacks } from '../ui/frame/activity-callbacks-store';
 import { NativeWindow } from './native-window-common';
 import type { WindowRole } from './window-base';
 
@@ -104,7 +103,7 @@ export class AndroidNativeWindow extends NativeWindow {
 			throw new Error('NativeWindow: Activity is no longer available.');
 		}
 
-		const callbacks: AndroidActivityCallbacks = (activity as any)[CALLBACKS];
+		const callbacks = getActivityCallbacks(activity);
 		if (!callbacks) {
 			throw new Error('NativeWindow: Cannot find activity callbacks.');
 		}

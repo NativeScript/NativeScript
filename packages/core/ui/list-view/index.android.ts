@@ -82,7 +82,10 @@ export class ListView extends ListViewBase {
 
 	// Search functionality
 	private _searchView: android.widget.SearchView;
+	private _searchViewWrapper: View;
 	private _searchListener: android.widget.SearchView.OnQueryTextListener;
+	private _listViewAdapter: android.widget.BaseAdapter & { owner: ListView };
+	private _itemClickListener: android.widget.AdapterView.OnItemClickListener & { owner: ListView };
 
 	public get hasSearchView(): boolean {
 		return !!this._searchView;
@@ -161,11 +164,11 @@ export class ListView extends ListViewBase {
 		ensureListViewAdapterClass();
 		const adapter = new ListViewAdapterClass(this);
 		nativeView.setAdapter(adapter);
-		(<any>nativeView).adapter = adapter;
+		this._listViewAdapter = adapter;
 
 		const itemClickListener = new ItemClickListener(this);
 		nativeView.setOnItemClickListener(itemClickListener);
-		(<any>nativeView).itemClickListener = itemClickListener;
+		this._itemClickListener = <ListView['_itemClickListener']>itemClickListener;
 
 		if (this._androidViewId < 0) {
 			this._androidViewId = android.view.View.generateViewId();
@@ -178,11 +181,13 @@ export class ListView extends ListViewBase {
 	public disposeNativeView() {
 		const nativeView = this.nativeViewProtected;
 		nativeView.setAdapter(null);
-		if ((<any>nativeView).itemClickListener) {
-			(<any>nativeView).itemClickListener.owner = null;
+		if (this._itemClickListener) {
+			this._itemClickListener.owner = null;
+			this._itemClickListener = null;
 		}
-		if ((<any>nativeView).adapter) {
-			(<any>nativeView).adapter.owner = null;
+		if (this._listViewAdapter) {
+			this._listViewAdapter.owner = null;
+			this._listViewAdapter = null;
 		}
 
 		// Cleanup search
@@ -388,7 +393,7 @@ export class ListView extends ListViewBase {
 		// Add sticky header to the parent layout
 		// If search view exists, position sticky header after it (index 1), otherwise at top (index 0)
 		const parentLayout = this.parent;
-		const hasSearchView = this.showSearch && this._searchView && (this._searchView as any)._wrapper;
+		const hasSearchView = this.showSearch && this._searchView && this._searchViewWrapper;
 
 		if (parentLayout instanceof StackLayout) {
 			const insertIndex = hasSearchView ? 1 : 0;
@@ -408,8 +413,8 @@ export class ListView extends ListViewBase {
 
 				// Use a timeout to ensure search view is measured first
 				setTimeout(() => {
-					if (this._searchView && (this._searchView as any)._wrapper) {
-						const searchWrapper = (this._searchView as any)._wrapper;
+					if (this._searchView && this._searchViewWrapper) {
+						const searchWrapper = this._searchViewWrapper;
 						if (searchWrapper.nativeViewProtected) {
 							const searchHeight = searchWrapper.nativeViewProtected.getMeasuredHeight() || 50;
 
@@ -437,8 +442,8 @@ export class ListView extends ListViewBase {
 
 		// Calculate total top padding: search view height + sticky header height
 		let searchViewHeight = 0;
-		if (this.showSearch && this._searchView && (this._searchView as any)._wrapper) {
-			const searchWrapper = (this._searchView as any)._wrapper;
+		if (this.showSearch && this._searchView && this._searchViewWrapper) {
+			const searchWrapper = this._searchViewWrapper;
 			if (searchWrapper.nativeViewProtected && searchWrapper.nativeViewProtected.getMeasuredHeight() > 0) {
 				searchViewHeight = searchWrapper.nativeViewProtected.getMeasuredHeight();
 			} else {
@@ -473,8 +478,8 @@ export class ListView extends ListViewBase {
 						const measuredHeaderHeight = v.getMeasuredHeight();
 						let finalSearchHeight = searchViewHeight;
 						// Re-measure search view if needed
-						if (listView.showSearch && listView._searchView && (listView._searchView as any)._wrapper) {
-							const searchWrapper = (listView._searchView as any)._wrapper;
+						if (listView.showSearch && listView._searchView && listView._searchViewWrapper) {
+							const searchWrapper = listView._searchViewWrapper;
 							if (searchWrapper.nativeViewProtected && searchWrapper.nativeViewProtected.getMeasuredHeight() > 0) {
 								finalSearchHeight = searchWrapper.nativeViewProtected.getMeasuredHeight();
 							}
@@ -725,8 +730,8 @@ export class ListView extends ListViewBase {
 
 		// Measure and adjust if needed
 		setTimeout(() => {
-			if (this._searchView && (this._searchView as any)._wrapper) {
-				const searchWrapper = (this._searchView as any)._wrapper;
+			if (this._searchView && this._searchViewWrapper) {
+				const searchWrapper = this._searchViewWrapper;
 				if (searchWrapper.nativeViewProtected && searchWrapper.nativeViewProtected.getMeasuredHeight() > 0) {
 					const measuredHeight = searchWrapper.nativeViewProtected.getMeasuredHeight();
 					this.nativeViewProtected.setPadding(0, measuredHeight + 4, 0, 0);
@@ -770,17 +775,17 @@ export class ListView extends ListViewBase {
 			searchViewWrapper.nativeViewProtected.setZ(SEARCH_VIEW_Z_INDEX);
 		}
 
-		// Store reference for cleanup
-		(this._searchView as any)._wrapper = searchViewWrapper;
+		this._searchViewWrapper = searchViewWrapper;
 	}
 
 	private _cleanupSearchView() {
 		if (this._searchView) {
 			// Remove search view wrapper from parent
-			const wrapper = (this._searchView as any)._wrapper;
+			const wrapper = this._searchViewWrapper;
 			if (wrapper && wrapper.parent) {
 				wrapper.parent._removeView(wrapper);
 			}
+			this._searchViewWrapper = null;
 
 			// Clear listener
 			if (this._searchListener) {
@@ -826,9 +831,9 @@ export class ListView extends ListViewBase {
 		this._stickyHeaderView.nativeViewProtected.setTranslationY(0);
 
 		// If search is enabled, position below search view
-		if (this.showSearch && this._searchView && (this._searchView as any)._wrapper) {
+		if (this.showSearch && this._searchView && this._searchViewWrapper) {
 			setTimeout(() => {
-				const searchWrapper = (this._searchView as any)._wrapper;
+				const searchWrapper = this._searchViewWrapper;
 				if (searchWrapper.nativeViewProtected) {
 					const searchHeight = searchWrapper.nativeViewProtected.getMeasuredHeight() || 50;
 					this._stickyHeaderView.nativeViewProtected.setTranslationY(searchHeight);

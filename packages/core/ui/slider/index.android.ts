@@ -7,50 +7,45 @@ import { LinearGradient } from '../styling/linear-gradient';
 
 export * from './slider-common';
 
-interface OwnerSeekBar extends android.widget.SeekBar {
-	owner: Slider;
-}
+type SeekBarChangeListener = android.widget.SeekBar.OnSeekBarChangeListener & { owner: WeakRef<Slider> };
 
 let SeekBar: typeof android.widget.SeekBar;
-let SeekBarChangeListener: android.widget.SeekBar.OnSeekBarChangeListener;
+let SeekBarChangeListener: new (owner: WeakRef<Slider>) => SeekBarChangeListener;
 
 function initializeListenerClass(): void {
 	if (!SeekBarChangeListener) {
 		@NativeClass
 		@Interfaces([android.widget.SeekBar.OnSeekBarChangeListener])
 		class SeekBarChangeListenerImpl extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
-			constructor() {
+			constructor(public owner: WeakRef<Slider>) {
 				super();
 			}
 
-			onProgressChanged(seekBar: OwnerSeekBar, progress: number, fromUser: boolean): void {
-				const owner = seekBar.owner;
+			onProgressChanged(seekBar: android.widget.SeekBar, progress: number, fromUser: boolean): void {
+				const owner = this.owner?.deref();
 				if (owner && !owner._supressNativeValue) {
 					const newValue = progress + owner.minValue;
 					valueProperty.nativeValueChange(owner, newValue);
 				}
 			}
 
-			onStartTrackingTouch(seekBar: OwnerSeekBar): void {
+			onStartTrackingTouch(seekBar: android.widget.SeekBar): void {
 				//
 			}
 
-			onStopTrackingTouch(seekBar: OwnerSeekBar): void {
+			onStopTrackingTouch(seekBar: android.widget.SeekBar): void {
 				//
 			}
 		}
 
-		SeekBarChangeListener = new SeekBarChangeListenerImpl();
+		SeekBarChangeListener = SeekBarChangeListenerImpl;
 	}
-}
-
-function getListener(): android.widget.SeekBar.OnSeekBarChangeListener {
-	return SeekBarChangeListener;
 }
 
 export class Slider extends SliderBase {
 	_supressNativeValue: boolean;
-	nativeViewProtected: OwnerSeekBar;
+	nativeViewProtected: android.widget.SeekBar;
+	private _seekBarChangeListener: SeekBarChangeListener;
 
 	public createNativeView() {
 		if (!SeekBar) {
@@ -63,14 +58,16 @@ export class Slider extends SliderBase {
 	public initNativeView(): void {
 		super.initNativeView();
 		const nativeView = this.nativeViewProtected;
-		nativeView.owner = this;
 		initializeListenerClass();
-		const listener = getListener();
-		nativeView.setOnSeekBarChangeListener(listener);
+		this._seekBarChangeListener = new SeekBarChangeListener(new WeakRef(this));
+		nativeView.setOnSeekBarChangeListener(this._seekBarChangeListener);
 	}
 
 	public disposeNativeView() {
-		this.nativeViewProtected.owner = null;
+		if (this._seekBarChangeListener) {
+			this._seekBarChangeListener.owner = null;
+			this._seekBarChangeListener = null;
+		}
 		super.disposeNativeView();
 	}
 

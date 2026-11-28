@@ -82,6 +82,8 @@ function getSelectorWheelPaint(picker: android.widget.NumberPicker): android.gra
 export class ListPicker extends ListPickerBase {
 	nativeViewProtected: android.widget.NumberPicker;
 	private _selectorWheelPaint: android.graphics.Paint;
+	private _formatter: android.widget.NumberPicker.Formatter & { owner: ListPicker };
+	private _valueChangedListener: android.widget.NumberPicker.OnValueChangeListener & { owner: ListPicker };
 	// Not a JS property of the picker: the edit text is its child, so that would be a cycle.
 	private _editText: android.widget.EditText;
 
@@ -108,11 +110,11 @@ export class ListPicker extends ListPickerBase {
 
 		const formatter = new Formatter(this);
 		nativeView.setFormatter(formatter);
-		(<any>nativeView).formatter = formatter;
+		this._formatter = <ListPicker['_formatter']>formatter;
 
 		const valueChangedListener = new ValueChangeListener(this);
 		nativeView.setOnValueChangedListener(valueChangedListener);
-		(<any>nativeView).valueChangedListener = valueChangedListener;
+		this._valueChangedListener = <ListPicker['_valueChangedListener']>valueChangedListener;
 
 		const editText = getEditText(nativeView);
 		this._editText = editText;
@@ -127,12 +129,12 @@ export class ListPicker extends ListPickerBase {
 	}
 
 	public disposeNativeView() {
-		const nativeView = this.nativeViewProtected;
-		if ((<any>nativeView)?.formatter) {
-			(<any>nativeView).formatter.owner = null;
+		if (this._formatter) {
+			this._formatter.owner = null;
 		}
-		if ((<any>nativeView)?.valueChangedListener) {
-			(<any>nativeView).valueChangedListener.owner = null;
+		if (this._valueChangedListener) {
+			this._valueChangedListener.owner = null;
+			this._valueChangedListener = null;
 		}
 		this._editText = null;
 		super.disposeNativeView();
@@ -142,7 +144,7 @@ export class ListPicker extends ListPickerBase {
 		const nativeView = this.nativeViewProtected;
 		//HACK: Force the stubborn NumberPicker to render correctly when we have 0 or 1 items.
 		nativeView.setFormatter(null);
-		nativeView.setFormatter((<any>nativeView).formatter); //Force the NumberPicker to call our Formatter
+		nativeView.setFormatter(this._formatter); //Force the NumberPicker to call our Formatter
 
 		const editText = this._editText;
 		if (editText) {

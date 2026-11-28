@@ -1,5 +1,6 @@
 import '../../globals';
 import { setActivityCallbacks } from '.';
+import { getActivityCallbacks, _unpinActivity } from './activity-callbacks-store';
 import { Application } from '../../application';
 import { isEmbedded } from '../embedding';
 const EMPTY_FN = () => {};
@@ -75,60 +76,60 @@ if (!isEmbedded()) {
 
 			Application.android.init(activity.getApplication());
 
-			// Set isNativeScriptActivity in onCreate.
-			// The JS constructor might not be called because the activity is created from Android.
-			activity.isNativeScriptActivity = true;
-
-			if (!activity._callbacks) {
+			if (!getActivityCallbacks(activity)) {
 				setActivityCallbacks(activity);
 			}
 
-			activity._callbacks.onCreate(activity, savedInstanceState, activity.getIntent(), EMPTY_FN);
+			getActivityCallbacks(activity).onCreate(activity, savedInstanceState, activity.getIntent(), EMPTY_FN);
 		},
 
 		onNewIntent(intent: android.content.Intent): void {
 			const activity = this.getActivity();
-			activity._callbacks.onNewIntent(activity, intent, EMPTY_FN, EMPTY_FN);
+			getActivityCallbacks(activity).onNewIntent(activity, intent, EMPTY_FN, EMPTY_FN);
 		},
 
 		onSaveInstanceState(outState: android.os.Bundle): void {
 			const activity = this.getActivity();
-			activity._callbacks.onSaveInstanceState(activity, outState, EMPTY_FN);
+			getActivityCallbacks(activity).onSaveInstanceState(activity, outState, EMPTY_FN);
 		},
 
 		onStart(): void {
 			const activity = this.getActivity();
-			activity._callbacks.onStart(activity, EMPTY_FN);
+			getActivityCallbacks(activity).onStart(activity, EMPTY_FN);
 		},
 
 		onStop(): void {
 			const activity = this.getActivity();
-			activity._callbacks.onStop(activity, EMPTY_FN);
+			getActivityCallbacks(activity).onStop(activity, EMPTY_FN);
 		},
 
 		onDestroy(): void {
 			const activity = this.getActivity();
-			activity._callbacks.onDestroy(activity, EMPTY_FN);
+			try {
+				getActivityCallbacks(activity).onDestroy(activity, EMPTY_FN);
+			} finally {
+				_unpinActivity(activity);
+			}
 		},
 
 		onPostResume(): void {
 			const activity = this.getActivity();
-			activity._callbacks.onPostResume(activity, EMPTY_FN);
+			getActivityCallbacks(activity).onPostResume(activity, EMPTY_FN);
 		},
 
 		onBackPressed(): void {
 			const activity = this.getActivity();
-			activity._callbacks.onBackPressed(activity, EMPTY_FN);
+			getActivityCallbacks(activity).onBackPressed(activity, EMPTY_FN);
 		},
 
 		onRequestPermissionsResult(requestCode: number, permissions: Array<string>, grantResults: Array<number>): void {
 			const activity = this.getActivity();
-			activity._callbacks.onRequestPermissionsResult(activity, requestCode, permissions, grantResults, undefined /*TODO: Enable if needed*/);
+			getActivityCallbacks(activity).onRequestPermissionsResult(activity, requestCode, permissions, grantResults, undefined /*TODO: Enable if needed*/);
 		},
 
 		onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
 			const activity = this.getActivity();
-			activity._callbacks.onActivityResult(activity, requestCode, resultCode, data, EMPTY_FN);
+			getActivityCallbacks(activity).onActivityResult(activity, requestCode, resultCode, data, EMPTY_FN);
 		},
 	});
 

@@ -97,6 +97,7 @@ function initializeWebViewClient(): void {
 
 export class WebView extends WebViewBase {
 	nativeViewProtected: android.webkit.WebView;
+	private _webViewClient: android.webkit.WebViewClient & { owner: WebViewBase };
 
 	public createNativeView() {
 		const nativeView = new android.webkit.WebView(this._context);
@@ -114,16 +115,17 @@ export class WebView extends WebViewBase {
 		const nativeView = this.nativeViewProtected;
 		const client = new WebViewClient(<any>this);
 		nativeView.setWebViewClient(client);
-		(<any>nativeView).client = client;
+		this._webViewClient = client;
 		this._disableZoom(this.disableZoom);
 	}
 
 	public disposeNativeView() {
 		const nativeView = this.nativeViewProtected;
+		if (this._webViewClient) {
+			this._webViewClient.owner = null;
+			this._webViewClient = null;
+		}
 		if (nativeView) {
-			if ((<any>nativeView).client) {
-				(<any>nativeView).client.owner = null;
-			}
 			nativeView.destroy();
 		}
 

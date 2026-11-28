@@ -6,16 +6,20 @@ vi.hoisted(() => {
 
 import { AndroidApplication } from './application.android';
 import type { AndroidNativeWindow } from '../native-window/native-window.android';
+import { _registerActivityCallbacks } from '../ui/frame/activity-callbacks-store';
 
 function activity(name: string, nativeScript = true) {
-	return {
-		...(nativeScript ? { isNativeScriptActivity: true } : {}),
+	const result = {
 		getClass: () => name,
 		isFinishing: () => false,
 		isDestroyed: () => false,
 		isInMultiWindowMode: () => false,
 		startActivity: vi.fn(),
 	} as unknown as androidx.appcompat.app.AppCompatActivity;
+	if (nativeScript) {
+		_registerActivityCallbacks(result, {} as any);
+	}
+	return result;
 }
 
 describe('Android openWindow activity selection', () => {

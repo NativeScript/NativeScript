@@ -89,8 +89,6 @@ const TransitionListener = lazy(() => {
 	}
 	return TransitionListenerImpl;
 });
-let AnimationListener: android.animation.Animator.AnimatorListener;
-
 interface ExpandedTransitionListener extends androidx.transition.Transition.TransitionListener {
 	entry: WeakRef<ExpandedEntry>;
 }
@@ -102,10 +100,9 @@ interface AttachedTransitionListener {
 	transition: androidx.transition.Transition;
 }
 
-interface ExpandedAnimator extends android.animation.Animator {
+interface ExpandedAnimatorListener extends android.animation.Animator.AnimatorListener {
 	entry: WeakRef<ExpandedEntry>;
-	backEntry?: WeakRef<BackstackEntry>;
-	transitionType?: string;
+	transitionType: string;
 }
 
 export interface ExpandedEntry extends BackstackEntry {
@@ -114,10 +111,12 @@ export interface ExpandedEntry extends BackstackEntry {
 	reenterTransitionListener?: AttachedTransitionListener;
 	returnTransitionListener?: AttachedTransitionListener;
 
-	enterAnimator?: ExpandedAnimator;
-	exitAnimator?: ExpandedAnimator;
-	popEnterAnimator?: ExpandedAnimator;
-	popExitAnimator?: ExpandedAnimator;
+	enterAnimator?: android.animation.Animator;
+	exitAnimator?: android.animation.Animator;
+	popEnterAnimator?: android.animation.Animator;
+	popExitAnimator?: android.animation.Animator;
+	exitAnimatorListener?: ExpandedAnimatorListener;
+	popEnterAnimatorListener?: ExpandedAnimatorListener;
 
 	transition?: Transition;
 	transitionName?: string;
@@ -252,113 +251,107 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 
 function setupAllAnimation(entry: ExpandedEntry, transition: Transition): void {
 	setupExitAndPopEnterAnimation(entry, transition);
-	const listener = getAnimationListener();
 
 	// setupAllAnimation is called only for new fragments so we don't
 	// need to clearAnimationListener for enter & popExit animators.
-	const enterAnimator = <ExpandedAnimator>transition.createAndroidAnimator(Transition.AndroidTransitionType.enter);
-	enterAnimator.transitionType = Transition.AndroidTransitionType.enter;
-	enterAnimator.entry = new WeakRef(entry);
-	enterAnimator.addListener(listener);
+	const enterAnimator = transition.createAndroidAnimator(Transition.AndroidTransitionType.enter);
+	enterAnimator.addListener(new (AnimationListener())(entry, Transition.AndroidTransitionType.enter));
 	entry.enterAnimator = enterAnimator;
 
-	const popExitAnimator = <ExpandedAnimator>transition.createAndroidAnimator(Transition.AndroidTransitionType.popExit);
-	popExitAnimator.transitionType = Transition.AndroidTransitionType.popExit;
-	popExitAnimator.entry = new WeakRef(entry);
-	popExitAnimator.addListener(listener);
+	const popExitAnimator = transition.createAndroidAnimator(Transition.AndroidTransitionType.popExit);
+	popExitAnimator.addListener(new (AnimationListener())(entry, Transition.AndroidTransitionType.popExit));
 	entry.popExitAnimator = popExitAnimator;
 }
 
 function setupExitAndPopEnterAnimation(entry: ExpandedEntry, transition: Transition): void {
-	const listener = getAnimationListener();
-
 	// remove previous listener if we are changing the animator.
-	clearAnimationListener(entry.exitAnimator, listener);
-	clearAnimationListener(entry.popEnterAnimator, listener);
+	clearAnimationListener(entry.exitAnimator, entry.exitAnimatorListener);
+	clearAnimationListener(entry.popEnterAnimator, entry.popEnterAnimatorListener);
 
-	const exitAnimator = <ExpandedAnimator>transition.createAndroidAnimator(Transition.AndroidTransitionType.exit);
-	exitAnimator.transitionType = Transition.AndroidTransitionType.exit;
-	exitAnimator.entry = new WeakRef(entry);
-	exitAnimator.addListener(listener);
+	const exitAnimator = transition.createAndroidAnimator(Transition.AndroidTransitionType.exit);
+	const exitAnimatorListener = new (AnimationListener())(entry, Transition.AndroidTransitionType.exit);
+	exitAnimator.addListener(exitAnimatorListener);
 	entry.exitAnimator = exitAnimator;
+	entry.exitAnimatorListener = exitAnimatorListener;
 
-	const popEnterAnimator = <ExpandedAnimator>transition.createAndroidAnimator(Transition.AndroidTransitionType.popEnter);
-	popEnterAnimator.transitionType = Transition.AndroidTransitionType.popEnter;
-	popEnterAnimator.entry = new WeakRef(entry);
-	popEnterAnimator.addListener(listener);
+	const popEnterAnimator = transition.createAndroidAnimator(Transition.AndroidTransitionType.popEnter);
+	const popEnterAnimatorListener = new (AnimationListener())(entry, Transition.AndroidTransitionType.popEnter);
+	popEnterAnimator.addListener(popEnterAnimatorListener);
 	entry.popEnterAnimator = popEnterAnimator;
+	entry.popEnterAnimatorListener = popEnterAnimatorListener;
 }
 
-function getAnimationListener(): android.animation.Animator.AnimatorListener {
-	if (!AnimationListener) {
-		@NativeClass
-		@Interfaces([android.animation.Animator.AnimatorListener])
-		class AnimationListenerImpl extends java.lang.Object implements android.animation.Animator.AnimatorListener {
-			constructor() {
-				super();
-			}
+const AnimationListener = lazy(() => {
+	@NativeClass
+	@Interfaces([android.animation.Animator.AnimatorListener])
+	class AnimationListenerImpl extends java.lang.Object implements android.animation.Animator.AnimatorListener {
+		public entry: WeakRef<ExpandedEntry>;
+		constructor(
+			entry: ExpandedEntry,
+			public transitionType: string,
+		) {
+			super();
+			this.entry = new WeakRef(entry);
+		}
 
-			onAnimationStart(animator: ExpandedAnimator): void {
-				const entry = animator.entry.deref();
-				if (Trace.isEnabled()) {
-					Trace.write(`START ${animator.transitionType} for ${entry?.fragmentTag}`, Trace.categories.Transition);
-				}
-				if (!entry) {
-					return;
-				}
-				addToWaitingQueue(entry);
-				entry.isAnimationRunning = true;
+		onAnimationStart(animator: android.animation.Animator): void {
+			const entry = this.entry?.deref();
+			if (Trace.isEnabled()) {
+				Trace.write(`START ${this.transitionType} for ${entry?.fragmentTag}`, Trace.categories.Transition);
 			}
-
-			onAnimationRepeat(animator: ExpandedAnimator): void {
-				if (Trace.isEnabled()) {
-					Trace.write(`REPEAT ${animator.transitionType} for ${animator.entry.deref()?.fragmentTag}`, Trace.categories.Transition);
-				}
+			if (!entry) {
+				return;
 			}
+			addToWaitingQueue(entry);
+			entry.isAnimationRunning = true;
+		}
 
-			onAnimationEnd(animator: ExpandedAnimator): void {
-				if (Trace.isEnabled()) {
-					Trace.write(`END ${animator.transitionType} for ${animator.entry.deref()?.fragmentTag}`, Trace.categories.Transition);
-				}
-				const entry = animator.entry.deref();
-				if (!entry) {
-					return;
-				}
-				entry.isAnimationRunning = false;
-				transitionOrAnimationCompleted(entry, animator.backEntry?.deref());
-			}
-
-			onAnimationCancel(animator: ExpandedAnimator): void {
-				if (Trace.isEnabled()) {
-					Trace.write(`CANCEL ${animator.transitionType} for ${animator.entry.deref()?.fragmentTag}`, Trace.categories.Transition);
-				}
-				const entry = animator.entry.deref();
-				if (!entry) {
-					return;
-				}
-				entry.isAnimationRunning = false;
+		onAnimationRepeat(animator: android.animation.Animator): void {
+			if (Trace.isEnabled()) {
+				Trace.write(`REPEAT ${this.transitionType} for ${this.entry?.deref()?.fragmentTag}`, Trace.categories.Transition);
 			}
 		}
 
-		AnimationListener = new AnimationListenerImpl();
+		onAnimationEnd(animator: android.animation.Animator): void {
+			if (Trace.isEnabled()) {
+				Trace.write(`END ${this.transitionType} for ${this.entry?.deref()?.fragmentTag}`, Trace.categories.Transition);
+			}
+			const entry = this.entry?.deref();
+			if (!entry) {
+				return;
+			}
+			entry.isAnimationRunning = false;
+			transitionOrAnimationCompleted(entry, undefined);
+		}
+
+		onAnimationCancel(animator: android.animation.Animator): void {
+			if (Trace.isEnabled()) {
+				Trace.write(`CANCEL ${this.transitionType} for ${this.entry?.deref()?.fragmentTag}`, Trace.categories.Transition);
+			}
+			const entry = this.entry?.deref();
+			if (!entry) {
+				return;
+			}
+			entry.isAnimationRunning = false;
+		}
 	}
 
-	return AnimationListener;
-}
+	return AnimationListenerImpl;
+});
 
-function clearAnimationListener(animator: ExpandedAnimator, listener: android.animation.Animator.AnimatorListener): void {
-	if (!animator) {
+function clearAnimationListener(animator: android.animation.Animator, listener: ExpandedAnimatorListener): void {
+	if (!animator || !listener) {
 		return;
 	}
 
 	animator.removeListener(listener);
 
-	if (animator.entry?.deref() && Trace.isEnabled()) {
-		const entry = animator.entry.deref();
-		Trace.write(`Clear ${animator.transitionType} - ${entry.transition} for ${entry.fragmentTag}`, Trace.categories.Transition);
+	if (listener.entry?.deref() && Trace.isEnabled()) {
+		const entry = listener.entry.deref();
+		Trace.write(`Clear ${listener.transitionType} - ${entry.transition} for ${entry.fragmentTag}`, Trace.categories.Transition);
 	}
 
-	animator.entry = null;
+	listener.entry = null;
 }
 
 export function _getAnimatedEntries(frameId: number): Set<BackstackEntry> {

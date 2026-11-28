@@ -63,6 +63,7 @@ export class Button extends ButtonBase {
 	nativeViewProtected: android.widget.Button;
 
 	private _stateListAnimator: any;
+	private _clickListener: android.view.View.OnClickListener & { owner: WeakRef<Button> };
 
 	@profile
 	public createNativeView() {
@@ -81,12 +82,13 @@ export class Button extends ButtonBase {
 		initializeClickListener();
 		const clickListener = new ClickListener(this);
 		nativeView.setOnClickListener(clickListener);
-		(<any>nativeView).clickListener = clickListener;
+		this._clickListener = <Button['_clickListener']>clickListener;
 	}
 
 	public disposeNativeView() {
-		if ((<any>this.nativeViewProtected)?.clickListener) {
-			(<any>this.nativeViewProtected).clickListener.owner = null;
+		if (this._clickListener) {
+			this._clickListener.owner = null;
+			this._clickListener = null;
 		}
 		super.disposeNativeView();
 	}

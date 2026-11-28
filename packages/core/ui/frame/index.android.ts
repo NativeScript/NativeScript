@@ -19,6 +19,7 @@ import { NativeWindowEvents } from '../../native-window/native-window-interfaces
 import { AndroidNativeWindow } from '../../native-window/native-window.android';
 import { isEmbedded, setEmbeddedView } from '../embedding';
 import { CALLBACKS, FRAMEID, framesCache, setFragmentCallbacks } from './frame-helper-for-android';
+import { getActivityCallbacks, isNativeScriptActivity, _hasBackPressedCallback, _markBackPressedCallback, _pinActivity, _registerActivityCallbacks } from './activity-callbacks-store';
 import { SDK_VERSION } from '../../utils';
 
 export * from './frame-common';
@@ -26,42 +27,36 @@ export { setFragmentClass } from './fragment';
 
 const INTENT_EXTRA = 'com.tns.activity';
 
-const ownerSymbol = Symbol('_owner');
-
 let navDepth = -1;
 let fragmentId = -1;
 
-export let attachStateChangeListener: android.view.View.OnAttachStateChangeListener;
+type AttachListener = android.view.View.OnAttachStateChangeListener & { owner: WeakRef<View> };
+let AttachListener: new () => AttachListener;
 
-function getAttachListener(): android.view.View.OnAttachStateChangeListener {
-	if (!attachStateChangeListener) {
+function createAttachListener(owner: View): AttachListener {
+	if (!AttachListener) {
 		/**
 		 * NOTE: We cannot use NativeClass here because this is used in appComponents in webpack.config
 		 * Whereby it bypasses the decorator transformation, hence pure es5 style written here
 		 */
-		const AttachListener = (<any>java.lang.Object).extend({
+		AttachListener = (<any>java.lang.Object).extend({
 			interfaces: [android.view.View.OnAttachStateChangeListener],
 			init() {
 				// init must be defined at least
 			},
 			onViewAttachedToWindow(view: android.view.View): void {
-				const owner: View = view[ownerSymbol];
-				if (owner) {
-					owner._onAttachedToWindow();
-				}
+				this.owner?.deref()?._onAttachedToWindow();
 			},
 			onViewDetachedFromWindow(view: android.view.View): void {
-				const owner: View = view[ownerSymbol];
-				if (owner) {
-					owner._onDetachedFromWindow();
-				}
+				this.owner?.deref()?._onDetachedFromWindow();
 			},
 		});
-
-		attachStateChangeListener = new AttachListener();
 	}
 
-	return attachStateChangeListener;
+	const listener = new AttachListener();
+	listener.owner = new WeakRef(owner);
+
+	return listener;
 }
 
 export class Frame extends FrameBase {
@@ -70,6 +65,7 @@ export class Frame extends FrameBase {
 	private _containerViewId = -1;
 	private _tearDownPending = false;
 	private _attachedToWindow = false;
+	private _attachStateChangeListener: AttachListener;
 	/**
 	 * This property indicates that the view is to be reused as a root view or has been previously disposed.
 	 */
@@ -84,7 +80,7 @@ export class Frame extends FrameBase {
 
 	public static reloadPage(context?: ModuleContext): void {
 		const activity = androidUtils.getCurrentActivity();
-		const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
+		const callbacks = getActivityCallbacks(activity);
 		if (callbacks) {
 			const rootView: View = callbacks.getRootView();
 			// Handle application root module
@@ -100,7 +96,7 @@ export class Frame extends FrameBase {
 				callbacks.resetActivityContent(activity);
 			}
 		} else {
-			Trace.error(`${activity}[CALLBACKS] is null or undefined`);
+			Trace.error(`No activity callbacks registered for ${activity}`);
 		}
 	}
 
@@ -495,11 +491,10 @@ export class Frame extends FrameBase {
 
 	public initNativeView(): void {
 		super.initNativeView();
-		const listener = getAttachListener();
 		const nativeView = this.nativeViewProtected as android.view.ViewGroup;
 
-		nativeView.addOnAttachStateChangeListener(listener);
-		nativeView[ownerSymbol] = this;
+		this._attachStateChangeListener = createAttachListener(this);
+		nativeView.addOnAttachStateChangeListener(this._attachStateChangeListener);
 
 		this._android.rootViewGroup = nativeView;
 		if (this._containerViewId < 0) {
@@ -510,10 +505,12 @@ export class Frame extends FrameBase {
 
 	public disposeNativeView() {
 		const nativeView = this.nativeViewProtected as android.view.ViewGroup;
-		const listener = getAttachListener();
 
-		nativeView.removeOnAttachStateChangeListener(listener);
-		nativeView[ownerSymbol] = null;
+		if (this._attachStateChangeListener) {
+			nativeView.removeOnAttachStateChangeListener(this._attachStateChangeListener);
+			this._attachStateChangeListener.owner = null;
+			this._attachStateChangeListener = null;
+		}
 
 		// There are cases like root view when detach listener is not called before the native view gets disposed
 		// so call detach method directly for these views
@@ -755,7 +752,7 @@ if (SDK_VERSION >= 33) {
 				return;
 			}
 
-			const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
+			const callbacks = getActivityCallbacks(activity);
 			let callSuper: boolean = false;
 
 			if (callbacks) {
@@ -966,7 +963,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		// onActivityResumed(...) lifecycle callback registered in application is called too early
 		// and raising the application resume event there causes issues like
 		// https://github.com/NativeScript/NativeScript/issues/6708
-		if ((<any>activity).isNativeScriptActivity) {
+		if (isNativeScriptActivity(activity)) {
 			Application.android._setWindowActive(Application.android._getWindowForActivity(activity), true, activity);
 		}
 	}
@@ -1195,13 +1192,20 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 }
 
 export function setActivityCallbacks(activity: androidx.appcompat.app.AppCompatActivity): void {
-	activity[CALLBACKS] = new ActivityCallbacksImplementation();
-	if (OnBackPressedCallback && !activity['_onBackPressed']) {
+	const callbacks = new ActivityCallbacksImplementation();
+	_registerActivityCallbacks(activity, callbacks);
+	// Embedded hosts are plain Java activities; custom activities read this._callbacks.
+	if (isEmbedded()) {
+		_pinActivity(activity);
+	} else {
+		activity[CALLBACKS] = callbacks;
+	}
+	if (OnBackPressedCallback && !_hasBackPressedCallback(activity)) {
 		const callback = new OnBackPressedCallback(true);
 
 		callback['_activity'] = new WeakRef(activity);
 
-		activity['_onBackPressed'] = true;
+		_markBackPressedCallback(activity);
 
 		(activity as androidx.activity.ComponentActivity).getOnBackPressedDispatcher().addCallback(activity, callback);
 	}

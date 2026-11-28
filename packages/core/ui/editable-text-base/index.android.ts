@@ -88,6 +88,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	private _dirtyTextAccumulator: string;
 	private _keyListenerCache: android.text.method.KeyListener;
 	private _inputType: number;
+	private _editTextListeners: EditTextListeners & { owner: WeakRef<EditableTextBase> };
 
 	public _changeFromCode: boolean;
 
@@ -110,18 +111,18 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		editText.addTextChangedListener(listeners);
 		editText.setOnFocusChangeListener(listeners);
 		editText.setOnEditorActionListener(listeners);
-		(<any>editText).listener = listeners;
+		this._editTextListeners = <EditableTextBase['_editTextListeners']>listeners;
 		this._inputType = editText.getInputType();
 	}
 
 	public disposeNativeView(): void {
 		const editText = this.nativeTextViewProtected;
 
-		editText.removeTextChangedListener((<any>editText).listener);
+		editText.removeTextChangedListener(this._editTextListeners);
 		editText.setOnFocusChangeListener(null);
 		editText.setOnEditorActionListener(null);
-		(<any>editText).listener.owner = null;
-		(<any>editText).listener = null;
+		this._editTextListeners.owner = null;
+		this._editTextListeners = null;
 		this._keyListenerCache = null;
 		this._dirtyTextAccumulator = undefined;
 		this._inputType = 0;
