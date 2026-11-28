@@ -12,7 +12,7 @@ const load = () => import('./module-require.js');
 describe('createModuleRequire', () => {
 	it('returns a live CommonJS view of an ES module namespace without reading it up front, the same object every time', async () => {
 		const { createModuleRequire } = await load();
-		let counter: number | undefined;
+		let counter: number | undefined = undefined;
 		const defaultExport = { name: 'default' };
 		// Stands in for a namespace whose `counter` binding is still uninitialized (an import cycle).
 		const ns = Object.freeze({

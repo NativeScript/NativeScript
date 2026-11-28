@@ -117,18 +117,20 @@ export function rewriteDeviceImportsInResponse(req: IncomingMessage, res: Server
 		return chunks;
 	};
 
-	res.write = function (this: ServerResponse, chunk: unknown, encoding?: unknown, callback?: unknown) {
+	res.write = function (this: ServerResponse, ...args: unknown[]) {
+		const [chunk, encoding, callback] = args;
 		const target = buffer();
-		if (!target) return (write as Function).apply(this, arguments);
+		if (!target) return (write as Function).apply(this, args);
 		if (chunk != null) target.push(toBuffer(chunk, encoding));
 		const done = typeof encoding === 'function' ? encoding : callback;
 		if (typeof done === 'function') process.nextTick(done as () => void);
 		return true;
 	} as ServerResponse['write'];
 
-	res.end = function (this: ServerResponse, chunk?: unknown, encoding?: unknown, callback?: unknown) {
+	res.end = function (this: ServerResponse, ...args: unknown[]) {
+		const [chunk, encoding, callback] = args;
 		const target = buffer();
-		if (!target) return (end as Function).apply(this, arguments);
+		if (!target) return (end as Function).apply(this, args);
 		if (chunk != null && typeof chunk !== 'function') target.push(toBuffer(chunk, encoding));
 		const done = [chunk, encoding, callback].find((arg) => typeof arg === 'function');
 		const original = Buffer.concat(target);

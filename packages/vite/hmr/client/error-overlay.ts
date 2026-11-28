@@ -8,6 +8,7 @@ const MAX_MESSAGE_LINES = 6;
 const MAX_CODE_LINES = 12;
 
 // CSI and OSC sequences; Vite strips most, but plugin messages may keep colors.
+// eslint-disable-next-line no-control-regex -- ESC/BEL/CSI bytes are what this matches
 const ANSI_RE = /[\u001b\u009b](?:\[[0-?]*[ -/]*[@-~]|\][^\u0007\u001b]*(?:\u0007|\u001b\\))/g;
 
 export interface ErrorOverlayText {
