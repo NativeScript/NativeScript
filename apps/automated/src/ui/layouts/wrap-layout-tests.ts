@@ -12,14 +12,14 @@ import * as wrapLayoutModule from '@nativescript/core/ui/layouts/wrap-layout';
 export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayout> {
 	public create(): wrapLayoutModule.WrapLayout {
 		// >> wrap-layout-new
-		var wrapLayout = new wrapLayoutModule.WrapLayout();
+		const wrapLayout = new wrapLayoutModule.WrapLayout();
 		// << wrap-layout-new
 
 		wrapLayout.width = { value: 200, unit: 'px' };
 		wrapLayout.height = { value: 200, unit: 'px' };
 
 		for (let i = 0; i < 2; i++) {
-			let label = new Label();
+			const label = new Label();
 			label.text = '' + i;
 
 			label.width = { value: 100, unit: 'px' };
@@ -35,17 +35,17 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 	}
 
 	public testItemWidhtItemHeight() {
-		let wrap = this.testView;
+		const wrap = this.testView;
 		wrap.removeChildren();
 
 		wrap.itemWidth = { value: 40, unit: 'px' };
 		wrap.itemHeight = { value: 40, unit: 'px' };
 
-		let lbl1 = new layoutHelper.MyButton();
+		const lbl1 = new layoutHelper.MyButton();
 		lbl1.text = '1';
 		wrap.addChild(lbl1);
 
-		let lbl2 = new layoutHelper.MyButton();
+		const lbl2 = new layoutHelper.MyButton();
 		lbl2.text = '2';
 		lbl2.width = { value: 80, unit: 'px' };
 		lbl2.height = { value: 80, unit: 'px' };
@@ -65,11 +65,11 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 	}
 
 	public testPaddingReduceAvailableSize() {
-		let wrap = this.testView;
+		const wrap = this.testView;
 		wrap.removeChildren();
 		wrap.style.paddingLeft = wrap.style.paddingTop = wrap.style.paddingRight = wrap.style.paddingBottom = { value: 10, unit: 'px' };
 
-		let lbl1 = new layoutHelper.MyButton();
+		const lbl1 = new layoutHelper.MyButton();
 		lbl1.text = '1';
 		lbl1.minWidth = { value: 200, unit: 'px' };
 		lbl1.minHeight = { value: 200, unit: 'px' };
@@ -101,7 +101,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 	}
 
 	public testVerticalOrientation() {
-		var wrapLayout = this.testView;
+		const wrapLayout = this.testView;
 		// >> wrap-layout-orientation
 		wrapLayout.orientation = 'vertical';
 		// << wrap-layout-orientation
@@ -143,7 +143,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 		this.testView.itemWidth = { value: 50, unit: 'px' };
 		this.waitUntilTestElementLayoutIsValid();
 
-		let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().left;
+		const actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().left;
 		TKUnit.assertEqual(actualValue, 50, 'ActualLeft on Index 1');
 	}
 
@@ -152,7 +152,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 		this.testView.itemWidth = { value: 50, unit: 'px' };
 		this.waitUntilTestElementLayoutIsValid();
 
-		let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().left;
+		const actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().left;
 		TKUnit.assertEqual(actualValue, 50, 'ActualLeft on Index 1');
 	}
 
@@ -169,7 +169,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 		this.testView.orientation = 'vertical';
 		this.waitUntilTestElementLayoutIsValid();
 
-		let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().top;
+		const actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().top;
 		TKUnit.assertEqual(actualValue, 50, 'ActualTop on Index 1');
 	}
 
@@ -179,7 +179,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 		this.testView.itemHeight = { value: 50, unit: 'px' };
 		this.waitUntilTestElementLayoutIsValid();
 
-		let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().top;
+		const actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().top;
 		TKUnit.assertEqual(actualValue, 50, 'ActualTop on Index 1');
 	}
 
@@ -198,7 +198,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 		this.testView.style.paddingLeft = { value: 20, unit: 'px' };
 		this.testView.style.paddingTop = { value: 30, unit: 'px' };
 
-		var btn = new layoutHelper.MyButton();
+		const btn = new layoutHelper.MyButton();
 		btn.width = { value: 50, unit: 'px' };
 		btn.height = { value: 50, unit: 'px' };
 		this.testView.addChild(btn);
@@ -213,12 +213,12 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 		this.testView.style.paddingRight = { value: 30, unit: 'px' };
 		this.testView.width = { value: 200, unit: 'px' };
 
-		var btn1 = new layoutHelper.MyButton();
+		const btn1 = new layoutHelper.MyButton();
 		this.testView.addChild(btn1);
 		btn1.width = { value: 100, unit: 'px' };
 		btn1.height = { value: 50, unit: 'px' };
 
-		var btn2 = new layoutHelper.MyButton();
+		const btn2 = new layoutHelper.MyButton();
 		btn2.width = { value: 80, unit: 'px' };
 		btn2.height = { value: 50, unit: 'px' };
 		this.testView.addChild(btn2);
@@ -240,12 +240,12 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 		this.testView.height = { value: 200, unit: 'px' };
 		this.testView.orientation = 'vertical';
 
-		var btn1 = new layoutHelper.MyButton();
+		const btn1 = new layoutHelper.MyButton();
 		this.testView.addChild(btn1);
 		btn1.width = { value: 50, unit: 'px' };
 		btn1.height = { value: 100, unit: 'px' };
 
-		var btn2 = new layoutHelper.MyButton();
+		const btn2 = new layoutHelper.MyButton();
 		btn2.width = { value: 50, unit: 'px' };
 		btn2.height = { value: 80, unit: 'px' };
 		this.testView.addChild(btn2);
@@ -262,12 +262,12 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 	}
 
 	public test_percent_children_support() {
-		let layout = this.testView;
+		const layout = this.testView;
 		layout.removeChildren();
 		layout.width = { value: 200, unit: 'px' };
 		layout.height = { value: 200, unit: 'px' };
 
-		let btn = new layoutHelper.MyButton();
+		const btn = new layoutHelper.MyButton();
 		btn.horizontalAlignment = 'left';
 		btn.verticalAlignment = 'top';
 		(<any>btn).width = '50%';

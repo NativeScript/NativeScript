@@ -4,7 +4,7 @@ import * as stackModule from '@nativescript/core/ui/layouts/stack-layout';
 import { Frame } from '@nativescript/core/ui/frame';
 
 export function createPage() {
-	var page = new pageModule.Page();
+	const page = new pageModule.Page();
 
 	//var iconItem = new pageModule.MenuItem();
 	//iconItem.text = "TEST";
@@ -22,9 +22,9 @@ export function createPage() {
 	//});
 	//page.optionsMenu.addItem(textItem);
 
-	var stackLayout = new stackModule.StackLayout();
+	const stackLayout = new stackModule.StackLayout();
 	//var count = 0;
-	var btn1 = new buttonModule.Button();
+	const btn1 = new buttonModule.Button();
 	btn1.text = 'add item';
 	//btn1.on("tap", () => {
 	//    console.log("adding menu item");
@@ -41,10 +41,10 @@ export function createPage() {
 
 	stackLayout.addChild(btn1);
 
-	var btn2 = new buttonModule.Button();
+	const btn2 = new buttonModule.Button();
 	btn2.text = 'navigate';
 	btn2.on('tap', () => {
-		var nextPage = 'app/tests/pages/page16';
+		const nextPage = 'app/tests/pages/page16';
 		Frame.topmost().navigate(nextPage);
 	});
 

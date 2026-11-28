@@ -503,12 +503,12 @@ export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() 
 	};
 
 	const createTabItems = function (count: number) {
-		var items = new Array<TabViewItem>();
+		const items = new Array<TabViewItem>();
 
-		for (var i = 0; i < count; i++) {
-			var label = new Label();
+		for (let i = 0; i < count; i++) {
+			const label = new Label();
 			label.text = 'Tab ' + i;
-			var tabEntry = new TabViewItem();
+			const tabEntry = new TabViewItem();
 			tabEntry.title = 'Tab ' + i;
 			tabEntry.view = label;
 
@@ -565,12 +565,12 @@ export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_Sh
 	};
 
 	const createTabItems = function (count: number) {
-		var items = new Array<TabViewItem>();
+		const items = new Array<TabViewItem>();
 
-		for (var i = 0; i < count; i++) {
-			var label = new Label();
+		for (let i = 0; i < count; i++) {
+			const label = new Label();
 			label.text = 'Tab ' + i;
-			var tabEntry = new TabViewItem();
+			const tabEntry = new TabViewItem();
 			tabEntry.title = 'Tab ' + i;
 			tabEntry.view = label;
 
@@ -624,12 +624,12 @@ export function test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow() {
 	let modalThrows = false;
 
 	const createTabItems = function (count: number) {
-		var items = new Array<TabViewItem>();
+		const items = new Array<TabViewItem>();
 
-		for (var i = 0; i < count; i++) {
-			var label = new Label();
+		for (let i = 0; i < count; i++) {
+			const label = new Label();
 			label.text = 'Tab ' + i;
-			var tabEntry = new TabViewItem();
+			const tabEntry = new TabViewItem();
 			tabEntry.title = 'Tab ' + i;
 			tabEntry.view = label;
 
@@ -722,12 +722,12 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
 	};
 
 	const createTabItems = function (count: number) {
-		var items = new Array<TabViewItem>();
+		const items = new Array<TabViewItem>();
 
-		for (var i = 0; i < count; i++) {
-			var label = new Label();
+		for (let i = 0; i < count; i++) {
+			const label = new Label();
 			label.text = 'Tab ' + i;
-			var tabEntry = new TabViewItem();
+			const tabEntry = new TabViewItem();
 			tabEntry.title = 'Tab ' + i;
 			tabEntry.view = label;
 

@@ -65,12 +65,6 @@
 		"clean": {
 			"executor": "@nativescript/nx:clean",
 			"options": {}
-		},
-		"lint": {
-			"executor": "@nx/eslint:lint",
-			"options": {
-				"lintFilePatterns": ["apps/automated/**/*.ts", "apps/automated/src/**/*.html"]
-			}
 		}
 	},
 	"implicitDependencies": ["webpack5", "vite"]

@@ -736,21 +736,21 @@ export const test_reduce_isDefined = function () {
 
 export const test_reduce_without_initial_value = function () {
 	const sa = [1, 2, 3];
-	let array: ObservableArray<number> = new ObservableArray(sa);
+	const array: ObservableArray<number> = new ObservableArray(sa);
 	const result = array.reduce((a, b) => a + b);
 	TKUnit.assertEqual(result, 6, 'ObservableArray reduce function broken when initialValue is missing');
 };
 
 export const test_reduce_with_initial_value = function () {
 	const sa = [1, 2, 3];
-	let array: ObservableArray<number> = new ObservableArray(sa);
+	const array: ObservableArray<number> = new ObservableArray(sa);
 	const result = array.reduce((a, b) => a + b, 5);
 	TKUnit.assertEqual(result, 11, 'ObservableArray reduce function broken when Initial Value is passed.');
 };
 
 export const test_reduce_with_zero_as_initial_value = function () {
 	const sa = [{ prop: 1 }, { prop: 2 }, { prop: 3 }];
-	let array: ObservableArray<any> = new ObservableArray(sa);
+	const array: ObservableArray<any> = new ObservableArray(sa);
 	const result = array.reduce((a, b) => a + b.prop, 0);
 	TKUnit.assertEqual(result, 6, 'ObservableArray reduce function broken when Initial Value is zero.');
 };
@@ -761,21 +761,21 @@ export const test_reduceRight_isDefined = function () {
 
 export const test_reduceRight_without_initial_value = function () {
 	const sa = [1, 2, 3];
-	let array: ObservableArray<number> = new ObservableArray(sa);
+	const array: ObservableArray<number> = new ObservableArray(sa);
 	const result = array.reduceRight((a, b) => a + b);
 	TKUnit.assertEqual(result, 6, 'ObservableArray reduceRight function broken when initialValue is missing');
 };
 
 export const test_reduceRight_with_initial_value = function () {
 	const sa = [1, 2, 3];
-	let array: ObservableArray<number> = new ObservableArray(sa);
+	const array: ObservableArray<number> = new ObservableArray(sa);
 	const result = array.reduceRight((a, b) => a + b, 5);
 	TKUnit.assertEqual(result, 11, 'ObservableArray reduceRight function broken when Initial Value is passed.');
 };
 
 export const test_reduceRight_with_zero_as_initial_value = function () {
 	const sa = [{ prop: 1 }, { prop: 2 }, { prop: 3 }];
-	let array: ObservableArray<any> = new ObservableArray(sa);
+	const array: ObservableArray<any> = new ObservableArray(sa);
 	const result = array.reduceRight((a, b) => a + b.prop, 0);
 	TKUnit.assertEqual(result, 6, 'ObservableArray reduceRight function broken when Initial Value is zero.');
 };
