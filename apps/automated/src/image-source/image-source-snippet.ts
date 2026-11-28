@@ -4,10 +4,10 @@ import * as fs from '@nativescript/core/file-system';
 
 export function imageSourceFromAsset(imageAsset) {
 	ImageSource.fromAsset(imageAsset).then((imageSource) => {
-		let folder = fs.knownFolders.documents().path;
-		let fileName = 'test.png';
-		let path = fs.path.join(folder, fileName);
-		let saved = imageSource.saveToFile(path, 'png');
+		const folder = fs.knownFolders.documents().path;
+		const fileName = 'test.png';
+		const path = fs.path.join(folder, fileName);
+		const saved = imageSource.saveToFile(path, 'png');
 		if (saved) {
 			console.log('Image saved successfully!');
 		}

@@ -62,10 +62,11 @@ function downlevelClass(
 			),
 		);
 	}
-	const transpiledRaw = transpileResult.outputText.replace(
-		SOURCE_MAPPING_URL_RE,
-		'\n',
-	);
+	// TS 6+ emits a "use strict" prologue for snippets without imports/exports; it must not be spliced into the host file.
+	// Only the directive text is removed so line numbers in the snippet's source map stay valid.
+	const transpiledRaw = transpileResult.outputText
+		.replace(/^(\s*)(['"])use strict\2;?/, '$1')
+		.replace(SOURCE_MAPPING_URL_RE, '\n');
 	// force enumerable:true
 	let transpiled = transpiledRaw.replace(
 		/(Object\.defineProperty\(.*?{.*?)(enumerable:\s*false)(.*?}\))/gs,

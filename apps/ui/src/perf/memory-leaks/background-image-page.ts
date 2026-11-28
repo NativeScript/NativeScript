@@ -4,13 +4,13 @@ import { Page } from '@nativescript/core/ui/page';
 import { Label } from '@nativescript/core/ui/label';
 import * as application from '@nativescript/core/application';
 
-var indexCounter = 0;
-var navCounter = 0;
-var images = ['gravatar', 'gravatar2', 'red'];
+let indexCounter = 0;
+let navCounter = 0;
+const images = ['gravatar', 'gravatar2', 'red'];
 
 export function onLoad(args: EventData) {
-	let index = indexCounter++ % 3;
-	let page = <Page>args.object;
+	const index = indexCounter++ % 3;
+	const page = <Page>args.object;
 	page.backgroundImage = '~/resources/images/' + images[index] + '.png';
 	setLabelText(page, navCounter, 'countInfo');
 	getMemoryUsage(args);
@@ -27,15 +27,15 @@ export function navigateBack(args: EventData) {
 }
 
 function setLabelText(page: Page, text: number, id: string) {
-	let label = <Label>page.getViewById(id);
+	const label = <Label>page.getViewById(id);
 	label.text = text + '';
 }
 
 function getMemoryUsage(args: EventData) {
-	var mi = new android.app.ActivityManager.MemoryInfo();
-	var activityManager = application.android.context.getSystemService(android.content.Context.ACTIVITY_SERVICE);
+	const mi = new android.app.ActivityManager.MemoryInfo();
+	const activityManager = application.android.context.getSystemService(android.content.Context.ACTIVITY_SERVICE);
 	activityManager.getMemoryInfo(mi);
-	let usedMemory = mi.totalMem - mi.availMem;
+	const usedMemory = mi.totalMem - mi.availMem;
 
 	setLabelText(<Page>args.object, usedMemory, 'usedMemory');
 

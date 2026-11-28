@@ -14,7 +14,7 @@ import * as tabViewModule from '@nativescript/core/ui/tab-view';
 export class TabViewTest extends UITest<tabViewModule.TabView> {
 	public create(): tabViewModule.TabView {
 		// >> article-create-tabview
-		var tabView = new tabViewModule.TabView();
+		const tabView = new tabViewModule.TabView();
 		// << article-create-tabview
 		tabView.id = 'TabView';
 
@@ -28,11 +28,11 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 	}
 
 	_createItems(count: number): Array<tabViewModule.TabViewItem> {
-		var items = new Array<tabViewModule.TabViewItem>();
-		for (var i = 0; i < count; i++) {
-			var label = new Label();
+		const items = new Array<tabViewModule.TabViewItem>();
+		for (let i = 0; i < count; i++) {
+			const label = new Label();
 			label.text = 'Tab ' + i;
-			var tabEntry = new tabViewModule.TabViewItem();
+			const tabEntry = new tabViewModule.TabViewItem();
 			tabEntry.title = 'Tab ' + i;
 			tabEntry.view = label;
 			items.push(tabEntry);
@@ -60,7 +60,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 		}
 
 		if (tabView.android) {
-			var viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
+			const viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
 			if (viewPager.getChildCount() === 0) {
 				return false;
 			}
@@ -81,40 +81,40 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 		this.testView.items = this._createItems(10);
 		this.waitUntilTestElementIsLoaded();
 
-		let expectedValue = this.testView.items.length;
-		let actualValue = tabViewTestsNative.getNativeTabCount(this.testView);
+		const expectedValue = this.testView.items.length;
+		const actualValue = tabViewTestsNative.getNativeTabCount(this.testView);
 
 		TKUnit.assertEqual(actualValue, expectedValue, 'NativeItems not equal to JS items.');
 	};
 
 	public testWhenSettingItemsToEmptyArrayZeroNativeTabsAreCreated = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		tabView.items = [];
 		this.waitUntilTestElementIsLoaded();
 
-		var expectedValue = tabView.items.length;
-		var actualValue = tabViewTestsNative.getNativeTabCount(tabView);
+		const expectedValue = tabView.items.length;
+		const actualValue = tabViewTestsNative.getNativeTabCount(tabView);
 
 		TKUnit.assertEqual(actualValue, expectedValue, 'Should have 0 native tabs.');
 	};
 
 	public testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		// >> article-binding-tabview-items
-		var items = [];
-		var StackLayout0 = new StackLayout();
-		var label0 = new Label();
+		const items = [];
+		const StackLayout0 = new StackLayout();
+		const label0 = new Label();
 		label0.text = 'Tab 0';
 		StackLayout0.addChild(label0);
-		var tabEntry0 = new tabViewModule.TabViewItem();
+		const tabEntry0 = new tabViewModule.TabViewItem();
 		tabEntry0.title = 'Tab 0';
 		tabEntry0.view = StackLayout0;
 		items.push(tabEntry0);
-		var StackLayout1 = new StackLayout();
-		var label1 = new Label();
+		const StackLayout1 = new StackLayout();
+		const label1 = new Label();
 		label1.text = 'Tab 1';
 		StackLayout1.addChild(label1);
-		var tabEntry1 = new tabViewModule.TabViewItem();
+		const tabEntry1 = new tabViewModule.TabViewItem();
 		tabEntry1.title = 'Tab 1';
 		tabEntry1.view = StackLayout1;
 		items.push(tabEntry1);
@@ -123,13 +123,13 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 
 		this.waitUntilTestElementIsLoaded();
 
-		var expectedValue = 0;
-		var actualValue = tabView.selectedIndex;
+		const expectedValue = 0;
+		const actualValue = tabView.selectedIndex;
 		TKUnit.assertEqual(actualValue, expectedValue, 'When bound selectedIndex should be 0.');
 	};
 
 	public testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		tabView.items = this._createItems(10);
 		this.waitUntilTestElementIsLoaded();
 
@@ -138,63 +138,63 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 		// << article-select-tab
 		tabView.items = [];
 
-		var expectedValue = -1;
-		var actualValue = tabView.selectedIndex;
+		const expectedValue = -1;
+		const actualValue = tabView.selectedIndex;
 		TKUnit.assertEqual(actualValue, expectedValue, 'selectedIndex should be undefined.');
 	};
 
 	public testSelectedIndexBecomesUndefinedWhenItemsSetToUndefined = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		tabView.items = this._createItems(10);
 		this.waitUntilTestElementIsLoaded();
 
 		tabView.selectedIndex = 9;
 		tabView.items = undefined;
-		var expectedValue = -1;
-		var actualValue = tabView.selectedIndex;
+		const expectedValue = -1;
+		const actualValue = tabView.selectedIndex;
 		TKUnit.assertEqual(actualValue, expectedValue, 'selectedIndex should be undefined.');
 	};
 
 	public testSelectedIndexBecomesNegativeOneWhenItemsSetToNull = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		tabView.items = this._createItems(10);
 		tabView.selectedIndex = 9;
 		this.waitUntilTestElementIsLoaded();
 
 		tabView.items = null;
-		var expectedValue = -1;
-		var actualValue = tabView.selectedIndex;
+		const expectedValue = -1;
+		const actualValue = tabView.selectedIndex;
 		TKUnit.assertEqual(actualValue, expectedValue, 'selectedIndex should be -1.');
 	};
 
 	public testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
-		var tabView = this.testView;
-		var expectedValue = 10;
+		const tabView = this.testView;
+		const expectedValue = 10;
 		tabView.items = this._createItems(expectedValue);
 		tabView.selectedIndex = 9;
 		this.waitUntilTestElementIsLoaded();
 
-		var actualValue = tabView.items.length;
+		const actualValue = tabView.items.length;
 		TKUnit.assertEqual(actualValue, expectedValue, 'items.length should be 10');
 	};
 
 	public testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		tabView.items = this._createItems(10);
-		var expectedValue = 9;
+		const expectedValue = 9;
 		tabView.selectedIndex = expectedValue;
 		this.waitUntilTestElementIsLoaded();
 
-		var actualValue = tabView.selectedIndex;
+		const actualValue = tabView.selectedIndex;
 		TKUnit.assertEqual(actualValue, expectedValue, 'selectedIndex');
 	};
 
 	public testBindingToTabEntryWithUndefinedViewShouldThrow = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		this.waitUntilTestElementIsLoaded();
 
 		TKUnit.assertThrows(() => {
-			let item = new tabViewModule.TabViewItem();
+			const item = new tabViewModule.TabViewItem();
 			item.title = 'Tab 0';
 			item.view = undefined;
 			tabView.items = [item];
@@ -202,11 +202,11 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 	};
 
 	public testBindingToTabEntryWithNullViewShouldThrow = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		this.waitUntilTestElementIsLoaded();
 
 		TKUnit.assertThrows(() => {
-			let item = new tabViewModule.TabViewItem();
+			const item = new tabViewModule.TabViewItem();
 			item.title = 'Tab 0';
 			item.view = null;
 			tabView.items = [item];
@@ -214,27 +214,27 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 	};
 
 	public test_SettingTheSameItemsToAnotherTabView_DoesNotThrow = function () {
-		var tabView = this.testView;
-		var items = this._createItems(2);
+		const tabView = this.testView;
+		const items = this._createItems(2);
 		tabView.items = items;
 		this.waitUntilTestElementIsLoaded();
 
-		var secondTabView = new tabViewModule.TabView();
+		const secondTabView = new tabViewModule.TabView();
 		secondTabView.items = items;
 
 		items.forEach((item, i) => TKUnit.assertEqual(item.parent, secondTabView, `Item ${i} should be parented to the TabView it was last assigned to.`));
 	};
 
 	public test_SettingTheItemsOfATornDownTabViewToANewOne_DoesNotThrow = function () {
-		var tabView = this.testView;
-		var items = this._createItems(2);
+		const tabView = this.testView;
+		const items = this._createItems(2);
 		tabView.items = items;
 		this.waitUntilTestElementIsLoaded();
 
 		// Detaching the TabView tears it down, but its items still point at it.
 		this.testPage.content = null;
 
-		var secondTabView = new tabViewModule.TabView();
+		const secondTabView = new tabViewModule.TabView();
 		secondTabView.items = items;
 		this.testPage.content = secondTabView;
 		TKUnit.waitUntilReady(() => secondTabView.isLoaded, 1);
@@ -244,29 +244,29 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 	};
 
 	public testWhenSelectingATabNativelySelectedIndexIsUpdatedProperly = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		tabView.items = this._createItems(2);
 		this.waitUntilTestElementIsLoaded();
 
-		var expectedValue = 1;
+		const expectedValue = 1;
 		tabViewTestsNative.selectNativeTab(tabView, expectedValue);
 		TKUnit.waitUntilReady(function () {
 			return tabView.selectedIndex === expectedValue;
 		}, helper.ASYNC);
 
-		var actualValue = tabView.selectedIndex;
+		const actualValue = tabView.selectedIndex;
 		TKUnit.assertEqual(actualValue, expectedValue, 'selectedIndex');
 	};
 
 	public testWhenSelectingATabNativelySelectedIndexChangedEventIsRaised = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		tabView.items = this._createItems(10);
 		this.waitUntilTestElementIsLoaded();
 
-		var expectedOldIndex = 3;
-		var expectedNewIndex = 5;
-		var actualOldIndex;
-		var actualNewIndex;
+		const expectedOldIndex = 3;
+		const expectedNewIndex = 5;
+		let actualOldIndex;
+		let actualNewIndex;
 
 		tabViewTestsNative.selectNativeTab(tabView, expectedOldIndex);
 		TKUnit.waitUntilReady(function () {
@@ -290,14 +290,14 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 	};
 
 	public testWhenSettingSelectedIndexProgramaticallySelectedIndexChangedEventIsRaised = function () {
-		var tabView = this.testView;
+		const tabView = this.testView;
 		tabView.items = this._createItems(10);
 		this.waitUntilTestElementIsLoaded();
 
-		var expectedOldIndex = 2;
-		var expectedNewIndex = 6;
-		var actualOldIndex;
-		var actualNewIndex;
+		const expectedOldIndex = 2;
+		const expectedNewIndex = 6;
+		let actualOldIndex;
+		let actualNewIndex;
 
 		tabView.selectedIndex = expectedOldIndex;
 		TKUnit.waitUntilReady(function () {

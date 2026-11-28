@@ -2,11 +2,11 @@ import * as pages from '@nativescript/core/ui/page';
 import * as fpsModule from '@nativescript/core/fps-meter';
 
 export function createPage() {
-	var startTime;
-	var count = 0;
+	let startTime;
+	let count = 0;
 	fpsModule.addCallback(function (fps) {
 		if (count < 2) {
-			var stopTime = java.lang.System.nanoTime();
+			const stopTime = java.lang.System.nanoTime();
 			console.log('Frame ' + count + ' Render time: ' + (stopTime - startTime) / 1000000);
 			startTime = stopTime;
 		} else {
@@ -18,7 +18,7 @@ export function createPage() {
 	fpsModule.start();
 	startTime = java.lang.System.nanoTime();
 
-	var page = new pages.Page();
+	const page = new pages.Page();
 
 	return page;
 }

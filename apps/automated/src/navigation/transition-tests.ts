@@ -4,13 +4,13 @@ import { Color, Device, CoreTypes, Trace, SharedTransition, NavigationEntry, Nav
 import { CustomTransition, CustomSharedElementPageTransition } from './custom-transition';
 
 function _testTransition(navigationTransition: NavigationTransition) {
-	var testId = `Transition[${JSON.stringify(navigationTransition)}]`;
+	const testId = `Transition[${JSON.stringify(navigationTransition)}]`;
 	if (Trace.isEnabled()) {
 		Trace.write(`Testing ${testId}`, Trace.categories.Test);
 	}
-	var navigationEntry: NavigationEntry = {
+	const navigationEntry: NavigationEntry = {
 		create: function (): Page {
-			let page = new Page();
+			const page = new Page();
 			page.id = testId;
 			page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
 
@@ -32,7 +32,7 @@ export function test_Transitions() {
 		return page;
 	});
 
-	var transitions;
+	let transitions;
 	if (__APPLE__) {
 		transitions = ['curl'];
 	} else {
@@ -122,7 +122,7 @@ export function test_SharedElementTransitions(done) {
 	}
 	const navigationEntry: NavigationEntry = {
 		create(): Page {
-			let page = new Page();
+			const page = new Page();
 			page.id = testId;
 			page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
 			const grid = new GridLayout();

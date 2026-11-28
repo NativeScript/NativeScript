@@ -11,7 +11,7 @@ import * as progressModule from '@nativescript/core/ui/progress';
 
 export function test_default_TNS_values() {
 	// >> article-create-progress-view
-	var progress = new progressModule.Progress();
+	const progress = new progressModule.Progress();
 	// << article-create-progress-view
 
 	TKUnit.assertEqual(progress.value, 0, 'Default progress.value');
@@ -23,7 +23,7 @@ export function test_recycling() {
 }
 
 export function test_default_native_values() {
-	var progress = new progressModule.Progress();
+	const progress = new progressModule.Progress();
 
 	function testAction(views: Array<viewModule.View>) {
 		TKUnit.assertEqual(getNativeValue(progress), 0, 'Default native progress.value');
@@ -34,7 +34,7 @@ export function test_default_native_values() {
 }
 
 export function test_set_TNS_value_updates_native_value() {
-	var progress = new progressModule.Progress();
+	const progress = new progressModule.Progress();
 
 	function testAction(views: Array<viewModule.View>) {
 		progress.value = 5;
@@ -45,7 +45,7 @@ export function test_set_TNS_value_updates_native_value() {
 }
 
 export function test_set_value_greater_than_max_should_set_value_to_max() {
-	var progress = new progressModule.Progress();
+	const progress = new progressModule.Progress();
 
 	function testAction(views: Array<viewModule.View>) {
 		progress.maxValue = 10;
@@ -59,7 +59,7 @@ export function test_set_value_greater_than_max_should_set_value_to_max() {
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
 export function test_set_color() {
 	if (__APPLE__) {
-		var progress = new progressModule.Progress();
+		const progress = new progressModule.Progress();
 		progress.color = new color.Color('red');
 
 		function testAction(views: Array<viewModule.View>) {
@@ -72,7 +72,7 @@ export function test_set_color() {
 
 export function test_set_backgroundColor() {
 	if (__APPLE__) {
-		var progress = new progressModule.Progress();
+		const progress = new progressModule.Progress();
 		progress.backgroundColor = new color.Color('red');
 
 		function testAction(views: Array<viewModule.View>) {
@@ -84,7 +84,7 @@ export function test_set_backgroundColor() {
 }
 
 export function test_set_maxValue_should_adjust_value() {
-	var progress = new progressModule.Progress();
+	const progress = new progressModule.Progress();
 
 	// >> article-set-value
 	progress.maxValue = 255;
@@ -102,13 +102,13 @@ export function test_set_maxValue_should_adjust_value() {
 }
 
 export function test_property_changed_event_when_setting_maxValue_with_adjust() {
-	var progress = new progressModule.Progress();
+	const progress = new progressModule.Progress();
 	progress.maxValue = 100;
 	progress.value = 50;
 
 	function testAction(views: Array<viewModule.View>) {
-		var changedProperties = {};
-		var allChanges = 0;
+		const changedProperties = {};
+		let allChanges = 0;
 		progress.on('valueChange', function (data: EventData) {
 			allChanges++;
 			changedProperties[(<PropertyChangeData>data).propertyName] = true;

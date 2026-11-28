@@ -5,13 +5,13 @@ import * as TKUnit from '../tk-unit';
 export * from './application-tests-common';
 
 // >> application-app-android
-let androidApp = Application.android;
+const androidApp = Application.android;
 // << application-app-android
 
 // >> application-app-android-context
-let context = Application.android.context;
+const context = Application.android.context;
 //// get the Files (Documents) folder (directory)
-let dir = context.getFilesDir();
+const dir = context.getFilesDir();
 // << application-app-android-context
 
 // >> application-app-android-current

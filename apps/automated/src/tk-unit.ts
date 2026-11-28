@@ -41,7 +41,7 @@ export function write(message: string, type?: number) {
 }
 
 function runTest(testInfo: TestInfoEntry) {
-	let start = time();
+	const start = time();
 	let duration;
 	try {
 		if (testInfo.instance) {
@@ -204,8 +204,8 @@ export function assertEqual<T extends { equals?(arg: T): boolean } | any>(actual
  * Assert two json like objects are deep equal.
  */
 export function assertDeepEqual(actual, expected, message: string = '', path: any[] = []): void {
-	let typeofActual: string = typeof actual;
-	let typeofExpected: string = typeof expected;
+	const typeofActual: string = typeof actual;
+	const typeofExpected: string = typeof expected;
 	if (typeofActual !== typeofExpected) {
 		throw new Error(message + ' ' + 'At /' + path.join('/') + ' types of actual ' + typeofActual + ' and expected ' + typeofExpected + ' differ.');
 	} else if (typeofActual === 'object' || typeofActual === 'array') {
@@ -243,13 +243,13 @@ export function assertDeepEqual(actual, expected, message: string = '', path: an
 				throw new Error(message + ' ' + 'At /' + path.join('/') + ' expected is Set but actual is not.');
 			}
 		}
-		for (let key in actual) {
+		for (const key in actual) {
 			if (!(key in expected)) {
 				throw new Error(message + ' ' + 'At /' + path.join('/') + ' found unexpected key ' + key + '.');
 			}
 			assertDeepEqual(actual[key], expected[key], message, path.concat([key]));
 		}
-		for (let key in expected) {
+		for (const key in expected) {
 			if (!(key in actual)) {
 				throw new Error(message + ' ' + 'At /' + path.join('/') + ' expected a key ' + key + '.');
 			}
@@ -260,12 +260,12 @@ export function assertDeepEqual(actual, expected, message: string = '', path: an
 }
 
 export function assertDeepSuperset(actual, expected, path: any[] = []): void {
-	let typeofActual: string = typeof actual;
-	let typeofExpected: string = typeof expected;
+	const typeofActual: string = typeof actual;
+	const typeofExpected: string = typeof expected;
 	if (typeofActual !== typeofExpected) {
 		throw new Error('At /' + path.join('/') + ' types of actual ' + typeofActual + ' and expected ' + typeofExpected + ' differ.');
 	} else if (typeofActual === 'object' || typeofActual === 'array') {
-		for (let key in expected) {
+		for (const key in expected) {
 			if (!(key in actual)) {
 				throw new Error('At /' + path.join('/') + ' expected a key ' + key + '.');
 			}

@@ -5,15 +5,15 @@ import { Page } from '@nativescript/core/ui/page';
 import { isAndroid } from '@nativescript/core/platform';
 
 export function pageLoaded(args: EventData) {
-	let page = <Page>args.object;
+	const page = <Page>args.object;
 
-	let wrapLayout = <WrapLayout>getViewById(page, 'wrapLayoutWithExamples');
+	const wrapLayout = <WrapLayout>getViewById(page, 'wrapLayoutWithExamples');
 
-	let examples: Map<string, string> = new Map<string, string>();
+	const examples: Map<string, string> = new Map<string, string>();
 	if (isAndroid) {
 		examples.set('background-image', 'perf/memory-leaks/background-image-page');
 	}
-	let viewModel = new SubMainPageViewModel(wrapLayout, examples);
+	const viewModel = new SubMainPageViewModel(wrapLayout, examples);
 	page.bindingContext = viewModel;
 }
 

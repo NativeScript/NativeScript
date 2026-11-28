@@ -59,7 +59,7 @@ export class MainPageViewModel extends TestPageMainViewModel {
 	}
 
 	public loadExampleFromListView(example) {
-		let examplePath = this.filteredListOfExamples.getItem(example.index).path;
+		const examplePath = this.filteredListOfExamples.getItem(example.index).path;
 		this.exampleName = examplePath;
 		if (MainPageViewModel.checkIfStringIsNullEmptyOrUndefined(this.exampleName)) {
 			return;
@@ -70,10 +70,10 @@ export class MainPageViewModel extends TestPageMainViewModel {
 
 	private filterListView(value: string) {
 		if (!MainPageViewModel.checkIfStringIsNullEmptyOrUndefined(value)) {
-			let array = Array.from(
+			const array = Array.from(
 				MainPageViewModel.ALL_EXAMPLES.filter((testExample, index, array) => {
 					return MainPageViewModel.stringContains(testExample.path.toLowerCase(), value.toLowerCase()) || MainPageViewModel.stringContains(testExample.name.toLowerCase(), value.toLowerCase());
-				})
+				}),
 			);
 			this.filteredListOfExamples = new ObservableArray(array);
 		} else {
@@ -90,7 +90,7 @@ export class MainPageViewModel extends TestPageMainViewModel {
 	}
 
 	private toggleExamplePanels(array: ObservableArray<TestExample>) {
-		let listView = this.getFilteredExamplesContainer();
+		const listView = this.getFilteredExamplesContainer();
 		if (array !== null && array !== undefined && array.length > 0) {
 			this.buttonsPanel.visibility = 'hidden';
 			listView.visibility = 'visible';
@@ -102,12 +102,12 @@ export class MainPageViewModel extends TestPageMainViewModel {
 
 	private loadFilteredListOfExamplesRecursive(examples: Map<string, string>) {
 		examples.forEach((value, key, map) => {
-			let requiredExample = value;
+			const requiredExample = value;
 			if (MainPageViewModel.stringContains(value, 'main')) {
 				try {
-					let module = global.loadModule(requiredExample);
+					const module = global.loadModule(requiredExample);
 					if (module.loadExamples !== undefined) {
-						var currentExamples = new Map<string, string>();
+						let currentExamples = new Map<string, string>();
 						currentExamples = module.loadExamples();
 						currentExamples.forEach((v, key, map) => {
 							this.loadFilteredListOfExamplesRecursive(currentExamples);

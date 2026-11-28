@@ -44,7 +44,7 @@ export function theFinalFrontier(args) {
 	const ctx = page.bindingContext;
 	const detailHeaderHeight: number = ctx.detailsHeight;
 
-	let statusBar = 0;
+	const statusBar = 0;
 	// if (isIOS) {
 	//     statusBar = uiUtils.ios.getStatusBarHeight();
 	// }

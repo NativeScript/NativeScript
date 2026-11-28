@@ -3,8 +3,9 @@ import type { Headers, HttpResponse, HttpRequestOptions } from '../../http';
 import { Screen } from '../../platform/screen';
 import * as domainDebugger from '../../debugger';
 import { isObject } from '../../utils';
+import { runtimeCopiesTypedArraysToByteArrays } from '../../utils/android-runtime-version';
 import { HttpResponseEncoding } from '../http-interfaces';
-import { addHeader, getDebugRequestMethodAndBody } from './http-request-internal-common';
+import { addHeader, getDebugRequestMethodAndBody, getRequestBodyBytes } from './http-request-internal-common';
 export { addHeader } from './http-request-internal-common';
 
 export interface BaseHttpContent {
@@ -161,10 +162,11 @@ function buildJavaOptions(options: HttpRequestOptions) {
 		const nativeBytes = nativeString.getBytes('UTF-8');
 		const nativeBuffer = java.nio.ByteBuffer.wrap(nativeBytes);
 		javaOptions.content = nativeBuffer;
-	} else if (options.content instanceof ArrayBuffer) {
-		const typedArray = new Uint8Array(options.content as ArrayBuffer);
-		const nativeBuffer = java.nio.ByteBuffer.wrap(Array.from(typedArray));
-		javaOptions.content = nativeBuffer;
+	} else {
+		const bytes = getRequestBodyBytes(options.content);
+		if (bytes) {
+			javaOptions.content = java.nio.ByteBuffer.wrap(runtimeCopiesTypedArraysToByteArrays() ? (bytes as any) : Array.from(bytes));
+		}
 	}
 	if (typeof options.timeout === 'number') {
 		javaOptions.timeout = options.timeout;
