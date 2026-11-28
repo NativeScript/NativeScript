@@ -1,7 +1,7 @@
 import { Label, EventData, GestureEventData, Page } from '@nativescript/core';
 
 export function pageLoaded(args: EventData) {
-	var page = <Page>args.object;
+	const page = <Page>args.object;
 	page.bindingContext = { tapAction: tapAction, doubleTapAction: doubleTapAction, cleanResult: cleanResult };
 }
 

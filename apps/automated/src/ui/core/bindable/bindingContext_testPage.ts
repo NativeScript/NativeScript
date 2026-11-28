@@ -26,9 +26,9 @@ class MainViewModel extends observableModule.Observable {
 	}
 }
 
-var viewModel = new MainViewModel();
+const viewModel = new MainViewModel();
 
 export function pageLoaded(args: observableModule.EventData) {
-	var page = <pageModule.Page>args.object;
+	const page = <pageModule.Page>args.object;
 	page.bindingContext = viewModel;
 }

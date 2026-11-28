@@ -7,8 +7,8 @@ Trace.addCategories(Trace.categories.Transition);
 
 Trace.enable();
 
-var countResume = 0;
-var countSuspend = 0;
+let countResume = 0;
+let countSuspend = 0;
 
 Application.on('displayed', (args) => {
 	const uptime = global.android ? (<any>org).nativescript.Process.getUpTime : global.__tns_uptime;

@@ -42,7 +42,7 @@ export function test_setTimeout() {
 
 export function test_setTimeout_extraArgs() {
 	let completed: boolean;
-	let rnd: number = Math.random();
+	const rnd: number = Math.random();
 
 	// >> timer-set-zero-args
 	const id = timer.setTimeout(
@@ -105,7 +105,7 @@ export function test_setTimeout_callbackNotCalled() {
 }
 
 export function test_setTimeout_shouldReturnNumber() {
-	let id = timer.setTimeout(() => {
+	const id = timer.setTimeout(() => {
 		//
 	});
 	timer.clearTimeout(id);
@@ -281,7 +281,7 @@ export function test_clearInterval_immediatelyAfterCreate() {
 export function test_clearTimeout_insideCallback() {
 	let completed = false;
 
-	let id = timer.setTimeout(() => {
+	const id = timer.setTimeout(() => {
 		completed = true;
 		timer.clearTimeout(id);
 	});

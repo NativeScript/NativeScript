@@ -53,13 +53,13 @@ export function test_event_LayoutChanged_Listeners() {
 
 export function test_event_LayoutChanged_IsRaised() {
 	helper.clearPage();
-	let newPage = helper.getCurrentPage();
+	const newPage = helper.getCurrentPage();
 
 	let stackLayoutChanged = false;
 	let buttonLayoutChanged = false;
 
-	let stackLayout = new StackLayout();
-	let button = new Button();
+	const stackLayout = new StackLayout();
+	const button = new Button();
 
 	stackLayout.on(View.layoutChangedEvent, (data) => {
 		stackLayoutChanged = true;

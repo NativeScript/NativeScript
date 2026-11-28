@@ -47,7 +47,7 @@ const testFunction2 = profile('testFunction2', () => {
 disable();
 
 function retry(count: number, action: () => void) {
-	for (var i = 1; i <= count; i++) {
+	for (let i = 1; i <= count; i++) {
 		try {
 			action();
 
@@ -128,7 +128,7 @@ export function test_start_stop_count() {
 	resetProfiles();
 	const name = 'test_start_stop_count';
 
-	for (var i = 0; i < 10; i++) {
+	for (let i = 0; i < 10; i++) {
 		start(name);
 		stop(name);
 	}
@@ -140,7 +140,7 @@ export function test_start_stop_count() {
 export function test_profile_decorator_count() {
 	resetProfiles();
 	const test = new TestClass();
-	for (var i = 0; i < 10; i++) {
+	for (let i = 0; i < 10; i++) {
 		test.doNothing();
 		test.unnamed1();
 		test.unnamed2();
@@ -170,7 +170,7 @@ export function test_start_stop_performance() {
 		const count = 10000;
 		const name = 'test_start_stop_performance';
 
-		for (var i = 0; i < count; i++) {
+		for (let i = 0; i < count; i++) {
 			start(name);
 			stop(name);
 		}
@@ -185,10 +185,10 @@ export function test_profile_decorator_performance() {
 	retry(5, () => {
 		resetProfiles();
 
-		var start = Date.now();
+		const start = Date.now();
 		const count = 10000;
 		const test = new TestClass();
-		for (var i = 0; i < count; i++) {
+		for (let i = 0; i < count; i++) {
 			test.doNothing();
 		}
 
@@ -196,7 +196,7 @@ export function test_profile_decorator_performance() {
 		assertEqual(res.count, count);
 
 		assert(res.totalTime <= 500, `Total time for ${count} timer operations is too much: ${res.totalTime}`);
-		var end = Date.now();
+		const end = Date.now();
 		assert(end - start <= 1000, `Total time for test execution is too much: ${end - start}ms`);
 	});
 }

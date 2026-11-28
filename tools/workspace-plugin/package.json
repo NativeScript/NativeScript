@@ -2,7 +2,7 @@
 	"name": "@nativescript/workspace-plugin",
 	"version": "0.0.1",
 	"dependencies": {
-		"tslib": "^2.3.0"
+		"@angular-devkit/schematics": "^18.2.21"
 	},
 	"type": "commonjs",
 	"main": "./src/index.js",

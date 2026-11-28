@@ -2,7 +2,7 @@ import { Application, View, Button, Page, StackLayout, Label, TextField, Trace, 
 import * as TKUnit from '../../../tk-unit';
 import * as helper from '../../../ui-helper';
 import * as bindingBuilder from '@nativescript/core/ui/builder/binding-builder';
-declare var WeakRef: any;
+declare let WeakRef: any;
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic.
 // </snippet>
@@ -568,10 +568,10 @@ export function test_BindingToParentView_ShouldNotLeaveGarbageInViewModel() {
 	stackViewModel.set('testProperty', expectedValue);
 
 	const testFunc = function (views: Array<View>) {
-		let testStack = <StackLayout>views[0];
+		const testStack = <StackLayout>views[0];
 		testStack.bindingContext = stackViewModel;
 
-		let testLabel = <Label>testStack.getChildAt(0);
+		const testLabel = <Label>testStack.getChildAt(0);
 		testLabel.bind({
 			sourceProperty: '$parent.testProperty',
 			targetProperty: 'text',
@@ -599,10 +599,10 @@ export function test_BindingToParentsView_ShouldNotLeaveGarbageInViewModel() {
 	stackViewModel.set('testProperty', expectedValue);
 
 	const testFunc = function (views: Array<View>) {
-		let testStack = <StackLayout>views[0];
+		const testStack = <StackLayout>views[0];
 		testStack.bindingContext = stackViewModel;
 
-		let testLabel = <Label>testStack.getChildAt(0);
+		const testLabel = <Label>testStack.getChildAt(0);
 		testLabel.bind({
 			sourceProperty: "$parents['StackLayout'].testProperty",
 			targetProperty: 'text',
@@ -817,7 +817,7 @@ export function test_WrongNestedPropertiesBinding() {
 	const viewModel = new Observable();
 	viewModel.set('activity', new Activity(expectedValue, 'Default First Name', 'Default Last Name'));
 	let errorMessage;
-	let traceWriter = {
+	const traceWriter = {
 		write: function (message, category, type?) {
 			errorMessage = message;
 		},
@@ -1055,9 +1055,9 @@ export function test_NullSourcePropertyShouldNotCrash() {
 export function test_BindingContextOfAChildElementIsNotOverwrittenBySettingTheBindingContextOfPage() {
 	let testFinished = false;
 
-	let page = helper.getCurrentPage();
-	let child = new StackLayout();
-	let childModel = new Observable();
+	const page = helper.getCurrentPage();
+	const child = new StackLayout();
+	const childModel = new Observable();
 	child.bindingContext = childModel;
 	TKUnit.assertEqual(child.bindingContext, childModel);
 
@@ -1326,14 +1326,14 @@ class RelatedPropsClass extends Observable {
 }
 
 export function test_BindingToRelatedProps() {
-	let model = new RelatedPropsClass();
+	const model = new RelatedPropsClass();
 	model.prop1 = false;
 	model.prop2 = 'Alabala';
 
-	let target1 = new Label();
+	const target1 = new Label();
 	target1.bind({ sourceProperty: 'prop1', targetProperty: 'targetProp1' }, model);
 
-	let target2 = new Label();
+	const target2 = new Label();
 	target2.bind({ sourceProperty: 'prop2', targetProperty: 'targetProp2' }, model);
 
 	model.prop2 = 'Tralala';
@@ -1353,8 +1353,8 @@ export function test_only_Bindable_BindingContext_Null_DoesNotThrow() {
 }
 
 export function test_Observable_from_nested_json_binds_correctly() {
-	let expectedValue = 'Test';
-	let model = fromObjectRecursive({
+	const expectedValue = 'Test';
+	const model = fromObjectRecursive({
 		firstObject: {
 			secondObject: {
 				dummyProperty: 'text',
@@ -1377,8 +1377,8 @@ export function test_Observable_from_nested_json_binds_correctly() {
 }
 
 export function test_Observable_from_nested_json_binds_correctly_when_upper_object_is_changed() {
-	let expectedValue = 'Test';
-	let model = fromObjectRecursive({
+	const expectedValue = 'Test';
+	const model = fromObjectRecursive({
 		firstObject: {
 			secondObject: {
 				dummyProperty: 'text',
@@ -1401,8 +1401,8 @@ export function test_Observable_from_nested_json_binds_correctly_when_upper_obje
 }
 
 export function test_BindingToBindingContextProperty_ShouldUseNewContext() {
-	let stackLayout = new StackLayout();
-	let label = new Label();
+	const stackLayout = new StackLayout();
+	const label = new Label();
 	stackLayout.addChild(label);
 
 	label.bind({
@@ -1415,7 +1415,7 @@ export function test_BindingToBindingContextProperty_ShouldUseNewContext() {
 		targetProperty: 'text',
 	});
 
-	let testBindingContext = fromObjectRecursive({
+	const testBindingContext = fromObjectRecursive({
 		context: {
 			text: 'Alabala',
 		},

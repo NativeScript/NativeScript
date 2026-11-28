@@ -493,10 +493,10 @@ export function test_setting_different_backgroundColor_triggers_property_change(
 }
 
 export function test_setting_border_color_shorthand_property_sets_all_border_colors() {
-	let red = new Color('red');
-	let green = new Color('green');
-	let blue = new Color('blue');
-	let yellow = new Color('yellow');
+	const red = new Color('red');
+	const green = new Color('green');
+	const blue = new Color('blue');
+	const yellow = new Color('yellow');
 	test_border_color_shorthand_property('red', red, red, red, red);
 	test_border_color_shorthand_property('red green', red, green, red, green);
 	test_border_color_shorthand_property('red green blue', red, green, blue, green);
@@ -837,9 +837,9 @@ export const test_setting_button_textTransform_and_textDecoration_sets_native = 
 };
 
 export function test_border_color() {
-	let testView = new Button();
+	const testView = new Button();
 
-	let red = new Color('red');
+	const red = new Color('red');
 	testView.style.borderColor = red;
 	TKUnit.assertEqual(testView.style.borderColor, red, 'all');
 	TKUnit.assertEqual(testView.style.borderTopColor, red, 'top');
@@ -847,8 +847,8 @@ export function test_border_color() {
 	TKUnit.assertEqual(testView.style.borderBottomColor, red, 'bottom');
 	TKUnit.assertEqual(testView.style.borderLeftColor, red, 'left');
 
-	let blue = new Color('blue');
-	let hex = blue.hex;
+	const blue = new Color('blue');
+	const hex = blue.hex;
 	testView.style.borderColor = hex;
 	TKUnit.assertEqual(<any>testView.style.borderColor, blue, 'all');
 	TKUnit.assertEqual(testView.style.borderTopColor, blue, 'top');
@@ -858,7 +858,7 @@ export function test_border_color() {
 }
 
 export function test_border_width() {
-	let testView = new Button();
+	const testView = new Button();
 
 	testView.style.borderWidth = 10;
 	TKUnit.assertEqual(testView.style.borderWidth, 10, 'all');
@@ -879,7 +879,7 @@ export function test_border_width() {
 }
 
 export function test_border_radius() {
-	let testView = new Button();
+	const testView = new Button();
 
 	testView.style.borderRadius = 10;
 	let expected: LengthType = { value: 10, unit: 'dip' };

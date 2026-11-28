@@ -13,8 +13,8 @@ import { CoreTypes, Color, Page, View, TextView, BindingOptions, Observable } fr
 // << text-view-xml
 // >> observable-declare
 export function pageLoaded(args) {
-	let page = args.object;
-	let obj = new Observable();
+	const page = args.object;
+	const obj = new Observable();
 	obj.set('someProperty', 'Please change this text!');
 	page.bindingContext = obj;
 }
@@ -24,49 +24,49 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(_createTextViewFunc);
 }
 
-var _createTextViewFunc = function (): TextView {
+const _createTextViewFunc = function (): TextView {
 	// >> text-view-create
-	var textView = new TextView();
+	const textView = new TextView();
 	// << text-view-create
 	textView.text = 'textView';
 
 	return textView;
 };
 
-export var testSetText = function () {
+export const testSetText = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 
 		// >> set-text-value
 		textView.text = 'Hello, world!';
 		// << set-text-value
 
-		var expectedValue = 'Hello, world!';
-		var actualValue = textViewTestsNative.getNativeText(textView);
+		const expectedValue = 'Hello, world!';
+		const actualValue = textViewTestsNative.getNativeText(textView);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSetTextNull = function () {
+export const testSetTextNull = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 
 		textView.text = null;
 
-		var expectedValue = '';
-		var actualValue = textViewTestsNative.getNativeText(textView);
+		const expectedValue = '';
+		const actualValue = textViewTestsNative.getNativeText(textView);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSetTextUndefined = function () {
+export const testSetTextUndefined = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 
 		textView.text = undefined;
 
-		var expectedValue = '';
-		var actualValue = textViewTestsNative.getNativeText(textView);
+		const expectedValue = '';
+		const actualValue = textViewTestsNative.getNativeText(textView);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
@@ -76,21 +76,21 @@ export var testSetTextUndefined = function () {
 export function test_set_color() {
 	if (__APPLE__) {
 		helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-			var textView = <TextView>views[0];
+			const textView = <TextView>views[0];
 			textView.color = new Color('red');
 			TKUnit.assertEqual(textView.color.ios.CGColor, textView.ios.textColor.CGColor, 'textView.color');
 		});
 	}
 }
 
-export var testBindTextDirectlyToModel = function () {
+export const testBindTextDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 
 		// >> binding-text-property-textview
-		var model = new Observable();
+		const model = new Observable();
 		model.set('username', 'john');
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'username',
 			targetProperty: 'text',
 		};
@@ -110,16 +110,16 @@ export var testBindTextDirectlyToModel = function () {
 	});
 };
 
-export var testBindTextToBindingContext = function () {
+export const testBindTextToBindingContext = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
-		var page = <Page>views[1];
+		const textView = <TextView>views[0];
+		const page = <Page>views[1];
 
-		var model = new Observable();
+		const model = new Observable();
 		model.set('username', 'john');
 		page.bindingContext = model;
 
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'username',
 			targetProperty: 'text',
 		};
@@ -134,43 +134,43 @@ export var testBindTextToBindingContext = function () {
 	});
 };
 
-export var testTextIsUpdatedWhenUserTypes = function () {
+export const testTextIsUpdatedWhenUserTypes = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 		textView.updateTextTrigger = 'focusLost';
 
-		var expectedValue = 'Hello, world!';
+		const expectedValue = 'Hello, world!';
 		textViewTestsNative.typeTextNatively(textView, expectedValue);
 
-		var actualValue = textView.text;
+		const actualValue = textView.text;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSetHint = function () {
+export const testSetHint = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 		textView.text = '';
 
 		// >> set-textview-hint
 		textView.hint = 'type your username here';
 		// << set-textview-hint
 
-		var expectedValue = 'type your username here';
-		var actualValue = textViewTestsNative.getNativeHint(textView);
+		const expectedValue = 'type your username here';
+		const actualValue = textViewTestsNative.getNativeHint(textView);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testBindHintDirectlyToModel = function () {
+export const testBindHintDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 		textView.text = '';
 
 		// >> binding-hint-property-textview
-		var model = new Observable();
+		const model = new Observable();
 		model.set('hint', 'type your username here');
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'hint',
 			targetProperty: 'hint',
 		};
@@ -190,17 +190,17 @@ export var testBindHintDirectlyToModel = function () {
 	});
 };
 
-export var testBindHintToBindingConext = function () {
+export const testBindHintToBindingConext = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 		textView.text = '';
-		var page = <Page>views[1];
+		const page = <Page>views[1];
 
-		var model = new Observable();
+		const model = new Observable();
 		model.set('hint', 'type your username here');
 		page.bindingContext = model;
 
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'hint',
 			targetProperty: 'hint',
 		};
@@ -215,15 +215,15 @@ export var testBindHintToBindingConext = function () {
 	});
 };
 
-export var testHintPlusTextiOS = function () {
+export const testHintPlusTextiOS = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 		if (!textView.ios) {
 			return;
 		}
 
-		var expectedValue;
-		var actualValue;
+		let expectedValue;
+		let actualValue;
 
 		textView.hint = 'hint';
 		textView.text = 'text';
@@ -239,9 +239,9 @@ export var testHintPlusTextiOS = function () {
 	});
 };
 
-export var testHintColoriOS = function () {
+export const testHintColoriOS = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 		if (!textView.ios) {
 			return;
 		}
@@ -250,9 +250,7 @@ export var testHintColoriOS = function () {
 		textView.color = new Color('red');
 		textView.hint = 'hint';
 
-		var expectedValue;
-		var expectedNormalizedValue;
-		var actualValue;
+		let actualValue;
 
 		actualValue = textViewTestsNative.getNativeColor(textView).hex;
 
@@ -260,35 +258,35 @@ export var testHintColoriOS = function () {
 
 		textView.text = 'text';
 
-		expectedValue = '#FF0000FF'; // red
-		expectedNormalizedValue = '#FF0000';
+		const expectedValue = '#FF0000FF'; // red
+		const expectedNormalizedValue = '#FF0000';
 		actualValue = textViewTestsNative.getNativeColor(textView).hex;
 		TKUnit.assert(actualValue === expectedNormalizedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedNormalizedValue);
 	});
 };
 
-export var testSetEditable = function () {
+export const testSetEditable = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 
 		// >> setting-editable-property
 		textView.editable = false;
 		// << setting-editable-property
 
-		var expectedValue = false;
-		var actualValue = textViewTestsNative.getNativeEditable(textView);
+		const expectedValue = false;
+		const actualValue = textViewTestsNative.getNativeEditable(textView);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testBindEditableDirectlyToModel = function () {
+export const testBindEditableDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 
 		// >> binding-editable-property
-		var model = new Observable();
+		const model = new Observable();
 		model.set('editable', false);
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'editable',
 			targetProperty: 'editable',
 		};
@@ -308,16 +306,16 @@ export var testBindEditableDirectlyToModel = function () {
 	});
 };
 
-export var testBindEditableToBindingConext = function () {
+export const testBindEditableToBindingConext = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
-		var page = <Page>views[1];
+		const textView = <TextView>views[0];
+		const page = <Page>views[1];
 
-		var model = new Observable();
+		const model = new Observable();
 		model.set('editable', false);
 		page.bindingContext = model;
 
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'editable',
 			targetProperty: 'editable',
 		};
@@ -332,164 +330,164 @@ export var testBindEditableToBindingConext = function () {
 	});
 };
 
-export var testSetMaxLines = function () {
+export const testSetMaxLines = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 
 		textView.maxLines = 3;
 
-		var expectedValue = 3;
-		var actualValue = textViewTestsNative.getNativeMaxLines(textView);
+		const expectedValue = 3;
+		const actualValue = textViewTestsNative.getNativeMaxLines(textView);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-var expectedFontSize = 42;
-export var testLocalFontSizeFromCss = function () {
+const expectedFontSize = 42;
+export const testLocalFontSizeFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
-		var page = <Page>views[1];
+		const textView = <TextView>views[0];
+		const page = <Page>views[1];
 
 		page.css = 'textview { font-size: ' + expectedFontSize + '; }';
-		var actualResult = textView.style.fontSize;
+		const actualResult = textView.style.fontSize;
 		TKUnit.assert(actualResult === expectedFontSize, 'Actual: ' + actualResult + '; Expected: ' + expectedFontSize);
 	});
 };
 
-export var testNativeFontSizeFromCss = function () {
+export const testNativeFontSizeFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
-		var page = <Page>views[1];
+		const textView = <TextView>views[0];
+		const page = <Page>views[1];
 		page.css = 'textview { font-size: ' + expectedFontSize + '; }';
 
-		var actualResult = textViewTestsNative.getNativeFontSize(textView);
+		const actualResult = textViewTestsNative.getNativeFontSize(textView);
 		helper.assertAreClose(actualResult, expectedFontSize, 'FontSizeFromCss');
 	});
 };
 
-export var testNativeFontSizeFromLocal = function () {
+export const testNativeFontSizeFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 		textView.style.fontSize = expectedFontSize;
 
-		var actualResult = textViewTestsNative.getNativeFontSize(textView);
+		const actualResult = textViewTestsNative.getNativeFontSize(textView);
 		helper.assertAreClose(actualResult, expectedFontSize, 'FontSizeFromLocal');
 	});
 };
 
-var expectedLineHeight = 10;
-export var testLocalLineHeightFromCss = function () {
+const expectedLineHeight = 10;
+export const testLocalLineHeightFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
-		var page = <Page>views[1];
+		const textView = <TextView>views[0];
+		const page = <Page>views[1];
 
 		page.css = 'textview { line-height: ' + expectedLineHeight + '; }';
-		var actualResult = textView.style.lineHeight;
+		const actualResult = textView.style.lineHeight;
 		TKUnit.assert(actualResult === expectedLineHeight, 'Actual: ' + actualResult + '; Expected: ' + expectedLineHeight);
 	});
 };
 
-var expectedColorHex = '#FF0000FF';
-var expectedNormalizedColorHex = '#FF0000';
-export var testLocalColorFromCss = function () {
+const expectedColorHex = '#FF0000FF';
+const expectedNormalizedColorHex = '#FF0000';
+export const testLocalColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
-		var page = <Page>views[1];
+		const textView = <TextView>views[0];
+		const page = <Page>views[1];
 		page.css = 'textview { color: ' + expectedColorHex + '; }';
 
-		var actualResult = textView.style.color.hex;
+		const actualResult = textView.style.color.hex;
 		TKUnit.assert(actualResult === expectedNormalizedColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedColorHex);
 	});
 };
 
-export var testNativeColorFromCss = function () {
+export const testNativeColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
-		var page = <Page>views[1];
+		const textView = <TextView>views[0];
+		const page = <Page>views[1];
 		page.css = 'textview { color: ' + expectedColorHex + '; }';
 
-		var actualResult = textViewTestsNative.getNativeColor(textView).hex;
+		const actualResult = textViewTestsNative.getNativeColor(textView).hex;
 		TKUnit.assert(actualResult === expectedNormalizedColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedColorHex);
 	});
 };
 
-export var testNativeColorFromLocal = function () {
+export const testNativeColorFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 		textView.style.color = new Color(expectedColorHex);
 
-		var actualResult = textViewTestsNative.getNativeColor(textView).hex;
+		const actualResult = textViewTestsNative.getNativeColor(textView).hex;
 		TKUnit.assert(actualResult === expectedNormalizedColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedColorHex);
 	});
 };
 
-var expectedBackgroundColorHex = '#00FF00FF';
-var expectedNormalizedBackgroundColorHex = '#00FF00';
-export var testLocalBackgroundColorFromCss = function () {
+const expectedBackgroundColorHex = '#00FF00FF';
+const expectedNormalizedBackgroundColorHex = '#00FF00';
+export const testLocalBackgroundColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
-		var page = <Page>views[1];
+		const textView = <TextView>views[0];
+		const page = <Page>views[1];
 		page.css = 'textview { background-color: ' + expectedBackgroundColorHex + '; }';
 
-		var actualResult = textView.style.backgroundColor.hex;
+		const actualResult = textView.style.backgroundColor.hex;
 		TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedBackgroundColorHex);
 	});
 };
 
-export var testNativeBackgroundColorFromCss = function () {
+export const testNativeBackgroundColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
-		var page = <Page>views[1];
+		const textView = <TextView>views[0];
+		const page = <Page>views[1];
 		page.css = 'textview { background-color: ' + expectedBackgroundColorHex + '; }';
 
 		helper.waitUntilLayoutReady(textView);
 
-		var actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
+		const actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
 		TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedBackgroundColorHex);
 	});
 };
 
-export var testNativeBackgroundColorFromLocal = function () {
+export const testNativeBackgroundColorFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var textView = <TextView>views[0];
+		const textView = <TextView>views[0];
 		textView.style.backgroundColor = new Color(expectedBackgroundColorHex);
 
 		helper.waitUntilLayoutReady(textView);
 
-		var actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
+		const actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
 		TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedBackgroundColorHex);
 	});
 };
 
-var expectedTextAlignment: 'right' = 'right';
-export var testLocalTextAlignmentFromCss = function () {
+const expectedTextAlignment = 'right' as const;
+export const testLocalTextAlignmentFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var view = <TextView>views[0];
-		var page = <Page>views[1];
+		const view = <TextView>views[0];
+		const page = <Page>views[1];
 		page.css = 'textview { text-align: ' + expectedTextAlignment + '; }';
 
-		var actualResult = view.style.textAlignment;
+		const actualResult = view.style.textAlignment;
 		TKUnit.assert(actualResult === expectedTextAlignment, 'Actual: ' + actualResult + '; Expected: ' + expectedTextAlignment);
 	});
 };
 
-export var testNativeTextAlignmentFromCss = function () {
+export const testNativeTextAlignmentFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var view = <TextView>views[0];
-		var page = <Page>views[1];
+		const view = <TextView>views[0];
+		const page = <Page>views[1];
 		page.css = 'textview { text-align: ' + expectedTextAlignment + '; }';
 
-		var actualResult = textViewTestsNative.getNativeTextAlignment(view);
+		const actualResult = textViewTestsNative.getNativeTextAlignment(view);
 		TKUnit.assert(actualResult === expectedTextAlignment, 'Actual: ' + actualResult + '; Expected: ' + expectedTextAlignment);
 	});
 };
 
-export var testNativeTextAlignmentFromLocal = function () {
+export const testNativeTextAlignmentFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
-		var view = <TextView>views[0];
+		const view = <TextView>views[0];
 		view.style.textAlignment = expectedTextAlignment;
 
-		var actualResult = textViewTestsNative.getNativeTextAlignment(view);
+		const actualResult = textViewTestsNative.getNativeTextAlignment(view);
 		TKUnit.assert(actualResult === expectedTextAlignment, 'Actual: ' + actualResult + '; Expected: ' + expectedTextAlignment);
 	});
 };
@@ -507,9 +505,9 @@ export var testNativeTextAlignmentFromLocal = function () {
 export function test_watch_listerer_is_removed_at_onDetach() {
 	if (__ANDROID__) {
 		helper.buildUIAndRunTest(_createTextViewFunc(), (views: Array<View>) => {
-			let tv = <TextView>views[0];
-			let page = <Page>tv.page;
-			let editText = tv.android;
+			const tv = <TextView>views[0];
+			const page = <Page>tv.page;
+			const editText = tv.android;
 			editText.setText('String');
 			page.content = null;
 			editText.setText('FAIL');
@@ -518,7 +516,7 @@ export function test_watch_listerer_is_removed_at_onDetach() {
 }
 
 export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
-	let view = new TextView();
+	const view = new TextView();
 	helper.buildUIAndRunTest(view, function (views: Array<View>) {
 		view.text = 'NormalText';
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
@@ -530,8 +528,8 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
 }
 
 export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
-	let view = new TextView();
-	let formattedString = helper._generateFormattedString();
+	const view = new TextView();
+	const formattedString = helper._generateFormattedString();
 	helper.buildUIAndRunTest(view, function (views: Array<View>) {
 		view.formattedText = formattedString;
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');

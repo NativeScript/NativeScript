@@ -8,7 +8,7 @@ export class ViewModelWithPercentage extends ViewModelBase {
 
 	// View properties
 	public onWidthHeight(args: { eventName: string; object: any }): void {
-		let view = args.object;
+		const view = args.object;
 		if (!PercentLength.equals(view.marginLeft, { value: 0.5, unit: '%' })) {
 			super.setWidthHeight(view, '50%', '50%');
 		} else {
@@ -17,7 +17,7 @@ export class ViewModelWithPercentage extends ViewModelBase {
 	}
 
 	public onMargins(args: { eventName: string; object: any }): void {
-		let view = args.object;
+		const view = args.object;
 		if (!PercentLength.equals(view.marginLeft, { value: 0.1, unit: '%' })) {
 			super.setMargins(view, '10%', '10%', '10%', '10%');
 		} else {
@@ -26,7 +26,7 @@ export class ViewModelWithPercentage extends ViewModelBase {
 	}
 
 	public onMinWidthMinHeight(args: { eventName: string; object: any }): void {
-		let view = args.object;
+		const view = args.object;
 		if (!PercentLength.equals(view.marginLeft, 105)) {
 			super.setMinWidthHeight(view, 105, 55);
 		} else {
@@ -36,7 +36,7 @@ export class ViewModelWithPercentage extends ViewModelBase {
 
 	public onAllProperties(args: { eventName: string; object: any }): void {
 		let child: any;
-		let layout: any = args.object.parent;
+		const layout: any = args.object.parent;
 
 		// WidthHeight
 		child = <View>layout.getViewById('widthHeight');

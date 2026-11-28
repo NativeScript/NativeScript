@@ -221,7 +221,11 @@ export function isCssVariableExpression(value: string) {
 	return value.includes('var(--');
 }
 
-export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
+/**
+ * Substitute the css-variables in a value.
+ * @param reads Collects every variable looked up, with the value the lookup returned.
+ */
+export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string, reads?: Map<string, string | null>): string {
 	if (typeof value !== 'string') {
 		return value;
 	}
@@ -253,11 +257,14 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 		const cssVariableName = (commaIdx === -1 ? body : body.substring(0, commaIdx)).trim();
 		const fallback = commaIdx === -1 ? '' : body.substring(commaIdx + 1).trim();
 		let cssVariableValue = view.style.getCssVariable(cssVariableName);
+		if (reads) {
+			reads.set(cssVariableName, cssVariableValue);
+		}
 		if (typeof cssVariableValue === 'string' && cssVariableValue.trim() === 'initial') {
 			cssVariableValue = null;
 		}
 		if (cssVariableValue === null && fallback) {
-			cssVariableValue = _evaluateCssVariableExpression(view, cssName, fallback);
+			cssVariableValue = _evaluateCssVariableExpression(view, cssName, fallback, reads);
 		}
 
 		if (!cssVariableValue || cssVariableValue === 'unset') {
@@ -312,6 +319,203 @@ function _replaceKeywordsWithValues(value: string) {
 		cssValue = cssValue.replace(INFINITY_RE, '999999');
 	}
 	return cssValue;
+}
+
+function hasCssExpression(value: unknown): value is string {
+	return typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value));
+}
+
+/**
+ * Evaluate the css-variable and css-calc expressions of a value against the view,
+ * or `unsetValue` when they do not resolve.
+ */
+export function _evaluateCssExpressions(view: ViewBase, property: string, value: string, reads?: Map<string, string | null>) {
+	const newValue = _evaluateCssVariableExpression(view, property, value, reads);
+	if (newValue === 'unset') {
+		return unsetValue;
+	}
+
+	try {
+		return _evaluateCssCalcExpression(newValue);
+	} catch (e) {
+		Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${newValue}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+
+		return unsetValue;
+	}
+}
+
+const NO_LONGHAND_VALUES: Record<string, unknown> = Object.freeze({});
+
+function expandSubstitutedShorthand(view: ViewBase, shorthand: string, substituted: unknown): Record<string, unknown> {
+	if (substituted === unsetValue) {
+		return NO_LONGHAND_VALUES;
+	}
+
+	const expanded = _expandCssShorthand(shorthand, <string>substituted);
+	if (!expanded) {
+		Trace.write(`Failed to expand shorthand [${shorthand}] resolved to [${substituted}] for ${view}.`, Trace.categories.Style, Trace.messageType.warn);
+
+		return NO_LONGHAND_VALUES;
+	}
+
+	const values: Record<string, unknown> = {};
+	for (let i = 0, length = expanded.length; i < length; i++) {
+		values[expanded[i][0]] = expanded[i][1];
+	}
+
+	return values;
+}
+
+/** A pending shorthand evaluated against a view, and the longhand values it expands to. */
+export interface _SubstitutedCssShorthand {
+	substituted: unknown;
+	values: Record<string, unknown>;
+	reads: CssVariableReads;
+}
+
+type CssVariableReads = Map<string, string | null>;
+
+function cssVariablesUnchanged(view: ViewBase, reads: CssVariableReads): boolean {
+	for (const [name, value] of reads) {
+		if (view.style.getCssVariable(name) !== value) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Evaluate a pending-substitution shorthand against the view and parse it; a value
+ * that does not survive evaluation expands to no longhands.
+ */
+export function _substituteCssShorthand(view: ViewBase, pending: CssPendingSubstitution): _SubstitutedCssShorthand {
+	const reads: CssVariableReads = new Map();
+	const substituted = _evaluateCssExpressions(view, pending.shorthand, pending.value, reads);
+
+	return { substituted, values: expandSubstitutedShorthand(view, pending.shorthand, substituted), reads };
+}
+
+function keepLocalCssExpression(style: Style, cssName: string, specified: string | CssPendingSubstitution, substituted: unknown, reads: CssVariableReads): void {
+	if (!style._localCssExpressions) {
+		style._localCssExpressions = new Map();
+	}
+	style._localCssExpressions.set(cssName, { specified, substituted, reads });
+}
+
+function releaseLocalCssExpression(style: Style, cssName: string): void {
+	const expressions = style._localCssExpressions;
+	if (expressions && expressions.delete(cssName) && expressions.size === 0) {
+		style._localCssExpressions = undefined;
+	}
+}
+
+/**
+ * Wrap a local setter: a string holding var()/calc() is written substituted and kept
+ * for the cascade to substitute again, any other write releases what was kept.
+ */
+function localCssExpressionSetter<T extends Style>(cssName: string, set: (this: T, value: unknown) => void): (this: T, value: unknown) => void {
+	return function (this: T, value: unknown): void {
+		if (hasCssExpression(value)) {
+			const view = this.viewRef.get();
+			if (view) {
+				const reads: CssVariableReads = new Map();
+				const substituted = _evaluateCssExpressions(view, cssName, value, reads);
+				set.call(this, substituted);
+				keepLocalCssExpression(this, cssName, value, substituted, reads);
+
+				return;
+			}
+		}
+
+		set.call(this, value);
+		releaseLocalCssExpression(this, cssName);
+	};
+}
+
+function setLocalCssExpression(style: Style, cssName: string, specified: string | CssPendingSubstitution, substituted: unknown, reads: CssVariableReads, value: unknown): void {
+	style[cssName] = value;
+	keepLocalCssExpression(style, cssName, specified, substituted, reads);
+}
+
+/**
+ * Write a longhand's share of a pending-substitution shorthand as a local value,
+ * kept for the cascade to substitute again.
+ */
+export function _setLocalCssShorthandValue(style: Style, longhand: string, pending: CssPendingSubstitution, shorthand: _SubstitutedCssShorthand): void {
+	setLocalCssExpression(style, longhand, pending, shorthand.substituted, shorthand.reads, longhand in shorthand.values ? shorthand.values[longhand] : unsetValue);
+}
+
+/**
+ * Substitute the kept local var()/calc() values again, writing only those whose
+ * substitution changed since they were last written.
+ */
+export function _reevaluateLocalCssExpressions(view: ViewBase): void {
+	const style = view.style;
+	const expressions = style._localCssExpressions;
+	if (!expressions) {
+		return;
+	}
+
+	let shorthands: Map<CssPendingSubstitution, _SubstitutedCssShorthand>;
+	// Writes replace entries, so iterate over a snapshot.
+	const entries = Array.from(expressions);
+	for (let i = 0, length = entries.length; i < length; i++) {
+		const [cssName, expression] = entries[i];
+		// A change listener may have replaced or released it meanwhile.
+		if (style._localCssExpressions?.get(cssName) !== expression || cssVariablesUnchanged(view, expression.reads)) {
+			continue;
+		}
+
+		const specified = expression.specified;
+		let substituted: unknown;
+		let reads: CssVariableReads;
+		let value: unknown;
+
+		if (specified instanceof CssPendingSubstitution) {
+			if (!shorthands) {
+				shorthands = new Map();
+			}
+			let shorthand = shorthands.get(specified);
+			if (!shorthand) {
+				reads = new Map();
+				// Expanded only when the substitution changed.
+				shorthand = { substituted: _evaluateCssExpressions(view, specified.shorthand, specified.value, reads), values: undefined, reads };
+				shorthands.set(specified, shorthand);
+			}
+			substituted = shorthand.substituted;
+			reads = shorthand.reads;
+			if (substituted === expression.substituted) {
+				expression.reads = reads;
+				continue;
+			}
+			if (!shorthand.values) {
+				shorthand.values = expandSubstitutedShorthand(view, specified.shorthand, substituted);
+			}
+			value = cssName in shorthand.values ? shorthand.values[cssName] : unsetValue;
+		} else {
+			reads = new Map();
+			substituted = _evaluateCssExpressions(view, cssName, specified, reads);
+			if (substituted === expression.substituted) {
+				expression.reads = reads;
+				continue;
+			}
+			value = substituted;
+		}
+
+		try {
+			setLocalCssExpression(style, cssName, specified, substituted, reads, value);
+		} catch (e) {
+			Trace.write(`Failed to apply property [${cssName}] with value [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+			try {
+				style[cssName] = unsetValue;
+			} catch (e) {
+				Trace.write(`Failed to unset property [${cssName}] on ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+			}
+			// Kept, so the failing value is not retried every pass.
+			keepLocalCssExpression(style, cssName, specified, substituted, reads);
+		}
+	}
 }
 
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
@@ -1001,7 +1205,7 @@ export class CssProperty<T extends Style, U> {
 			enumerable: true,
 			configurable: true,
 			get: get,
-			set: setLocalValue,
+			set: localCssExpressionSetter(options.cssName || propertyName, setLocalValue),
 		};
 
 		cssSymbolPropertyMap[key] = this;
@@ -1196,6 +1400,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		const defaultPropertyDescriptor = descriptor(defaultValueKey, ValueSource.Default, false, false, false);
 		const cssPropertyDescriptor = descriptor(cssValue, ValueSource.Css, false, false, false);
 		const stylePropertyDescriptor = descriptor(styleValue, ValueSource.Local, true, true, true);
+		stylePropertyDescriptor.set = localCssExpressionSetter(cssLocalName, stylePropertyDescriptor.set);
 		const keyframePropertyDescriptor = descriptor(keyframeValue, ValueSource.Keyframe, false, false, false);
 
 		symbolPropertyMap[computedValue] = this;
@@ -1424,7 +1629,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
 		this.setInheritedValue = setInheritedFunc;
 		this.cssValueDescriptor.set = setFunc(ValueSource.Css);
-		this.localValueDescriptor.set = setFunc(ValueSource.Local);
+		this.localValueDescriptor.set = localCssExpressionSetter(options.cssName || propertyName, setFunc(ValueSource.Local));
 
 		inheritableCssProperties.push(this);
 	}
@@ -1455,6 +1660,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 		cssShorthandsVersion++;
 
 		const converter = options.converter;
+		const cssLocalName = this.cssLocalName;
 
 		function setLocalValue(this: T, value: string | P): void {
 			const view = this.viewRef.get();
@@ -1464,11 +1670,36 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 				return;
 			}
 
+			const pendingLonghands = hasCssExpression(value) ? _pendingCssShorthandSubstitution(cssLocalName, value) : undefined;
+			if (pendingLonghands) {
+				const pending = pendingLonghands[0][1];
+				const shorthand = _substituteCssShorthand(view, pending);
+				view._batchUpdate(() => {
+					for (const [longhand] of pendingLonghands) {
+						_setLocalCssShorthandValue(this, longhand, pending, shorthand);
+					}
+				});
+
+				return;
+			}
+
+			if (hasCssExpression(value)) {
+				value = _evaluateCssExpressions(view, cssLocalName, value);
+			}
+
 			view._batchUpdate(() => {
 				for (const [p, v] of converter(value)) {
 					this[p.name] = v;
 				}
 			});
+
+			// Longhands the converter omits still lose their kept expressions.
+			if (this._localCssExpressions) {
+				const longhands = getCssShorthandLonghands(cssLocalName);
+				for (let i = 0, length = longhands ? longhands.length : 0; i < length; i++) {
+					releaseLocalCssExpression(this, longhands[i]);
+				}
+			}
 		}
 
 		function setCssValue(this: T, value: string): void {

@@ -8,12 +8,12 @@ import { env } from '..';
 /**
  * @internal
  */
-export let copyRules = new Set([]);
+export const copyRules = new Set([]);
 
 /**
  * @internal
  */
-export let additionalCopyRules = [];
+export const additionalCopyRules = [];
 
 /**
  * Utility to add new copy rules. Accepts a glob or an object. For example

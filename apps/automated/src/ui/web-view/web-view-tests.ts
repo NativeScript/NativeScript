@@ -14,14 +14,14 @@ import * as webViewModule from '@nativescript/core/ui/web-view';
 export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 	public create(): webViewModule.WebView {
 		// >> declare-webview
-		let webView = new webViewModule.WebView();
+		const webView = new webViewModule.WebView();
 
 		// << declare-webview
 		return webView;
 	}
 
 	public testLoadExistingUrl(done) {
-		let webView = this.testView;
+		const webView = this.testView;
 
 		// >> webview-url
 		webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
@@ -48,13 +48,13 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 	}
 
 	public testLoadLocalFile(done) {
-		let webView = this.testView;
+		const webView = this.testView;
 
 		// >> webview-localfile
 		webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
 			// >> (hide)
 			let actual;
-			let expectedTitle = 'MyTitle';
+			const expectedTitle = 'MyTitle';
 
 			if (webView.ios) {
 				actual = webView.ios.title;
@@ -83,11 +83,11 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 	}
 
 	public testLoadLocalFileWithSpaceInPath(done) {
-		let webView = this.testView;
+		const webView = this.testView;
 
 		webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
 			let actual;
-			let expectedTitle = 'MyTitle';
+			const expectedTitle = 'MyTitle';
 
 			if (webView.ios) {
 				actual = webView.ios.title;
@@ -114,7 +114,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 	}
 
 	public testLoadHTMLString(done) {
-		let webView = this.testView;
+		const webView = this.testView;
 
 		// >> webview-string
 		webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
@@ -150,8 +150,8 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 	}
 
 	public testLoadUpperCaseSrc(done) {
-		let webView = this.testView;
-		let targetSrc = 'HTTPS://github.com/';
+		const webView = this.testView;
+		const targetSrc = 'HTTPS://github.com/';
 
 		webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
 			try {

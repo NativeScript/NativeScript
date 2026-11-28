@@ -16,7 +16,7 @@ export function webViewPan(args) {
 }
 
 export function webViewLoaded(args) {
-	var webview: WebView = <WebView>args.object;
+	const webview: WebView = <WebView>args.object;
 	if (isAndroid) {
 		webview.android.getSettings().setDisplayZoomControls(false);
 	}

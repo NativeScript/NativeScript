@@ -7,11 +7,11 @@ import { AnimationPromise, AnimationDefinition, Animation, CoreTypes, PercentLen
 // << animation-require
 
 function prepareTest(parentHeight?: number, parentWidth?: number): Label {
-	let mainPage = helper.getCurrentPage();
-	let label = new Label();
+	const mainPage = helper.getCurrentPage();
+	const label = new Label();
 	label.text = 'label';
 
-	let stackLayout = new StackLayout();
+	const stackLayout = new StackLayout();
 	// optionally size the parent extent to make assertions about percentage values
 	if (parentHeight !== undefined) {
 		stackLayout.height = PercentLength.parse(parentHeight + '');
@@ -27,7 +27,7 @@ function prepareTest(parentHeight?: number, parentWidth?: number): Label {
 }
 
 export function test_AnimatingProperties(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	// >> animation-properties
 	label
@@ -59,9 +59,9 @@ export function test_AnimatingProperties(done) {
 }
 
 export function test_PlayRejectsWhenAlreadyPlayingAnimation(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
-	var animation = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
+	const animation = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
 
 	animation.play();
 	animation.play().then(
@@ -79,18 +79,18 @@ export function test_PlayRejectsWhenAlreadyPlayingAnimation(done) {
 }
 
 export function test_CancelIgnoredWhenNotPlayingAnimation() {
-	let label = prepareTest();
+	const label = prepareTest();
 
-	var animation = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
+	const animation = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
 	animation.cancel(); // should not throw
 	TKUnit.assert(!animation.isPlaying, 'animation.isPlaying should be falsey since it was never played.');
 }
 
 export function test_CancellingAnimation(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	// >> animation-cancel
-	var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
+	const animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
 
 	animation1
 		.play()
@@ -117,10 +117,10 @@ export function test_CancellingAnimation(done) {
 }
 
 export function test_CancellingAnimate(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	// >> animation-cancel2
-	var animation1 = label
+	const animation1 = label
 		.animate({ translate: { x: 100, y: 100 }, duration: 5 })
 		.then(() => {
 			//console.log("Animation finished");
@@ -145,7 +145,7 @@ export function test_CancellingAnimate(done) {
 }
 
 export function test_ChainingAnimations(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	// >> animation-chaining
 	let duration = 300;
@@ -178,11 +178,11 @@ export function test_ChainingAnimations(done) {
 }
 
 export function test_ReusingAnimations(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	// >> animation-reusing
-	var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
-	var animation2 = label.createAnimation({ translate: { x: 0, y: 0 }, duration: 5 });
+	const animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
+	const animation2 = label.createAnimation({ translate: { x: 0, y: 0 }, duration: 5 });
 
 	animation1
 		.play()
@@ -208,14 +208,14 @@ export function test_ReusingAnimations(done) {
 }
 
 export function test_AnimatingMultipleViews(done) {
-	let mainPage = helper.getCurrentPage();
-	let label1 = new Label();
+	const mainPage = helper.getCurrentPage();
+	const label1 = new Label();
 	label1.text = 'label1';
-	let label2 = new Label();
+	const label2 = new Label();
 	label2.text = 'label2';
-	let label3 = new Label();
+	const label3 = new Label();
 	label3.text = 'label3';
-	let stackLayout = new StackLayout();
+	const stackLayout = new StackLayout();
 	stackLayout.addChild(label1);
 	stackLayout.addChild(label2);
 	stackLayout.addChild(label3);
@@ -223,12 +223,12 @@ export function test_AnimatingMultipleViews(done) {
 	TKUnit.waitUntilReady(() => label3.isLoaded);
 
 	// >> animation-multiple-views
-	var animations: Array<AnimationDefinition> = [
+	const animations: Array<AnimationDefinition> = [
 		{ target: label1, translate: { x: 200, y: 200 }, duration: 5, delay: 0 },
 		{ target: label2, translate: { x: 200, y: 200 }, duration: 5, delay: 2 },
 		{ target: label3, translate: { x: 200, y: 200 }, duration: 5, delay: 4 },
 	];
-	var a = new Animation(animations);
+	const a = new Animation(animations);
 	a.play()
 		.then(() => {
 			//console.log("Animations finished");
@@ -249,7 +249,7 @@ export function test_AnimatingMultipleViews(done) {
 }
 
 export function test_AnimateOpacity(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	label
 		.animate({ opacity: 0.75, duration: 5 })
@@ -263,7 +263,7 @@ export function test_AnimateOpacity(done) {
 }
 
 export function test_AnimateOpacity_ShouldThrow_IfNotNumber() {
-	var label = new Label();
+	const label = new Label();
 	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ opacity: <any>'0.75' });
@@ -272,7 +272,7 @@ export function test_AnimateOpacity_ShouldThrow_IfNotNumber() {
 }
 
 export function test_AnimateDelay_ShouldThrow_IfNotNumber() {
-	var label = new Label();
+	const label = new Label();
 	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ delay: <any>'1' });
@@ -281,7 +281,7 @@ export function test_AnimateDelay_ShouldThrow_IfNotNumber() {
 }
 
 export function test_AnimateDuration_ShouldThrow_IfNotNumber() {
-	var label = new Label();
+	const label = new Label();
 	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ duration: <any>'1' });
@@ -290,7 +290,7 @@ export function test_AnimateDuration_ShouldThrow_IfNotNumber() {
 }
 
 export function test_AnimateIterations_ShouldThrow_IfNotNumber() {
-	var label = new Label();
+	const label = new Label();
 	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ iterations: <any>'1' });
@@ -299,7 +299,7 @@ export function test_AnimateIterations_ShouldThrow_IfNotNumber() {
 }
 
 export function test_AnimateRotate_ShouldThrow_IfNotNumber() {
-	var label = new Label();
+	const label = new Label();
 	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ rotate: <any>'1' });
@@ -308,7 +308,7 @@ export function test_AnimateRotate_ShouldThrow_IfNotNumber() {
 }
 
 export function test_AnimateScale_ShouldThrow_IfNotPair() {
-	var label = new Label();
+	const label = new Label();
 	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ scale: <any>'1' });
@@ -317,7 +317,7 @@ export function test_AnimateScale_ShouldThrow_IfNotPair() {
 }
 
 export function test_AnimateTranslate_ShouldThrow_IfNotPair() {
-	var label = new Label();
+	const label = new Label();
 	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ translate: <any>'1' });
@@ -326,7 +326,7 @@ export function test_AnimateTranslate_ShouldThrow_IfNotPair() {
 }
 
 export function test_AnimateBackgroundColor_ShouldThrow_IfNotValidColorStringOrColor() {
-	var label = new Label();
+	const label = new Label();
 	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ backgroundColor: <any>'test' });
@@ -335,8 +335,8 @@ export function test_AnimateBackgroundColor_ShouldThrow_IfNotValidColorStringOrC
 }
 
 export function test_AnimateBackgroundColor(done) {
-	let label = prepareTest();
-	var red = new Color('Red');
+	const label = prepareTest();
+	const red = new Color('Red');
 
 	label
 		.animate({ backgroundColor: red, duration: 5 })
@@ -350,9 +350,9 @@ export function test_AnimateBackgroundColor(done) {
 }
 
 export function test_AnimateBackgroundColor_FromString(done) {
-	let label = prepareTest();
-	var expected = 'Red';
-	var clr = new Color(expected);
+	const label = prepareTest();
+	const expected = 'Red';
+	const clr = new Color(expected);
 
 	label
 		.animate({ backgroundColor: <any>expected, duration: 5 })
@@ -366,7 +366,7 @@ export function test_AnimateBackgroundColor_FromString(done) {
 }
 
 export function test_AnimateTranslate(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	label
 		.animate({ translate: { x: 100, y: 200 }, duration: 5 })
@@ -382,7 +382,7 @@ export function test_AnimateTranslate(done) {
 }
 
 export function test_AnimateScale(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	label
 		.animate({ scale: { x: 2, y: 3 }, duration: 5 })
@@ -398,7 +398,7 @@ export function test_AnimateScale(done) {
 }
 
 export function test_AnimateRotate(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	label
 		.animate({ rotate: 123, duration: 5 })
@@ -511,7 +511,7 @@ export function test_AnimateExtent_Should_ThrowIfCannotParsePercentLength() {
 }
 
 export function test_AnimateTranslateScaleAndRotateSimultaneously(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	label
 		.animate({
@@ -535,7 +535,7 @@ export function test_AnimateTranslateScaleAndRotateSimultaneously(done) {
 }
 
 export function test_AnimateTranslateScaleAndRotateSequentially(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
 	label
 		.animate({ translate: { x: 100, y: 200 }, duration: 5 })
@@ -570,10 +570,10 @@ export function test_AnimateTranslateScaleAndRotateSequentially(done) {
 }
 
 export function test_AnimationsAreAlwaysPlayed(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
-	var animation1 = label.createAnimation({ opacity: 0, duration: 5 });
-	var animation2 = label.createAnimation({ opacity: 1, duration: 5 });
+	const animation1 = label.createAnimation({ opacity: 0, duration: 5 });
+	const animation2 = label.createAnimation({ opacity: 1, duration: 5 });
 
 	animation1
 		.play()
@@ -593,9 +593,9 @@ export function test_AnimationsAreAlwaysPlayed(done) {
 }
 
 export function test_PlayPromiseIsResolvedWhenAnimationFinishes(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
-	var animation = label.createAnimation({ opacity: 0, duration: 5 });
+	const animation = label.createAnimation({ opacity: 0, duration: 5 });
 
 	animation.play().then(
 		function onResolved() {
@@ -610,9 +610,9 @@ export function test_PlayPromiseIsResolvedWhenAnimationFinishes(done) {
 }
 
 export function test_PlayPromiseIsRejectedWhenAnimationIsCancelled(done) {
-	let label = prepareTest();
+	const label = prepareTest();
 
-	var animation = label.createAnimation({ opacity: 0, duration: 5 });
+	const animation = label.createAnimation({ opacity: 0, duration: 5 });
 
 	animation.play().then(
 		function onResolved() {
@@ -630,7 +630,7 @@ export function test_PlayPromiseIsRejectedWhenAnimationIsCancelled(done) {
 
 function assertIOSNativeTransformIsCorrect(view: View) {
 	if (__APPLE__) {
-		var errorMessage = (<any>require('@nativescript/core/ui/animation'))._getTransformMismatchErrorMessage(view);
+		const errorMessage = (<any>require('@nativescript/core/ui/animation'))._getTransformMismatchErrorMessage(view);
 		if (errorMessage) {
 			TKUnit.assert(false, errorMessage);
 		}

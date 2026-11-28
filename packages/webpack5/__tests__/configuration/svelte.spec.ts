@@ -28,7 +28,7 @@ function svelteLoaderOptions(config: Config) {
 }
 
 describe('svelte configuration', () => {
-	for (let platform of platforms) {
+	for (const platform of platforms) {
 		it(`for ${platform}`, () => {
 			withSvelteVersion('4.2.19', () => {
 				init({
@@ -53,7 +53,7 @@ describe('svelte configuration', () => {
 });
 
 describe('svelte 5 configuration', () => {
-	for (let platform of platforms) {
+	for (const platform of platforms) {
 		it(`for ${platform}`, () => {
 			withSvelteVersion('5.59.0', () => {
 				init({

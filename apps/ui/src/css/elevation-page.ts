@@ -9,7 +9,7 @@ const states = [
 let currentState = 0;
 
 export function buttonTap(args: EventData) {
-	let btn: Button = args.object as Button;
+	const btn: Button = args.object as Button;
 	currentState++;
 	if (currentState >= states.length) {
 		currentState = 0;

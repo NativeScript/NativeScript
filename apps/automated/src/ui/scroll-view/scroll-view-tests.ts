@@ -235,7 +235,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 	}
 
 	public test_scrollView_vertical_raised_scroll_event() {
-		var scrollY: number;
+		let scrollY: number;
 		this.testView.on(ScrollView.scrollEvent, (args: ScrollEventData) => {
 			scrollY = args.scrollY;
 		});
@@ -252,7 +252,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 	public test_scrollView_horizontal_raised_scroll_event() {
 		this.testView.orientation = 'horizontal';
 
-		var scrollX: number;
+		let scrollX: number;
 		this.testView.on(ScrollView.scrollEvent, (args: ScrollEventData) => {
 			scrollX = args.scrollX;
 		});
@@ -269,7 +269,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 	public test_scrollView_vertical_raised_scroll_event_after_loaded() {
 		this.waitUntilTestElementLayoutIsValid();
 
-		var scrollY: number;
+		let scrollY: number;
 		this.testView.on(ScrollView.scrollEvent, (args: ScrollEventData) => {
 			scrollY = args.scrollY;
 		});
@@ -286,7 +286,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 		this.testView.orientation = 'horizontal';
 		this.waitUntilTestElementLayoutIsValid();
 
-		var scrollX: number;
+		let scrollX: number;
 		this.testView.on(ScrollView.scrollEvent, (args: ScrollEventData) => {
 			scrollX = args.scrollX;
 		});
