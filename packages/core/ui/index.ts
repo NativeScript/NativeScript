@@ -86,6 +86,9 @@ export { Font, FontStyle, FontWeight, FontVariationSettings } from './styling/fo
 export type { FontStyleType, FontWeightType, FontVariationSettingsType } from './styling/font-interfaces';
 export { Style } from './styling/style';
 export type { CommonLayoutParams } from './styling/style';
+export { InlineStyleDeclaration, ComputedStyleDeclaration, InlineStylePropertyMap, ComputedStylePropertyMap, getComputedStyle } from './styling/style-declaration';
+export type { CssStyleDeclarationProperties } from './styling/style-declaration';
+export { serializeCssValue, serializeColor } from './styling/css-value-serializer';
 export * from './styling/style-properties';
 export * from './styling/length-shared';
 export { LinearGradient } from './styling/linear-gradient';

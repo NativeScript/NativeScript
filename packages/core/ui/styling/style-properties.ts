@@ -16,6 +16,7 @@ import { parseCSSShadow, ShadowCSSValues } from './css-shadow';
 import { transformConverter } from './css-transform';
 import { ClipPathFunction } from './clip-path-function';
 import { parseCSSCommaSeparatedListOfValues, splitOnTopLevelSpacesAndCommas } from './css-utils';
+import { serializeBoxShadows } from './css-value-serializer';
 
 interface ShorthandPositioning {
 	top: string;
@@ -666,6 +667,20 @@ const transformProperty = new ShorthandProperty<Style, string>({
 		return result.trim();
 	},
 	converter: convertToTransform,
+	valueSerializer: ([translateX, translateY, scaleX, scaleY, rotate, rotateX, rotateY]) => {
+		const functions: string[] = [];
+		if (translateX !== '0' || translateY !== '0') {
+			functions.push(`translate(${translateX}, ${translateY})`);
+		}
+		if (scaleX !== '1' || scaleY !== '1') {
+			functions.push(`scale(${scaleX}, ${scaleY})`);
+		}
+		if (rotateX !== '0' || rotateY !== '0' || rotate !== '0') {
+			functions.push(`rotate3d(${rotateX}, ${rotateY}, ${rotate})`);
+		}
+
+		return functions.length ? functions.join(' ') : 'none';
+	},
 });
 transformProperty.register(Style);
 
@@ -1103,6 +1118,7 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues[]>({
 
 		return result;
 	},
+	valueSerializer: serializeBoxShadows,
 });
 boxShadowProperty.register(Style);
 
@@ -1125,6 +1141,7 @@ export const clipPathProperty = new CssProperty<Style, string | ClipPathFunction
 
 		return value;
 	},
+	valueSerializer: (value) => (value == null ? 'none' : String(value)),
 });
 clipPathProperty.register(Style);
 

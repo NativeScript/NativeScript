@@ -1525,7 +1525,12 @@ function unsetInlineValue(view: ViewBase, property: string): void {
 	}
 }
 
-export const applyInlineStyle = profile('applyInlineStyle', function applyInlineStyle(view: ViewBase, styleStr: string) {
+/**
+ * Apply an inline style string as local values, replacing the declarations the previous
+ * inline string set.
+ * @param replace Further longhands to unset unless the new string declares them.
+ */
+export const applyInlineStyle = profile('applyInlineStyle', function applyInlineStyle(view: ViewBase, styleStr: string, replace?: readonly string[]) {
 	const localStyle = `local { ${styleStr} }`;
 	const inlineRuleSet = CSSSource.fromSource(localStyle).selectors;
 	const declarations = inlineRuleSet[0].declarations;
@@ -1549,7 +1554,10 @@ export const applyInlineStyle = profile('applyInlineStyle', function applyInline
 	});
 
 	// Like the web's cssText, a new string replaces every previous inline declaration.
-	const previous = inlineStyleProperties.get(view);
+	let previous = inlineStyleProperties.get(view);
+	if (replace?.length) {
+		previous = new Set(previous ? [...previous, ...replace] : replace);
+	}
 	if (previous) {
 		previous.forEach((property) => {
 			if (!declared?.has(property)) {

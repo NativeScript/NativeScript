@@ -17,6 +17,7 @@ import { profile } from '../../../profiling';
 
 import { DOMNode } from '../../../debugger/dom-types';
 import { applyInlineStyle, CssState, StyleScope } from '../../styling/style-scope';
+import { _getAttributeStyleMap, _getComputedStyleMap, _getInlineStyle, ComputedStylePropertyMap, InlineStyleDeclaration, InlineStylePropertyMap } from '../../styling/style-declaration';
 import { booleanConverter } from './utils';
 
 export { booleanConverter } from './utils';
@@ -634,6 +635,45 @@ export abstract class ViewBase extends Observable {
 		} else {
 			throw new Error('View.style property is read-only.');
 		}
+	}
+
+	/**
+	 * The view's inline style as css strings, like the web's `element.style`: the local
+	 * values set from code, view properties, XML attributes or inline style strings, as
+	 * specified. A property without a local value reads `''`.
+	 *
+	 * Assigning a string sets its `cssText`, which replaces every local value of the view.
+	 * `view.style` will become this object in a future major version.
+	 */
+	get inlineStyle(): InlineStyleDeclaration {
+		return _getInlineStyle(this);
+	}
+
+	set inlineStyle(cssText: InlineStyleDeclaration | string) {
+		if (typeof cssText === 'string') {
+			_getInlineStyle(this).cssText = cssText;
+		} else {
+			throw new Error('View.inlineStyle property is read-only.');
+		}
+	}
+
+	/**
+	 * The view's typed local values by css name, like the web's `element.attributeStyleMap`.
+	 */
+	get attributeStyleMap(): InlineStylePropertyMap {
+		return _getAttributeStyleMap(this);
+	}
+
+	set attributeStyleMap(value: InlineStylePropertyMap) {
+		throw new Error('View.attributeStyleMap property is read-only.');
+	}
+
+	/**
+	 * The view's typed computed values by css name, like the web's `element.computedStyleMap()`.
+	 * @returns A live, read-only map; the same object for every call.
+	 */
+	public computedStyleMap(): ComputedStylePropertyMap {
+		return _getComputedStyleMap(this);
 	}
 
 	get android(): any {
