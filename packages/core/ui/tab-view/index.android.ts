@@ -101,7 +101,12 @@ function initializeNativeClasses() {
 			if (hasRemovingParent && this.owner.selectedIndex === this.index && this.owner.nativeViewProtected) {
 				const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
 				this.owner._originalBackground = this.owner.backgroundColor || new Color('White');
-				this.owner.nativeViewProtected.setBackground(bitmapDrawable);
+				// Seed the default background so the snapshot is never cached as it
+				const nativeView = this.owner.nativeViewProtected;
+				if (nativeView._cachedDrawable === undefined) {
+					nativeView._cachedDrawable = nativeView.getBackground();
+				}
+				nativeView.setBackground(bitmapDrawable);
 				this.backgroundBitmap = null;
 			}
 

@@ -218,6 +218,10 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 				if (nativeFrameView) {
 					const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(getNativeApp<android.app.Application>().getApplicationContext().getResources(), this.backgroundBitmap);
 					this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
+					// Seed the default background so the snapshot is never cached as it
+					if (nativeFrameView._cachedDrawable === undefined) {
+						nativeFrameView._cachedDrawable = nativeFrameView.getBackground();
+					}
 					nativeFrameView.setBackgroundDrawable(bitmapDrawable);
 					this.backgroundBitmap = null;
 				}
