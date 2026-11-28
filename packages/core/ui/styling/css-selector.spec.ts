@@ -581,6 +581,17 @@ describe('css-selector', () => {
 			expect(imageSelectors[1].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
 		});
 
+		it('should apply css rules of range media queries', () => {
+			const { selectorScope } = create(`
+				@media (width <= ${widthDIPs}) { button { color: red; } }
+				@media (width > ${widthDIPs}) { button { color: blue; } }
+				@media (${widthDIPs / 16}rem <= width < ${widthDIPs / 16 + 1}rem) { button { color: green; } }
+	    `);
+
+			const { selectors } = selectorScope.query({ cssType: 'button' });
+			expect(selectors.map((selector) => selector.ruleset.declarations[0].value)).toEqual(['red', 'green']);
+		});
+
 		it('should not apply css rules of non-matching media query', () => {
 			const { selectorScope } = create(`
 				@media only screen and (max-width: ${widthDIPs - 1}) {
