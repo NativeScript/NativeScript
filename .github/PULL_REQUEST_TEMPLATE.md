@@ -9,11 +9,11 @@ To help the rest of the community review your change, please follow the instruct
 
 ## PR Checklist
 
-- [ ] The PR title follows our guidelines: https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md#commit-messages.
+- [ ] The PR title follows our guidelines: https://github.com/NativeScript/NativeScript/blob/main/tools/notes/CONTRIBUTING.md#commit-messages.
 - [ ] There is an issue for the bug/feature this PR is for. To avoid wasting your time, it's best to open a suggestion issue first and wait for approval before working on it.
-- [ ] You have signed the [CLA](http://www.nativescript.org/cla).
-- [ ] All existing tests are passing: https://github.com/NativeScript/NativeScript/blob/master/tools/notes/DevelopmentWorkflow.md#unit-testing.
-- [ ] Tests for the changes are included - https://github.com/NativeScript/NativeScript/blob/master/tools/notes/WritingUnitTests.md.
+- [ ] You have read and signed the [CLA](https://github.com/NativeScript/.github/blob/master/CLA.md) (first-time contributors can sign directly on the PR by commenting `I have read the CLA and I hereby sign the CLA`).
+- [ ] All existing tests are passing: https://github.com/NativeScript/NativeScript/blob/main/tools/notes/DevelopmentWorkflow.md#unit-testing.
+- [ ] Tests for the changes are included - https://github.com/NativeScript/NativeScript/blob/main/tools/notes/WritingUnitTests.md.
 
 ## What is the current behavior?
 <!-- Please describe the current behavior that you are modifying, or link to a relevant issue. -->

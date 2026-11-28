@@ -19,7 +19,7 @@ function assertTime(timePicker: timePickerModule.TimePicker, expectedHour: numbe
 
 export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicker> {
 	public create() {
-		let timePicker = new timePickerModule.TimePicker();
+		const timePicker = new timePickerModule.TimePicker();
 		timePicker.id = 'TimePicker';
 
 		return timePicker;
@@ -31,7 +31,7 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 
 	public test_DummyForCodeSnippet() {
 		// >> declare-time-picker
-		var timePicker = new timePickerModule.TimePicker();
+		const timePicker = new timePickerModule.TimePicker();
 		timePicker.hour = 9;
 		timePicker.minute = 25;
 		// << declare-time-picker
@@ -59,44 +59,44 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 	}
 
 	public test_WhenCreated_MinuteIntervalIs1() {
-		let actualValue = this.testView.minuteInterval;
-		let expectedValue = 1;
+		const actualValue = this.testView.minuteInterval;
+		const expectedValue = 1;
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public test_WhenCreated_HourIsCurrentHour() {
-		let actualValue = this.testView.hour;
-		let expectedValue = timePickerTestsNative.getNativeHour(this.testView);
+		const actualValue = this.testView.hour;
+		const expectedValue = timePickerTestsNative.getNativeHour(this.testView);
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public test_WhenCreated_MinHourIs0() {
-		let actualValue = this.testView.minHour;
-		let expectedValue = 0;
+		const actualValue = this.testView.minHour;
+		const expectedValue = 0;
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public test_WhenCreated_MaxHourIs23() {
-		let actualValue = this.testView.maxHour;
-		let expectedValue = 23;
+		const actualValue = this.testView.maxHour;
+		const expectedValue = 23;
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public test_WhenCreated_MinuteIsCurrentMinute() {
-		let actualValue = this.testView.minute;
-		let expectedValue = timePickerTestsNative.getNativeMinute(this.testView);
+		const actualValue = this.testView.minute;
+		const expectedValue = timePickerTestsNative.getNativeMinute(this.testView);
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public test_WhenCreated_MinMinuteIs0() {
-		let actualValue = this.testView.minMinute;
-		let expectedValue = 0;
+		const actualValue = this.testView.minMinute;
+		const expectedValue = 0;
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public test_WhenCreated_MaxMinuteIs59() {
-		let actualValue = this.testView.maxMinute;
-		let expectedValue = 59;
+		const actualValue = this.testView.maxMinute;
+		const expectedValue = 59;
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
@@ -191,58 +191,58 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 	}
 
 	public testHourFromLocalToNative() {
-		let expectedValue = 13;
+		const expectedValue = 13;
 		this.testView.hour = expectedValue;
-		let actualValue = timePickerTestsNative.getNativeHour(this.testView);
+		const actualValue = timePickerTestsNative.getNativeHour(this.testView);
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public testHourZeroFromLocalToNative() {
-		let expectedValue = 0;
+		const expectedValue = 0;
 		this.testView.hour = expectedValue;
-		let actualValue = timePickerTestsNative.getNativeHour(this.testView);
+		const actualValue = timePickerTestsNative.getNativeHour(this.testView);
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public testMinuteFromLocalToNative() {
-		let expectedValue = 59;
+		const expectedValue = 59;
 		this.testView.minute = expectedValue;
-		let actualValue = timePickerTestsNative.getNativeMinute(this.testView);
+		const actualValue = timePickerTestsNative.getNativeMinute(this.testView);
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public testMinuteZeroFromLocalToNative() {
-		let expectedValue = 0;
+		const expectedValue = 0;
 		this.testView.minute = expectedValue;
-		let actualValue = timePickerTestsNative.getNativeMinute(this.testView);
+		const actualValue = timePickerTestsNative.getNativeMinute(this.testView);
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public testHourFromNativeToLocal() {
-		let expectedValue = 14;
+		const expectedValue = 14;
 		timePickerTestsNative.setNativeHour(this.testView, expectedValue);
-		let actualValue = this.testView.hour;
+		const actualValue = this.testView.hour;
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public testMinuteFromNativeToLocal() {
-		let expectedValue = 33;
+		const expectedValue = 33;
 		timePickerTestsNative.setNativeMinute(this.testView, expectedValue);
-		let actualValue = this.testView.minute;
+		const actualValue = this.testView.minute;
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
 	public testHourAndMinuteFromNativeToLocal() {
-		let expectedHour = 12;
-		let expectedMinute = 34;
+		const expectedHour = 12;
+		const expectedMinute = 34;
 
 		timePickerTestsNative.setNativeTime(this.testView, expectedHour, expectedMinute);
 		assertTime(this.testView, expectedHour, expectedMinute);
 	}
 
 	public testSetHourMinute_BeforeLoaded() {
-		let expectedHour = 12;
-		let expectedMinute = 34;
+		const expectedHour = 12;
+		const expectedMinute = 34;
 
 		this.setUpTimePicker(expectedHour, expectedMinute);
 
@@ -250,8 +250,8 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 	}
 
 	public testTimeSetHourMinute_BeforeLoaded() {
-		let expectedHour = 12;
-		let expectedMinute = 34;
+		const expectedHour = 12;
+		const expectedMinute = 34;
 
 		this.setUpTimePicker(expectedHour, expectedMinute);
 
@@ -260,8 +260,8 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 	}
 
 	public testSetHourMinute_AfterLoaded() {
-		let expectedHour = 12;
-		let expectedMinute = 34;
+		const expectedHour = 12;
+		const expectedMinute = 34;
 
 		this.testView.hour = expectedHour;
 		this.testView.minute = expectedMinute;
@@ -271,8 +271,8 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 	}
 
 	public testTimeSetHourMinute_AfterLoaded() {
-		let expectedHour = 12;
-		let expectedMinute = 34;
+		const expectedHour = 12;
+		const expectedMinute = 34;
 
 		this.testView.hour = expectedHour;
 		this.testView.minute = expectedMinute;
@@ -282,8 +282,8 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 	}
 
 	public testSetTimeChangesHourAndMinute() {
-		let expectedHour = 12;
-		let expectedMinute = 34;
+		const expectedHour = 12;
+		const expectedMinute = 34;
 
 		this.testView.time = new Date(0, 0, 0, expectedHour, expectedMinute);
 		assertTime(this.testView, expectedHour, expectedMinute);

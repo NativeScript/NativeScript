@@ -1,5 +1,4 @@
-/* eslint-disable */
-export default {
+module.exports = {
 	displayName: 'workspace-plugin',
 	preset: '../../jest.preset.js',
 	transform: {

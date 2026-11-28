@@ -1,7 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as segmentedBarTestsNative from './segmented-bar-tests-native';
 import { buildUIAndRunTest } from '../../ui-helper';
-import { Color, Observable, BindingOptions, View } from '@nativescript/core';
+import { Color, Observable, BindingOptions, View, Utils } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 
 // >> article-require-segmentedbar-module
@@ -10,7 +10,7 @@ import * as segmentedBarModule from '@nativescript/core/ui/segmented-bar';
 
 function _createSegmentedBar(): segmentedBarModule.SegmentedBar {
 	// >> article-create-segmentedbar
-	var segmentedBar = new segmentedBarModule.SegmentedBar();
+	const segmentedBar = new segmentedBarModule.SegmentedBar();
 	// << article-create-segmentedbar
 	segmentedBar.id = 'SegmentedBar';
 
@@ -24,9 +24,9 @@ export function test_recycling() {
 }
 
 function _createItems(count: number): Array<segmentedBarModule.SegmentedBarItem> {
-	var items = new Array<segmentedBarModule.SegmentedBarItem>();
-	for (var i = 0; i < count; i++) {
-		let bar = new segmentedBarModule.SegmentedBarItem();
+	const items = new Array<segmentedBarModule.SegmentedBarItem>();
+	for (let i = 0; i < count; i++) {
+		const bar = new segmentedBarModule.SegmentedBarItem();
 		bar.title = i + '';
 		items.push(bar);
 	}
@@ -34,50 +34,75 @@ function _createItems(count: number): Array<segmentedBarModule.SegmentedBarItem>
 	return items;
 }
 
-export var testWhenSegmentedBarIsCreatedItemsAreUndefined = function () {
+function collectJsAndJavaGarbage() {
+	for (let i = 0; i < 3; i++) {
+		Utils.GC();
+		if (__ANDROID__) {
+			java.lang.System.gc();
+			java.lang.System.runFinalization();
+		}
+		TKUnit.wait(0.05);
+	}
+}
+
+export function test_SelectingTabsAfterGarbageCollection_CreatesTheirContent() {
+	const segmentedBar = _createSegmentedBar();
+	segmentedBar.items = _createItems(3);
+	buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
+		const bar = <segmentedBarModule.SegmentedBar>views[0];
+		collectJsAndJavaGarbage();
+		bar.selectedIndex = 2;
+		collectJsAndJavaGarbage();
+		bar.selectedIndex = 1;
+		TKUnit.assertEqual(bar.selectedIndex, 1, 'selectedIndex');
+		TKUnit.assertEqual(segmentedBarTestsNative.getNativeItemsCount(bar), 3, 'native items');
+	});
+}
+
+export const testWhenSegmentedBarIsCreatedItemsAreUndefined = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
-		var expectedValue = undefined;
-		var actualValue = segmentedBar.items;
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const expectedValue = undefined;
+		const actualValue = segmentedBar.items;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testWhenSegmentedBarIsCreatedSelectedIndexIsUndefined = function () {
+export const testWhenSegmentedBarIsCreatedSelectedIndexIsUndefined = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
-		var expectedValue = -1;
-		var actualValue = segmentedBar.selectedIndex;
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const expectedValue = -1;
+		const actualValue = segmentedBar.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
+export const testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		segmentedBar.items = _createItems(10);
-		var expectedValue = segmentedBar.items.length;
-		var actualValue = segmentedBarTestsNative.getNativeItemsCount(segmentedBar);
+		const expectedValue = segmentedBar.items.length;
+		const actualValue = segmentedBarTestsNative.getNativeItemsCount(segmentedBar);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testWhenItemsAreBoundTheTextColorIsPreserved = function () {
-	var segmentedBar = _createSegmentedBar();
+export const testWhenItemsAreBoundTheTextColorIsPreserved = function () {
+	const segmentedBar = _createSegmentedBar();
 	segmentedBar.color = new Color('red');
 
 	buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
 		segmentedBar.color = new Color('red');
 
-		var model = new Observable();
-		let firstSegmentedBarItem = new segmentedBarModule.SegmentedBarItem();
+		const model = new Observable();
+		const firstSegmentedBarItem = new segmentedBarModule.SegmentedBarItem();
 		firstSegmentedBarItem.title = 'One';
-		let secondSegmentedBarItem = new segmentedBarModule.SegmentedBarItem();
+		const secondSegmentedBarItem = new segmentedBarModule.SegmentedBarItem();
 		secondSegmentedBarItem.title = 'Two';
-		let thirdSegmentedBarItem = new segmentedBarModule.SegmentedBarItem();
+		const thirdSegmentedBarItem = new segmentedBarModule.SegmentedBarItem();
 		thirdSegmentedBarItem.title = 'Three';
 		model.set('items', [firstSegmentedBarItem, secondSegmentedBarItem, thirdSegmentedBarItem]);
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'items',
 			targetProperty: 'items',
 		};
@@ -88,104 +113,104 @@ export var testWhenItemsAreBoundTheTextColorIsPreserved = function () {
 	});
 };
 
-export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
+export const testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		segmentedBar.items = [];
-		var expectedValue = segmentedBar.items.length;
-		var actualValue = segmentedBarTestsNative.getNativeItemsCount(segmentedBar);
+		const expectedValue = segmentedBar.items.length;
+		const actualValue = segmentedBarTestsNative.getNativeItemsCount(segmentedBar);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
+export const testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		// >> article-creating-segmentedbar-items
-		var items = [];
-		var item1 = new segmentedBarModule.SegmentedBarItem();
+		const items = [];
+		const item1 = new segmentedBarModule.SegmentedBarItem();
 		item1.title = 'Item1';
 		items.push(item1);
-		var item2 = new segmentedBarModule.SegmentedBarItem();
+		const item2 = new segmentedBarModule.SegmentedBarItem();
 		item2.title = 'Item2';
 		items.push(item2);
-		var item3 = new segmentedBarModule.SegmentedBarItem();
+		const item3 = new segmentedBarModule.SegmentedBarItem();
 		item3.title = 'Item3';
 		items.push(item3);
 		segmentedBar.items = items;
 		// << article-creating-segmentedbar-items
-		var expectedValue = 0;
-		var actualValue = segmentedBar.selectedIndex;
+		const expectedValue = 0;
+		const actualValue = segmentedBar.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		segmentedBar.items = _createItems(10);
 		// >> artcile-selecting-item
 		segmentedBar.selectedIndex = 9;
 		// << artcile-selecting-item
 		segmentedBar.items = [];
-		var expectedValue = -1;
-		var actualValue = segmentedBar.selectedIndex;
+		const expectedValue = -1;
+		const actualValue = segmentedBar.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		segmentedBar.items = _createItems(10);
 		segmentedBar.selectedIndex = 9;
 		segmentedBar.items = undefined;
-		var expectedValue = -1;
-		var actualValue = segmentedBar.selectedIndex;
+		const expectedValue = -1;
+		const actualValue = segmentedBar.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
 	buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 		segmentedBar.items = _createItems(10);
 		segmentedBar.selectedIndex = 9;
 		segmentedBar.items = null;
-		var expectedValue = -1;
-		var actualValue = segmentedBar.selectedIndex;
+		const expectedValue = -1;
+		const actualValue = segmentedBar.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
-	var segmentedBar = _createSegmentedBar();
-	var expectedValue = 10;
+export const testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
+	const segmentedBar = _createSegmentedBar();
+	const expectedValue = 10;
 	segmentedBar.items = _createItems(expectedValue);
 	segmentedBar.selectedIndex = 9;
 	buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
-		var actualValue = segmentedBar.items.length;
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const actualValue = segmentedBar.items.length;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
-	var segmentedBar = _createSegmentedBar();
+export const testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
+	const segmentedBar = _createSegmentedBar();
 	segmentedBar.items = _createItems(10);
-	var expectedValue = 9;
+	const expectedValue = 9;
 	segmentedBar.selectedIndex = expectedValue;
 	buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
-		var actualValue = segmentedBar.selectedIndex;
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const actualValue = segmentedBar.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = function () {
-	var oldIndex;
-	var newIndex;
-	var segmentedBar = _createSegmentedBar();
+export const testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = function () {
+	let oldIndex;
+	let newIndex;
+	const segmentedBar = _createSegmentedBar();
 
 	segmentedBar.on(segmentedBarModule.SegmentedBar.selectedIndexChangedEvent, (args: segmentedBarModule.SelectedIndexChangedEventData) => {
 		oldIndex = args.oldIndex;
@@ -195,7 +220,7 @@ export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = funct
 	segmentedBar.items = _createItems(10);
 
 	buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 
 		segmentedBar.selectedIndex = 6;
 		TKUnit.assertEqual(oldIndex, 0);
@@ -211,10 +236,10 @@ export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = funct
 	});
 };
 
-export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSetNative = function () {
-	var oldIndex;
-	var newIndex;
-	var segmentedBar = _createSegmentedBar();
+export const testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSetNative = function () {
+	let oldIndex;
+	let newIndex;
+	const segmentedBar = _createSegmentedBar();
 
 	segmentedBar.on(segmentedBarModule.SegmentedBar.selectedIndexChangedEvent, (args: segmentedBarModule.SelectedIndexChangedEventData) => {
 		oldIndex = args.oldIndex;
@@ -224,7 +249,7 @@ export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSetNative =
 	segmentedBar.items = _createItems(10);
 
 	buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
-		var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+		const segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 
 		segmentedBarTestsNative.setNativeSelectedIndex(segmentedBar, 6);
 		TKUnit.assertEqual(oldIndex, 0);
@@ -240,7 +265,7 @@ export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSetNative =
 	});
 };
 
-export var testSelectedIndexChangedIsRaisedCorrectlyIfItemsNotBound = function () {
+export const testSelectedIndexChangedIsRaisedCorrectlyIfItemsNotBound = function () {
 	const segmentedBar = _createSegmentedBar();
 	let newSelectedIndex = 0;
 	segmentedBar.on(segmentedBarModule.SegmentedBar.selectedIndexChangedEvent, () => {
@@ -264,8 +289,8 @@ export var testSelectedIndexChangedIsRaisedCorrectlyIfItemsNotBound = function (
 };
 
 export function test_SettingNumberAsTitleFromXML_DoesNotThrow() {
-	let segmentedBar = new segmentedBarModule.SegmentedBar();
-	let item = new segmentedBarModule.SegmentedBarItem();
+	const segmentedBar = new segmentedBarModule.SegmentedBar();
+	const item = new segmentedBarModule.SegmentedBarItem();
 	(<any>item).title = 1;
 	segmentedBar.items = [item];
 

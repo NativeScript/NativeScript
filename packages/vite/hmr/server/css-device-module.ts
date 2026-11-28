@@ -21,7 +21,7 @@ export const CSS_MODULE_RE = /\.(css|scss|sass|less|styl|stylus)(\?|$)/i;
  */
 export function normalizeCssForDevice(css: string): string {
 	if (!css) return '';
-	return css.replace(/^﻿/, '').replace(/@charset\s+["'][^"']*["'];?\s*/gi, '');
+	return css.replace(/^\uFEFF/, '').replace(/@charset\s+["'][^"']*["'];?\s*/gi, '');
 }
 
 // Device-safe IIFE: apply via the client applier, else queue for drain-on-install.

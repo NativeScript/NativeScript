@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"rootDir": "./src",
-		"baseUrl": ".",
+		"strict": false,
 		"target": "ES2020",
 		"module": "esnext",
 		"moduleResolution": "bundler",
@@ -15,11 +15,12 @@
 		"skipDefaultLibCheck": true,
 		"diagnostics": true,
 		"paths": {
-			"@nativescript/devtools": ["src"]
+			"@nativescript/devtools": ["./src"]
 		},
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
-		"stripInternal": true
+		"stripInternal": true,
+		"types": ["node"]
 	},
 	"include": ["src"],
 	"exclude": ["node_modules"]

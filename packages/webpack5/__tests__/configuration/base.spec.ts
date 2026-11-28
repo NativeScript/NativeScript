@@ -10,7 +10,7 @@ import { additionalCopyRules } from '../../src/helpers/copyRules';
 describe('base configuration', () => {
 	const platforms = ['ios', 'android'];
 
-	for (let platform of platforms) {
+	for (const platform of platforms) {
 		it(`for ${platform}`, () => {
 			init({
 				[platform]: true,
@@ -38,7 +38,7 @@ describe('base configuration', () => {
 				expect(fsSpy).toHaveBeenCalledWith('__jest__/tsconfig.app.json');
 				expect(fsSpy).not.toHaveBeenCalledWith('__jest__/tsconfig.json');
 
-				let configFiles = [];
+				const configFiles = [];
 
 				config.module
 					.rule('ts')
@@ -77,7 +77,7 @@ describe('base configuration', () => {
 				expect(fsSpy).toHaveBeenCalledWith('__jest__/tsconfig.app.json');
 				expect(fsSpy).toHaveBeenCalledWith('__jest__/tsconfig.json');
 
-				let configFiles = [];
+				const configFiles = [];
 
 				config.module
 					.rule('ts')

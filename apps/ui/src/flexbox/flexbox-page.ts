@@ -2,7 +2,7 @@ import { FlexboxLayout } from '@nativescript/core/ui/layouts/flexbox-layout';
 
 function set(what: string) {
 	return function (args) {
-		let containerCss = ' #container { ' + args.object.tag + ' }';
+		const containerCss = ' #container { ' + args.object.tag + ' }';
 		args.object.page.addCss(containerCss);
 	};
 }
@@ -26,17 +26,17 @@ export function select(args) {
 	}
 }
 
-let whenSelected = (handler) => (args) => lastSelection && handler(args);
-let setProperty = (setter) => (value) => setter(lastSelection, value);
-let intHandler =
+const whenSelected = (handler) => (args) => lastSelection && handler(args);
+const setProperty = (setter) => (value) => setter(lastSelection, value);
+const intHandler =
 	(handler) =>
 	({ object }) =>
 		handler(parseInt(object.text));
-let stringHandler =
+const stringHandler =
 	(handler) =>
 	({ object }) =>
 		handler(object.text);
-let booleanHandler =
+const booleanHandler =
 	(handler) =>
 	({ object }) =>
 		handler(object.text === 'true');

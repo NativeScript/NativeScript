@@ -1,7 +1,7 @@
 import { Page, Observable, EventData } from '@nativescript/core';
 
 export function navigatingTo(args: EventData) {
-	let page = <Page>args.object;
+	const page = <Page>args.object;
 	page.bindingContext = new ListPickerView();
 }
 

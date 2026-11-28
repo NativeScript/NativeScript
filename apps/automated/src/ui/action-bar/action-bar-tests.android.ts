@@ -1,10 +1,34 @@
 ﻿import * as TKUnit from '../../tk-unit';
 import { createPageAndNavigate } from './action-bar-tests-common';
 import { ActionItem } from '@nativescript/core/ui/action-bar';
-import { CoreTypes } from '@nativescript/core';
+import { CoreTypes, Utils } from '@nativescript/core';
 import { Button } from '@nativescript/core/ui/button';
 
 export * from './action-bar-tests-common';
+
+function collectJsAndJavaGarbage() {
+	for (let i = 0; i < 3; i++) {
+		Utils.GC();
+		java.lang.System.gc();
+		java.lang.System.runFinalization();
+		TKUnit.wait(0.05);
+	}
+}
+
+export function test_actionItem_tap_after_garbage_collection() {
+	const actionItem = new ActionItem();
+	actionItem.text = 'Test';
+	let tapped = false;
+	actionItem.on(ActionItem.tapEvent, () => (tapped = true));
+	const page = createPageAndNavigate();
+	page.actionBar.actionItems.addItem(actionItem);
+
+	collectJsAndJavaGarbage();
+	const toolbar = <androidx.appcompat.widget.Toolbar>page.actionBar.nativeViewProtected;
+	toolbar.getMenu().performIdentifierAction((<any>actionItem)._getItemId(), 0);
+
+	TKUnit.assertTrue(tapped, 'action item tap should fire after a garbage collection');
+}
 
 export function test_actionItem_visibility() {
 	const actionItem = new ActionItem();

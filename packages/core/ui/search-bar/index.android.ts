@@ -32,9 +32,6 @@ function initializeNativeClasses(): void {
 	class CompatQueryTextListenerImpl extends java.lang.Object implements androidx.appcompat.widget.SearchView.OnQueryTextListener {
 		constructor(private owner: SearchBar) {
 			super();
-
-			// @ts-ignore
-			return global.__native(this);
 		}
 
 		onQueryTextChange(newText: string): boolean {
@@ -70,9 +67,6 @@ function initializeNativeClasses(): void {
 	class CompatCloseListenerImpl extends java.lang.Object implements androidx.appcompat.widget.SearchView.OnCloseListener {
 		constructor(private owner: SearchBar) {
 			super();
-
-			// @ts-ignore
-			return global.__native(this);
 		}
 
 		onClose(): boolean {

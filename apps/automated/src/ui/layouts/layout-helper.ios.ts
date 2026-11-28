@@ -3,7 +3,7 @@ import * as utils from '@nativescript/core/utils';
 import * as TKUnit from '../../tk-unit';
 import type { MeasuredView } from './layout-helper-types';
 
-var DELTA = 0.1;
+const DELTA = 0.1;
 
 export class MyGridLayout extends GridLayout {
 	public measureCount: number = 0;
@@ -41,25 +41,25 @@ export class MyGridLayout extends GridLayout {
 	}
 
 	get layoutWidth(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.right - bounds.left;
 	}
 
 	get layoutHeight(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.bottom - bounds.top;
 	}
 
 	get layoutLeft(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.left;
 	}
 
 	get layoutTop(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.top;
 	}
@@ -101,25 +101,25 @@ export class MyStackLayout extends StackLayout {
 	}
 
 	get layoutWidth(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.right - bounds.left;
 	}
 
 	get layoutHeight(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.bottom - bounds.top;
 	}
 
 	get layoutLeft(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.left;
 	}
 
 	get layoutTop(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.top;
 	}
@@ -161,25 +161,25 @@ export class MyButton extends Button {
 	}
 
 	get layoutWidth(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.right - bounds.left;
 	}
 
 	get layoutHeight(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.bottom - bounds.top;
 	}
 
 	get layoutLeft(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.left;
 	}
 
 	get layoutTop(): number {
-		let bounds = this._getCurrentLayoutBounds();
+		const bounds = this._getCurrentLayoutBounds();
 
 		return bounds.top;
 	}

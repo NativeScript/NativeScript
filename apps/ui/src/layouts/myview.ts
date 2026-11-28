@@ -8,7 +8,7 @@ export class ViewModel extends ViewModelBase {
 
 	// View properties
 	public onWidthHeight(args: { eventName: string; object: any }): void {
-		var view: View = <View>args.object;
+		const view: View = <View>args.object;
 		if (view.width !== 30) {
 			super.setWidthHeight(view, 105, 55);
 		} else {
@@ -17,7 +17,7 @@ export class ViewModel extends ViewModelBase {
 	}
 
 	public onMinWidthMinHeight(args: { eventName: string; object: any }): void {
-		var view: View = <View>args.object;
+		const view: View = <View>args.object;
 		if (view.minWidth !== 105) {
 			super.setMinWidthHeight(view, 105, 55);
 		} else {
@@ -26,7 +26,7 @@ export class ViewModel extends ViewModelBase {
 	}
 
 	public onMargins(args: { eventName: string; object: any }): void {
-		var view: View = <View>args.object;
+		const view: View = <View>args.object;
 		if (view.marginLeft !== 5) {
 			super.setMargins(view, 5, 5, 5, 5);
 		} else {
@@ -36,7 +36,7 @@ export class ViewModel extends ViewModelBase {
 
 	public onAllProperties(args: { eventName: string; object: any }): void {
 		let child;
-		let layout = args.object.parent;
+		const layout = args.object.parent;
 
 		// WidthHeight
 		child = layout.getViewById('widthHeight');

@@ -20,8 +20,8 @@ export class CustomTransition extends Transition {
 				break;
 		}
 
-		var duration = this.getDuration();
-		var curve = this.getCurve();
+		const duration = this.getDuration();
+		const curve = this.getCurve();
 		UIView.animateWithDurationAnimationsCompletion(
 			duration,
 			() => {

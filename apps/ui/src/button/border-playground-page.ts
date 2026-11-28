@@ -1,13 +1,13 @@
 import { EventData, Frame, Button, ScrollView, TextView, Color, View } from '@nativescript/core';
 
-let red = new Color('red');
-let green = new Color('green');
+const red = new Color('red');
+const green = new Color('green');
 
 export function onToggle(args: EventData) {
-	let button = <Button>args.object;
-	let target = button.page.getViewById<View>('target');
-	let debugConsole = button.page.getViewById<TextView>('debugConsole');
-	let scrollView = button.page.getViewById<ScrollView>('scrollView');
+	const button = <Button>args.object;
+	const target = button.page.getViewById<View>('target');
+	const debugConsole = button.page.getViewById<TextView>('debugConsole');
+	const scrollView = button.page.getViewById<ScrollView>('scrollView');
 
 	if (button.text === 'Color') {
 		target[button.id] = target[button.id] ? undefined : red;
