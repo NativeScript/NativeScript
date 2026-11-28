@@ -795,7 +795,7 @@ function paddedJsonBytes(): Uint8Array<ArrayBuffer> {
 	return padded.subarray(4, 4 + json.length);
 }
 
-export var test_request_typedArrayContentSentProperly = function (done) {
+export const test_request_typedArrayContentSentProperly = function (done) {
 	http
 		.request({
 			url: 'https://http-echo.nativescript.org/post',

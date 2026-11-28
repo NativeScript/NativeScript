@@ -213,7 +213,7 @@ function paddedJsonBytes(): Uint8Array<ArrayBuffer> {
 	return padded.subarray(4, 4 + json.length);
 }
 
-export var test_fetch_post_typed_array = function (done) {
+export const test_fetch_post_typed_array = function (done) {
 	fetch('https://http-echo.nativescript.org/post', {
 		method: 'POST',
 		headers: new Headers({ 'Content-Type': 'application/json' }),
