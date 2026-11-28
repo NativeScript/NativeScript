@@ -330,7 +330,8 @@ describe('view.inlineStyle', () => {
 
 			expect(view.inlineStyle.cssText).toBe('margin: var(--m); margin-left: 1;');
 
-			view.inlineStyle.cssText = view.inlineStyle.cssText;
+			const serialized = view.inlineStyle.cssText;
+			view.inlineStyle.cssText = serialized;
 			expect(view.style.marginLeft).toBe(1);
 			expect(view.style.marginTop).toBe(4);
 		});
