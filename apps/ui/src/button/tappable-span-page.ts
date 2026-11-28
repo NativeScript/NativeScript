@@ -1,8 +1,8 @@
 ﻿import { EventData, Page, TextBase, Label } from '@nativescript/core';
 
 export function foxTap(args: EventData) {
-	let page = <Page>(<any>args.object).page;
-	let foxTapped = page.getViewById<Label>('foxTapped');
+	const page = <Page>(<any>args.object).page;
+	const foxTapped = page.getViewById<Label>('foxTapped');
 	foxTapped.visibility = 'visible';
 
 	setTimeout(() => {
@@ -13,8 +13,8 @@ export function foxTap(args: EventData) {
 }
 
 export function dogTap(args: EventData) {
-	let page = <Page>(<any>args.object).page;
-	let dogTapped = page.getViewById<Label>('dogTapped');
+	const page = <Page>(<any>args.object).page;
+	const dogTapped = page.getViewById<Label>('dogTapped');
 	dogTapped.visibility = 'visible';
 
 	setTimeout(() => {

@@ -7,8 +7,8 @@ export function pageLoaded(args: EventData) {
 }
 
 export function applyTap(args: EventData) {
-	let page = (<View>args.object).page;
-	let cssClass = isSCCWithPercentage ? 'without-percent' : 'with-percent';
+	const page = (<View>args.object).page;
+	const cssClass = isSCCWithPercentage ? 'without-percent' : 'with-percent';
 	isSCCWithPercentage = !isSCCWithPercentage;
 	console.log(cssClass);
 	page.className = cssClass;
@@ -16,9 +16,9 @@ export function applyTap(args: EventData) {
 }
 
 function setBtnText(args: EventData) {
-	let parent = (<View>args.object).parent;
+	const parent = (<View>args.object).parent;
 	if (parent) {
-		var btn = <Button>getViewById(parent, 'button');
+		const btn = <Button>getViewById(parent, 'button');
 		if (btn) {
 			if (isSCCWithPercentage) {
 				btn.text = 'css with %';

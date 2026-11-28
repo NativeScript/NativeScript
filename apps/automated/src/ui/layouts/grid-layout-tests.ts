@@ -10,7 +10,7 @@ import * as layoutHelper from './layout-helper';
 import * as platform from '@nativescript/core/platform';
 import * as commonTests from './common-layout-tests';
 import * as helper from '../../ui-helper';
-var DELTA = 1;
+const DELTA = 1;
 
 class RemovalTrackingGridLayout extends GridLayout {
 	public removedRows = 0;
@@ -86,9 +86,9 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 		this.testView.addColumn(new ItemSpec(layoutHelper.dp(50), 'pixel'));
 		this.testView.addColumn(new ItemSpec(50, 'auto'));
 
-		for (var r = 0; r < 4; r++) {
-			for (var c = 0; c < 4; c++) {
-				var btn = new layoutHelper.MyButton();
+		for (let r = 0; r < 4; r++) {
+			for (let c = 0; c < 4; c++) {
+				const btn = new layoutHelper.MyButton();
 				btn.text = 'R' + r + 'C' + c;
 				GridLayout.setColumn(btn, c);
 				GridLayout.setRow(btn, r);
@@ -113,25 +113,25 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_row_defaultValue() {
-		var test = new Button();
+		const test = new Button();
 		TKUnit.assert(test !== null);
 		TKUnit.assertEqual(this.row(test), 0, "'row' property default value should be 0.");
 	}
 
 	public test_rowSpan_defaultValue() {
-		var test = new Button();
+		const test = new Button();
 		TKUnit.assert(test !== null);
 		TKUnit.assertEqual(this.rowSpan(test), 1, "'rowSpan' property default value should be 1.");
 	}
 
 	public test_column_defaultValue() {
-		var test = new Button();
+		const test = new Button();
 		TKUnit.assert(test !== null);
 		TKUnit.assertEqual(this.col(test), 0, "'column' property default value should be 0.");
 	}
 
 	public test_columnSpan_defaultValue() {
-		var test = new Button();
+		const test = new Button();
 		TKUnit.assert(test !== null);
 		TKUnit.assertEqual(this.colSpan(test), 1, "'columnSpan' property default value should be 1.");
 	}
@@ -255,11 +255,11 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_addChildAtCell_with_all_params() {
-		let btn = new Button();
-		let row: number = 1;
-		let column: number = 2;
-		let rowSpan: number = 3;
-		let columnSpan: number = 4;
+		const btn = new Button();
+		const row: number = 1;
+		const column: number = 2;
+		const rowSpan: number = 3;
+		const columnSpan: number = 4;
 		this.testView.addChildAtCell(btn, row, column, rowSpan, columnSpan);
 		TKUnit.assertEqual(this.row(btn), row, "'row' property not applied For GridLayout addChildAtCell.");
 		TKUnit.assertEqual(this.col(btn), column, "'column' property not applied For GridLayout addChildAtCell.");
@@ -268,10 +268,10 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_addChildAtCell_without_optional_params() {
-		let btn = new Button();
-		let row: number = 1;
-		let column: number = 2;
-		let defaultSpanValue: number = 1;
+		const btn = new Button();
+		const row: number = 1;
+		const column: number = 2;
+		const defaultSpanValue: number = 1;
 		this.testView.addChildAtCell(btn, row, column);
 		TKUnit.assertEqual(this.row(btn), row, "'row' property not applied For GridLayout addChildAtCell.");
 		TKUnit.assertEqual(this.col(btn), column, "'column' property not applied For GridLayout addChildAtCell.");
@@ -280,11 +280,11 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_addChildAtCell_without_rowSpan() {
-		let btn = new Button();
-		let row: number = 1;
-		let column: number = 2;
-		let columnSpan: number = 2;
-		let defaultSpanValue: number = 1;
+		const btn = new Button();
+		const row: number = 1;
+		const column: number = 2;
+		const columnSpan: number = 2;
+		const defaultSpanValue: number = 1;
 		this.testView.addChildAtCell(btn, row, column, undefined, columnSpan);
 		TKUnit.assertEqual(this.row(btn), row, "'row' property not applied For GridLayout addChildAtCell without rowSpan.");
 		TKUnit.assertEqual(this.col(btn), column, "'column' property not applied For GridLayout addChildAtCell without rowSpan.");
@@ -293,11 +293,11 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_addChildAtCell_without_columnSpan() {
-		let btn = new Button();
-		let row: number = 1;
-		let column: number = 2;
-		let rowSpan: number = 2;
-		let defaultSpanValue: number = 1;
+		const btn = new Button();
+		const row: number = 1;
+		const column: number = 2;
+		const rowSpan: number = 2;
+		const defaultSpanValue: number = 1;
 		this.testView.addChildAtCell(btn, row, column, rowSpan);
 		TKUnit.assertEqual(this.row(btn), row, "'row' property not applied For GridLayout addChildAtCell without columnSpan.");
 		TKUnit.assertEqual(this.col(btn), column, "'column' property not applied For GridLayout addChildAtCell without columnSpan.");
@@ -356,7 +356,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
 	public test_measuredWidth_when_not_stretched_single_column() {
 		this.testView.horizontalAlignment = 'center';
-		let btn = new Button();
+		const btn = new Button();
 		btn.text = 'A';
 		this.testView.addChild(btn);
 
@@ -386,7 +386,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 		this.testView.addColumn(new ItemSpec(layoutHelper.dp(80), 'pixel'));
 		this.testView.addColumn(new ItemSpec(1, 'star'));
 
-		let btn = new Button();
+		const btn = new Button();
 		btn.text = 'A';
 		btn.width = { value: 100, unit: 'px' };
 		GridLayout.setColumnSpan(btn, 2);
@@ -406,14 +406,14 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 		this.testView.addColumn(new ItemSpec(1, 'auto'));
 
 		for (let i = 1; i < 4; i++) {
-			let btn = new Button();
+			const btn = new Button();
 			btn.text = 'A';
 			btn.width = { value: i * 20, unit: 'px' };
 			GridLayout.setColumn(btn, i - 1);
 			this.testView.addChild(btn);
 		}
 
-		let btn = new Button();
+		const btn = new Button();
 		btn.text = 'B';
 		btn.width = { value: 100, unit: 'px' };
 		GridLayout.setColumnSpan(btn, 3);
@@ -421,7 +421,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
 		this.waitUntilTestElementLayoutIsValid();
 
-		var cols = this.testView.getColumns();
+		const cols = this.testView.getColumns();
 		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 0), Math.round(layoutHelper.dp(80)), DELTA, 'column 0');
 		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 1), Math.round(layoutHelper.dp(40)), DELTA, 'column 1');
 		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 2), Math.round(layoutHelper.dp(60)), DELTA, 'column 2');
@@ -429,17 +429,17 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_getRows_shouldNotReturnNULL() {
-		var rows = this.testView.getRows();
+		const rows = this.testView.getRows();
 		TKUnit.assert(rows, 'getRows should not return null/undefinied');
 	}
 
 	public test_getColumns_shouldNotReturnNULL() {
-		var cols = this.testView.getColumns();
+		const cols = this.testView.getColumns();
 		TKUnit.assert(cols, 'getColumns should not return null/undefinied');
 	}
 
 	public test_ItemSpec_actualLength_defaultValue() {
-		var def = new ItemSpec(1, 'auto');
+		const def = new ItemSpec(1, 'auto');
 		TKUnit.assertEqual(def.actualLength, 0, "'actualLength' property default value should be 0.");
 	}
 
@@ -451,7 +451,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
 	public test_ItemSpec_constructor_doesnt_throw_onCorrectType() {
 		try {
-			var dummy = new ItemSpec(1, 'auto');
+			let dummy = new ItemSpec(1, 'auto');
 			dummy = new ItemSpec(1, 'star');
 			dummy = new ItemSpec(1, 'pixel');
 		} catch (ex) {
@@ -466,7 +466,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_ItemSpec_auto() {
-		var w = new ItemSpec(1, 'auto');
+		const w = new ItemSpec(1, 'auto');
 		TKUnit.assertEqual(w.gridUnitType, 'auto', "'gridUnitType' property default value should be 'auto'");
 		TKUnit.assertEqual(w.isAbsolute, false, "'isAbsolute' property default value should be 'false'");
 		TKUnit.assertEqual(w.isAuto, true, "'isAuto' property default value should be 'false'");
@@ -475,7 +475,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_ItemSpec_unitType_pixel() {
-		var w = new ItemSpec(6, 'pixel');
+		const w = new ItemSpec(6, 'pixel');
 		TKUnit.assertEqual(w.gridUnitType, 'pixel', "'gridUnitType' property default value should be 'pixel'");
 		TKUnit.assertEqual(w.isAbsolute, true, "'isAbsolute' property default value should be 'false'");
 		TKUnit.assertEqual(w.isAuto, false, "'isAuto' property default value should be 'false'");
@@ -484,7 +484,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_ItemSpec_unitType() {
-		var w = new ItemSpec(2, 'star');
+		const w = new ItemSpec(2, 'star');
 		TKUnit.assertEqual(w.gridUnitType, 'star', "'gridUnitType' property default value should be 'star'");
 		TKUnit.assertEqual(w.isAbsolute, false, "'isAbsolute' property default value should be 'false'");
 		TKUnit.assertEqual(w.isAuto, false, "'isAuto' property default value should be 'false'");
@@ -500,19 +500,19 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
 		this.waitUntilTestElementLayoutIsValid();
 
-		var maxWidth = 0;
-		var maxHeight = 0;
-		var width = 0;
-		var height = 0;
-		var i = 0;
-		var cols = this.testView.getColumns();
-		var rows = this.testView.getRows();
+		let maxWidth = 0;
+		let maxHeight = 0;
+		let width = 0;
+		let height = 0;
+		let i = 0;
+		const cols = this.testView.getColumns();
+		const rows = this.testView.getRows();
 
-		for (var r = 0; r < 4; r++) {
+		for (let r = 0; r < 4; r++) {
 			width = 0;
 			height = 0;
-			for (var c = 0; c < 4; c++) {
-				var btn = <layoutHelper.MyButton>this.testView.getChildAt(i++);
+			for (let c = 0; c < 4; c++) {
+				const btn = <layoutHelper.MyButton>this.testView.getChildAt(i++);
 				if (cols[c].isAbsolute) {
 					width += layoutHelper.dip(this.getGridLayoutColumnActualLength(this.testView, c));
 				} else {
@@ -531,8 +531,8 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 			}
 		}
 
-		let measuredWidth = this.testView.getMeasuredWidth();
-		let measuredHeight = this.testView.getMeasuredHeight();
+		const measuredWidth = this.testView.getMeasuredWidth();
+		const measuredHeight = this.testView.getMeasuredHeight();
 		TKUnit.assertAreClose(measuredWidth, maxWidth, DELTA, 'GridLayout incorrect measured width');
 		TKUnit.assertAreClose(measuredHeight, maxHeight, DELTA, 'GridLayout incorrect measured height');
 	}
@@ -558,18 +558,18 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	public test_Measure_and_Layout_Children_withCorrect_size() {
 		this.prepareGridLayout(true);
 
-		var rows = this.testView.getRows();
-		var cols = this.testView.getColumns();
-		var i = 0;
+		const rows = this.testView.getRows();
+		const cols = this.testView.getColumns();
+		let i = 0;
 
-		for (var r = 0; r < 4; r++) {
-			for (var c = 0; c < 4; c++) {
-				var btn = <layoutHelper.MyButton>this.testView.getChildAt(i++);
-				var col = cols[c];
-				var row = rows[r];
+		for (let r = 0; r < 4; r++) {
+			for (let c = 0; c < 4; c++) {
+				const btn = <layoutHelper.MyButton>this.testView.getChildAt(i++);
+				const col = cols[c];
+				const row = rows[r];
 
-				var h = r % 2 === 0 ? 50 : 100;
-				var w = c % 2 === 0 ? 50 : 100;
+				const h = r % 2 === 0 ? 50 : 100;
+				const w = c % 2 === 0 ? 50 : 100;
 
 				if (row.isAuto) {
 					TKUnit.assertAreClose(btn.layoutHeight, btn.getMeasuredHeight(), DELTA, 'Auto rows should layout with measured height');
@@ -612,7 +612,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	public test_margins_and_verticalAlignment_center() {
 		this.testView.height = { value: 200, unit: 'px' };
 		this.testView.width = { value: 200, unit: 'px' };
-		var btn = new layoutHelper.MyButton();
+		const btn = new layoutHelper.MyButton();
 		btn.text = 'btn';
 		btn.height = { value: 100, unit: 'px' };
 		btn.width = { value: 100, unit: 'px' };
@@ -627,19 +627,19 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_set_columns_in_XML_comma_separator() {
-		var p = <Page>Builder.parse('<Page><GridLayout columns="auto, *, 10*, 100 "><Button/></GridLayout></Page>');
-		var grid = <GridLayout>p.content;
+		const p = <Page>Builder.parse('<Page><GridLayout columns="auto, *, 10*, 100 "><Button/></GridLayout></Page>');
+		const grid = <GridLayout>p.content;
 		this.assertColumns(grid);
 	}
 
 	public test_set_columns_in_XML_space_separator() {
-		var p = <Page>Builder.parse('<Page><GridLayout columns="auto * 10* 100 "><Button/></GridLayout></Page>');
-		var grid = <GridLayout>p.content;
+		const p = <Page>Builder.parse('<Page><GridLayout columns="auto * 10* 100 "><Button/></GridLayout></Page>');
+		const grid = <GridLayout>p.content;
 		this.assertColumns(grid);
 	}
 
 	private assertColumns(grid: GridLayout) {
-		var columns: Array<ItemSpec> = grid.getColumns();
+		const columns: Array<ItemSpec> = grid.getColumns();
 
 		TKUnit.assertEqual(columns.length, 4, 'columns.length');
 		TKUnit.assert(columns[0].isAuto, 'columns[0].isAuto');
@@ -655,19 +655,19 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_set_rows_in_XML_comma_separator() {
-		var p = <Page>Builder.parse('<Page><GridLayout rows="auto, *, 10*, 100 "><Button/></GridLayout></Page>');
-		var grid = <GridLayout>p.content;
+		const p = <Page>Builder.parse('<Page><GridLayout rows="auto, *, 10*, 100 "><Button/></GridLayout></Page>');
+		const grid = <GridLayout>p.content;
 		this.assertRows(grid);
 	}
 
 	public test_set_rows_in_XML_space_separator() {
-		var p = <Page>Builder.parse('<Page><GridLayout rows="auto * 10* 100 "><Button/></GridLayout></Page>');
-		var grid = <GridLayout>p.content;
+		const p = <Page>Builder.parse('<Page><GridLayout rows="auto * 10* 100 "><Button/></GridLayout></Page>');
+		const grid = <GridLayout>p.content;
 		this.assertRows(grid);
 	}
 
 	private assertRows(grid: GridLayout) {
-		var rows: Array<ItemSpec> = grid.getRows();
+		const rows: Array<ItemSpec> = grid.getRows();
 
 		TKUnit.assertEqual(rows.length, 4, 'rows.length');
 		TKUnit.assert(rows[0].isAuto, 'rows[0].isAuto');
@@ -691,7 +691,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 		this.testView.width = { value: 300, unit: 'px' };
 		this.testView.height = { value: 300, unit: 'px' };
 
-		var btn = new layoutHelper.MyButton();
+		const btn = new layoutHelper.MyButton();
 		this.testView.addChild(btn);
 
 		this.waitUntilTestElementLayoutIsValid();
@@ -703,14 +703,14 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	public test_codesnippets = function () {
 		// >> grid-layout-require
 		//var layout = require("ui/layouts/grid-layout");
-		var gridLayout = new GridLayout();
+		const gridLayout = new GridLayout();
 		//  << grid-layout-require
 
 		// >> grid-layout-addviews
-		var btn1 = new Button();
-		var btn2 = new Button();
-		var btn3 = new Button();
-		var btn4 = new Button();
+		const btn1 = new Button();
+		const btn2 = new Button();
+		const btn3 = new Button();
+		const btn4 = new Button();
 		gridLayout.addChild(btn1);
 		gridLayout.addChild(btn2);
 		gridLayout.addChild(btn3);
@@ -734,15 +734,15 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 		// >> grid-layout-itemspec
 		// ItemSpec modes of the column refers to its width.
 		// Absolute size of the column
-		var firstColumn = new ItemSpec(80, 'pixel');
+		const firstColumn = new ItemSpec(80, 'pixel');
 		// Star width means that this column will expand to fill the gap left from other columns
-		var secondColumn = new ItemSpec(1, 'star');
+		const secondColumn = new ItemSpec(1, 'star');
 		// Auto size means that column will expand or shrink in order to give enough place for all child UI elements.
-		var thirdColumn = new ItemSpec(1, 'auto');
+		const thirdColumn = new ItemSpec(1, 'auto');
 
 		// Star and Auto modes for rows behave like corresponding setting for columns but refer to row height.
-		var firstRow = new ItemSpec(1, 'auto');
-		var secondRow = new ItemSpec(1, 'star');
+		const firstRow = new ItemSpec(1, 'auto');
+		const secondRow = new ItemSpec(1, 'star');
 		// << grid-layout-itemspec
 
 		// >> grid-layout-add-rowscols
@@ -762,7 +762,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 		this.testView.width = { value: 300, unit: 'px' };
 		this.testView.height = { value: 300, unit: 'px' };
 
-		let grid = new layoutHelper.MyGridLayout();
+		const grid = new layoutHelper.MyGridLayout();
 		grid.width = { value: 150, unit: 'px' };
 		grid.height = { value: 150, unit: 'px' };
 		grid.horizontalAlignment = 'right';
@@ -770,7 +770,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
 		this.testView.addChild(grid);
 
-		let btn = new layoutHelper.MyButton();
+		const btn = new layoutHelper.MyButton();
 		btn.width = { value: 75, unit: 'px' };
 		btn.height = { value: 75, unit: 'px' };
 		btn.horizontalAlignment = 'left';
@@ -787,13 +787,13 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	}
 
 	public test_parse_should_call_protected_methods() {
-		let grid = <GridLayout>Builder.parse("<GridLayout rows='*, 100'/>");
+		const grid = <GridLayout>Builder.parse("<GridLayout rows='*, 100'/>");
 		TKUnit.assertNotNull(grid);
 
 		this.testView.addChild(grid);
 		this.waitUntilTestElementLayoutIsValid();
 
-		let rows = grid.getRows();
+		const rows = grid.getRows();
 		TKUnit.assertEqual(rows.length, 2, 'Should have 2 rows.');
 
 		TKUnit.assertTrue(rows[0].isStar, 'First row should be *');

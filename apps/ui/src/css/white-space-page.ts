@@ -6,11 +6,11 @@ import * as textField from '@nativescript/core/ui/text-field';
 import * as textView from '@nativescript/core/ui/text-view';
 
 export function butonTap(args: observable.EventData) {
-	var btnChange = <view.View>args.object;
-	var lbl = <label.Label>btnChange.parent.getViewById('Label');
-	var btn = <button.Button>btnChange.parent.getViewById('Button');
-	var textField = <textField.TextField>btnChange.parent.getViewById('TextField');
-	var textView = <textView.TextView>btnChange.parent.getViewById('TextView');
+	const btnChange = <view.View>args.object;
+	const lbl = <label.Label>btnChange.parent.getViewById('Label');
+	const btn = <button.Button>btnChange.parent.getViewById('Button');
+	const textField = <textField.TextField>btnChange.parent.getViewById('TextField');
+	const textView = <textView.TextView>btnChange.parent.getViewById('TextView');
 
 	if (lbl.style.whiteSpace === 'normal') {
 		lbl.style.whiteSpace = 'nowrap';

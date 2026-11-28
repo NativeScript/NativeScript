@@ -2,10 +2,10 @@ import * as helper from '../../ui-helper';
 import * as TKUnit from '../../tk-unit';
 import { Color, Button, StackLayout } from '@nativescript/core';
 
-export var test_value_after_initial = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+export const test_value_after_initial = function () {
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { background-color: #FF0000; }';
 
@@ -18,10 +18,10 @@ export var test_value_after_initial = function () {
 	TKUnit.assertEqual(btn.backgroundColor, undefined, 'backgroundColor property');
 };
 
-export var test_value_Inherited_after_initial = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+export const test_value_Inherited_after_initial = function () {
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { color: #FF0000; }';
 
@@ -34,10 +34,10 @@ export var test_value_Inherited_after_initial = function () {
 	TKUnit.assertEqual(btn.color, undefined, 'color property');
 };
 
-export var test_value_after_unset = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+export const test_value_after_unset = function () {
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { background-color: #FF0000; }';
 
@@ -50,10 +50,10 @@ export var test_value_after_unset = function () {
 	TKUnit.assertEqual(btn.backgroundColor, undefined, 'backgroundColor property');
 };
 
-export var test_value_Inherited_after_unset = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+export const test_value_Inherited_after_unset = function () {
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { color: #FF0000; }';
 
@@ -66,10 +66,10 @@ export var test_value_Inherited_after_unset = function () {
 	TKUnit.assertEqual(btn.color.hex, '#FF0000', 'color property');
 };
 
-export var test_value_after_revert = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+export const test_value_after_revert = function () {
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { background-color: #FF0000; }';
 
@@ -82,10 +82,10 @@ export var test_value_after_revert = function () {
 	TKUnit.assertEqual(btn.backgroundColor, undefined, 'backgroundColor property');
 };
 
-export var test_value_Inherited_after_revert = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+export const test_value_Inherited_after_revert = function () {
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { color: #FF0000; }';
 
@@ -99,10 +99,10 @@ export var test_value_Inherited_after_revert = function () {
 };
 
 // TODO: Add missing inherit support for non-inherited properties
-export var test_value_after_inherit = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+export const test_value_after_inherit = function () {
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { background-color: #FF0000; }';
 
@@ -115,10 +115,10 @@ export var test_value_after_inherit = function () {
 	TKUnit.assertEqual(btn.backgroundColor, undefined, 'backgroundColor property');
 };
 
-export var test_value_Inherited_after_inherit = function () {
-	let page = helper.getCurrentPage();
-	let btn = new Button();
-	let testStack = new StackLayout();
+export const test_value_Inherited_after_inherit = function () {
+	const page = helper.getCurrentPage();
+	const btn = new Button();
+	const testStack = new StackLayout();
 
 	page.css = 'StackLayout { color: #FF0000; }';
 

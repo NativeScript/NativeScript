@@ -1,8 +1,8 @@
 ﻿import * as vmModule from './view-model-page';
 
-var viewModel = vmModule.imageViewModel;
+const viewModel = vmModule.imageViewModel;
 
 export function pageLoaded(args) {
-	let page = args.object;
+	const page = args.object;
 	page.bindingContext = viewModel;
 }

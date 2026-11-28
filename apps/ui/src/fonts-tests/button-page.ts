@@ -1,7 +1,7 @@
 import { unsetValue, Button, View, eachDescendant, StackLayout } from '@nativescript/core';
 
 export function resetStyles(args) {
-	var stackLayout = <StackLayout>args.object.parent.parent;
+	const stackLayout = <StackLayout>args.object.parent.parent;
 	eachDescendant(stackLayout, function (v: View) {
 		v.style.fontFamily = unsetValue;
 		v.style.fontSize = unsetValue;
@@ -31,7 +31,7 @@ export function resetStyles(args) {
 }
 
 export function issue_ng_1453_loaded(args) {
-	var btn = <Button>args.object;
+	const btn = <Button>args.object;
 	setTimeout(() => {
 		btn.className = 'ui-tests-app-issue-ng-1453-base ui-tests-app-issue-ng-1453-yellow';
 	}, 2000);

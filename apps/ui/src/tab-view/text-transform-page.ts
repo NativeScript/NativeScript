@@ -8,11 +8,11 @@ const CSS = `
 `;
 
 export function applyTap(args) {
-	var page = <Page>args.object.page;
+	const page = <Page>args.object.page;
 	page.css = CSS;
 }
 
 export function resetTap(args) {
-	var page = <Page>args.object.page;
+	const page = <Page>args.object.page;
 	page.css = '';
 }

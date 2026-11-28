@@ -155,7 +155,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		angularWebpackPlugin.prototype.createFileEmitter = function (
 			...args: any[]
 		) {
-			let transformers = args[1] || {};
+			const transformers = args[1] || {};
 			if (!transformers.before) {
 				transformers.before = [];
 			}

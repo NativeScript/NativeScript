@@ -6,8 +6,8 @@ import { Label } from '@nativescript/core/ui/label';
 import { Image } from '@nativescript/core/ui/image';
 
 export function createPage() {
-	var stack = new StackLayout();
-	var grid = new GridLayout();
+	const stack = new StackLayout();
+	const grid = new GridLayout();
 	stack.addChild(grid);
 
 	grid.addColumn(new ItemSpec(80, 'pixel'));
@@ -15,9 +15,9 @@ export function createPage() {
 	grid.addRow(new ItemSpec(1, 'auto'));
 	grid.addRow(new ItemSpec(1, 'auto'));
 
-	var defaultImageSource = ImageSource.fromFileSync(__dirname + '/test.png');
+	const defaultImageSource = ImageSource.fromFileSync(__dirname + '/test.png');
 
-	var img = new Image();
+	const img = new Image();
 	img.src = defaultImageSource;
 
 	img.width = 80;
@@ -26,20 +26,20 @@ export function createPage() {
 	GridLayout.setRowSpan(img, 2);
 	grid.addChild(img);
 
-	var titleLabel = new Label();
+	const titleLabel = new Label();
 	titleLabel.textWrap = true;
 	titleLabel.text = 'some text goes here';
 	GridLayout.setColumn(titleLabel, 1);
 	grid.addChild(titleLabel);
 
-	var commentsLabel = new Label();
+	const commentsLabel = new Label();
 	commentsLabel.text = 'comments';
 	commentsLabel.verticalAlignment = 'bottom';
 	GridLayout.setRow(commentsLabel, 1);
 	GridLayout.setColumn(commentsLabel, 1);
 	grid.addChild(commentsLabel);
 
-	var page = new Page();
+	const page = new Page();
 	page.content = stack;
 	page.css = 'GridLayout { background-color: yellow } image { background-color: green } label { background-color: red } stackpnael { background-color: pink }';
 

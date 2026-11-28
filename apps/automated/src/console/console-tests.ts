@@ -1,4 +1,4 @@
-export var test_DummyTestForSnippetOnly0 = function () {
+export const test_DummyTestForSnippetOnly0 = function () {
 	// >> console-log
 	console.log('Hello, world!');
 	console.info('I am NativeScript');
@@ -7,7 +7,7 @@ export var test_DummyTestForSnippetOnly0 = function () {
 	// << console-log
 };
 
-export var test_DummyTestForSnippetOnly1 = function () {
+export const test_DummyTestForSnippetOnly1 = function () {
 	// >> console-time
 	console.time('LoadTime');
 	// << console-time
@@ -16,20 +16,20 @@ export var test_DummyTestForSnippetOnly1 = function () {
 	// << console-timeend
 };
 
-export var test_DummyTestForSnippetOnly2 = function () {
+export const test_DummyTestForSnippetOnly2 = function () {
 	// >> console-assert
 	console.assert(2 === 2, '2 equals 2');
 	// << console-assert
 };
 
-export var test_DummyTestForSnippetOnly3 = function () {
+export const test_DummyTestForSnippetOnly3 = function () {
 	// >> console-dir
-	var obj = { name: 'John', age: 34 };
+	const obj = { name: 'John', age: 34 };
 	console.dir(obj);
 	// << console-dir
 };
 
-export var test_DummyTestForSnippetOnly5 = function () {
+export const test_DummyTestForSnippetOnly5 = function () {
 	// >> console-trace
 	console.trace();
 	// << console-trace
