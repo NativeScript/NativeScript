@@ -33,7 +33,7 @@ expect.extend({
 });
 
 let warnSpy: any;
-let asserted = new Set([]);
+const asserted = new Set([]);
 beforeEach(() => {
 	asserted.clear();
 

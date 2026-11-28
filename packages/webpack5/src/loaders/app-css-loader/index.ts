@@ -1,5 +1,6 @@
-import { dedent } from 'ts-dedent';
 import { basename } from 'path';
+import { sources } from 'webpack';
+
 /**
  * This loader tries to load an `app.scss` or and `app.css` relative to the main entry
  */
@@ -17,12 +18,16 @@ export default function loader(content: string, map: any) {
 			return callback(null, content, map);
 		}
 
-		const code = dedent`
-			// Added by app-css-loader
-			import "./${basename(res)}";
-			${content}
-		`;
+		const prefix = `// Added by app-css-loader\nimport "./${basename(res)}";\n`;
+		if (!map) {
+			return callback(null, prefix + content);
+		}
 
-		callback(null, code, map);
+		// The prefix shifts every line, so the incoming map must be offset too.
+		const { source, map: outputMap } = new sources.ConcatSource(
+			new sources.RawSource(prefix),
+			new sources.SourceMapSource(content, this.resourcePath, map),
+		).sourceAndMap();
+		callback(null, source, outputMap);
 	});
 }

@@ -71,7 +71,7 @@
 	"namedInputs": {
 		"default": ["{projectRoot}/**/*", "sharedGlobals"],
 		"sharedGlobals": ["{workspaceRoot}/workspace.json", "{workspaceRoot}/tsconfig.json", "{workspaceRoot}/nx.json"],
-		"production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/jest.config.[jt]s", "!{projectRoot}/src/test-setup.[jt]s"]
+		"production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/jest.config.[jt]s", "!{projectRoot}/src/test-setup.[jt]s", "!{projectRoot}/eslint.config.mjs"]
 	},
 	"targetDefaults": {
 		"build": {
@@ -94,28 +94,11 @@
 		"e2e": {
 			"cache": true
 		},
-		"@nx/jest:jest": {
-			"inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
-			"cache": true,
-			"options": {
-				"passWithNoTests": true
-			},
-			"configurations": {
-				"ci": {
-					"ci": true,
-					"codeCoverage": true
-				}
-			}
-		},
 		"nx-release-publish": {
 			"dependsOn": ["build"],
 			"options": {
 				"packageRoot": "{workspaceRoot}/dist/packages/{projectName}"
 			}
-		},
-		"@nx/vitest:test": {
-			"cache": true,
-			"inputs": ["default", "^production"]
 		}
 	},
 	"useDaemonProcess": false,
@@ -146,5 +129,32 @@
 	"nxCloudId": "680a89d49c76d63ce41eb397",
 	"tui": {
 		"enabled": false
-	}
+	},
+	"affected": {
+		"legacy": true
+	},
+	"plugins": [
+		{
+			"plugin": "@nx/eslint/plugin",
+			"options": {
+				"targetName": "lint"
+			},
+			"include": ["eslint.config.mjs", "apps/automated/*", "apps/toolbox/*", "apps/ui/*", "packages/core/*", "packages/vite/*", "packages/webpack5/*", "tools/workspace-plugin/*"]
+		},
+		{
+			"plugin": "@nx/jest/plugin",
+			"options": {
+				"targetName": "test"
+			},
+			"include": ["tools/workspace-plugin/**/*"]
+		},
+		{
+			"plugin": "@nx/vitest",
+			"options": {
+				"testMode": "run",
+				"testTargetName": "test"
+			},
+			"include": ["packages/core/**/*", "packages/vite/**/*"]
+		}
+	]
 }

@@ -3,9 +3,9 @@ import * as button from '@nativescript/core/ui/button';
 import * as stackModule from '@nativescript/core/ui/layouts/stack-layout';
 
 export function createPage() {
-	var stack = new stackModule.StackLayout();
+	const stack = new stackModule.StackLayout();
 
-	var btn = new button.Button();
+	const btn = new button.Button();
 	btn.text = 'Alert';
 	btn.on(button.Button.tapEvent, function () {
 		alert('Alert is global');
@@ -13,7 +13,7 @@ export function createPage() {
 
 	stack.addChild(btn);
 
-	var page = new pages.Page();
+	const page = new pages.Page();
 	page.content = stack;
 
 	return page;

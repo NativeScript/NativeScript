@@ -20,8 +20,8 @@ export function getBoxPropertyAnimationData(property: string, animateEase: strin
 	let animateKey;
 	let animateValueTo;
 	let animateValueFrom;
-	let animateDuration = animateEase === 'spring' ? 800 : 500;
-	let animateReturnDelay = animateEase === 'spring' ? 0 : 200;
+	const animateDuration = animateEase === 'spring' ? 800 : 500;
+	const animateReturnDelay = animateEase === 'spring' ? 0 : 200;
 
 	// Determine the full animation property name (some are shortened in UI), and the demo to/from values
 	switch (property) {

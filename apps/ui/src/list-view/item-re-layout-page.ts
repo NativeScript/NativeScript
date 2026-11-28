@@ -1,14 +1,14 @@
 import { fromObject } from '@nativescript/core/data/observable';
 
 export function loaded(args) {
-	var items = [];
+	const items = [];
 
 	for (let i = 0; i < 100; i++) {
 		items.push(
 			fromObject({
 				text: '<' + i + '>',
-				selected: !!!(i % 5),
-			})
+				selected: !(i % 5),
+			}),
 		);
 	}
 	args.object.bindingContext = { items: items };
@@ -16,7 +16,7 @@ export function loaded(args) {
 
 export function toggle(args) {
 	console.log('toggle : ');
-	let context = args.object.bindingContext;
+	const context = args.object.bindingContext;
 	console.dir(context);
 	context.set('selected', !context.selected);
 	// args.object.requestLayout();

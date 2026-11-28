@@ -1,6 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View, Application } from '@nativescript/core';
+import { View, Application, Utils } from '@nativescript/core';
 import * as listPickerTestsNative from './list-picker-tests-native';
 
 // >> article-require-listpicker-module
@@ -9,7 +9,7 @@ import * as listPickerModule from '@nativescript/core/ui/list-picker';
 
 function _createListPicker(): listPickerModule.ListPicker {
 	// >> article-create-listpicker
-	var listPicker = new listPickerModule.ListPicker();
+	const listPicker = new listPickerModule.ListPicker();
 	// << article-create-listpicker
 	listPicker.id = 'ListPicker';
 
@@ -17,8 +17,8 @@ function _createListPicker(): listPickerModule.ListPicker {
 }
 
 function _createItems(count: number): Array<number> {
-	var items = new Array<number>();
-	for (var i = 0; i < count; i++) {
+	const items = new Array<number>();
+	for (let i = 0; i < count; i++) {
 		items.push(i);
 	}
 
@@ -29,114 +29,114 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(() => new listPickerModule.ListPicker());
 }
 
-export var testWhenlistPickerIsCreatedItemsAreUndefined = function () {
+export const testWhenlistPickerIsCreatedItemsAreUndefined = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
-		var expectedValue = undefined;
-		var actualValue = listPicker.items;
+		const listPicker = <listPickerModule.ListPicker>views[0];
+		const expectedValue = undefined;
+		const actualValue = listPicker.items;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
+export const testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
-		var expectedValue = -1;
-		var actualValue = listPicker.selectedIndex;
+		const listPicker = <listPickerModule.ListPicker>views[0];
+		const expectedValue = -1;
+		const actualValue = listPicker.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
+export const testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
+		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
-		var expectedValue = listPicker.items.length;
-		var actualValue = listPickerTestsNative.getNativeItemsCount(listPicker);
+		const expectedValue = listPicker.items.length;
+		const actualValue = listPickerTestsNative.getNativeItemsCount(listPicker);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
+export const testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
+		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = [];
-		var expectedValue = listPicker.items.length;
-		var actualValue = listPickerTestsNative.getNativeItemsCount(listPicker);
+		const expectedValue = listPicker.items.length;
+		const actualValue = listPickerTestsNative.getNativeItemsCount(listPicker);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
+export const testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
+		const listPicker = <listPickerModule.ListPicker>views[0];
 		// >> article-binding-listpickeritems
 		listPicker.items = [1, 2, 3];
 		// << article-binding-listpickeritems
-		var expectedValue = 0;
-		var actualValue = listPicker.selectedIndex;
+		const expectedValue = 0;
+		const actualValue = listPicker.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
+		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
 		// >> article-selecting-item
 		listPicker.selectedIndex = 9;
 		// << article-selecting-item
 		listPicker.items = [];
-		var expectedValue = -1;
-		var actualValue = listPicker.selectedIndex;
+		const expectedValue = -1;
+		const actualValue = listPicker.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
+		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
 		listPicker.selectedIndex = 9;
 		listPicker.items = undefined;
-		var expectedValue = -1;
-		var actualValue = listPicker.selectedIndex;
+		const expectedValue = -1;
+		const actualValue = listPicker.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
+export const testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
+		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
 		listPicker.selectedIndex = 9;
 		listPicker.items = null;
-		var expectedValue = -1;
-		var actualValue = listPicker.selectedIndex;
+		const expectedValue = -1;
+		const actualValue = listPicker.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
-	var listPicker = _createListPicker();
-	var expectedValue = 10;
+export const testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
+	const listPicker = _createListPicker();
+	const expectedValue = 10;
 	listPicker.items = _createItems(expectedValue);
 	listPicker.selectedIndex = 9;
 	helper.buildUIAndRunTest(listPicker, function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
-		var actualValue = listPicker.items.length;
+		const listPicker = <listPickerModule.ListPicker>views[0];
+		const actualValue = listPicker.items.length;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
-	var listPicker = _createListPicker();
+export const testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
+	const listPicker = _createListPicker();
 	listPicker.items = _createItems(10);
-	var expectedValue = 9;
+	const expectedValue = 9;
 	listPicker.selectedIndex = expectedValue;
 	helper.buildUIAndRunTest(listPicker, function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
-		var actualValue = listPicker.selectedIndex;
+		const listPicker = <listPickerModule.ListPicker>views[0];
+		const actualValue = listPicker.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
@@ -164,72 +164,91 @@ export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = functio
 //     });
 // }
 
-export var testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = function () {
-	let listPicker = _createListPicker();
-	let mainPage = helper.getCurrentPage();
+export const testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = function () {
+	const listPicker = _createListPicker();
+	const mainPage = helper.getCurrentPage();
 	listPicker.items = _createItems(2);
 	mainPage.content = listPicker;
 
-	let expectedValue = 1;
+	const expectedValue = 1;
 	listPickerTestsNative.selectNativeItem(listPicker, expectedValue);
 	TKUnit.waitUntilReady(() => listPicker.selectedIndex === 1);
 
-	let actualValue = listPicker.selectedIndex;
+	const actualValue = listPicker.selectedIndex;
 	TKUnit.assertEqual(actualValue, expectedValue);
 };
 
-export var test_Android_MaxValueIsOneLessThanItemsCount = function () {
+export const test_Android_MaxValueIsOneLessThanItemsCount = function () {
 	if (!Application.android) {
 		return;
 	}
 
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
+		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = ['One', 'Two', 'Three'];
-		var expectedValue = listPicker.items.length - 1;
-		var actualValue = (listPicker.nativeViewProtected as any).getMaxValue();
+		const expectedValue = listPicker.items.length - 1;
+		const actualValue = (listPicker.nativeViewProtected as any).getMaxValue();
 		TKUnit.assertEqual(actualValue, expectedValue);
 	});
 };
 
-export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function () {
+export const test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function () {
 	if (!Application.android) {
 		return;
 	}
 
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
-		var expectedValue = ' ';
-		var actualValue = (listPicker.nativeViewProtected as any).editText.getText().toString();
+		const listPicker = <listPickerModule.ListPicker>views[0];
+		const expectedValue = ' ';
+		const actualValue = (listPicker as any)._editText.getText().toString();
 		TKUnit.assertEqual(actualValue, expectedValue);
 	});
 };
 
-export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly = function () {
+export const test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly = function () {
 	if (!Application.android) {
 		return;
 	}
 
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
+		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = ['One'];
-		var expectedValue = 'One';
-		var actualValue = (listPicker.nativeViewProtected as any).editText.getText().toString();
+		const expectedValue = 'One';
+		const actualValue = (listPicker as any)._editText.getText().toString();
 		TKUnit.assertEqual(actualValue, expectedValue);
 	});
 };
 
-export var test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = function () {
+export function test_Android_EditTextIsUpdatedAfterGarbageCollection() {
 	if (!Application.android) {
 		return;
 	}
 
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-		var listPicker = <listPickerModule.ListPicker>views[0];
+		const listPicker = <listPickerModule.ListPicker>views[0];
+		listPicker.items = ['One', 'Two'];
+		for (let i = 0; i < 3; i++) {
+			Utils.GC();
+			java.lang.System.gc();
+			java.lang.System.runFinalization();
+			TKUnit.wait(0.05);
+		}
+		listPicker.selectedIndex = 1;
+		TKUnit.assertEqual((listPicker as any)._editText.getText().toString(), 'Two');
+	});
+}
+
+export const test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = function () {
+	if (!Application.android) {
+		return;
+	}
+
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
+		const listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = ['One', 'Two'];
 		listPicker.selectedIndex = 1;
-		var expectedValue = 'Two';
-		var actualValue = (listPicker.nativeViewProtected as any).editText.getText().toString();
+		const expectedValue = 'Two';
+		const actualValue = (listPicker as any)._editText.getText().toString();
 		TKUnit.assertEqual(actualValue, expectedValue);
 	});
 };

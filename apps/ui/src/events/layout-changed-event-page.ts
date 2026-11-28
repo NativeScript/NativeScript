@@ -4,12 +4,12 @@ import { TextView } from '@nativescript/core/ui/text-view';
 let buttonsCount = 1;
 
 export function onLayoutChanged(args) {
-	let msg = 'StackLayout layout changed - width:' + args.object.getActualSize().width;
+	const msg = 'StackLayout layout changed - width:' + args.object.getActualSize().width;
 	(<TextView>args.object.page.getViewById('output')).text += msg + '\n';
 }
 
 export function addChild(args) {
-	let button = new Button();
+	const button = new Button();
 	button.text = 'Button' + buttonsCount;
 	button.margin = 10;
 	button.backgroundColor = 'lightgreen';

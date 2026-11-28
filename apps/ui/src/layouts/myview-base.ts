@@ -2,26 +2,26 @@
 
 export class ViewModelBase extends Observable {
 	public onAlignments(args: { eventName: string; object: any }): void {
-		var view: View = <View>args.object;
+		const view: View = <View>args.object;
 		this.setAllPositioningProperties(view);
 	}
 
 	public onCollapse(args: { eventName: string; object: any }): void {
-		var view: View = <View>args.object;
+		const view: View = <View>args.object;
 		view.visibility = 'collapse';
 	}
 
 	public onVisibile(args: { eventName: string; object: any }): void {
-		var view: View = <View>args.object;
-		var layout = <LayoutBase>view.parent;
+		const view: View = <View>args.object;
+		const layout = <LayoutBase>view.parent;
 
-		var child = <View>layout.getViewById('collapse');
+		const child = <View>layout.getViewById('collapse');
 		child.visibility = 'visible';
 	}
 
 	// Layout properties
 	public onPaddings(args: { eventName: string; object: any }): void {
-		var layout = args.object.parent;
+		const layout = args.object.parent;
 		if (layout.marginLeft !== 5) {
 			this.setPaddings(layout, 5, 5, 5, 5);
 		} else {

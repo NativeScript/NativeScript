@@ -66,16 +66,19 @@ function initializeMenuItemClickListener(): void {
 	@NativeClass
 	@Interfaces([androidx.appcompat.widget.Toolbar.OnMenuItemClickListener])
 	class MenuItemClickListenerImpl extends java.lang.Object implements androidx.appcompat.widget.Toolbar.OnMenuItemClickListener {
-		constructor(public owner: ActionBar) {
-			super();
+		// Weak: the toolbar holds this listener, so a strong owner would be a cycle that
+		// only disposeNativeView breaks.
+		public owner: WeakRef<ActionBar>;
 
-			return global.__native(this);
+		constructor(owner: ActionBar) {
+			super();
+			this.owner = new WeakRef(owner);
 		}
 
 		onMenuItemClick(item: android.view.MenuItem): boolean {
-			const itemId = item.getItemId();
+			const owner = this.owner?.deref();
 
-			return this.owner._onAndroidItemSelected(itemId);
+			return owner ? owner._onAndroidItemSelected(item.getItemId()) : false;
 		}
 	}
 

@@ -86,7 +86,8 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
 				}
 
 				const delay = Math.max(0, nextDueTime - now);
-				handler.postDelayed(runnable, long(delay));
+				// Not the enclosing `runnable`: a closure over it is a cycle through the runnable's native counterpart.
+				handler.postDelayed(timeoutCallbacks[id], long(delay));
 			}
 		},
 	});

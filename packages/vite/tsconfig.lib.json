@@ -4,7 +4,6 @@
 		"noEmitOnError": true,
 		"noEmitHelpers": true,
 		"declaration": true,
-		"ignoreDeprecations": "5.0",
 		"removeComments": false,
 		"emitDecoratorMetadata": false,
 		"experimentalDecorators": true,

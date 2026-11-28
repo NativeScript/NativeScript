@@ -23,6 +23,9 @@ function createDownlevelContext(
 			if (err) throw err;
 			onDone(source || '', warnings);
 		},
+		async() {
+			return this.callback.bind(this);
+		},
 	} as any;
 }
 
@@ -68,5 +71,24 @@ export class FooImpl extends NSObject {
 			}),
 			INPUT_TS,
 		);
+	});
+
+	it('keeps a statement without semicolon apart from the downleveled class', async () => {
+		const input = `const a = 1
+/*__NativeClass__*/
+class Foo extends NSObject {}
+`;
+		const output = await new Promise<string>((resolve) =>
+			downlevelLoader.call(createDownlevelContext(resolve), input),
+		);
+		const { diagnostics } = ts.transpileModule(output, {
+			fileName: '/check.js',
+			reportDiagnostics: true,
+		});
+		const errors = diagnostics.map((d) =>
+			ts.flattenDiagnosticMessageText(d.messageText, '\n'),
+		);
+		expect(errors).toEqual([]);
+		expect(output).toMatch(/const a = 1\s*\n\s*var /);
 	});
 });

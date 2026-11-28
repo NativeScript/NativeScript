@@ -43,8 +43,6 @@ function initializeItemClickListener(): void {
 	class ItemClickListenerImpl extends java.lang.Object implements android.widget.AdapterView.OnItemClickListener {
 		constructor(public owner: ListView) {
 			super();
-
-			return global.__native(this);
 		}
 
 		onItemClick<T extends android.widget.Adapter>(parent: android.widget.AdapterView<T>, convertView: android.view.View, index: number, id: number) {
@@ -460,25 +458,34 @@ export class ListView extends ListViewBase {
 		// Then measure and adjust padding if needed using a layout listener for determinism
 		const stickyHeaderNativeView = this._stickyHeaderView && this._stickyHeaderView.nativeViewProtected;
 		if (stickyHeaderNativeView) {
+			// The listener reaches neither itself nor the list view strongly: the header's
+			// native view holds it, and both would be cycles through that native view.
+			const owner = new WeakRef<ListView>(this);
 			const layoutListener = new android.view.View.OnLayoutChangeListener({
-				onLayoutChange: (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) => {
+				onLayoutChange(v: android.view.View, left: number, top: number, right: number, bottom: number, oldLeft: number, oldTop: number, oldRight: number, oldBottom: number) {
+					const listView = owner.deref();
+					if (!listView) {
+						v.removeOnLayoutChangeListener(this);
+
+						return;
+					}
 					if (v.getMeasuredHeight() > 0) {
 						const measuredHeaderHeight = v.getMeasuredHeight();
 						let finalSearchHeight = searchViewHeight;
 						// Re-measure search view if needed
-						if (this.showSearch && this._searchView && (this._searchView as any)._wrapper) {
-							const searchWrapper = (this._searchView as any)._wrapper;
+						if (listView.showSearch && listView._searchView && (listView._searchView as any)._wrapper) {
+							const searchWrapper = (listView._searchView as any)._wrapper;
 							if (searchWrapper.nativeViewProtected && searchWrapper.nativeViewProtected.getMeasuredHeight() > 0) {
 								finalSearchHeight = searchWrapper.nativeViewProtected.getMeasuredHeight();
 							}
 						}
 						// Calculate final padding: search height + sticky header height + small buffer
 						const totalPaddingHeight = finalSearchHeight + measuredHeaderHeight + 4;
-						this._stickyHeaderHeight = measuredHeaderHeight;
-						this.nativeViewProtected.setPadding(0, totalPaddingHeight, 0, 0);
-						this.scrollToIndex(0);
+						listView._stickyHeaderHeight = measuredHeaderHeight;
+						listView.nativeViewProtected.setPadding(0, totalPaddingHeight, 0, 0);
+						listView.scrollToIndex(0);
 						// Remove the listener after first valid layout
-						v.removeOnLayoutChangeListener(layoutListener);
+						v.removeOnLayoutChangeListener(this);
 					}
 				},
 			});
@@ -846,8 +853,6 @@ function ensureListViewAdapterClass() {
 	class ListViewAdapter extends android.widget.BaseAdapter {
 		constructor(public owner: ListView) {
 			super();
-
-			return global.__native(this);
 		}
 
 		public getCount() {

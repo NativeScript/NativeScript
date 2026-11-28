@@ -6,7 +6,7 @@ import { init } from '../../src';
 describe('vue configuration', () => {
 	const platforms = ['ios', 'android'];
 
-	for (let platform of platforms) {
+	for (const platform of platforms) {
 		it(`for ${platform}`, () => {
 			init({
 				[platform]: true,

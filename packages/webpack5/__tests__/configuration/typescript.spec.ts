@@ -8,7 +8,7 @@ import { init } from '../../src';
 describe('typescript configuration', () => {
 	const platforms = ['ios', 'android'];
 
-	for (let platform of platforms) {
+	for (const platform of platforms) {
 		it(`for ${platform}`, () => {
 			init({
 				[platform]: true,
@@ -27,7 +27,7 @@ describe('typescript configuration', () => {
 
 		const virtualEntryPath = path.join(
 			__dirname,
-			'../../src/stubs/virtual-entry-typescript.js'
+			'../../src/stubs/virtual-entry-typescript.js',
 		);
 		const virtualEntry = fs.readFileSync(virtualEntryPath);
 

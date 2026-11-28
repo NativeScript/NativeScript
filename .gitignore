@@ -101,3 +101,5 @@ CLAUDE.local.md
 .env.local
 .env.*.local
 .envrc
+
+.nx/migrate-runs

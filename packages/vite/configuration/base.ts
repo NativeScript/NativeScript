@@ -283,9 +283,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		plugins: [
 			// Must be the first resolver: Vite stubs `node:` builtins for the browser otherwise.
 			nativescriptBuiltinModules(),
-			// Merge any dependency-provided `nativescript.vite.mjs` configs. Runs
-			// in an awaited `config` hook so ESM configs load correctly.
-			externalConfigsPlugin(),
+			// Apply any dependency-provided `nativescript.vite.mjs` configs.
+			...externalConfigsPlugin(),
 			createPlatformCssPlugin(platform),
 			// TODO: move to per-project basis based on usage
 			createEnsureHoistedThemeLinkPlugin(THEME_CORE_ROOT, projectRoot, platform),

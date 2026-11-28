@@ -6,8 +6,8 @@ import { getNativeText, getNativeHint, typeTextNatively, typeCharacterNatively, 
 // ### Binding two TextFields text property to observable view-model property.
 // >> binding-text-property-textfield
 export function pageLoaded(args) {
-	var page = args.object;
-	var obj = new Observable();
+	const page = args.object;
+	const obj = new Observable();
 	obj.set('someProperty', 'Please change this text!');
 	page.bindingContext = obj;
 }
@@ -17,145 +17,145 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(_createTextFieldFunc);
 }
 
-var _createTextFieldFunc = function (): TextField {
+const _createTextFieldFunc = function (): TextField {
 	// >> creating-textfield
-	var textField = new TextField();
+	const textField = new TextField();
 	// << creating-textfield
 	textField.text = 'textField';
 
 	return textField;
 };
 
-export var testSetText = function () {
+export const testSetText = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		// >> setting-text-property
 		textField.text = 'Hello, world!';
 		// << setting-text-property
 
-		var expectedValue = 'Hello, world!';
-		var actualValue = getNativeText(textField);
+		const expectedValue = 'Hello, world!';
+		const actualValue = getNativeText(textField);
 		TKUnit.assertEqual(actualValue, expectedValue, 'TextField native text');
 	});
 };
 
-export var testSetTextNull = function () {
+export const testSetTextNull = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		textField.text = null;
 
-		var expectedValue = '';
-		var actualValue = getNativeText(textField);
+		const expectedValue = '';
+		const actualValue = getNativeText(textField);
 		TKUnit.assertEqual(actualValue, expectedValue, 'TextField native text');
 	});
 };
 
-export var testSetTextUndefined = function () {
+export const testSetTextUndefined = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		textField.text = undefined;
 
-		var expectedValue = '';
-		var actualValue = getNativeText(textField);
+		const expectedValue = '';
+		const actualValue = getNativeText(textField);
 		TKUnit.assertEqual(actualValue, expectedValue, 'TextField native text');
 	});
 };
 
-export var testSetTextToZero = function () {
+export const testSetTextToZero = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		(<any>textField).text = 0;
 
-		var expectedValue = '0';
-		var actualValue = getNativeText(textField);
+		const expectedValue = '0';
+		const actualValue = getNativeText(textField);
 		TKUnit.assertEqual(actualValue, expectedValue, 'TextField native text');
 	});
 };
 
 function createFormattedString(value: any): FormattedString {
-	var span = new Span();
+	const span = new Span();
 	span.text = value;
-	var result = new FormattedString();
+	const result = new FormattedString();
 	result.spans.push(span);
 
 	return result;
 }
 
-export var testSetTextWithSpan = function () {
+export const testSetTextWithSpan = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		textField.formattedText = createFormattedString('Hello, world!');
 
-		var expectedValue = 'Hello, world!';
-		var actualValue = getNativeText(textField);
+		const expectedValue = 'Hello, world!';
+		const actualValue = getNativeText(textField);
 		TKUnit.assertEqual(actualValue, expectedValue, 'TextField native text');
 	});
 };
 
-export var testSetTextNullWithSpan = function () {
+export const testSetTextNullWithSpan = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		textField.formattedText = createFormattedString(null);
 
-		var expectedValue = '';
-		var actualValue = getNativeText(textField);
+		const expectedValue = '';
+		const actualValue = getNativeText(textField);
 		TKUnit.assertEqual(actualValue, expectedValue, 'TextField native text');
 	});
 };
 
-export var testSetTextUndefinedWithSpan = function () {
+export const testSetTextUndefinedWithSpan = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		textField.formattedText = createFormattedString(undefined);
 
-		var expectedValue = '';
-		var actualValue = getNativeText(textField);
+		const expectedValue = '';
+		const actualValue = getNativeText(textField);
 		TKUnit.assertEqual(actualValue, expectedValue, 'TextField native text');
 	});
 };
 
-export var testSetTextToZeroWithSpan = function () {
+export const testSetTextToZeroWithSpan = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		textField.formattedText = createFormattedString(0);
 
-		var expectedValue = '0';
-		var actualValue = getNativeText(textField);
+		const expectedValue = '0';
+		const actualValue = getNativeText(textField);
 		TKUnit.assertEqual(actualValue, expectedValue, 'TextField native text');
 	});
 };
 
 /* tslint:disable */
-export var testSetHintToNumber = function () {
+export const testSetHintToNumber = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
-		var expectedValue = 1;
+		const textField = <TextField>views[0];
+		const expectedValue = 1;
 
 		// >> setting-hint-property
 		textField.hint = <any>expectedValue;
 		// << setting-hint-property
 
-		var actualValue = getNativeHint(textField);
+		const actualValue = getNativeHint(textField);
 		TKUnit.assert(<any>actualValue == expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 /* tslint:enable */
-export var testBindTextDirectlyToModel = function () {
+export const testBindTextDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		// >> binding-text-property-second
-		var model = new Observable();
+		const model = new Observable();
 		model.set('username', 'john');
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'username',
 			targetProperty: 'text',
 		};
@@ -179,23 +179,23 @@ export var testBindTextDirectlyToModel = function () {
 export function test_set_color() {
 	if (__APPLE__) {
 		helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-			var textField = <TextField>views[0];
+			const textField = <TextField>views[0];
 			textField.color = new Color('red');
 			TKUnit.assert(textField.color.ios.CGColor.isEqual(textField.ios.textColor.CGColor), 'textField.color');
 		});
 	}
 }
 
-export var testBindTextToBindingContext = function () {
+export const testBindTextToBindingContext = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
-		var page = <Page>views[1];
+		const textField = <TextField>views[0];
+		const page = <Page>views[1];
 
-		var model = new Observable();
+		const model = new Observable();
 		model.set('username', 'john');
 		page.bindingContext = model;
 
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'username',
 			targetProperty: 'text',
 		};
@@ -210,27 +210,27 @@ export var testBindTextToBindingContext = function () {
 	});
 };
 
-export var testTextIsUpdatedWhenUserTypes = function () {
+export const testTextIsUpdatedWhenUserTypes = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 		textField.updateTextTrigger = 'focusLost';
 
-		var expectedValue = 'Hello, world!';
+		const expectedValue = 'Hello, world!';
 		typeTextNatively(textField, expectedValue);
 
-		var actualValue = textField.text;
+		const actualValue = textField.text;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testTextWrittenByTextChangeListenerIsNotRepeatedByTheKeystroke = function () {
+export const testTextWrittenByTextChangeListenerIsNotRepeatedByTheKeystroke = function () {
 	// Android's TextWatcher reports after the edit is applied, so only the iOS
 	// delegate can apply a keystroke on top of what the listener wrote.
 	if (!isIOS) {
 		return;
 	}
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 		textField.text = '';
 		textField.on('textChange', (args: PropertyChangeData) => {
 			textField.text = String(args.value).toUpperCase();
@@ -244,28 +244,28 @@ export var testTextWrittenByTextChangeListenerIsNotRepeatedByTheKeystroke = func
 	});
 };
 
-export var testSetHint = function () {
+export const testSetHint = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		// >> setting-hint-text
 		textField.hint = 'type your username here';
 		// << setting-hint-text
 
-		var expectedValue = 'type your username here';
-		var actualValue = getNativeHint(textField);
+		const expectedValue = 'type your username here';
+		const actualValue = getNativeHint(textField);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testBindHintDirectlyToModel = function () {
+export const testBindHintDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		// >> binding-hint-property-textfield
-		var model = new Observable();
+		const model = new Observable();
 		model.set('hint', 'type your username here');
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'hint',
 			targetProperty: 'hint',
 		};
@@ -285,16 +285,16 @@ export var testBindHintDirectlyToModel = function () {
 	});
 };
 
-export var testBindHintToBindingConext = function () {
+export const testBindHintToBindingConext = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
-		var page = <Page>views[1];
+		const textField = <TextField>views[0];
+		const page = <Page>views[1];
 
-		var model = new Observable();
+		const model = new Observable();
 		model.set('hint', 'type your username here');
 		page.bindingContext = model;
 
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'hint',
 			targetProperty: 'hint',
 		};
@@ -309,80 +309,80 @@ export var testBindHintToBindingConext = function () {
 	});
 };
 
-export var testSetSecure = function () {
+export const testSetSecure = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		// >> setting-secure-property
 		textField.secure = true;
 		// << setting-secure-property
 
-		var expectedValue = true;
-		var actualValue = getNativeSecure(textField);
+		const expectedValue = true;
+		const actualValue = getNativeSecure(textField);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSetSecureAndKeyboardTypeNumber = function () {
+export const testSetSecureAndKeyboardTypeNumber = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		textField.secure = true;
 		textField.keyboardType = 'number';
 
-		var expectedValue = true;
-		var actualValue = getNativeSecure(textField);
+		const expectedValue = true;
+		const actualValue = getNativeSecure(textField);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSetKeyboardTypeNumberAndSecure = function () {
+export const testSetKeyboardTypeNumberAndSecure = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		textField.keyboardType = 'number';
 		textField.secure = true;
 
-		var expectedValue = true;
-		var actualValue = getNativeSecure(textField);
+		const expectedValue = true;
+		const actualValue = getNativeSecure(textField);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSetSecureAndKeyboardTypeDecimal = function () {
+export const testSetSecureAndKeyboardTypeDecimal = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		textField.secure = true;
 		textField.keyboardType = 'decimal';
 
-		var expectedValue = true;
-		var actualValue = getNativeSecure(textField);
+		const expectedValue = true;
+		const actualValue = getNativeSecure(textField);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testSetKeyboardTypeDecimalAndSecure = function () {
+export const testSetKeyboardTypeDecimalAndSecure = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		textField.keyboardType = 'decimal';
 		textField.secure = true;
 
-		var expectedValue = true;
-		var actualValue = getNativeSecure(textField);
+		const expectedValue = true;
+		const actualValue = getNativeSecure(textField);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testBindSecureDirectlyToModel = function () {
+export const testBindSecureDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		// >> binding-secure-property
-		var model = new Observable();
+		const model = new Observable();
 		model.set('secure', true);
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'secure',
 			targetProperty: 'secure',
 		};
@@ -402,16 +402,16 @@ export var testBindSecureDirectlyToModel = function () {
 	});
 };
 
-export var testBindSecureToBindingConext = function () {
+export const testBindSecureToBindingConext = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
-		var page = <Page>views[1];
+		const textField = <TextField>views[0];
+		const page = <Page>views[1];
 
-		var model = new Observable();
+		const model = new Observable();
 		model.set('secure', true);
 		page.bindingContext = model;
 
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'secure',
 			targetProperty: 'secure',
 		};
@@ -427,21 +427,21 @@ export var testBindSecureToBindingConext = function () {
 };
 
 // iOS only
-export var testBindCloseOnReturnToBindingConext = function () {
+export const testBindCloseOnReturnToBindingConext = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		if (!isIOS) {
-			TKUnit.assert(true === true);
+			TKUnit.assert(true);
 
 			return;
 		}
-		var textField = <TextField>views[0];
-		var page = <Page>views[1];
+		const textField = <TextField>views[0];
+		const page = <Page>views[1];
 
-		var model = new Observable();
+		const model = new Observable();
 		model.set('closeOnReturn', false);
 		page.bindingContext = model;
 
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'closeOnReturn',
 			targetProperty: 'closeOnReturn',
 		};
@@ -459,14 +459,14 @@ export var testBindCloseOnReturnToBindingConext = function () {
 };
 
 // iOS only
-export var testDontCloseOnReturn = function () {
+export const testDontCloseOnReturn = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		if (!isIOS) {
-			TKUnit.assert(true === true);
+			TKUnit.assert(true);
 
 			return;
 		}
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		// >> setting-closeOnReturn-property
 		textField.closeOnReturn = false;
@@ -474,183 +474,183 @@ export var testDontCloseOnReturn = function () {
 
 		typeTextNativelyWithReturn(textField, 'Should not close textfield');
 
-		var expectedValue = true;
-		var actualValue = getNativeFocus(textField);
+		const expectedValue = true;
+		const actualValue = getNativeFocus(textField);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
 // iOS only
-export var testCloseOnReturn = function () {
+export const testCloseOnReturn = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		if (!isIOS) {
-			TKUnit.assert(true === true);
+			TKUnit.assert(true);
 
 			return;
 		}
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 		textField.closeOnReturn = true;
 
 		typeTextNativelyWithReturn(textField, 'Should close textfield');
 
-		var expectedValue = false;
-		var actualValue = getNativeFocus(textField);
+		const expectedValue = false;
+		const actualValue = getNativeFocus(textField);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
 // iOS only
-export var testCloseOnReturnByDefault = function () {
+export const testCloseOnReturnByDefault = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		if (!isIOS) {
-			TKUnit.assert(true === true);
+			TKUnit.assert(true);
 
 			return;
 		}
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 
 		typeTextNativelyWithReturn(textField, 'Should close textfield by default');
 
-		var expectedValue = false;
-		var actualValue = getNativeFocus(textField);
+		const expectedValue = false;
+		const actualValue = getNativeFocus(textField);
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-var expectedFontSize = 42;
-export var testLocalFontSizeFromCss = function () {
+const expectedFontSize = 42;
+export const testLocalFontSizeFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
-		var page = <Page>views[1];
+		const textField = <TextField>views[0];
+		const page = <Page>views[1];
 
 		page.css = 'textfield { font-size: ' + expectedFontSize + '; }';
-		var actualResult = textField.style.fontSize;
+		const actualResult = textField.style.fontSize;
 		TKUnit.assert(actualResult === expectedFontSize, 'Actual: ' + actualResult + '; Expected: ' + expectedFontSize);
 	});
 };
 
-export var testNativeFontSizeFromCss = function () {
+export const testNativeFontSizeFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
-		var page = <Page>views[1];
+		const textField = <TextField>views[0];
+		const page = <Page>views[1];
 		page.css = 'textfield { font-size: ' + expectedFontSize + '; }';
 
-		var actualResult = getNativeFontSize(textField);
+		const actualResult = getNativeFontSize(textField);
 		helper.assertAreClose(actualResult, expectedFontSize, 'FontSizeFromCss');
 	});
 };
 
-export var testNativeFontSizeFromLocal = function () {
+export const testNativeFontSizeFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 		textField.style.fontSize = expectedFontSize;
 
-		var actualResult = getNativeFontSize(textField);
+		const actualResult = getNativeFontSize(textField);
 		helper.assertAreClose(actualResult, expectedFontSize, 'FontSizeFromLocal');
 	});
 };
 
-var expectedColorHex = '#FF0000FF';
-var expectedNormalizedColorHex = '#FF0000';
-export var testLocalColorFromCss = function () {
+const expectedColorHex = '#FF0000FF';
+const expectedNormalizedColorHex = '#FF0000';
+export const testLocalColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
-		var page = <Page>views[1];
+		const textField = <TextField>views[0];
+		const page = <Page>views[1];
 		page.css = 'textfield { color: ' + expectedColorHex + '; }';
 
-		var actualResult = textField.style.color.hex;
+		const actualResult = textField.style.color.hex;
 		TKUnit.assert(actualResult === expectedNormalizedColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedColorHex);
 	});
 };
 
-export var testNativeColorFromCss = function () {
+export const testNativeColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
-		var page = <Page>views[1];
+		const textField = <TextField>views[0];
+		const page = <Page>views[1];
 		page.css = 'textfield { color: ' + expectedColorHex + '; }';
 
-		var actualResult = getNativeColor(textField).hex;
+		const actualResult = getNativeColor(textField).hex;
 		TKUnit.assert(actualResult === expectedNormalizedColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedColorHex);
 	});
 };
 
-export var testNativeColorFromLocal = function () {
+export const testNativeColorFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 		textField.style.color = new Color(expectedColorHex);
 
-		var actualResult = getNativeColor(textField).hex;
+		const actualResult = getNativeColor(textField).hex;
 		TKUnit.assert(actualResult === expectedNormalizedColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedColorHex);
 	});
 };
 
-var expectedBackgroundColorHex = '#00FF00FF';
-var expectedNormalizedBackgroundColorHex = '#00FF00';
-export var testLocalBackgroundColorFromCss = function () {
+const expectedBackgroundColorHex = '#00FF00FF';
+const expectedNormalizedBackgroundColorHex = '#00FF00';
+export const testLocalBackgroundColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
-		var page = <Page>views[1];
+		const textField = <TextField>views[0];
+		const page = <Page>views[1];
 		page.css = 'textfield { background-color: ' + expectedBackgroundColorHex + '; }';
 
-		var actualResult = textField.style.backgroundColor.hex;
+		const actualResult = textField.style.backgroundColor.hex;
 		TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedBackgroundColorHex);
 	});
 };
 
-export var testNativeBackgroundColorFromCss = function () {
+export const testNativeBackgroundColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
-		var page = <Page>views[1];
+		const textField = <TextField>views[0];
+		const page = <Page>views[1];
 		page.css = 'textfield { background-color: ' + expectedBackgroundColorHex + '; }';
 
 		helper.waitUntilLayoutReady(textField);
 
-		var actualResult = getNativeBackgroundColor(textField).hex;
+		const actualResult = getNativeBackgroundColor(textField).hex;
 		TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedBackgroundColorHex);
 	});
 };
 
-export var testNativeBackgroundColorFromLocal = function () {
+export const testNativeBackgroundColorFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var textField = <TextField>views[0];
+		const textField = <TextField>views[0];
 		textField.style.backgroundColor = new Color(expectedBackgroundColorHex);
 
 		helper.waitUntilLayoutReady(textField);
 
-		var actualResult = getNativeBackgroundColor(textField).hex;
+		const actualResult = getNativeBackgroundColor(textField).hex;
 		TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedBackgroundColorHex);
 	});
 };
 
-var expectedTextAlignment: 'right' = 'right';
-export var testLocalTextAlignmentFromCss = function () {
+const expectedTextAlignment = 'right' as const;
+export const testLocalTextAlignmentFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var view = <TextField>views[0];
-		var page = <Page>views[1];
+		const view = <TextField>views[0];
+		const page = <Page>views[1];
 		page.css = 'textfield { text-align: ' + expectedTextAlignment + '; }';
 
-		var actualResult = view.style.textAlignment;
+		const actualResult = view.style.textAlignment;
 		TKUnit.assert(actualResult === expectedTextAlignment, 'Actual: ' + actualResult + '; Expected: ' + expectedTextAlignment);
 	});
 };
 
-export var testNativeTextAlignmentFromCss = function () {
+export const testNativeTextAlignmentFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var view = <TextField>views[0];
-		var page = <Page>views[1];
+		const view = <TextField>views[0];
+		const page = <Page>views[1];
 		page.css = 'textfield { text-align: ' + expectedTextAlignment + '; }';
 
-		var actualResult = getNativeTextAlignment(view);
+		const actualResult = getNativeTextAlignment(view);
 		TKUnit.assert(actualResult === expectedTextAlignment, 'Actual: ' + actualResult + '; Expected: ' + expectedTextAlignment);
 	});
 };
 
-export var testNativeTextAlignmentFromLocal = function () {
+export const testNativeTextAlignmentFromLocal = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
-		var view = <TextField>views[0];
+		const view = <TextField>views[0];
 		view.style.textAlignment = expectedTextAlignment;
 
-		var actualResult = getNativeTextAlignment(view);
+		const actualResult = getNativeTextAlignment(view);
 		TKUnit.assert(actualResult === expectedTextAlignment, 'Actual: ' + actualResult + '; Expected: ' + expectedTextAlignment);
 	});
 };
@@ -665,23 +665,23 @@ export var testNativeTextAlignmentFromLocal = function () {
 // 	);
 // };
 
-export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = function () {
-	var firstSpan = new Span();
+export const test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = function () {
+	const firstSpan = new Span();
 	firstSpan.fontSize = 10;
 	firstSpan.text = 'First';
-	var secondSpan = new Span();
+	const secondSpan = new Span();
 	secondSpan.fontSize = 15;
 	secondSpan.text = 'Second';
-	var thirdSpan = new Span();
+	const thirdSpan = new Span();
 	thirdSpan.fontSize = 20;
 	thirdSpan.text = 'Third';
-	var formattedString1 = new FormattedString();
+	const formattedString1 = new FormattedString();
 	formattedString1.spans.push(firstSpan);
-	var formattedString2 = new FormattedString();
+	const formattedString2 = new FormattedString();
 	formattedString2.spans.push(secondSpan);
 	formattedString2.spans.push(thirdSpan);
 
-	var view = new TextField();
+	const view = new TextField();
 	helper.buildUIAndRunTest(view, function (views: Array<View>) {
 		TKUnit.assertEqual(view.text, '');
 

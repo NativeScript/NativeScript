@@ -9,9 +9,9 @@ export function onNavigatingTo(args) {
 
 let scrollToBottom = true;
 export function onScroll(args: EventData) {
-	let page = (<View>args.object).page;
+	const page = (<View>args.object).page;
 
-	let listView = page.getViewById<ListView>('listView');
+	const listView = page.getViewById<ListView>('listView');
 	listView.scrollToIndex(scrollToBottom ? listView.items.length - 1 : 0);
 
 	scrollToBottom = !scrollToBottom;

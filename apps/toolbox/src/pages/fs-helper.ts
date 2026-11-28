@@ -12,7 +12,7 @@ export function createRandom(args) {
 			const activity = Application.android.foregroundActivity as androidx.appcompat.app.AppCompatActivity;
 			const selection = [android.provider.MediaStore.MediaColumns.DISPLAY_NAME, android.provider.MediaStore.MediaColumns._ID];
 			// testing with downloads as rename only works with a well know collection downloads/audio/photos/videos API 29+
-			let cursor = activity.getContentResolver().query(android.provider.MediaStore.Downloads.getContentUri('external'), selection, null, null);
+			const cursor = activity.getContentResolver().query(android.provider.MediaStore.Downloads.getContentUri('external'), selection, null, null);
 
 			let uri;
 
@@ -127,7 +127,7 @@ export function pickFile() {
 }
 
 function readFile(selected: string) {
-	let applicationContext = Utils.android.getApplicationContext();
+	const applicationContext = Utils.android.getApplicationContext();
 	const getOrSetHelper: org.nativescript.widgets.FileHelper = org.nativescript.widgets.FileHelper.fromString(applicationContext, selected);
 
 	console.log('==== CONTEXT START =========');
@@ -164,13 +164,13 @@ function readFile(selected: string) {
 function saveFile(selected, readSync) {
 	const folder: Folder = <Folder>knownFolders.documents();
 
-	let newPath: string = path.join(folder.path, getFileNameFromContent(selected));
+	const newPath: string = path.join(folder.path, getFileNameFromContent(selected));
 
 	File.fromPath(newPath).writeSync(readSync, (error) => {
 		console.log(error);
 	});
 
-	let savedFile = folder.getFile(getFileNameFromContent(selected));
+	const savedFile = folder.getFile(getFileNameFromContent(selected));
 
 	console.log('==== SAVE START =========');
 	console.log('# saved file: ', savedFile);
@@ -228,7 +228,7 @@ export function createFileInDownloads() {
 	const randomImageUrl = `https://picsum.photos/${width}/${height}.jpg?random=${Date.now()}`;
 
 	Http.getFile(randomImageUrl).then((result: File) => {
-		let file = File.android.createFile({
+		const file = File.android.createFile({
 			directory: AndroidDirectory.DOWNLOADS,
 			name: `${Date.now()}.jpg`,
 			mime: 'image/jpeg',
@@ -256,7 +256,7 @@ export function createFileInGallery() {
 	const randomImageUrl = `https://picsum.photos/${width}/${height}.jpg?random=${Date.now()}`;
 
 	Http.getFile(randomImageUrl).then((result: File) => {
-		let file = File.android.createFile({
+		const file = File.android.createFile({
 			directory: AndroidDirectory.PICTURES,
 			name: `${Date.now()}.jpg`,
 			mime: 'image/jpeg',
@@ -280,7 +280,7 @@ export function createFileInMusic() {
 	}
 
 	Http.getFile('https://github.com/rafaelreis-hotmart/Audio-Sample-files/raw/master/sample.mp3').then((result: File) => {
-		let file = File.android.createFile({
+		const file = File.android.createFile({
 			directory: AndroidDirectory.MUSIC,
 			name: `${Date.now()}.MP3`,
 			mime: 'audio/mp3',

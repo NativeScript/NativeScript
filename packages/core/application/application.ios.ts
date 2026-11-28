@@ -1333,11 +1333,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private willTerminate(notification: NSNotification) {
-		this.notify(<ApplicationEventData>{
-			eventName: this.exitEvent,
-			object: this,
-			ios: this.ios,
-		});
+		this.notifyExit({ ios: this.ios });
 
 		// const rootView = this._rootView;
 		// if (rootView && rootView.isLoaded) {
