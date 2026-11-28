@@ -64,6 +64,6 @@ export default [
 	},
 	{
 		// Not in packages/core: its build and the HMR core bundle ship every *.mjs.
-		ignores: ['packages/core/**/global-types.d.ts', 'packages/core/**/node_modules/**/*', 'packages/core/**/__tests__/**/*', 'packages/core/**/platforms/**/*', 'packages/core/**/css/lib/**/*', 'packages/core/**/vite.config.*.timestamp*', 'packages/core/**/vitest.config.*.timestamp*', 'packages/core/**/*.{js,jsx,mjs,cjs,mts,cts}', '!packages/core/**/*.spec.{js,jsx}'],
+		ignores: ['packages/core/**/global-types.d.ts', 'packages/core/**/node_modules/**/*', 'packages/core/**/__tests__/**/*', 'packages/core/**/platforms/**/*', 'apps/**/platforms/**/*', 'packages/core/**/css/lib/**/*', 'packages/core/**/vite.config.*.timestamp*', 'packages/core/**/vitest.config.*.timestamp*', 'packages/core/**/*.{js,jsx,mjs,cjs,mts,cts}', '!packages/core/**/*.spec.{js,jsx}'],
 	},
 ];
