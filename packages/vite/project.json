@@ -9,12 +9,6 @@
 		"production": ["!{projectRoot}/**/*.spec.ts"]
 	},
 	"targets": {
-		"lint": {
-			"executor": "@nx/eslint:lint",
-			"options": {
-				"lintFilePatterns": ["packages/vite/**/*.ts", "packages/vite/**/*.spec.ts", "packages/vite/**/*.spec.tsx", "packages/vite/**/*.d.ts"]
-			}
-		},
 		"build": {
 			"executor": "@nx/js:tsc",
 			"inputs": ["default", "^production"],
@@ -27,13 +21,6 @@
 				"assets": ["{workspaceRoot}/LICENSE", "{projectRoot}/README.md", "{projectRoot}/bin/cli.cjs"]
 			},
 			"dependsOn": ["^build"]
-		},
-		"test": {
-			"executor": "@nx/vitest:test",
-			"outputs": ["{options.reportsDirectory}"],
-			"options": {
-				"reportsDirectory": "{workspaceRoot}/coverage/packages/vite"
-			}
 		}
 	}
 }
