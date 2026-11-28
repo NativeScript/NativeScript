@@ -52,8 +52,8 @@
 		"webpack-virtual-modules": "^0.4.0"
 	},
 	"devDependencies": {
-		"@angular/compiler-cli": "^21.0.0",
-		"@angular-devkit/build-angular": "^21.0.0",
+		"@angular/compiler-cli": "^22.0.0",
+		"@angular-devkit/build-angular": "^22.0.0",
 		"@babel/helpers": ">=7.26.10",
 		"@types/css": "0.0.38",
 		"@types/jest": "29.5.4",
@@ -64,8 +64,8 @@
 		"jest": "~29.7.0",
 		"jest-matcher-utils": "~29.7.0",
 		"nativescript-vue-template-compiler": "2.9.3",
-		"ts-jest": "29.4.5",
-		"typescript": "~5.9.3"
+		"ts-jest": "29.4.15",
+		"typescript": "~6.0.3"
 	},
 	"peerDependencies": {
 		"nativescript-vue-template-compiler": "^2.8.1"
