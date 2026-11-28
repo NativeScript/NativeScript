@@ -27,6 +27,19 @@ describe('border-color shorthand', () => {
 		expect(label.style.borderLeftColor).toEqual(new Color('color-mix(in srgb, red 35%, blue)'));
 	});
 
+	it('resets the colors on an empty value', () => {
+		const label = new Label();
+		label.style.borderColor = 'red' as any;
+
+		expect(() => {
+			label.style.borderColor = '' as any;
+		}).not.toThrow();
+		expect(label.style.borderTopColor).toBeUndefined();
+		expect(label.style.borderRightColor).toBeUndefined();
+		expect(label.style.borderBottomColor).toBeUndefined();
+		expect(label.style.borderLeftColor).toBeUndefined();
+	});
+
 	it('still accepts comma-separated colors', () => {
 		const label = new Label();
 		label.style.borderColor = 'red,blue' as any;
