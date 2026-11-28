@@ -38,7 +38,7 @@ function downlevelClass(
 	snippet: string,
 ): DownleveledClass {
 	// strip marker ONLY, preserve surrounding newline to avoid commenting out the next line
-	const stripped = snippet.replace(/\/\*__NativeClass__\*\//m, '');
+	const stripped = snippet.replace(/\/\*__NativeClass__\*\//g, '');
 	const transpileResult = ts.transpileModule(stripped, {
 		compilerOptions: {
 			module: ts.ModuleKind.ESNext,
@@ -308,6 +308,8 @@ export default function nativeClassDownlevelLoader(
 			const leading = content.slice(fullStart, start);
 			if (/\/\*__NativeClass__\*\//.test(leading)) {
 				candidates.push({ start, fullStart, end: node.end });
+				// Downleveling the outer class also downlevels any marked class inside it.
+				return;
 			}
 		}
 		ts.forEachChild(node, checkNode);
@@ -321,22 +323,6 @@ export default function nativeClassDownlevelLoader(
 	}
 
 	candidates.sort((a, b) => a.fullStart - b.fullStart);
-	const nested = candidates.some(
-		(candidate, i) => i > 0 && candidate.fullStart < candidates[i - 1].end,
-	);
-	if (nested) {
-		// Replace from last to first to keep indices valid; no map for nested classes.
-		let output = content;
-		for (const candidate of [...candidates].reverse()) {
-			const { code } = downlevelClass(this, snippetFor(output, candidate));
-			output =
-				output.slice(0, candidate.fullStart) +
-				code +
-				output.slice(candidate.end);
-		}
-		this.callback(null, output, map);
-		return;
-	}
 
 	const callback = this.async();
 	const generator = new SourceMapGenerator({ file: this.resourcePath });
