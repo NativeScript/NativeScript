@@ -7,7 +7,7 @@ import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName } from '../shared/package-classifier.js';
 import { isEsmFrameworkPackageSpecifier, isLikelyNativeScriptPluginSpecifier, isLikelyNativeScriptRuntimePluginSpecifier, normalizeNodeModulesSpecifier, resolveInternalRuntimePluginBareSpecifier, resolveNodeModulesPackageBoundary, resolveVendorFromCandidate, shouldPreserveBareRuntimePluginSubpathImport } from './websocket-module-specifiers.js';
-import { MODULE_IMPORT_ANALYSIS_PLUGINS } from './websocket-served-module-helpers.js';
+import { MODULE_IMPORT_ANALYSIS_PLUGINS, parseTopLevelStatements } from './websocket-served-module-helpers.js';
 import { getVendorManifest } from '../shared/vendor/registry.js';
 import { isBuiltinModuleId } from '../../helpers/builtin-modules.js';
 
@@ -76,33 +76,36 @@ function hasExplicitRuntimePluginScriptExtension(segment: string): boolean {
 }
 
 function collectTopLevelImportRecords(code: string): TopLevelImportRecord[] {
-	try {
-		const ast = babelParse(code, {
-			sourceType: 'module',
-			plugins: [...MODULE_IMPORT_ANALYSIS_PLUGINS],
-		}) as any;
-		const body = ast?.program?.body;
-		if (!Array.isArray(body)) {
-			return [];
-		}
-
-		return body
-			.filter((node: any) => node?.type === 'ImportDeclaration' && typeof node.start === 'number' && typeof node.end === 'number' && typeof node.source?.value === 'string')
-			.map((node: any) => {
-				const text = code.slice(node.start as number, node.end as number);
-				const clause = Array.isArray(node.specifiers) && node.specifiers.length > 0 ? text.match(/^\s*import\s+([\s\S]*?)\s+from\s+["'][^"']+["'];?\s*$/)?.[1]?.trim() || null : null;
-				return {
-					start: node.start as number,
-					end: node.end as number,
-					text,
-					source: node.source.value as string,
-					clause,
-					isTypeOnly: node.importKind === 'type',
-				};
-			});
-	} catch {
+	let body = parseTopLevelStatements(code);
+	if (!body) {
+		try {
+			body =
+				(
+					babelParse(code, {
+						sourceType: 'module',
+						plugins: [...MODULE_IMPORT_ANALYSIS_PLUGINS],
+					}) as any
+				)?.program?.body ?? null;
+		} catch {}
+	}
+	if (!Array.isArray(body)) {
 		return [];
 	}
+
+	return body
+		.filter((node: any) => node?.type === 'ImportDeclaration' && typeof node.start === 'number' && typeof node.end === 'number' && typeof node.source?.value === 'string')
+		.map((node: any) => {
+			const text = code.slice(node.start as number, node.end as number);
+			const clause = Array.isArray(node.specifiers) && node.specifiers.length > 0 ? text.match(/^\s*import\s+([\s\S]*?)\s+from\s+["'][^"']+["'];?\s*$/)?.[1]?.trim() || null : null;
+			return {
+				start: node.start as number,
+				end: node.end as number,
+				text,
+				source: node.source.value as string,
+				clause,
+				isTypeOnly: node.importKind === 'type',
+			};
+		});
 }
 
 /** Value re-exports (`export * from 'x'`, `export { a } from 'x'`), as the positions of their source literals. */
