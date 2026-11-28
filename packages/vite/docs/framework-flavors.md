@@ -5,7 +5,7 @@ description: How a JS framework ships NativeScript Vite HMR support as its own p
 
 # Framework flavors
 
-`@nativescript/vite` has built-in flavors for Angular, Vue, React, Solid, TypeScript and JavaScript. A **flavor** is what turns a saved file into a change on the device: a config helper that declares it, a server strategy that runs in the Vite process, and a client strategy the device evaluates next to the shared HMR client.
+`@nativescript/vite` has built-in flavors for Angular, Vue, React, Solid, TypeScript and JavaScript. Svelte has a build-only config helper (`@nativescript/vite/svelte`) but no HMR strategy; a package can supply one by registering the `svelte` flavor. A **flavor** is what turns a saved file into a change on the device: a config helper that declares it, a server strategy that runs in the Vite process, and a client strategy the device evaluates next to the shared HMR client.
 
 Flavors are not limited to the built-ins. A framework — or a renderer, a router, anything that holds live objects between saves — can register a flavor from its own package, under its own npm scope, with no change to `@nativescript/vite`. This page is how. The worked example throughout is [`@nativescript-community/vite-octane`](https://github.com/nativescript-community/octane/tree/main/packages/vite-octane), the Octane flavor: a community package built entirely on this API.
 

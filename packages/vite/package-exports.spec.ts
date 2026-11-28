@@ -18,4 +18,12 @@ describe('@nativescript/vite package exports', () => {
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/hooks');
 		expect(exportsMap).toHaveProperty('./hmr/shared/runtime/hooks.js');
 	});
+
+	it('exports the svelte config helper', () => {
+		expect(packageJson.exports?.['./svelte']).toEqual({
+			types: './configuration/svelte.d.ts',
+			import: './configuration/svelte.js',
+			default: './configuration/svelte.js',
+		});
+	});
 });

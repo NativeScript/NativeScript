@@ -79,6 +79,11 @@ function getFlavorImportAndConfig(flavor: string): { importLine: string; configE
 				importLine: "import { solidConfig } from '@nativescript/vite/solid';",
 				configExpr: 'solidConfig({ mode })',
 			};
+		case 'svelte':
+			return {
+				importLine: "import { svelteConfig } from '@nativescript/vite/svelte';",
+				configExpr: 'svelteConfig({ mode })',
+			};
 		case 'vue':
 			return {
 				importLine: "import { vueConfig } from '@nativescript/vite/vue';",

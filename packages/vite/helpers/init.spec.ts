@@ -1,6 +1,14 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+
+// Detection reads a package.json cached at import, not the temp project's.
+vi.mock('./flavor.js', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('./flavor.js')>();
+	return { ...actual, determineProjectFlavor: vi.fn(actual.determineProjectFlavor) };
+});
+
+import { determineProjectFlavor } from './flavor.js';
 
 // We will import the compiled helper in real builds; for tests we can
 // import the TS source via ts-node/vitest-transform, but here we just
@@ -67,6 +75,25 @@ describe('init helper', () => {
 
 			expect(fs.existsSync(path.join(root, 'vite.config.mts'))).toBe(false);
 			expect(fs.readFileSync(path.join(root, 'vite.config.ts'), 'utf8')).toBe(existing);
+		} finally {
+			process.chdir(cwd);
+			if (tempRoot && fs.existsSync(tempRoot)) {
+				fs.rmSync(tempRoot, { recursive: true, force: true });
+			}
+		}
+	});
+
+	it('scaffolds svelteConfig for a svelte project', async () => {
+		const root = createTempProject();
+		tempRoot = root;
+		process.chdir(root);
+		vi.mocked(determineProjectFlavor).mockReturnValueOnce('svelte');
+		try {
+			await runInitHelper();
+
+			const viteConfig = fs.readFileSync(path.join(root, 'vite.config.mts'), 'utf8');
+			expect(viteConfig).toContain("import { svelteConfig } from '@nativescript/vite/svelte';");
+			expect(viteConfig).toContain('svelteConfig({ mode })');
 		} finally {
 			process.chdir(cwd);
 			if (tempRoot && fs.existsSync(tempRoot)) {
