@@ -227,7 +227,12 @@ class UIViewControllerImpl extends UIViewController {
 
 		// Cache presentedViewController if any. We don't want to raise
 		// navigation events in case of presenting view controller.
-		if (!owner._presentedViewController) {
+		// It is still set when the frame navigates away from a page that has a modal open,
+		// and that navigation must raise its events.
+		const frame: Frame = this.navigationController ? (<any>this.navigationController).owner : null;
+		const executingEntry = frame?._executingContext?.entry;
+		const isNavigatingAway = !!executingEntry && executingEntry !== this[ENTRY];
+		if (!owner._presentedViewController && !isNavigatingAway) {
 			owner._presentedViewController = this.presentedViewController;
 		}
 

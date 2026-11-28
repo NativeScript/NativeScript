@@ -169,7 +169,7 @@
 	},
 	"devDependencies": {
 		"@analogjs/vite-plugin-angular": "^2.0.0",
-		"@angular/build": "^21.0.0",
+		"@angular/build": "^22.0.0",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"@types/css": "^0.0.38",
 		"@types/node": "^24.9.1",

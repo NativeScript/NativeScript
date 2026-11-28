@@ -33,7 +33,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
 	}
 
 	private getViews(template: string) {
-		let root = Builder.parse(template);
+		const root = Builder.parse(template);
 
 		return {
 			root,

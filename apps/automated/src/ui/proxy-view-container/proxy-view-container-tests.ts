@@ -319,17 +319,17 @@ function createBtn(text: string): Button {
 
 function assertNativeChildren(layout: View, arr: Array<string>) {
 	if (layout.android) {
-		let android: org.nativescript.widgets.LayoutBase = layout.android;
+		const android: org.nativescript.widgets.LayoutBase = layout.android;
 		TKUnit.assertEqual(android.getChildCount(), arr.length, 'Native children');
 		for (let i = 0; i < arr.length; i++) {
-			let nativeBtn = <android.widget.Button>android.getChildAt(i);
+			const nativeBtn = <android.widget.Button>android.getChildAt(i);
 			TKUnit.assertEqual(nativeBtn.getText(), arr[i]);
 		}
 	} else if (layout.ios) {
-		let ios: UIView = layout.ios;
+		const ios: UIView = layout.ios;
 		TKUnit.assertEqual(ios.subviews.count, arr.length, 'Native children');
 		for (let i = 0; i < arr.length; i++) {
-			let nativeBtn = <UIButton>ios.subviews[i];
+			const nativeBtn = <UIButton>ios.subviews[i];
 			TKUnit.assertEqual(nativeBtn.titleLabel.text, arr[i]);
 		}
 	} else {

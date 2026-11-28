@@ -644,12 +644,12 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 						const secure = !!config?.server?.https;
 						const origin = `${secure ? 'https' : 'http'}://${requestHost}`;
 						const wsUrl = `${secure ? 'wss' : 'ws'}://${requestHost}/ns-hmr`;
-						const clientFsPath = require.resolve('@nativescript/vite/hmr/client/index.js');
+						const clientFsPath = require.resolve('../client/index.js');
 						const projectRoot = config?.root || process.cwd();
 						const clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });
 						let hotContextImport: string | undefined;
 						try {
-							const hotContextFsPath = require.resolve('@nativescript/vite/hmr/client/hot-context.js');
+							const hotContextFsPath = require.resolve('../client/hot-context.js');
 							hotContextImport = computeClientImportSpecifier({ projectRoot, clientFsPath: hotContextFsPath });
 						} catch {}
 						const code = createNsDevClientBootstrapCode({
@@ -708,7 +708,7 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 			 * becoming bare import ids that Rollup/Vite cannot resolve.
 			 * We still resolve the real filesystem path for correctness, but convert it to a project-relative POSIX path before interpolating it into the generated module.
 			 **/
-			const clientFsPath = require.resolve('@nativescript/vite/hmr/client/index.js');
+			const clientFsPath = require.resolve('../client/index.js');
 			// Prefer project root when available; otherwise fall back to cwd.
 			const projectRoot = config?.root || process.cwd();
 			const clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });

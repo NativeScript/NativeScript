@@ -3,8 +3,8 @@ import { PercentLength, unsetValue, Frame, Page } from '@nativescript/core';
 export * from './frame-tests-common';
 
 export function test_percent_width_and_height_set_to_page_support() {
-	let topFrame = Frame.topmost();
-	let currentPage = topFrame.currentPage;
+	const topFrame = Frame.topmost();
+	const currentPage = topFrame.currentPage;
 
 	(<any>currentPage).width = '50%';
 	(<any>currentPage).height = '50%';
@@ -13,11 +13,11 @@ export function test_percent_width_and_height_set_to_page_support() {
 		return currentPage.isLayoutValid;
 	}, 1);
 
-	let topFrameWidth = topFrame.getMeasuredWidth();
-	let topFrameHeight = topFrame.getMeasuredHeight();
+	const topFrameWidth = topFrame.getMeasuredWidth();
+	const topFrameHeight = topFrame.getMeasuredHeight();
 
-	let currentPageWidth = currentPage.getMeasuredWidth();
-	let currentPageHeight = currentPage.getMeasuredHeight();
+	const currentPageWidth = currentPage.getMeasuredWidth();
+	const currentPageHeight = currentPage.getMeasuredHeight();
 
 	TKUnit.assertEqual(currentPageWidth, Math.floor(topFrameWidth / 2), 'Current page measuredWidth incorrect');
 	TKUnit.assertEqual(currentPageHeight, Math.floor(topFrameHeight / 2), 'Current page measuredHeight incorrect');
@@ -31,24 +31,24 @@ export function test_percent_width_and_height_set_to_page_support() {
 }
 
 export function test_percent_margin_set_to_page_support() {
-	let topFrame = Frame.topmost();
-	let currentPage = topFrame.currentPage;
+	const topFrame = Frame.topmost();
+	const currentPage = topFrame.currentPage;
 	currentPage.margin = '10%';
 
 	TKUnit.waitUntilReady(() => {
 		return currentPage.isLayoutValid;
 	}, 1);
 
-	let topFrameWidth = topFrame.getMeasuredWidth();
-	let topFrameHeight = topFrame.getMeasuredHeight();
+	const topFrameWidth = topFrame.getMeasuredWidth();
+	const topFrameHeight = topFrame.getMeasuredHeight();
 
-	let currentPageWidth = currentPage.getMeasuredWidth();
-	let currentPageHeight = currentPage.getMeasuredHeight();
+	const currentPageWidth = currentPage.getMeasuredWidth();
+	const currentPageHeight = currentPage.getMeasuredHeight();
 
-	let marginLeft = topFrameWidth * 0.1;
-	let marginTop = topFrameHeight * 0.1;
+	const marginLeft = topFrameWidth * 0.1;
+	const marginTop = topFrameHeight * 0.1;
 
-	let bounds = currentPage._getCurrentLayoutBounds();
+	const bounds = currentPage._getCurrentLayoutBounds();
 	TKUnit.assertEqual(bounds.left, Math.floor(marginLeft), 'Current page LEFT position incorrect');
 	TKUnit.assertEqual(bounds.top, Math.floor(marginTop), 'Current page  TOP position incorrect');
 	TKUnit.assertEqual(bounds.right, Math.floor(marginLeft + currentPageWidth), 'Current page  RIGHT position incorrect');

@@ -171,7 +171,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 	}
 
 	private assertChildTexts(expected, layout, message) {
-		let texts: Array<string> = [];
+		const texts: Array<string> = [];
 		layout.eachChildView((child: { text: string }) => texts.push(child.text));
 		TKUnit.assertEqual(expected, texts.join('|'), message);
 	}
@@ -179,7 +179,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 	public test_insertChildAtPosition() {
 		this.assertChildTexts('btn1|btn2', this.rootLayout, 'initial 2 buttons');
 
-		let newChild = new Button();
+		const newChild = new Button();
 		newChild.text = 'in-between';
 		this.rootLayout.insertChild(newChild, 1);
 
@@ -187,12 +187,12 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 	}
 
 	public test_getChildIndex() {
-		let lastChildIndex = this.rootLayout.getChildrenCount() - 1;
-		let lastButton = <Button>this.rootLayout.getChildAt(lastChildIndex);
+		const lastChildIndex = this.rootLayout.getChildrenCount() - 1;
+		const lastButton = <Button>this.rootLayout.getChildAt(lastChildIndex);
 		TKUnit.assertEqual('btn2', lastButton.text);
 		TKUnit.assertEqual(lastChildIndex, this.rootLayout.getChildIndex(lastButton));
 
-		let nonChild = new Button();
+		const nonChild = new Button();
 		TKUnit.assertEqual(-1, this.rootLayout.getChildIndex(nonChild));
 	}
 
@@ -205,11 +205,11 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 		// >> (hide)
 		// var Button = require("ui/button").Button;
 		// << (hide)
-		var stackLayout = new StackLayout();
+		const stackLayout = new StackLayout();
 		// << stack-layout-new
 
 		// >> stack-layout-addchild
-		var btn = new Button();
+		const btn = new Button();
 		stackLayout.addChild(btn);
 		//  << stack-layout-addchild
 
@@ -223,12 +223,12 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 	}
 
 	private setup_percent(): layoutHelper.MyButton {
-		let layout = this.testView;
+		const layout = this.testView;
 		layout.removeChildren();
 		layout.width = { value: 200, unit: 'px' };
 		layout.height = { value: 200, unit: 'px' };
 
-		let btn = new layoutHelper.MyButton();
+		const btn = new layoutHelper.MyButton();
 		btn.horizontalAlignment = 'left';
 		btn.verticalAlignment = 'top';
 		(<any>btn).width = '50%';
@@ -241,7 +241,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 	}
 
 	public test_percent_support_vertical() {
-		let btn = this.setup_percent();
+		const btn = this.setup_percent();
 
 		this.waitUntilTestElementLayoutIsValid();
 
@@ -286,7 +286,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 	}
 
 	public test_percent_support_horizontal() {
-		let btn = this.setup_percent();
+		const btn = this.setup_percent();
 		this.testView.orientation = 'horizontal';
 		this.waitUntilTestElementLayoutIsValid();
 
