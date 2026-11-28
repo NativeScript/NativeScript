@@ -2,11 +2,11 @@
 import * as TKUnit from '../tk-unit';
 import * as types from '@nativescript/core/utils/types';
 
-export var test_fetch_defined = function () {
+export const test_fetch_defined = function () {
 	TKUnit.assert(types.isDefined(fetch), 'Method fetch() should be defined!');
 };
 
-export var test_fetch = function (done: (err: Error, res?: string) => void) {
+export const test_fetch = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-response
 	fetch('https://http-echo.nativescript.org/get')
 		.then(function (r) {
@@ -20,7 +20,7 @@ export var test_fetch = function (done: (err: Error, res?: string) => void) {
 	// << fetch-response
 };
 
-export var test_fetch_text = function (done: (err: Error, res?: string) => void) {
+export const test_fetch_text = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-string
 	fetch('https://http-echo.nativescript.org/get')
 		.then((response) => response.text())
@@ -35,7 +35,7 @@ export var test_fetch_text = function (done: (err: Error, res?: string) => void)
 	// << fetch-string
 };
 
-export var test_fetch_json = function (done: (err: Error, res?: string) => void) {
+export const test_fetch_json = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-json
 	fetch('https://http-echo.nativescript.org/get')
 		.then((response) => response.json())
@@ -50,7 +50,7 @@ export var test_fetch_json = function (done: (err: Error, res?: string) => void)
 	// << fetch-json
 };
 
-export var test_fetch_formData = function (done: (err: Error, res?: string) => void) {
+export const test_fetch_formData = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-formdata
 	fetch('https://http-echo.nativescript.org/get')
 		.then((response) => response.formData())
@@ -65,7 +65,7 @@ export var test_fetch_formData = function (done: (err: Error, res?: string) => v
 	// << fetch-formdata
 };
 
-export var test_fetch_blob = function (done: (err: Error, res?: string) => void) {
+export const test_fetch_blob = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-blob
 	fetch('https://http-echo.nativescript.org/get')
 		.then((response) => response.blob())
@@ -80,7 +80,7 @@ export var test_fetch_blob = function (done: (err: Error, res?: string) => void)
 	// << fetch-blob
 };
 
-export var test_fetch_arraybuffer = function (done: (err: Error, res?: string) => void) {
+export const test_fetch_arraybuffer = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-arraybuffer
 	fetch('https://http-echo.nativescript.org/get')
 		.then((response) => response.arrayBuffer())
@@ -95,9 +95,9 @@ export var test_fetch_arraybuffer = function (done: (err: Error, res?: string) =
 	// << fetch-arraybuffer
 };
 
-export var test_fetch_fail_invalid_url = function (done) {
-	var completed: boolean;
-	var isReady = function () {
+export const test_fetch_fail_invalid_url = function (done) {
+	let completed: boolean;
+	const isReady = function () {
 		return completed;
 	};
 
@@ -117,12 +117,12 @@ export var test_fetch_fail_invalid_url = function (done) {
 //     }).catch(failOnError(done));
 // };
 
-export var test_fetch_response_status = function (done) {
+export const test_fetch_response_status = function (done) {
 	// >> fetch-status-response
 	fetch('https://http-echo.nativescript.org/get')
 		.then(function (response) {
 			// Argument (response) is Response!
-			var statusCode = response.status;
+			const statusCode = response.status;
 			// >> (hide)
 			TKUnit.assert(types.isDefined(statusCode), 'response.status should be defined! Actual result is: ' + statusCode);
 			done(null);
@@ -132,7 +132,7 @@ export var test_fetch_response_status = function (done) {
 	// << fetch-status-response
 };
 
-export var test_fetch_response_headers = function (done) {
+export const test_fetch_response_headers = function (done) {
 	// >> fetch-headers-response
 	fetch('https://http-echo.nativescript.org/get')
 		.then(function (response) {
@@ -147,21 +147,21 @@ export var test_fetch_response_headers = function (done) {
 	// << fetch-headers-response
 };
 
-export var test_fetch_headers_sent = function (done) {
+export const test_fetch_headers_sent = function (done) {
 	fetch('https://http-echo.nativescript.org/get', {
 		method: 'GET',
 		headers: new Headers({ 'Content-Type': 'application/json' }),
 	})
 		.then(function (response) {
-			var result = response.headers;
+			const result = response.headers;
 			TKUnit.assert(result.get('Content-Type') === 'application/json', 'Headers not sent/received properly! Actual result is: ' + result);
 			done(null);
 		})
 		.catch(failOnError(done));
 };
 
-export var test_fetch_post_form_data = function (done) {
-	var data = new FormData();
+export const test_fetch_post_form_data = function (done) {
+	const data = new FormData();
 	data.append('MyVariableOne', 'ValueOne');
 	data.append('MyVariableTwo', 'ValueTwo');
 
@@ -180,7 +180,7 @@ export var test_fetch_post_form_data = function (done) {
 		.catch(failOnError(done));
 };
 
-export var test_fetch_post_json = function (done) {
+export const test_fetch_post_json = function (done) {
 	// >> fetch-post-json
 	fetch('https://http-echo.nativescript.org/post', {
 		method: 'POST',
@@ -213,7 +213,7 @@ function paddedJsonBytes(): Uint8Array<ArrayBuffer> {
 	return padded.subarray(4, 4 + json.length);
 }
 
-export var test_fetch_post_typed_array = function (done) {
+export const test_fetch_post_typed_array = function (done) {
 	fetch('https://http-echo.nativescript.org/post', {
 		method: 'POST',
 		headers: new Headers({ 'Content-Type': 'application/json' }),

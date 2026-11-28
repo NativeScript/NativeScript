@@ -13,7 +13,7 @@ type LayoutTestLike = {
 };
 
 function getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
-	var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
+	let lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
 	if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
 		lp = new org.nativescript.widgets.CommonLayoutParams();
 	}
@@ -26,11 +26,11 @@ export function percent_support_nativeLayoutParams_are_correct(test: LayoutTestL
 		return;
 	}
 
-	let layout = test.testView;
+	const layout = test.testView;
 	layout.width = { value: 200, unit: 'px' };
 	layout.height = { value: 200, unit: 'px' };
 
-	let btn = new layoutHelper.MyButton();
+	const btn = new layoutHelper.MyButton();
 	btn.width = { value: 100, unit: 'px' };
 	btn.height = { value: 100, unit: 'px' };
 	btn.margin = '10%';
@@ -38,7 +38,7 @@ export function percent_support_nativeLayoutParams_are_correct(test: LayoutTestL
 
 	test.waitUntilTestElementLayoutIsValid();
 
-	let lp = getNativeLayoutParams(btn.nativeViewProtected as any);
+	const lp = getNativeLayoutParams(btn.nativeViewProtected as any);
 	TKUnit.assertEqual(lp.width, 100, 'width');
 	TKUnit.assertEqual(lp.widthPercent, -1, 'widthPercent');
 	TKUnit.assertEqual(lp.height, 100, 'height');
@@ -82,12 +82,12 @@ export function percent_support_nativeLayoutParams_are_correct(test: LayoutTestL
 }
 
 export function percent_support_children_test(test: LayoutTestLike) {
-	let layout = test.testView;
+	const layout = test.testView;
 	layout.removeChildren();
 	layout.width = { value: 200, unit: 'px' };
 	layout.height = { value: 200, unit: 'px' };
 
-	let btn = new layoutHelper.MyButton();
+	const btn = new layoutHelper.MyButton();
 	btn.horizontalAlignment = 'left';
 	btn.verticalAlignment = 'top';
 	(<any>btn).width = '50%';

@@ -3,15 +3,15 @@
 const possibleValues = ['none', 'underline', 'line-through', 'underline line-through'];
 
 export function butonTap(args: EventData) {
-	let page = (<TextBase>args.object).page;
-	let lbl = <TextBase>page.getViewById('Label');
-	let btn = <TextBase>page.getViewById('Button');
-	let textField = <TextBase>page.getViewById('TextField');
-	let textView = <TextBase>page.getViewById('TextView');
+	const page = (<TextBase>args.object).page;
+	const lbl = <TextBase>page.getViewById('Label');
+	const btn = <TextBase>page.getViewById('Button');
+	const textField = <TextBase>page.getViewById('TextField');
+	const textView = <TextBase>page.getViewById('TextView');
 
-	let currentIndex = possibleValues.indexOf(lbl.textDecoration);
-	let newIndex = (currentIndex + 1) % possibleValues.length;
-	let newValue = <any>possibleValues[newIndex];
+	const currentIndex = possibleValues.indexOf(lbl.textDecoration);
+	const newIndex = (currentIndex + 1) % possibleValues.length;
+	const newValue = <any>possibleValues[newIndex];
 
 	lbl.textDecoration = newValue;
 	btn.textDecoration = newValue;

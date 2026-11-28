@@ -4,7 +4,7 @@ import { Dialogs, PromptResult, LoginResult, inputType } from '@nativescript/cor
 
 export function test_DummyTestForSnippetOnly0() {
 	// >> dialog-action
-	var options = {
+	const options = {
 		title: 'Race Selection',
 		message: 'Choose your race',
 		cancelButtonText: 'Cancel',
@@ -18,7 +18,7 @@ export function test_DummyTestForSnippetOnly0() {
 
 export function test_DummyTestForSnippetOnly1() {
 	// >> dialog-confirm
-	var options = {
+	const options = {
 		title: 'Race Selection',
 		message: 'Are you sure you want to be an Elf?',
 		okButtonText: 'Yes',
@@ -34,7 +34,7 @@ export function test_DummyTestForSnippetOnly1() {
 
 export function test_DummyTestForSnippetOnly2() {
 	// >> dialog-alert
-	var options = {
+	const options = {
 		title: 'Race Selection',
 		message: 'Race Chosen: Elf',
 		okButtonText: 'OK',
@@ -47,7 +47,7 @@ export function test_DummyTestForSnippetOnly2() {
 
 export function test_DummyTestForSnippetOnly3() {
 	// >> dialog-login
-	var options = {
+	const options = {
 		title: 'Login',
 		message: 'Login',
 		username: 'john_doe',
@@ -62,7 +62,7 @@ export function test_DummyTestForSnippetOnly3() {
 
 export function test_DummyTestForSnippetOnly4() {
 	// >> dialog-prompt
-	var options = {
+	const options = {
 		title: 'Name',
 		defaultText: 'Enter your name',
 		inputType: inputType.text,

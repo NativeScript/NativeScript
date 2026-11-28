@@ -5,10 +5,11 @@ export * from './application-tests-common';
 
 // >> application-ios-observer
 //// Add the notification observer
+let observer;
 if (Application.ios) {
-	var observer = Application.ios.addNotificationObserver(UIDeviceBatteryLevelDidChangeNotification, function onReceiveCallback(notification: NSNotification) {
-		var percent = UIDevice.currentDevice.batteryLevel * 100;
-		var message = 'Battery: ' + percent + '%';
+	observer = Application.ios.addNotificationObserver(UIDeviceBatteryLevelDidChangeNotification, function onReceiveCallback(notification: NSNotification) {
+		const percent = UIDevice.currentDevice.batteryLevel * 100;
+		const message = 'Battery: ' + percent + '%';
 		////console.log(message);
 	});
 }

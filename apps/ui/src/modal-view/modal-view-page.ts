@@ -21,7 +21,7 @@ function openModal(page: Page, label: Label, context: string) {
 export function onTap(args) {
 	const page = <Page>args.object.page;
 	const label = page.getViewById<Label>('label');
-	var fullscreen = (<any>args.object).text.indexOf('(full-screen)') !== -1;
+	const fullscreen = (<any>args.object).text.indexOf('(full-screen)') !== -1;
 
 	page.showModal('modal-view/login-page', {
 		context: 'context',

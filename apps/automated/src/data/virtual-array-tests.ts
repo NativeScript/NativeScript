@@ -2,24 +2,24 @@ import * as TKUnit from '../tk-unit';
 import * as types from '@nativescript/core/utils/types';
 import { VirtualArray, ChangeType, ChangedData, ItemsLoading } from '@nativescript/core';
 
-export var test_VirtualArray_shouldCreateArrayFromSpecifiedLength = function () {
-	var array = new VirtualArray<number>(100);
+export const test_VirtualArray_shouldCreateArrayFromSpecifiedLength = function () {
+	const array = new VirtualArray<number>(100);
 
 	TKUnit.assert(array.length === 100, 'VirtualArray<T> should create array from specified length!');
 };
 
-export var test_VirtualArray_setItemShouldSetCorrectItem = function () {
-	var array = new VirtualArray<number>(100);
+export const test_VirtualArray_setItemShouldSetCorrectItem = function () {
+	const array = new VirtualArray<number>(100);
 	array.setItem(0, 0);
 	TKUnit.assert(array.getItem(0) === 0, 'VirtualArray<T> setItem() should set correct item!');
 };
 
-export var test_VirtualArray_setItemShouldRaiseChangeEventWhenYouSetDifferentItem = function () {
-	var array = new VirtualArray<number>(100);
+export const test_VirtualArray_setItemShouldRaiseChangeEventWhenYouSetDifferentItem = function () {
+	const array = new VirtualArray<number>(100);
 	array.loadSize = 15;
 
-	var result: ChangedData<number>;
-	var index = 0;
+	let result: ChangedData<number>;
+	const index = 0;
 
 	array.on(VirtualArray.changeEvent, (args: ChangedData<number>) => {
 		result = args;
@@ -47,8 +47,8 @@ export var test_VirtualArray_setItemShouldRaiseChangeEventWhenYouSetDifferentIte
 		// Important: If you have already loaded items in the requested page the array will raise multiple times "itemsLoading" event to request
 		// all ranges of still not loaded items in this page.
 
-		var itemsToLoad = new Array<number>();
-		for (var i = 0; i < args.count; i++) {
+		const itemsToLoad = new Array<number>();
+		for (let i = 0; i < args.count; i++) {
 			itemsToLoad.push(i + args.index);
 		}
 
@@ -56,12 +56,12 @@ export var test_VirtualArray_setItemShouldRaiseChangeEventWhenYouSetDifferentIte
 	});
 };
 
-export var test_VirtualArray_loadShouldRaiseChangeEventWithCorrectArgs = function () {
-	var array = new VirtualArray<number>(100);
+export const test_VirtualArray_loadShouldRaiseChangeEventWithCorrectArgs = function () {
+	const array = new VirtualArray<number>(100);
 	array.loadSize = 15;
 
-	var result: ChangedData<number>;
-	var index = 0;
+	let result: ChangedData<number>;
+	const index = 0;
 
 	array.on(VirtualArray.changeEvent, (args: ChangedData<number>) => {
 		// Argument (args) is ChangedData<T>.
@@ -72,19 +72,19 @@ export var test_VirtualArray_loadShouldRaiseChangeEventWithCorrectArgs = functio
 		result = args;
 	});
 
-	var itemsToLoad = [0, 1, 2];
+	const itemsToLoad = [0, 1, 2];
 
 	array.load(index, itemsToLoad);
 
 	TKUnit.assert(result && result.eventName === 'change' && result.action === ChangeType.Update && result.removed.length === itemsToLoad.length && result.index === index && result.addedCount === itemsToLoad.length, "VirtualArray<T> load() should raise 'change' event with correct args!");
 };
 
-export var test_VirtualArray_lengthIncreaseShouldRaiseChangeEventWithCorrectArgs = function () {
-	var array = new VirtualArray<number>(100);
+export const test_VirtualArray_lengthIncreaseShouldRaiseChangeEventWithCorrectArgs = function () {
+	const array = new VirtualArray<number>(100);
 	array.loadSize = 15;
 
-	var result: ChangedData<number>;
-	var index = array.length;
+	let result: ChangedData<number>;
+	const index = array.length;
 
 	array.on(VirtualArray.changeEvent, (args: ChangedData<number>) => {
 		// Argument (args) is ChangedData<T>.
@@ -100,12 +100,12 @@ export var test_VirtualArray_lengthIncreaseShouldRaiseChangeEventWithCorrectArgs
 	TKUnit.assert(result && result.eventName === 'change' && result.action === ChangeType.Add && result.index === index && result.addedCount === array.loadSize && result.removed.length === 0, "VirtualArray<T> length++ should raise 'change' event with correct args!");
 };
 
-export var test_VirtualArray_lengthDecreaseShouldRaiseChangeEventWithCorrectArgs = function () {
-	var array = new VirtualArray<number>(100);
+export const test_VirtualArray_lengthDecreaseShouldRaiseChangeEventWithCorrectArgs = function () {
+	const array = new VirtualArray<number>(100);
 	array.loadSize = 15;
 
-	var result: ChangedData<number>;
-	var index = array.length;
+	let result: ChangedData<number>;
+	const index = array.length;
 
 	array.on(VirtualArray.changeEvent, (args: ChangedData<number>) => {
 		// Argument (args) is ChangedData<T>.
@@ -121,11 +121,11 @@ export var test_VirtualArray_lengthDecreaseShouldRaiseChangeEventWithCorrectArgs
 	TKUnit.assert(result && result.eventName === 'change' && result.action === ChangeType.Delete && result.index === index && result.removed.length === array.loadSize && result.addedCount === 0, "VirtualArray<T> length++ should raise 'change' event with correct args!");
 };
 
-export var test_VirtualArray_shouldRaiseItemsLoadingIfIndexIsNotLoadedAndGetItemIsCalled = function () {
-	var array = new VirtualArray<number>(100);
+export const test_VirtualArray_shouldRaiseItemsLoadingIfIndexIsNotLoadedAndGetItemIsCalled = function () {
+	const array = new VirtualArray<number>(100);
 	array.loadSize = 15;
 
-	var result: ItemsLoading;
+	let result: ItemsLoading;
 
 	array.on(VirtualArray.itemsLoadingEvent, (args: ItemsLoading) => {
 		result = args;
@@ -136,12 +136,12 @@ export var test_VirtualArray_shouldRaiseItemsLoadingIfIndexIsNotLoadedAndGetItem
 	TKUnit.assert(result.eventName === VirtualArray.itemsLoadingEvent && result.index === 0 && result.count === array.loadSize, "VirtualArray<T> getItem() should raise 'itemsLoading' event with correct args if item is not loaded!");
 };
 
-export var test_VirtualArray_shouldNotRaiseItemsLoadingIfIndexIsLoadedAndGetItemIsCalled = function () {
-	var array = new VirtualArray<number>(100);
+export const test_VirtualArray_shouldNotRaiseItemsLoadingIfIndexIsLoadedAndGetItemIsCalled = function () {
+	const array = new VirtualArray<number>(100);
 	array.setItem(0, 0);
 	array.loadSize = 15;
 
-	var result: ItemsLoading;
+	let result: ItemsLoading;
 
 	array.on(VirtualArray.itemsLoadingEvent, (args: ItemsLoading) => {
 		result = args;
@@ -152,15 +152,15 @@ export var test_VirtualArray_shouldNotRaiseItemsLoadingIfIndexIsLoadedAndGetItem
 	TKUnit.assert(types.isUndefined(result), "VirtualArray<T> getItem() should not raise 'itemsLoading' event if item is loaded!");
 };
 
-export var test_VirtualArray_shouldRaiseItemsLoadingIfIndexIsNotLoadedAndGetItemIsCalledCorrectNumberOfTimesWithCorrectArgs = function () {
-	var array = new VirtualArray<number>(100);
+export const test_VirtualArray_shouldRaiseItemsLoadingIfIndexIsNotLoadedAndGetItemIsCalledCorrectNumberOfTimesWithCorrectArgs = function () {
+	const array = new VirtualArray<number>(100);
 	array.loadSize = 15;
 
 	array.setItem(0, 0);
 
 	array.setItem(5, 5);
 
-	var result = new Array<ItemsLoading>();
+	const result = new Array<ItemsLoading>();
 
 	array.on(VirtualArray.itemsLoadingEvent, (args: ItemsLoading) => {
 		result.push(args);

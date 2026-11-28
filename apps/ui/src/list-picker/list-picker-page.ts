@@ -3,7 +3,7 @@ import { Page } from '@nativescript/core/ui/page';
 
 export function loaded(args) {
 	const items = [];
-	for (var i = 0; i < 100; i++) {
+	for (let i = 0; i < 100; i++) {
 		items.push('name' + i);
 	}
 

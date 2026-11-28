@@ -5,11 +5,11 @@ import * as fs from '@nativescript/core/file-system';
 import type { BaseHttpContent } from '@nativescript/core/http/http-request-internal';
 import { requestInternal, addHeader } from '@nativescript/core/http/http-request-internal';
 
-export var test_getString_isDefined = function () {
+export const test_getString_isDefined = function () {
 	TKUnit.assert(typeof http.getString !== 'undefined', 'Method http.getString() should be defined!');
 };
 
-export var test_getString = function (done: (err: Error, res?: string) => void) {
+export const test_getString = function (done: (err: Error, res?: string) => void) {
 	http.getString('https://http-echo.nativescript.org/get').then(
 		function (r) {
 			//// Argument (r) is string!
@@ -22,7 +22,7 @@ export var test_getString = function (done: (err: Error, res?: string) => void) 
 	);
 };
 
-export var test_getString_fail = function (done) {
+export const test_getString_fail = function (done) {
 	http.getString({ url: 'hgfttps://http-echo.nativescript.org/get', method: 'GET', timeout: 2000 }).catch(function (e) {
 		done(null);
 	});
@@ -44,12 +44,12 @@ export var test_getString_fail = function (done) {
 //     });
 // };
 
-export var test_getJSON_isDefined = function () {
+export const test_getJSON_isDefined = function () {
 	TKUnit.assert(typeof http.getJSON !== 'undefined', 'Method http.getJSON() should be defined!');
 };
 
-export var test_getJSON = function (done) {
-	var result;
+export const test_getJSON = function (done) {
+	let result;
 
 	http.getJSON('https://http-echo.nativescript.org/get').then(
 		function (r) {
@@ -72,8 +72,8 @@ export var test_getJSON = function (done) {
 	);
 };
 
-export var test_getJSON_fail = function (done) {
-	var result;
+export const test_getJSON_fail = function (done) {
+	let result;
 
 	http.getJSON({ url: 'hgfttps://http-echo.nativescript.org/', method: 'GET', timeout: 2000 }).catch(function (e) {
 		result = e;
@@ -86,8 +86,8 @@ export var test_getJSON_fail = function (done) {
 	});
 };
 
-export var test_getJSON_fail_when_result_is_not_JSON = function (done) {
-	var result;
+export const test_getJSON_fail_when_result_is_not_JSON = function (done) {
+	let result;
 
 	http.getJSON({ url: 'https://http-echo.nativescript.org/html', method: 'GET' }).catch(function (e) {
 		result = e;
@@ -100,8 +100,8 @@ export var test_getJSON_fail_when_result_is_not_JSON = function (done) {
 	});
 };
 
-export var test_getJSONP = function (done) {
-	var result;
+export const test_getJSONP = function (done) {
+	let result;
 
 	http.getJSON('https://http-echo.nativescript.org/jsonp').then(
 		function (r) {
@@ -120,8 +120,8 @@ export var test_getJSONP = function (done) {
 	);
 };
 
-export var test_getJSON_fail_when_result_is_not_JSONP = function (done) {
-	var result;
+export const test_getJSON_fail_when_result_is_not_JSONP = function (done) {
+	let result;
 
 	http.getJSON({ url: 'https://http-echo.nativescript.org/html', method: 'GET' }).catch(function (e) {
 		result = e;
@@ -134,8 +134,8 @@ export var test_getJSON_fail_when_result_is_not_JSONP = function (done) {
 	});
 };
 
-export var test_gzip_request_explicit = function (done) {
-	var result;
+export const test_gzip_request_explicit = function (done) {
+	let result;
 
 	http
 		.request({
@@ -161,8 +161,8 @@ export var test_gzip_request_explicit = function (done) {
 		);
 };
 
-export var test_gzip_request_implicit = function (done) {
-	var result;
+export const test_gzip_request_implicit = function (done) {
+	let result;
 
 	http
 		.request({
@@ -185,12 +185,12 @@ export var test_gzip_request_implicit = function (done) {
 		);
 };
 
-export var test_getImage_isDefined = function () {
+export const test_getImage_isDefined = function () {
 	TKUnit.assert(typeof http.getImage !== 'undefined', 'Method http.getImage() should be defined!');
 };
 
-export var test_getImage = function (done) {
-	var result;
+export const test_getImage = function (done) {
+	let result;
 
 	http.getImage('https://http-echo.nativescript.org/image/png/logo.png').then(
 		(r) => {
@@ -210,8 +210,8 @@ export var test_getImage = function (done) {
 	);
 };
 
-export var test_getImage_fail = function (done) {
-	var result;
+export const test_getImage_fail = function (done) {
+	let result;
 
 	http.getImage({ url: 'hgfttp://www.google.com/images/errors/logo_sm_2.png', method: 'GET', timeout: 2000 }).catch(function (e) {
 		result = e;
@@ -224,8 +224,8 @@ export var test_getImage_fail = function (done) {
 	});
 };
 
-export var test_getImage_fail_when_result_is_not_image = function (done) {
-	var result;
+export const test_getImage_fail_when_result_is_not_image = function (done) {
+	let result;
 
 	http.getImage({ url: 'https://http-echo.nativescript.org/html', method: 'GET' }).catch(function (e) {
 		result = e;
@@ -238,12 +238,12 @@ export var test_getImage_fail_when_result_is_not_image = function (done) {
 	});
 };
 
-export var test_getFile_isDefined = function () {
+export const test_getFile_isDefined = function () {
 	TKUnit.assert(typeof http.getFile !== 'undefined', 'Method http.getFile() should be defined!');
 };
 
-export var test_getFile = function (done) {
-	var result;
+export const test_getFile = function (done) {
+	let result;
 
 	http.getFile('https://raw.githubusercontent.com/NativeScript/NativeScript/master/tests/app/logo.png').then(
 		function (r) {
@@ -263,10 +263,10 @@ export var test_getFile = function (done) {
 	);
 };
 
-export var test_getContentAsFile = function (done) {
-	var result;
+export const test_getContentAsFile = function (done) {
+	let result;
 
-	var filePath = fs.path.join(fs.knownFolders.documents().path, 'test.png');
+	const filePath = fs.path.join(fs.knownFolders.documents().path, 'test.png');
 	http.getFile('https://http-echo.nativescript.org/image/png/logo.png?testQuery=query&anotherParam=param', filePath).then(
 		function (r) {
 			//// Argument (r) is File!
@@ -285,8 +285,8 @@ export var test_getContentAsFile = function (done) {
 	);
 };
 
-export var test_getFile_fail = function (done) {
-	var result;
+export const test_getFile_fail = function (done) {
+	let result;
 
 	http.getImage({ url: 'hgfttp://raw.githubusercontent.com/NativeScript/NativeScript/master/tests/app/logo.png', method: 'GET', timeout: 2000 }).catch(function (e) {
 		result = e;
@@ -299,12 +299,12 @@ export var test_getFile_fail = function (done) {
 	});
 };
 
-export var test_request_isDefined = function () {
+export const test_request_isDefined = function () {
 	TKUnit.assert(typeof http['request'] !== 'undefined', 'Method http.request() should be defined!');
 };
 
-export var test_request_shouldFailIfOptionsUrlIsNotDefined = function (done) {
-	var result;
+export const test_request_shouldFailIfOptionsUrlIsNotDefined = function (done) {
+	let result;
 
 	http.request({ url: undefined, method: undefined }).catch(function (e) {
 		result = e;
@@ -317,8 +317,8 @@ export var test_request_shouldFailIfOptionsUrlIsNotDefined = function (done) {
 	});
 };
 
-export var test_request_requestShouldTimeout = function (done) {
-	var result;
+export const test_request_requestShouldTimeout = function (done) {
+	let result;
 	http.request({ url: 'https://10.255.255.1', method: 'GET', timeout: 500 }).catch(function (e) {
 		result = e;
 		try {
@@ -330,11 +330,11 @@ export var test_request_requestShouldTimeout = function (done) {
 	});
 };
 
-export var test_requestInternal_responseStatusCodeShouldBeDefined = function (done) {
+export const test_requestInternal_responseStatusCodeShouldBeDefined = function (done) {
 	requestInternal({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
 		function (response) {
 			//// Argument (response) is HttpResponse!
-			var statusCode = response.statusCode;
+			const statusCode = response.statusCode;
 			try {
 				TKUnit.assert(typeof statusCode !== 'undefined', 'response.statusCode should be defined!');
 				done(null);
@@ -349,7 +349,7 @@ export var test_requestInternal_responseStatusCodeShouldBeDefined = function (do
 	);
 };
 
-export var test_requestInternal_responseContentShouldExposeNativeContentFunctions = function (done) {
+export const test_requestInternal_responseContentShouldExposeNativeContentFunctions = function (done) {
 	requestInternal({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
 		function (response) {
 			try {
@@ -366,7 +366,7 @@ export var test_requestInternal_responseContentShouldExposeNativeContentFunction
 	);
 };
 
-export var test_requestInternal_responseContentShouldExposeHandlerFunctions = function (done) {
+export const test_requestInternal_responseContentShouldExposeHandlerFunctions = function (done) {
 	const responseHandler = {
 		toDummy1: () => 'dummy1',
 		toDummy2: () => 'dummy2',
@@ -388,7 +388,7 @@ export var test_requestInternal_responseContentShouldExposeHandlerFunctions = fu
 	);
 };
 
-export var test_requestInternal_responseHandlerShouldBeAvailable = function (done) {
+export const test_requestInternal_responseHandlerShouldBeAvailable = function (done) {
 	const suffix = '-nsformatted';
 	const responseHandler = {
 		toFormattedString: function (this: BaseHttpContent) {
@@ -413,13 +413,13 @@ export var test_requestInternal_responseHandlerShouldBeAvailable = function (don
 	);
 };
 
-export var test_request_responseStatusCodeShouldBeDefined = function (done) {
-	var result: http.HttpResponse;
+export const test_request_responseStatusCodeShouldBeDefined = function (done) {
+	let result: http.HttpResponse;
 
 	http.request({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
 		function (response) {
 			//// Argument (response) is HttpResponse!
-			var statusCode = response.statusCode;
+			const statusCode = response.statusCode;
 			result = response;
 			try {
 				TKUnit.assert(typeof statusCode !== 'undefined', 'response.statusCode should be defined!');
@@ -435,7 +435,7 @@ export var test_request_responseStatusCodeShouldBeDefined = function (done) {
 	);
 };
 
-export var test_headRequest_responseStatusCodeShouldBeDefined = function (done) {
+export const test_headRequest_responseStatusCodeShouldBeDefined = function (done) {
 	http.request({ url: 'https://http-echo.nativescript.org/get', method: 'HEAD' }).then(
 		function (response) {
 			try {
@@ -451,8 +451,8 @@ export var test_headRequest_responseStatusCodeShouldBeDefined = function (done) 
 	);
 };
 
-export var test_request_responseHeadersShouldBeDefined = function (done) {
-	var result: http.HttpResponse;
+export const test_request_responseHeadersShouldBeDefined = function (done) {
+	let result: http.HttpResponse;
 
 	http.request({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
 		function (response) {
@@ -475,8 +475,8 @@ export var test_request_responseHeadersShouldBeDefined = function (done) {
 	);
 };
 
-export var test_request_responseContentShouldBeDefined = function (done) {
-	var result: http.HttpResponse;
+export const test_request_responseContentShouldBeDefined = function (done) {
+	let result: http.HttpResponse;
 
 	http.request({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
 		function (response) {
@@ -497,8 +497,8 @@ export var test_request_responseContentShouldBeDefined = function (done) {
 	);
 };
 
-export var test_request_responseContentToStringShouldReturnString = function (done) {
-	var result;
+export const test_request_responseContentToStringShouldReturnString = function (done) {
+	let result;
 
 	http.request({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
 		function (response) {
@@ -516,8 +516,8 @@ export var test_request_responseContentToStringShouldReturnString = function (do
 	);
 };
 
-export var test_request_responseContentToJSONShouldReturnJSON = function (done) {
-	var result;
+export const test_request_responseContentToJSONShouldReturnJSON = function (done) {
+	let result;
 
 	http.request({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
 		function (response) {
@@ -535,8 +535,8 @@ export var test_request_responseContentToJSONShouldReturnJSON = function (done) 
 	);
 };
 
-export var test_request_responseContentToImageShouldReturnCorrectImage = function (done) {
-	var result;
+export const test_request_responseContentToImageShouldReturnCorrectImage = function (done) {
+	let result;
 
 	http.request({ url: 'https://http-echo.nativescript.org/image/png/logo.png', method: 'GET' }).then(
 		function (response) {
@@ -556,8 +556,8 @@ export var test_request_responseContentToImageShouldReturnCorrectImage = functio
 	);
 };
 
-export var test_request_responseContentToFileFromUrlShouldReturnCorrectFile = function (done) {
-	var result;
+export const test_request_responseContentToFileFromUrlShouldReturnCorrectFile = function (done) {
+	let result;
 
 	http.request({ url: 'https://http-echo.nativescript.org/image/png/logo.png', method: 'GET' }).then(
 		function (response) {
@@ -574,8 +574,8 @@ export var test_request_responseContentToFileFromUrlShouldReturnCorrectFile = fu
 		},
 	);
 };
-export var test_request_responseContentToFileFromUrlShouldReturnCorrectFileAndCreateDirPathIfNecesary = function (done) {
-	var result: fs.File;
+export const test_request_responseContentToFileFromUrlShouldReturnCorrectFileAndCreateDirPathIfNecesary = function (done) {
+	let result: fs.File;
 
 	http.request({ url: 'https://http-echo.nativescript.org/image/png/logo.png', method: 'GET' }).then(
 		function (response) {
@@ -595,8 +595,8 @@ export var test_request_responseContentToFileFromUrlShouldReturnCorrectFileAndCr
 	);
 };
 
-export var test_request_responseContentToFileFromContentShouldReturnCorrectFile = function (done) {
-	var result;
+export const test_request_responseContentToFileFromContentShouldReturnCorrectFile = function (done) {
+	let result;
 
 	http.request({ url: 'https://http-echo.nativescript.org/image/png/logo.png?queryString=param&another=anotherParam', method: 'GET' }).then(
 		function (response) {
@@ -614,8 +614,8 @@ export var test_request_responseContentToFileFromContentShouldReturnCorrectFile 
 	);
 };
 
-export var test_request_headersSentAndReceivedProperly = function (done) {
-	var result;
+export const test_request_headersSentAndReceivedProperly = function (done) {
+	let result;
 
 	http
 		.request({
@@ -639,12 +639,12 @@ export var test_request_headersSentAndReceivedProperly = function (done) {
 		);
 };
 
-export var test_request_headersWithSameKeyAddedProperly = function (done) {
-	var keyName = 'key';
-	var value1 = 'value1';
-	var value2 = 'value2';
+export const test_request_headersWithSameKeyAddedProperly = function (done) {
+	const keyName = 'key';
+	const value1 = 'value1';
+	const value2 = 'value2';
 
-	var headers: http.Headers = {};
+	const headers: http.Headers = {};
 
 	addHeader(headers, keyName, value1);
 	addHeader(headers, keyName, value2);
@@ -659,8 +659,8 @@ export var test_request_headersWithSameKeyAddedProperly = function (done) {
 	}
 };
 
-export var test_request_contentSentAndReceivedProperly = function (done) {
-	var result;
+export const test_request_contentSentAndReceivedProperly = function (done) {
+	let result;
 
 	http
 		.request({
@@ -685,10 +685,10 @@ export var test_request_contentSentAndReceivedProperly = function (done) {
 		);
 };
 
-export var test_request_FormDataContentSentAndReceivedProperly = function (done) {
-	var result;
+export const test_request_FormDataContentSentAndReceivedProperly = function (done) {
+	let result;
 
-	var data = new FormData();
+	const data = new FormData();
 	data.append('MyVariableOne', 'ValueOne');
 	data.append('MyVariableTwo', 'ValueTwo');
 
@@ -715,10 +715,10 @@ export var test_request_FormDataContentSentAndReceivedProperly = function (done)
 		);
 };
 
-export var test_request_NonStringHeadersSentAndReceivedProperly = function (done) {
-	var result;
+export const test_request_NonStringHeadersSentAndReceivedProperly = function (done) {
+	let result;
 
-	var postData = 'MyVariableOne=ValueOne&MyVariableTwo=ValueTwo';
+	const postData = 'MyVariableOne=ValueOne&MyVariableTwo=ValueTwo';
 
 	http
 		.request({
@@ -743,8 +743,8 @@ export var test_request_NonStringHeadersSentAndReceivedProperly = function (done
 		);
 };
 
-export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
-	var result;
+export const test_request_jsonAsContentSentAndReceivedProperly = function (done) {
+	let result;
 
 	http
 		.request({
@@ -772,7 +772,7 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
 		);
 };
 
-export var test_getString_WorksProperlyInWorker = function (done) {
+export const test_getString_WorksProperlyInWorker = function (done) {
 	const worker = new Worker(new URL('./http-string-worker', import.meta.url));
 	console.log('Worker Created');
 	worker.onmessage = function (msg) {
@@ -795,7 +795,7 @@ function paddedJsonBytes(): Uint8Array<ArrayBuffer> {
 	return padded.subarray(4, 4 + json.length);
 }
 
-export var test_request_typedArrayContentSentProperly = function (done) {
+export const test_request_typedArrayContentSentProperly = function (done) {
 	http
 		.request({
 			url: 'https://http-echo.nativescript.org/post',

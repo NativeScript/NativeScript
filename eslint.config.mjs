@@ -12,6 +12,10 @@ export default [
 				{
 					enforceBuildableLibDependency: true,
 					allow: [],
+					// Nx records require() as a dynamic dependency, so one platform-conditional
+					// require() of a core module would flag every static core import in that project.
+					// Apps bundle core whole; it is never code-split.
+					checkDynamicDependenciesExceptions: ['@nativescript/core', '@nativescript/core/**'],
 					depConstraints: [
 						{
 							sourceTag: '*',
@@ -53,13 +57,13 @@ export default [
 		},
 	},
 	{
-		files: ['**/references.d.ts'],
+		files: ['**/references.d.ts', 'apps/automated/reference.d.ts'],
 		rules: {
 			'@typescript-eslint/triple-slash-reference': 'off',
 		},
 	},
 	{
 		// Not in packages/core: its build and the HMR core bundle ship every *.mjs.
-		ignores: ['packages/core/**/global-types.d.ts', 'packages/core/**/node_modules/**/*', 'packages/core/**/__tests__/**/*', 'packages/core/**/platforms/**/*', 'packages/core/**/css/lib/**/*', 'packages/core/**/vite.config.*.timestamp*', 'packages/core/**/vitest.config.*.timestamp*', 'packages/core/**/*.{js,jsx,mjs,cjs,mts,cts}', '!packages/core/**/*.spec.{js,jsx}'],
+		ignores: ['packages/core/**/global-types.d.ts', 'packages/core/**/node_modules/**/*', 'packages/core/**/__tests__/**/*', 'packages/core/**/platforms/**/*', 'apps/**/platforms/**/*', 'packages/core/**/css/lib/**/*', 'packages/core/**/vite.config.*.timestamp*', 'packages/core/**/vitest.config.*.timestamp*', 'packages/core/**/*.{js,jsx,mjs,cjs,mts,cts}', '!packages/core/**/*.spec.{js,jsx}'],
 	},
 ];

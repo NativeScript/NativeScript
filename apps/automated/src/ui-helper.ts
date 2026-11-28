@@ -4,26 +4,26 @@ import * as TKUnit from './tk-unit';
 
 const DELTA = 0.1;
 
-export let ASYNC = 0.2;
-export let MEMORY_ASYNC = 2;
+export const ASYNC = 0.2;
+export const MEMORY_ASYNC = 2;
 
 export function getColor(uiColor: UIColor): Color {
-	let redRef = new interop.Reference<number>();
-	let greenRef = new interop.Reference<number>();
-	let blueRef = new interop.Reference<number>();
-	let alphaRef = new interop.Reference<number>();
+	const redRef = new interop.Reference<number>();
+	const greenRef = new interop.Reference<number>();
+	const blueRef = new interop.Reference<number>();
+	const alphaRef = new interop.Reference<number>();
 
 	uiColor.getRedGreenBlueAlpha(redRef, greenRef, blueRef, alphaRef);
-	let red = redRef.value * 255;
-	let green = greenRef.value * 255;
-	let blue = blueRef.value * 255;
-	let alpha = alphaRef.value * 255;
+	const red = redRef.value * 255;
+	const green = greenRef.value * 255;
+	const blue = blueRef.value * 255;
+	const alpha = alphaRef.value * 255;
 
 	return new Color(alpha, red, green, blue);
 }
 
 export function clearPage(): void {
-	let newPage = getCurrentPage();
+	const newPage = getCurrentPage();
 	if (!newPage) {
 		throw new Error('NO CURRENT PAGE!!!!');
 	}
@@ -37,7 +37,7 @@ export function clearPage(): void {
 
 export function do_PageTest(test: (views: [Page, View, View, View, ActionBar]) => void, content: View, secondView: View, thirdView: View) {
 	clearPage();
-	let newPage = getCurrentPage();
+	const newPage = getCurrentPage();
 	newPage.content = content;
 	test([newPage, content, secondView, thirdView, newPage.actionBar]);
 	newPage.content = null;
@@ -45,8 +45,8 @@ export function do_PageTest(test: (views: [Page, View, View, View, ActionBar]) =
 
 export function do_PageTest_WithButton(test: (views: [Page, Button, ActionBar]) => void) {
 	clearPage();
-	let newPage = getCurrentPage();
-	let btn = new Button();
+	const newPage = getCurrentPage();
+	const btn = new Button();
 	newPage.content = btn;
 	test([newPage, btn, newPage.actionBar]);
 	newPage.content = null;
@@ -54,9 +54,9 @@ export function do_PageTest_WithButton(test: (views: [Page, Button, ActionBar]) 
 
 export function do_PageTest_WithStackLayout_AndButton(test: (views: [Page, StackLayout, Button, ActionBar]) => void) {
 	clearPage();
-	let newPage = getCurrentPage();
-	let stackLayout = new StackLayout();
-	let btn = new Button();
+	const newPage = getCurrentPage();
+	const stackLayout = new StackLayout();
+	const btn = new Button();
 	stackLayout.addChild(btn);
 	newPage.content = stackLayout;
 	test([newPage, stackLayout, btn, newPage.actionBar]);
@@ -73,7 +73,7 @@ export interface PageOptions {
 
 export function buildUIAndRunTest<T extends View>(controlToTest: T, testFunction: (views: [T, Page]) => void, options?: PageOptions) {
 	clearPage();
-	let newPage = getCurrentPage();
+	const newPage = getCurrentPage();
 
 	let testSubject = controlToTest as View;
 
@@ -149,24 +149,24 @@ export function buildUIWithWeakRefAndInteract<T extends View>(createFunc: () => 
 }
 
 export function navigateToModuleAndRunTest(moduleName, context, testFunction) {
-	let page = navigateToModule(moduleName, context);
+	const page = navigateToModule(moduleName, context);
 	testFunction(page);
 }
 
 export function navigate(pageFactory: () => Page, navigationContext?: any): Page {
-	let entry: NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: true };
+	const entry: NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: true };
 
 	return navigateWithEntry(entry);
 }
 
 export function navigateWithHistory(pageFactory: () => Page, navigationContext?: any): Page {
-	let entry: NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: false };
+	const entry: NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: false };
 
 	return navigateWithEntry(entry);
 }
 
 export function navigateToModule(moduleName: string, context?: any): Page {
-	let entry: NavigationEntry = { moduleName: moduleName, context: context, animated: false, clearHistory: true };
+	const entry: NavigationEntry = { moduleName: moduleName, context: context, animated: false, clearHistory: true };
 
 	return navigateWithEntry(entry);
 }
@@ -176,7 +176,7 @@ export function getCurrentPage(): Page {
 }
 
 export function getClearCurrentPage(): Page {
-	let page = Frame.topmost().currentPage;
+	const page = Frame.topmost().currentPage;
 	page.style.backgroundColor = unsetValue;
 	page.style.color = unsetValue;
 	page.bindingContext = unsetValue;
@@ -266,7 +266,7 @@ export function forceGC() {
 }
 
 export function _generateFormattedString(): FormattedString {
-	let formattedString = new FormattedString();
+	const formattedString = new FormattedString();
 	let span: Span;
 
 	span = new Span();

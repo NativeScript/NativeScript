@@ -265,10 +265,10 @@ export function setBindingContextWithParentsBound(counts: Array<number>, parent:
 
 function setupParents(parent: LayoutBase, bindToContext: boolean = false): void {
 	for (let i = 0; i < 3; i++) {
-		let stack = new StackLayout();
+		const stack = new StackLayout();
 		parent.addChild(stack);
 		for (let j = 0; j < 3; j++) {
-			let innerStack = new StackLayout();
+			const innerStack = new StackLayout();
 			stack.addChild(innerStack);
 			for (let k = 0; k < 3; k++) {
 				const lbl = new Label();
@@ -283,7 +283,7 @@ function setupParents(parent: LayoutBase, bindToContext: boolean = false): void 
 }
 
 function setup(parent?: LayoutBase): Label {
-	let lbl = new Label();
+	const lbl = new Label();
 	if (parent) {
 		parent.addChild(lbl);
 	} else {

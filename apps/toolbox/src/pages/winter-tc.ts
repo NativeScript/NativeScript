@@ -46,8 +46,8 @@ export function encodeDecode() {
 }
 
 async function gen_hmac() {
-	let message = 'Hello World';
-	let enc = new TextEncoder();
+	const message = 'Hello World';
+	const enc = new TextEncoder();
 	const encoded = enc.encode(message);
 
 	const key = await crypto.subtle.generateKey(
@@ -61,14 +61,14 @@ async function gen_hmac() {
 
 	const signature = await crypto.subtle.sign('HMAC', key, encoded);
 
-	let result = await crypto.subtle.verify('HMAC', key, signature, encoded);
+	const result = await crypto.subtle.verify('HMAC', key, signature, encoded);
 
 	console.log('gen_hmac is valid? ', result);
 }
 
 async function gen_rsa_oaep() {
-	let message = 'Hello World';
-	let enc = new TextEncoder();
+	const message = 'Hello World';
+	const enc = new TextEncoder();
 	const encoded = enc.encode(message);
 
 	const kp = await crypto.subtle.generateKey(
@@ -90,7 +90,7 @@ async function gen_rsa_oaep() {
 			kp.publicKey,
 			encoded,
 		);
-		let decrypted = await crypto.subtle.decrypt(
+		const decrypted = await crypto.subtle.decrypt(
 			{
 				name: 'RSA-OAEP',
 			},
@@ -98,7 +98,7 @@ async function gen_rsa_oaep() {
 			ciphertext,
 		);
 
-		let dec = new TextDecoder();
+		const dec = new TextDecoder();
 		const decryptedValue = dec.decode(decrypted);
 
 		console.log('decryptedValue', decryptedValue, decryptedValue === message);
