@@ -64,8 +64,8 @@ interface IChainEntry {
 	plugin?: string;
 }
 
-let webpackChains: IChainEntry[] = [];
-let webpackMerges: any[] = [];
+const webpackChains: IChainEntry[] = [];
+const webpackMerges: any[] = [];
 let explicitUseConfig = false;
 let hasInitialized = false;
 let currentPlugin: string | undefined;

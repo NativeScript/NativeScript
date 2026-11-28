@@ -1,7 +1,7 @@
 ﻿import { addCss } from '@nativescript/core/application';
 
 export function onLoaded(args) {
-	var page = args.object;
+	const page = args.object;
 	page.addCss('#property { background-color: lightsalmon; }');
 }
 

@@ -5,7 +5,7 @@ import { AndroidHelper } from '@nativescript/core/ui/core/view';
 const UNEXPECTED_VALUE = 'unexpected value';
 
 export function getNativeTextAlignment(label: labelModule.Label): string {
-	let hGravity = label.android.getGravity() & android.view.Gravity.HORIZONTAL_GRAVITY_MASK;
+	const hGravity = label.android.getGravity() & android.view.Gravity.HORIZONTAL_GRAVITY_MASK;
 	const alignment = label.android.getTextAlignment();
 
 	if (hGravity === android.view.Gravity.START && alignment === android.view.View.TEXT_ALIGNMENT_VIEW_START) {

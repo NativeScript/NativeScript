@@ -23,8 +23,8 @@ export function test_enableSwipeBackNavigation_updates_the_native_gesture() {
 }
 
 export function test_NavigateToNewPage_InnerControl() {
-	var testPage: Page;
-	var pageFactory = function (): Page {
+	let testPage: Page;
+	const pageFactory = function (): Page {
 		testPage = new Page();
 		addLabelToPage(testPage);
 
@@ -32,7 +32,7 @@ export function test_NavigateToNewPage_InnerControl() {
 	};
 
 	helper.navigateWithHistory(pageFactory);
-	var label = <Label>testPage.content;
+	const label = <Label>testPage.content;
 
 	helper.goBack();
 
@@ -47,26 +47,26 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
 	let modalPage: Page;
 
 	let modalUnloaded = 0;
-	let onModalUnloaded = function (args: EventData) {
+	const onModalUnloaded = function (args: EventData) {
 		modalUnloaded++;
 		modalPage.off(Page.unloadedEvent, onModalUnloaded);
 	};
 
-	var navigatedToEventHandler = function (args) {
+	const navigatedToEventHandler = function (args) {
 		modalPage = masterPage.showModal('ui/page/modal-page', { context: null, closeCallback: null, fullscreen: false }) as Page;
 		modalPage.on(Page.unloadedEvent, onModalUnloaded);
 	};
 
-	var unloadedEventHandler = function (args) {
+	const unloadedEventHandler = function (args) {
 		masterPageUnloaded = true;
 	};
 
-	var masterPageFactory = function (): Page {
+	const masterPageFactory = function (): Page {
 		masterPage = new Page();
 		masterPage.id = 'master-page';
 		masterPage.on(Page.navigatedToEvent, navigatedToEventHandler);
 		masterPage.on(View.unloadedEvent, unloadedEventHandler);
-		var label = new Label();
+		const label = new Label();
 		label.text = 'Modal Page';
 		masterPage.content = label;
 
@@ -78,6 +78,58 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
 	TKUnit.assert(!masterPageUnloaded, "Master page should not raise 'unloaded' when showing modal!");
 	masterPage.off(View.loadedEvent, navigatedToEventHandler);
 	masterPage.off(View.unloadedEvent, unloadedEventHandler);
+}
+
+export function test_WhenGoingBackToPageThatShowsModal_FrameCompletesTheNavigation() {
+	const frame = Frame.topmost();
+
+	const masterPage = new Page();
+	addLabelToPage(masterPage, 'Master');
+	helper.navigate(() => masterPage);
+
+	const modalPage = new Page();
+	addLabelToPage(modalPage, 'Modal');
+	let modalShown = false;
+	let modalClosed = false;
+	modalPage.on(View.shownModallyEvent, () => (modalShown = true));
+	masterPage.showModal(modalPage, {
+		context: null,
+		closeCallback: () => (modalClosed = true),
+		fullscreen: false,
+		animated: false,
+	});
+
+	try {
+		TKUnit.waitUntilReady(() => modalShown);
+
+		helper.navigateWithHistory(() => {
+			const page = new Page();
+			addLabelToPage(page, 'Covering');
+
+			return page;
+		});
+
+		frame.goBack();
+		TKUnit.waitUntilReady(() => frame.ios.controller.topViewController === masterPage.ios && !frame.ios.controller.transitionCoordinator);
+		TKUnit.waitUntilReady(() => !frame._executingContext, 1, false);
+
+		modalPage.closeModal();
+		TKUnit.waitUntilReady(() => modalClosed);
+	} finally {
+		if (!modalClosed && masterPage.modal) {
+			modalPage.closeModal();
+			TKUnit.waitUntilReady(() => modalClosed, 5, false);
+		}
+	}
+
+	TKUnit.assertEqual(frame.currentPage, masterPage, 'frame.currentPage should be the page navigated back to');
+	TKUnit.assertTrue(frame.navigationQueueIsEmpty(), 'frame navigation queue should be empty');
+	TKUnit.assertNull(frame._executingContext, 'frame should not be executing a navigation');
+
+	const nextPage = new Page();
+	addLabelToPage(nextPage, 'Next');
+	helper.navigateWithHistory(() => nextPage);
+	TKUnit.assertEqual(frame.currentPage, nextPage, 'frame should complete a navigation after going back');
 }
 
 // function getHeight(view: View): number {
@@ -367,7 +419,7 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
 // }
 
 export function test_showing_native_viewcontroller_doesnt_throw_exception() {
-	let testPage = new Page();
+	const testPage = new Page();
 	let loaded = 0;
 	let unloaded = 0;
 	let navigatingTo = 0;
@@ -391,8 +443,8 @@ export function test_showing_native_viewcontroller_doesnt_throw_exception() {
 	TKUnit.assertEqual(0, unloaded, 'navigatingTo');
 	TKUnit.assertEqual(0, navigatedFrom, 'navigatingTo');
 
-	let page = new Page();
-	let navcontroller = <UINavigationController>(Frame.topmost().ios as any).controller;
+	const page = new Page();
+	const navcontroller = <UINavigationController>(Frame.topmost().ios as any).controller;
 
 	let completed = false;
 	navcontroller.presentViewControllerAnimatedCompletion(page.ios, false, () => (completed = true));
@@ -408,7 +460,7 @@ export function test_showing_native_viewcontroller_doesnt_throw_exception() {
 	TKUnit.assertEqual(0, navigatedFrom, 'navigatingTo');
 
 	completed = false;
-	let controller = <UIViewController>page.ios;
+	const controller = <UIViewController>page.ios;
 	controller.dismissViewControllerAnimatedCompletion(false, () => (completed = true));
 	TKUnit.waitUntilReady(() => completed);
 

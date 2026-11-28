@@ -15,14 +15,14 @@ export function test_recycling() {
 
 export function test_default_TNS_values() {
 	// >> activity-indicator-create
-	var indicator = new activityIndicatorModule.ActivityIndicator();
+	const indicator = new activityIndicatorModule.ActivityIndicator();
 	// << activity-indicator-create
 
 	TKUnit.assertEqual(indicator.busy, false, 'Default indicator.busy');
 }
 
 export function test_default_native_values() {
-	var indicator = new activityIndicatorModule.ActivityIndicator();
+	const indicator = new activityIndicatorModule.ActivityIndicator();
 
 	indicator.width = 50;
 	indicator.height = 50;
@@ -35,7 +35,7 @@ export function test_default_native_values() {
 }
 
 export function test_set_TNS_value_updates_native_value() {
-	var indicator = new activityIndicatorModule.ActivityIndicator();
+	const indicator = new activityIndicatorModule.ActivityIndicator();
 	indicator.width = 50;
 	indicator.height = 50;
 
@@ -51,7 +51,7 @@ export function test_set_TNS_value_updates_native_value() {
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
 export function test_set_color() {
 	if (__APPLE__) {
-		var ai = new activityIndicatorModule.ActivityIndicator();
+		const ai = new activityIndicatorModule.ActivityIndicator();
 		ai.color = new color.Color('red');
 
 		function testAction(views: Array<viewModule.View>) {
@@ -69,8 +69,8 @@ function binding_busy_to_image() {
 	/* tslint:enable:no-unused-variable */
 
 	// >> activity-indicator-loading
-	var image = new imageModule.Image();
-	var indicator = new activityIndicatorModule.ActivityIndicator();
+	const image = new imageModule.Image();
+	const indicator = new activityIndicatorModule.ActivityIndicator();
 	indicator.width = 100;
 	indicator.height = 100;
 

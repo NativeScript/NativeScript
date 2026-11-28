@@ -2,10 +2,10 @@ import { EventData as ObservableEventData } from '@nativescript/core/data/observ
 import { Page } from '@nativescript/core/ui/page';
 import { LayoutOutsideScrollViewModel } from './layout-outside-scroll-view-model';
 
-var viewModel = new LayoutOutsideScrollViewModel();
+const viewModel = new LayoutOutsideScrollViewModel();
 
 export function pageLoaded(args: ObservableEventData) {
-	var page = <Page>args.object;
+	const page = <Page>args.object;
 
 	page.bindingContext = viewModel;
 }

@@ -1,7 +1,7 @@
 import '@nativescript/core/globals';
 import * as TKUnit from '../tk-unit';
 
-declare var System: any;
+declare let System: any;
 export function test_global_system_import() {
 	TKUnit.assert(System, 'System not defined');
 	TKUnit.assert(typeof System.import === 'function', 'System.import not a function');

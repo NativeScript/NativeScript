@@ -23,7 +23,7 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
 				waitUntilTestElementLayoutIsValid(ui.root);
 				test(ui);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -32,7 +32,7 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
 	}
 
 	private getViews(template: string) {
-		let root = Builder.parse(template);
+		const root = Builder.parse(template);
 
 		return {
 			root,
@@ -66,7 +66,7 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
 			({ list }) => {
 				this.list_view_in_full_screen(list, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -185,7 +185,7 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
 				const sumOfNestedListViewWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]);
 				equal(width(root), sumOfNestedListViewWidths, `grid width<${width(root)}> sum of nested list views width <${sumOfNestedListViewWidths}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 

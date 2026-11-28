@@ -63,7 +63,7 @@ function runImageTestSync(image: ImageModule.Image, src: string) {
 
 	image.src = src;
 
-	let imageSourceAvailable = __APPLE__ ? !!image.imageSource : true;
+	const imageSourceAvailable = __APPLE__ ? !!image.imageSource : true;
 	TKUnit.assertFalse(image.isLoading, 'Image.isLoading should be false.');
 	TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 }
@@ -72,11 +72,11 @@ function runImageTestAsync(image: ImageModule.Image, src: string, done: (e: any)
 	image.loadMode = 'async';
 	image.src = null;
 
-	let handler = function (data: PropertyChangeData) {
+	const handler = function (data: PropertyChangeData) {
 		image.off(IMAGE_LOADED_EVENT, handler);
 
 		try {
-			let imageSourceAvailable = __APPLE__ ? !!image.imageSource : true;
+			const imageSourceAvailable = __APPLE__ ? !!image.imageSource : true;
 			TKUnit.assertFalse(image.isLoading, 'Image.isLoading should be false.');
 			TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 			done(null);
@@ -85,7 +85,7 @@ function runImageTestAsync(image: ImageModule.Image, src: string, done: (e: any)
 		}
 	};
 
-	let page = helper.getCurrentPage();
+	const page = helper.getCurrentPage();
 	page.content = image;
 	image.src = src;
 	image.on(IMAGE_LOADED_EVENT, handler);
@@ -142,8 +142,8 @@ export const test_SettingImageSrcToFontIconCode_sync = function () {
 };
 
 export function test_imageSourceNotResetAfterCreateUI() {
-	let image = new ImageModule.Image();
-	let imageSource = ImageSource.fromResourceSync('splashscreen');
+	const image = new ImageModule.Image();
+	const imageSource = ImageSource.fromResourceSync('splashscreen');
 	TKUnit.assertNotEqual(null, imageSource);
 	image.imageSource = imageSource;
 	helper.buildUIAndRunTest(image, () => {
@@ -257,15 +257,15 @@ function ios<T>(func: T): T {
 }
 
 export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(() => {
-	let host = new GridLayout();
+	const host = new GridLayout();
 
-	let image = new Image();
+	const image = new Image();
 
 	host.width = { value: 300, unit: 'dip' };
 	host.height = { value: 300, unit: 'dip' };
 	host.addChild(image);
 
-	let mainPage = helper.getCurrentPage();
+	const mainPage = helper.getCurrentPage();
 	mainPage.content = host;
 
 	// Check if view is loaded and layout is valid
@@ -279,13 +279,13 @@ export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(
 });
 
 export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout = ios(() => {
-	let host = new StackLayout();
-	let image = new Image();
+	const host = new StackLayout();
+	const image = new Image();
 	image.width = { value: 100, unit: 'dip' };
 	image.height = { value: 100, unit: 'dip' };
 	host.addChild(image);
 
-	let mainPage = helper.getCurrentPage();
+	const mainPage = helper.getCurrentPage();
 	mainPage.content = host;
 
 	// Check if view is loaded and layout is valid
@@ -299,11 +299,11 @@ export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout 
 });
 
 export const test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() => {
-	let host = new StackLayout();
-	let image = new Image();
+	const host = new StackLayout();
+	const image = new Image();
 	host.addChild(image);
 
-	let mainPage = helper.getCurrentPage();
+	const mainPage = helper.getCurrentPage();
 	mainPage.content = host;
 	TKUnit.waitUntilReady(() => host.isLoaded);
 
@@ -315,25 +315,25 @@ export const test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() 
 });
 
 export const test_DimensionsAreRoundedAfterScale = function () {
-	let host = new StackLayout();
-	let image = new Image();
+	const host = new StackLayout();
+	const image = new Image();
 	(<any>image).useCache = false;
 	image.loadMode = 'sync';
 	image.src = '~/ui/image/700x50.png';
-	let imageWidth = 700;
-	let imageHeight = 50;
+	const imageWidth = 700;
+	const imageHeight = 50;
 
-	let density = utils.layout.getDisplayDensity();
-	let hostWidth = 320;
+	const density = utils.layout.getDisplayDensity();
+	const hostWidth = 320;
 	host.width = { value: hostWidth / density, unit: 'dip' };
 	host.height = { value: hostWidth / density, unit: 'dip' };
 	host.addChild(image);
-	let mainPage = helper.getCurrentPage();
+	const mainPage = helper.getCurrentPage();
 	mainPage.content = host;
 	TKUnit.waitUntilReady(() => host.isLayoutValid);
 
-	let scale = hostWidth / imageWidth;
-	let expectedHeight = Math.round(imageHeight * scale);
+	const scale = hostWidth / imageWidth;
+	const expectedHeight = Math.round(imageHeight * scale);
 	TKUnit.assertEqual(image.getMeasuredWidth(), hostWidth, 'Actual width is different from expected width.');
 	TKUnit.assertEqual(image.getMeasuredHeight(), expectedHeight, 'Actual height is different from expected height.');
 };

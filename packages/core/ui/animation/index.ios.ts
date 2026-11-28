@@ -897,8 +897,13 @@ export class Animation extends AnimationBase {
 				const boxShadows = view.style.backgroundInternal.getBoxShadows();
 
 				for (let i = 0, count = outerShadowLayers.count; i < count; i++) {
+					const boxShadow = boxShadows?.[i];
+					if (!boxShadow) {
+						continue;
+					}
+
 					const shadowLayer = outerShadowLayers[i];
-					const { maskPath, shadowPath } = iosBackground.generateShadowLayerPaths(view, boxShadows[i], bounds);
+					const { maskPath, shadowPath } = iosBackground.generateShadowLayerPaths(view, boxShadow, bounds);
 
 					shadowLayer.addAnimationForKey(
 						this._createBasicAnimation(

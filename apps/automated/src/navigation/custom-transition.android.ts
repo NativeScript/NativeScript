@@ -6,7 +6,7 @@ export class CustomTransition extends Transition {
 	}
 
 	public createAndroidAnimator(transitionType: string): android.animation.Animator {
-		var scaleValues = Array.create('float', 2);
+		const scaleValues = Array.create('float', 2);
 		switch (transitionType) {
 			case Transition.AndroidTransitionType.enter:
 			case Transition.AndroidTransitionType.popEnter:
@@ -19,13 +19,13 @@ export class CustomTransition extends Transition {
 				scaleValues[1] = 0;
 				break;
 		}
-		var objectAnimators = Array.create(android.animation.Animator, 2);
+		const objectAnimators = Array.create(android.animation.Animator, 2);
 		objectAnimators[0] = android.animation.ObjectAnimator.ofFloat(null, 'scaleX', scaleValues);
 		objectAnimators[1] = android.animation.ObjectAnimator.ofFloat(null, 'scaleY', scaleValues);
-		var animatorSet = new android.animation.AnimatorSet();
+		const animatorSet = new android.animation.AnimatorSet();
 		animatorSet.playTogether(objectAnimators);
 
-		var duration = this.getDuration();
+		const duration = this.getDuration();
 		if (duration !== undefined) {
 			animatorSet.setDuration(duration);
 		}

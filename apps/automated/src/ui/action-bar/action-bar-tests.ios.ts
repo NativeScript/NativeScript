@@ -10,22 +10,22 @@ import { CoreTypes } from '@nativescript/core';
 export * from './action-bar-tests-common';
 
 export function test_NavBar_isVisible_when_MenuItems_areSet() {
-	var page: PageModule.Page;
-	var label: LabelModule.Label;
-	var navBarIsVisible = false;
+	let page: PageModule.Page;
+	let label: LabelModule.Label;
+	let navBarIsVisible = false;
 
-	var handler = function (data) {
+	const handler = function (data) {
 		page.off(PageModule.Page.navigatedToEvent, handler);
 		navBarIsVisible = !page.actionBar.nativeView.hidden;
 		console.log(navBarIsVisible);
 		console.log(page.actionBar.nativeView.hidden);
 	};
 
-	var pageFactory = function (): PageModule.Page {
+	const pageFactory = function (): PageModule.Page {
 		page = new PageModule.Page();
 		page.on(PageModule.Page.navigatedToEvent, handler);
 
-		var mi = new actionBar.ActionItem();
+		const mi = new actionBar.ActionItem();
 		mi.text = 'B';
 		page.actionBar.actionItems.addItem(mi);
 		label = new LabelModule.Label();
@@ -45,23 +45,23 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
 }
 
 export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript() {
-	var page: PageModule.Page;
-	var label: LabelModule.Label;
+	let page: PageModule.Page;
+	let label: LabelModule.Label;
 
-	var handler = function (data) {
+	const handler = function (data) {
 		page.off(PageModule.Page.navigatedToEvent, handler);
-		var menuItems = page.actionBar.actionItems.getItems();
-		var i;
+		const menuItems = page.actionBar.actionItems.getItems();
+		let i;
 		for (i = menuItems.length - 1; i >= 0; i--) {
 			page.actionBar.actionItems.removeItem(menuItems[i]);
 		}
 	};
 
-	var pageFactory = function (): PageModule.Page {
+	const pageFactory = function (): PageModule.Page {
 		page = new PageModule.Page();
 		page.on(PageModule.Page.navigatedToEvent, handler);
 
-		var mi = new actionBar.ActionItem();
+		const mi = new actionBar.ActionItem();
 		mi.text = 'B';
 		page.actionBar.actionItems.addItem(mi);
 		label = new LabelModule.Label();
@@ -74,8 +74,8 @@ export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript(
 	helper.navigate(pageFactory);
 
 	try {
-		var navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
-		var rightBarButtonItemsCount = navigationItem.rightBarButtonItems ? navigationItem.rightBarButtonItems.count : 0;
+		const navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
+		const rightBarButtonItemsCount = navigationItem.rightBarButtonItems ? navigationItem.rightBarButtonItems.count : 0;
 		TKUnit.assertEqual(rightBarButtonItemsCount, 0, 'After remove all items native items should be 0.');
 	} finally {
 		page.off(view.View.loadedEvent, handler);
@@ -83,17 +83,17 @@ export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript(
 }
 
 export function test_actionItem_visibility() {
-	var actionItem = new actionBar.ActionItem();
+	const actionItem = new actionBar.ActionItem();
 	actionItem.text = 'Test';
 	actionItem.ios.position = 'left';
-	var page = createPageAndNavigate();
+	const page = createPageAndNavigate();
 
 	page.actionBar.actionItems.addItem(actionItem);
 
-	var viewController = <UIViewController>page.ios;
-	var navigationItem: UINavigationItem = viewController.navigationItem;
+	const viewController = <UIViewController>page.ios;
+	const navigationItem: UINavigationItem = viewController.navigationItem;
 
-	var leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
+	let leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
 	TKUnit.assertEqual(leftBarButtonItemsCount, 1, 'Visibility does not work');
 	actionItem.visibility = CoreTypes.Visibility.collapse;
 
@@ -144,14 +144,14 @@ export function test_actionItem_bar_placement() {
 }
 
 export function test_navigationButton_visibility() {
-	var actionItem = new actionBar.NavigationButton();
+	const actionItem = new actionBar.NavigationButton();
 	actionItem.text = 'Test';
-	var page = createPageAndNavigate();
+	const page = createPageAndNavigate();
 
 	page.actionBar.navigationButton = actionItem;
 
-	var viewController = <UIViewController>page.ios;
-	var navigationItem: UINavigationItem = viewController.navigationItem;
+	const viewController = <UIViewController>page.ios;
+	const navigationItem: UINavigationItem = viewController.navigationItem;
 
 	TKUnit.assertFalse(navigationItem.hidesBackButton, 'Visibility does not work');
 	actionItem.visibility = CoreTypes.Visibility.collapse;

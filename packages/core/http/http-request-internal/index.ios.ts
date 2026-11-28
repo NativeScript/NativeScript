@@ -4,7 +4,7 @@ import * as types from '../../utils/types';
 import * as domainDebugger from '../../debugger';
 import type { HttpRequestOptions, HttpResponse, Headers } from '../http-interfaces';
 import { HttpResponseEncoding } from '../http-interfaces';
-import { addHeader, getDebugRequestMethodAndBody } from './http-request-internal-common';
+import { addHeader, getDebugRequestMethodAndBody, getRequestBodyBytes } from './http-request-internal-common';
 export { addHeader } from './http-request-internal-common';
 
 export interface BaseHttpContent {
@@ -87,9 +87,13 @@ export function requestInternal<T extends object>(options: HttpRequestOptions, c
 
 			if (types.isString(options.content) || options.content instanceof FormData) {
 				urlRequest.HTTPBody = NSString.stringWithString(options.content.toString()).dataUsingEncoding(4);
-			} else if (options.content instanceof ArrayBuffer) {
-				const buffer = options.content as ArrayBuffer;
-				urlRequest.HTTPBody = NSData.dataWithData(buffer as any);
+			} else {
+				const bytes = getRequestBodyBytes(options.content);
+				if (bytes) {
+					const { buffer, byteOffset, byteLength } = bytes;
+					const body = byteOffset === 0 && byteLength === buffer.byteLength ? buffer : buffer.slice(byteOffset, byteOffset + byteLength);
+					urlRequest.HTTPBody = NSData.dataWithData(body as any);
+				}
 			}
 
 			if (types.isNumber(options.timeout)) {

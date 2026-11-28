@@ -51,7 +51,7 @@ function createTabItem(i: number, frame: Frame) {
 function createTabItemsWithFrames(count: number) {
 	const items = [];
 
-	for (var i = 0; i < count; i++) {
+	for (let i = 0; i < count; i++) {
 		const page = createPage(i);
 		const frame = createFrame(i, page);
 		const tabItem = createTabItem(i, frame);
@@ -89,10 +89,10 @@ export function test_frame_topmost_matches_selectedIndex() {
 export function test_offset_zero_should_raise_same_events() {
 	if (!__VISIONOS__) {
 		// TODO: investigate cases where Application.resetRootView is called on visionOS
-		let actualEventsRaised = [];
+		const actualEventsRaised = [];
 
 		function resetActualEventsRaised() {
-			for (var i = 0; i < actualEventsRaised.length; i++) {
+			for (let i = 0; i < actualEventsRaised.length; i++) {
 				actualEventsRaised[i] = [];
 			}
 		}
@@ -154,10 +154,10 @@ export function test_offset_zero_should_raise_same_events() {
 }
 
 export function test_android_default_offset_should_preload_1_tab_on_each_side() {
-	let actualEventsRaised = [];
+	const actualEventsRaised = [];
 
 	function resetActualEventsRaised() {
-		for (var i = 0; i < actualEventsRaised.length; i++) {
+		for (let i = 0; i < actualEventsRaised.length; i++) {
 			actualEventsRaised[i] = [];
 		}
 	}

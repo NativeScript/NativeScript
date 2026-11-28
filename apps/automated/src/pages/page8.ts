@@ -11,14 +11,14 @@ Trace.setCategories(Trace.categories.Style);
 
 export function createPage() {
 	function createTxt(text: string) {
-		var tv = new textView.TextView();
+		const tv = new textView.TextView();
 		tv.text = text;
 
 		return tv;
 	}
 
-	var page = new pages.Page();
-	var scrollView = new scroll.ScrollView();
+	const page = new pages.Page();
+	const scrollView = new scroll.ScrollView();
 
 	function performGet() {
 		console.log('Getting CSS');
@@ -31,15 +31,15 @@ export function createPage() {
 			function (e) {
 				console.log('Error: ' + e);
 				timer.setTimeout(performGet, 1000);
-			}
+			},
 		);
 	}
 
-	var stack = new stacks.StackLayout();
+	const stack = new stacks.StackLayout();
 	scrollView.content = stack;
 
-	var counter = 0;
-	var btn = new btns.Button();
+	let counter = 0;
+	const btn = new btns.Button();
 	btn.text = 'tap';
 	btn.on(btns.Button.tapEvent, function () {
 		btn.text = 'hi: ' + counter++;
@@ -49,7 +49,7 @@ export function createPage() {
 	stack.addChild(btn);
 	stack.addChild(createTxt('this is label'));
 
-	var info = new btns.Button();
+	const info = new btns.Button();
 	info.text = 'info';
 	info.className = 'info';
 	info.on(btns.Button.tapEvent, function () {
