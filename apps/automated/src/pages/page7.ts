@@ -3,16 +3,16 @@ import * as buttons from '@nativescript/core/ui/button';
 import { CoreTypes } from '@nativescript/core';
 
 export function createPage() {
-	var page = new pages.Page();
+	const page = new pages.Page();
 
-	var btn = new buttons.Button();
+	const btn = new buttons.Button();
 	btn.width = 200;
 	btn.height = 60;
 	btn.text = 'test';
 
-	var vAligns: CoreTypes.VerticalAlignmentType[] = ['stretch', 'top', 'middle', 'bottom'];
+	const vAligns: CoreTypes.VerticalAlignmentType[] = ['stretch', 'top', 'middle', 'bottom'];
 	//var hAligns = ["stretch", "left", "center", "right"];
-	var count = 0;
+	let count = 0;
 	btn.on(buttons.Button.tapEvent, function () {
 		//page.css = "button { vertical-align:" + vAligns[(count++) % 4] + " }";
 		btn.verticalAlignment = vAligns[count++ % 4];

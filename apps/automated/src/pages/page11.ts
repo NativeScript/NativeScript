@@ -4,34 +4,34 @@ import * as button from '@nativescript/core/ui/button';
 import { Page } from '@nativescript/core/ui/page';
 
 export function createPage() {
-	var StackLayout = new sp.StackLayout();
-	var grid = new gridModule.GridLayout();
+	const StackLayout = new sp.StackLayout();
+	const grid = new gridModule.GridLayout();
 	grid.horizontalAlignment = 'left';
 
 	StackLayout.addChild(grid);
 
-	var btn1 = new button.Button();
+	const btn1 = new button.Button();
 	btn1.text = 'btn1';
-	var btn2 = new button.Button();
+	const btn2 = new button.Button();
 	btn2.text = 'btn2';
-	var btn3 = new button.Button();
+	const btn3 = new button.Button();
 	btn3.text = 'btn3';
-	var btn4 = new button.Button();
+	const btn4 = new button.Button();
 	btn4.text = 'btn4';
 
 	grid.addChild(btn2);
 	grid.addChild(btn3);
 	grid.addChild(btn4);
 
-	var sp1 = new sp.StackLayout();
+	const sp1 = new sp.StackLayout();
 	sp1.orientation = 'horizontal';
 	sp1.height = 200;
 
-	var b1 = new button.Button();
+	const b1 = new button.Button();
 	b1.text = 'nested Btn1';
 	sp1.addChild(b1);
 
-	var b2 = new button.Button();
+	const b2 = new button.Button();
 	b2.text = 'nested Btn2';
 	sp1.addChild(b2);
 
@@ -47,13 +47,13 @@ export function createPage() {
 	grid.addColumn(new gridModule.ItemSpec());
 	grid.addColumn(new gridModule.ItemSpec());
 
-	var page = new Page();
+	const page = new Page();
 	//page.content = GridLayout;
 	page.content = StackLayout;
-	var x = 1;
+	let x = 1;
 	btn1.on(button.Button.tapEvent, function () {
 		x++;
-		var gravity;
+		let gravity;
 		//btn1.android.setLayoutParams(new android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT));
 		if (x === 1) {
 			gravity = android.view.Gravity.CENTER;
@@ -64,7 +64,7 @@ export function createPage() {
 			x = 0;
 		}
 
-		for (var i = 0; i < grid.getChildrenCount(); i++) {
+		for (let i = 0; i < grid.getChildrenCount(); i++) {
 			grid.getChildAt(i).android.setGravity(gravity);
 		}
 	});

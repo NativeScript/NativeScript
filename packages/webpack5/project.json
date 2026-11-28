@@ -5,12 +5,6 @@
 	"projectType": "library",
 	"generators": {},
 	"targets": {
-		"lint": {
-			"executor": "@nx/eslint:lint",
-			"options": {
-				"lintFilePatterns": []
-			}
-		},
 		"build": {
 			"executor": "@nx/js:tsc",
 			"inputs": ["default", "^production"],

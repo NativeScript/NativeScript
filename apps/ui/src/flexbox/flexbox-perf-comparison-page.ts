@@ -17,7 +17,7 @@ const bodies = [
 ];
 
 const items = [];
-for (var i = 0; i < 64; i++) {
+for (let i = 0; i < 64; i++) {
 	items.push({
 		icon: '~/flexbox/icons/icon' + (1 + (i % 3)) + '.jpg',
 		title: titles[i % titles.length],
@@ -31,7 +31,7 @@ export function selectionChanged(args) {
 	clear(args);
 }
 
-let repeaterIds = ['repeaterFlexGrid', 'repeaterGrid', 'repeaterFlexStack', 'repeaterStack'];
+const repeaterIds = ['repeaterFlexGrid', 'repeaterGrid', 'repeaterFlexStack', 'repeaterStack'];
 
 export function clear(args) {
 	repeaterIds
@@ -46,17 +46,17 @@ export function clear(args) {
 }
 
 export function generate(args) {
-	let tab: TabView = args.object.page.getViewById('tabview');
-	let index = tab.selectedIndex;
+	const tab: TabView = args.object.page.getViewById('tabview');
+	const index = tab.selectedIndex;
 
-	let repeater = args.object.page.getViewById(repeaterIds[index]);
+	const repeater = args.object.page.getViewById(repeaterIds[index]);
 
 	clear(args);
 	setTimeout(() => {
-		let start = Date.now();
+		const start = Date.now();
 		repeater.bindingContext = items;
 		setTimeout(() => {
-			let end = Date.now();
+			const end = Date.now();
 			args.object.page.getViewById('title').text = (end - start).toString();
 			console.log('Duration: ' + (end - start));
 		});

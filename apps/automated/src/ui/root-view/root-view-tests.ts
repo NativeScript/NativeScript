@@ -19,13 +19,13 @@ function createTestFrameRootEntry() {
 }
 
 export function test_custom_component_rootview_css_applied() {
-	var entry = {
+	const entry = {
 		moduleName: 'ui/root-view/root-modules/custom-component-root',
 	};
 
 	Application.resetRootView(entry);
 
-	var rootView = Application.getRootView();
+	const rootView = Application.getRootView();
 	TKUnit.waitUntilReady(() => rootView.isLoaded);
 
 	TKUnit.assertNotNull(rootView);
@@ -42,13 +42,13 @@ export function test_tabview_rootview_css_applied() {
 		// TODO: investigate resetRootView cases with visionOS setup
 		return;
 	}
-	var entry = {
+	const entry = {
 		moduleName: 'ui/root-view/root-modules/tabview-root',
 	};
 
 	Application.resetRootView(entry);
 
-	var rootView = Application.getRootView();
+	const rootView = Application.getRootView();
 	TKUnit.waitUntilReady(() => rootView.isLoaded);
 
 	TKUnit.assert(rootView instanceof TabView);
@@ -56,13 +56,13 @@ export function test_tabview_rootview_css_applied() {
 }
 
 export function test_gridlayout_rootview_css_applied() {
-	var entry = {
+	const entry = {
 		moduleName: 'ui/root-view/root-modules/gridlayout-root',
 	};
 
 	Application.resetRootView(entry);
 
-	var rootView = Application.getRootView();
+	const rootView = Application.getRootView();
 	TKUnit.waitUntilReady(() => rootView.isLoaded);
 
 	TKUnit.assert(rootView instanceof GridLayout);
@@ -78,11 +78,11 @@ export function test_tabview_rootview_layout_updates() {
 }
 
 function layout_invalidate_test(moduleName: string) {
-	var entry = { moduleName };
+	const entry = { moduleName };
 
 	Application.resetRootView(entry);
 
-	var rootView = Application.getRootView();
+	const rootView = Application.getRootView();
 	TKUnit.waitUntilReady(() => rootView.isLayoutValid);
 
 	const lbl = <View>rootView.getViewById('my-test-label');

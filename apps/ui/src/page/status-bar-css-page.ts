@@ -4,16 +4,16 @@ import { View } from '@nativescript/core/ui/core/view';
 import { unsetValue } from '@nativescript/core/ui/core/properties';
 
 export function applyTap(args) {
-	let page = <Page>(<View>args.object).page;
+	const page = <Page>(<View>args.object).page;
 
 	reset(page);
 
-	let css = '#test-element { ' + args.object.tag + ' }';
+	const css = '#test-element { ' + args.object.tag + ' }';
 	page.css = css;
 }
 
 export function applyTapOnStyledActionBar(args) {
-	let page = <Page>(<View>args.object).page;
+	const page = <Page>(<View>args.object).page;
 
 	reset(page);
 
@@ -22,7 +22,7 @@ export function applyTapOnStyledActionBar(args) {
 }
 
 export function applyTapWithHiddenActionBar(args) {
-	let page = <Page>(<View>args.object).page;
+	const page = <Page>(<View>args.object).page;
 
 	reset(page);
 
@@ -31,7 +31,7 @@ export function applyTapWithHiddenActionBar(args) {
 }
 
 export function applyTapWithSpan(args) {
-	let page = <Page>(<View>args.object).page;
+	const page = <Page>(<View>args.object).page;
 
 	reset(page);
 
@@ -40,7 +40,7 @@ export function applyTapWithSpan(args) {
 }
 
 export function applyTapOnStyledActionBarAndSpan(args) {
-	let page = <Page>(<View>args.object).page;
+	const page = <Page>(<View>args.object).page;
 
 	reset(page);
 
@@ -50,7 +50,7 @@ export function applyTapOnStyledActionBarAndSpan(args) {
 }
 
 export function applyTapWithActionBarHiddenAndSpan(args) {
-	let page = <Page>(<View>args.object).page;
+	const page = <Page>(<View>args.object).page;
 
 	reset(page);
 

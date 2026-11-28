@@ -1,7 +1,7 @@
 import { EventData } from '@nativescript/core/data/observable';
-var frameModule = require('@nativescript/core/ui/frame');
-var platform = require('@nativescript/core/platform');
-var defaultSpeed = -1;
+const frameModule = require('@nativescript/core/ui/frame');
+const platform = require('@nativescript/core/platform');
+let defaultSpeed = -1;
 
 export function navigatingTo(args: EventData) {
 	if (__APPLE__) {

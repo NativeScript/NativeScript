@@ -5,7 +5,7 @@ import { TextView } from '@nativescript/core/ui/text-view';
 
 let outputText: TextView;
 export function navigatingTo(args: EventData) {
-	var page = <Page>args.object;
+	const page = <Page>args.object;
 	outputText = page.getViewById<TextView>('output');
 }
 

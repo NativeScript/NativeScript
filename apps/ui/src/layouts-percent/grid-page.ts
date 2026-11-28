@@ -4,20 +4,20 @@ import { Page } from '@nativescript/core/ui/page';
 import { GridLayout, ItemSpec, GridUnitType } from '@nativescript/core/ui/layouts/grid-layout';
 
 export function onLoaded(args: { eventName: string; object: any }) {
-	var page = <Page>args.object;
+	const page = <Page>args.object;
 	page.bindingContext = new model.ViewModelWithPercentage();
 }
 
 export function onAddRowColumn(args: { eventName: string; object: any }) {
-	var layout = <GridLayout>args.object.parent.parent;
-	var row = new ItemSpec(1, GridUnitType.AUTO);
-	var column = new ItemSpec(1, GridUnitType.AUTO);
+	const layout = <GridLayout>args.object.parent.parent;
+	const row = new ItemSpec(1, GridUnitType.AUTO);
+	const column = new ItemSpec(1, GridUnitType.AUTO);
 
 	layout.addRow(row);
 	layout.addColumn(column);
 
-	var btn0 = new Button();
-	var btn1 = new Button();
+	const btn0 = new Button();
+	const btn1 = new Button();
 	btn0.id = 'b0';
 	btn1.id = 'b1';
 	btn0.text = 'b0';
@@ -33,8 +33,8 @@ export function onAddRowColumn(args: { eventName: string; object: any }) {
 }
 
 export function onRemoveRowColumn(args: { eventName: string; object: any }) {
-	var layout = <GridLayout>args.object.parent.parent;
-	var itemSpecs, count;
+	const layout = <GridLayout>args.object.parent.parent;
+	let itemSpecs, count;
 	itemSpecs = layout.getRows();
 	count = itemSpecs.length;
 	layout.removeRow(itemSpecs[count - 1]);

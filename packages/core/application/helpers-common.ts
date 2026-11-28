@@ -144,13 +144,24 @@ export function setAppMainEntry(entry: any /* NavigationEntry */) {
 
 // Aids avoiding circular dependencies by allowing the application event listeners to be toggled
 let _toggleApplicationEventListenersHandler: (toAdd: boolean, callback: (args: any) => void) => void;
+// Listeners requested before the platform installs its handler
+const _pendingApplicationEventListeners = new Set<(args: any) => void>();
 export function toggleApplicationEventListeners(toAdd: boolean, callback: (args: any) => void) {
 	if (_toggleApplicationEventListenersHandler) {
 		_toggleApplicationEventListenersHandler(toAdd, callback);
+	} else if (toAdd) {
+		_pendingApplicationEventListeners.add(callback);
+	} else {
+		_pendingApplicationEventListeners.delete(callback);
 	}
 }
 export function setToggleApplicationEventListenersCallback(callback: (toAdd: boolean, callback: (args: any) => void) => void) {
 	_toggleApplicationEventListenersHandler = callback;
+
+	for (const listener of _pendingApplicationEventListeners) {
+		callback(true, listener);
+	}
+	_pendingApplicationEventListeners.clear();
 }
 
 // Aids avoiding circular dependencies by allowing the application properties to be retrieved

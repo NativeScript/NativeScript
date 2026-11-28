@@ -109,7 +109,7 @@ export function testSaveToFile_WithQuality() {
 // }
 
 export function testFromAssetFileNotFound(done) {
-	let asset = new imageAssetModule.ImageAsset('invalidFile.png');
+	const asset = new imageAssetModule.ImageAsset('invalidFile.png');
 	asset.options = {
 		width: 0,
 		height: 0,
@@ -128,7 +128,7 @@ export function testFromAssetFileNotFound(done) {
 }
 
 export function testFromAssetSimple(done) {
-	let asset = new imageAssetModule.ImageAsset(splashscreenPath);
+	const asset = new imageAssetModule.ImageAsset(splashscreenPath);
 	asset.options = {
 		width: 0,
 		height: 0,
@@ -148,9 +148,9 @@ export function testFromAssetSimple(done) {
 }
 
 export function testFromAssetWithExactScaling(done) {
-	let asset = new imageAssetModule.ImageAsset(splashscreenPath);
-	let scaleWidth = 10;
-	let scaleHeight = 11;
+	const asset = new imageAssetModule.ImageAsset(splashscreenPath);
+	const scaleWidth = 10;
+	const scaleHeight = 11;
 	asset.options = {
 		width: scaleWidth,
 		height: scaleHeight,
@@ -186,9 +186,9 @@ export function testFromAssetWithExactScaling(done) {
 }
 
 export function testFromAssetWithScalingAndAspectRatio(done) {
-	let asset = new imageAssetModule.ImageAsset(splashscreenPath);
-	let scaleWidth = 10;
-	let scaleHeight = 11;
+	const asset = new imageAssetModule.ImageAsset(splashscreenPath);
+	const scaleWidth = 10;
+	const scaleHeight = 11;
 	asset.options = {
 		width: scaleWidth,
 		height: scaleHeight,
@@ -208,9 +208,9 @@ export function testFromAssetWithScalingAndAspectRatio(done) {
 }
 
 export function testFromAssetWithScalingAndDefaultAspectRatio(done) {
-	let asset = new imageAssetModule.ImageAsset(splashscreenPath);
-	let scaleWidth = 10;
-	let scaleHeight = 11;
+	const asset = new imageAssetModule.ImageAsset(splashscreenPath);
+	const scaleWidth = 10;
+	const scaleHeight = 11;
 	asset.options.width = scaleWidth;
 	asset.options.height = scaleHeight;
 
@@ -227,9 +227,9 @@ export function testFromAssetWithScalingAndDefaultAspectRatio(done) {
 }
 
 export function testFromAssetWithBiggerScaling(done) {
-	let asset = new imageAssetModule.ImageAsset(splashscreenPath);
-	let scaleWidth = 600;
-	let scaleHeight = 600;
+	const asset = new imageAssetModule.ImageAsset(splashscreenPath);
+	const scaleWidth = 600;
+	const scaleHeight = 600;
 	asset.options = {
 		width: scaleWidth,
 		height: scaleHeight,
@@ -301,8 +301,7 @@ export function testBase64Encode_JPEG_With_Quality() {
 
 export function testLoadFromBase64Encode_JPEG() {
 	// >> imagesource-from-base-string
-	let img: ImageSource;
-	img = ImageSource.fromBase64Sync(jpgImageAsBase64String);
+	const img: ImageSource = ImageSource.fromBase64Sync(jpgImageAsBase64String);
 	// << imagesource-from-base-string
 
 	TKUnit.assert(img !== null, 'Actual: ' + img);
@@ -324,8 +323,7 @@ export function testLoadFromBase64Encode_PNG() {
 }
 
 export function testLoadFromFontIconCode() {
-	let img: ImageSource;
-	img = ImageSource.fromFontIconCodeSync('F10B', Font.default.withFontFamily('FontAwesome'), new Color('red'));
+	const img: ImageSource = ImageSource.fromFontIconCodeSync('F10B', Font.default.withFontFamily('FontAwesome'), new Color('red'));
 
 	TKUnit.assert(img !== null, 'Actual: ' + img);
 	TKUnit.assert(img.width !== null, 'img.width');

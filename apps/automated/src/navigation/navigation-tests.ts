@@ -4,7 +4,7 @@ import * as helper from '../ui-helper';
 import * as frame from '@nativescript/core/ui/frame';
 // Creates a random colorful page full of meaningless stuff.
 let id = 0;
-let pageFactory = function (): Page {
+const pageFactory = function (): Page {
 	const page = new Page();
 	page.actionBarHidden = true;
 	page.id = `NavTestPage${id++}`;
@@ -14,7 +14,7 @@ let pageFactory = function (): Page {
 };
 
 function attachEventListeners(page: Page, events: Array<string>) {
-	let argsToString = (args: NavigatedData) => {
+	const argsToString = (args: NavigatedData) => {
 		return `${(<Page>args.object).id} ${args.eventName} ${args.isBackNavigation ? 'back' : 'forward'}`;
 	};
 
@@ -33,7 +33,7 @@ function attachEventListeners(page: Page, events: Array<string>) {
 }
 
 function attachFrameEventListeners(frame: { on(eventName: string, callback: (...args: any[]) => void): void }, events: Array<string>) {
-	let argsToString = (args: frame.NavigationData) => {
+	const argsToString = (args: frame.NavigationData) => {
 		return `${(<frame.BackstackEntry>args.entry).resolvedPage.id} ${args.eventName} ${args.isBack ? 'back' : 'forward'}`;
 	};
 	frame.on(Page.navigatingToEvent, (args: NavigatedData) => {
@@ -45,12 +45,12 @@ function attachFrameEventListeners(frame: { on(eventName: string, callback: (...
 }
 
 function _test_backstackVisible(transition?: NavigationTransition) {
-	let topmost = Frame.topmost();
-	let mainTestPage = topmost.currentPage;
+	const topmost = Frame.topmost();
+	const mainTestPage = topmost.currentPage;
 	topmost.navigate({ create: pageFactory, transition: transition, animated: !!transition });
 	TKUnit.waitUntilReady(() => topmost.navigationQueueIsEmpty());
 	// page1 should not be added to the backstack
-	let page0 = topmost.currentPage;
+	const page0 = topmost.currentPage;
 	topmost.navigate({ create: pageFactory, backstackVisible: false, transition: transition, animated: !!transition });
 	topmost.navigate({ create: pageFactory, transition: transition, animated: !!transition });
 	topmost.goBack();
@@ -98,11 +98,10 @@ export function test_backAndForwardParentPage_nestedFrames() {
 	const back = (pages) => Frame.topmost().goBack(Frame.topmost().backStack[Frame.topmost().backStack.length - pages]);
 	const currentPageMustBe = (tag) => TKUnit.assertEqual(Frame.topmost().currentPage['tag'], tag, 'Expected current page to be ' + tag + ' it was ' + Frame.topmost().currentPage['tag'] + ' instead.');
 
-	let parentPage1, parentPage2, innerPage1, innerPage2;
-	innerPage1 = page('InnerPage1');
-	innerPage2 = page('InnerPage2');
-	parentPage1 = page('ParentPage1');
-	parentPage2 = parentPage('ParentPage2', innerPage1);
+	const innerPage1 = page('InnerPage1');
+	const innerPage2 = page('InnerPage2');
+	const parentPage1 = page('ParentPage1');
+	const parentPage2 = parentPage('ParentPage2', innerPage1);
 
 	helper.waitUntilNavigatedTo(parentPage1, () => topmost.navigate({ create: () => parentPage1 }));
 	currentPageMustBe('ParentPage1');
@@ -285,13 +284,13 @@ function _test_NavigationEvents(transition?: NavigationTransition) {
 	const originalMainPageId = mainTestPage.id;
 
 	mainTestPage.id = 'main-page';
-	let actualMainPageEvents = new Array<string>();
-	let actualMainFrameEvents = new Array<string>();
+	const actualMainPageEvents = new Array<string>();
+	const actualMainFrameEvents = new Array<string>();
 	attachEventListeners(mainTestPage, actualMainPageEvents);
 	attachFrameEventListeners(topmost, actualMainFrameEvents);
 
-	let actualSecondPageEvents = new Array<string>();
-	let secondPageFactory = function (): Page {
+	const actualSecondPageEvents = new Array<string>();
+	const secondPageFactory = function (): Page {
 		const secondPage = new Page();
 		secondPage.actionBarHidden = true;
 		secondPage.id = 'second-page';
@@ -309,13 +308,13 @@ function _test_NavigationEvents(transition?: NavigationTransition) {
 
 	mainTestPage.id = originalMainPageId;
 
-	let expectedMainPageEvents = ['main-page navigatingFrom forward', 'main-page navigatedFrom forward', 'main-page navigatingTo back', 'main-page navigatedTo back'];
+	const expectedMainPageEvents = ['main-page navigatingFrom forward', 'main-page navigatedFrom forward', 'main-page navigatingTo back', 'main-page navigatedTo back'];
 	TKUnit.arrayAssert(actualMainPageEvents, expectedMainPageEvents, 'Actual main-page events are different from expected.');
 
-	let expectedMainFrameEvents = ['second-page navigatingTo forward', 'second-page navigatedTo forward', 'main-page navigatingTo back', 'main-page navigatedTo back'];
+	const expectedMainFrameEvents = ['second-page navigatingTo forward', 'second-page navigatedTo forward', 'main-page navigatingTo back', 'main-page navigatedTo back'];
 	TKUnit.arrayAssert(actualMainFrameEvents, expectedMainFrameEvents, 'Actual main-page events are different from expected.');
 
-	let expectedSecondPageEvents = ['second-page navigatingTo forward', 'second-page navigatedTo forward', 'second-page navigatingFrom back', 'second-page navigatedFrom back'];
+	const expectedSecondPageEvents = ['second-page navigatingTo forward', 'second-page navigatedTo forward', 'second-page navigatingFrom back', 'second-page navigatedFrom back'];
 	TKUnit.arrayAssert(actualSecondPageEvents, expectedSecondPageEvents, 'Actual second-page events are different from expected.');
 
 	TKUnit.assertEqual(topmost.currentPage, mainTestPage, 'We should be on the main test page at the end of the test.');
@@ -333,8 +332,8 @@ function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Back(transit
 	const topmost = Frame.topmost();
 	const mainTestPage = topmost.currentPage;
 
-	let actualSecondPageEvents = new Array<string>();
-	let secondPageFactory = function (): Page {
+	const actualSecondPageEvents = new Array<string>();
+	const secondPageFactory = function (): Page {
 		const secondPage = new Page();
 		secondPage.actionBarHidden = true;
 		secondPage.id = 'second-page';
@@ -350,7 +349,7 @@ function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Back(transit
 	// Go back to main
 	helper.goBack();
 
-	let expectedSecondPageEvents = ['second-page navigatingTo forward', 'second-page navigatedTo forward', 'second-page navigatingFrom back', 'second-page navigatedFrom back'];
+	const expectedSecondPageEvents = ['second-page navigatingTo forward', 'second-page navigatedTo forward', 'second-page navigatingFrom back', 'second-page navigatedFrom back'];
 	TKUnit.arrayAssert(actualSecondPageEvents, expectedSecondPageEvents, 'Actual second-page events are different from expected.');
 
 	TKUnit.assertEqual(topmost.currentPage, mainTestPage, 'We should be on the main test page at the end of the test.');
@@ -368,8 +367,8 @@ function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward(tran
 	const topmost = Frame.topmost();
 	const mainTestPage = topmost.currentPage;
 
-	let actualSecondPageEvents = new Array<string>();
-	let secondPageFactory = function (): Page {
+	const actualSecondPageEvents = new Array<string>();
+	const secondPageFactory = function (): Page {
 		const secondPage = new Page();
 		secondPage.actionBarHidden = true;
 		secondPage.id = 'second-page';
@@ -388,7 +387,7 @@ function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward(tran
 	// Go back to main
 	helper.goBack();
 
-	let expectedSecondPageEvents = ['second-page navigatingTo forward', 'second-page navigatedTo forward', 'second-page navigatingFrom forward', 'second-page navigatedFrom forward'];
+	const expectedSecondPageEvents = ['second-page navigatingTo forward', 'second-page navigatedTo forward', 'second-page navigatingFrom forward', 'second-page navigatedFrom forward'];
 	TKUnit.arrayAssert(actualSecondPageEvents, expectedSecondPageEvents, 'Actual second-page events are different from expected.');
 
 	TKUnit.assertEqual(topmost.currentPage, mainTestPage, 'We should be on the main test page at the end of the test.');

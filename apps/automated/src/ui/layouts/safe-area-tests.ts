@@ -59,7 +59,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
 	// Common
 	private getViews(template: string) {
-		let root = Builder.parse(template);
+		const root = Builder.parse(template);
 
 		return {
 			root,
@@ -305,7 +305,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
 	// Dock
 	private getDockViews(template: string) {
-		let root = Builder.parse(template);
+		const root = Builder.parse(template);
 
 		return {
 			root,
@@ -817,7 +817,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
 	// Grid
 	private getGridViews(template: string) {
-		let root = Builder.parse(template);
+		const root = Builder.parse(template);
 
 		return {
 			root,

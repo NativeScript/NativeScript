@@ -21,3 +21,14 @@ export function getDebugRequestMethodAndBody(options: HttpRequestOptions): { met
 
 	return { method };
 }
+
+export function getRequestBodyBytes(content: unknown): Uint8Array | undefined {
+	if (content instanceof ArrayBuffer) {
+		return new Uint8Array(content);
+	}
+	if (ArrayBuffer.isView(content)) {
+		return new Uint8Array(content.buffer, content.byteOffset, content.byteLength);
+	}
+
+	return undefined;
+}
