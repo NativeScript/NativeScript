@@ -23,7 +23,7 @@ const animFadeOut = 17432577; // android.R.anim.fade_out
 export const waitingQueue = new Map<number, Set<ExpandedEntry>>();
 export const completedEntries = new Map<number, ExpandedEntry>();
 
-let TransitionListener = lazy(() => {
+const TransitionListener = lazy(() => {
 	@NativeClass
 	@Interfaces([(<any>androidx).transition.Transition.TransitionListener])
 	class TransitionListenerImpl extends java.lang.Object implements androidx.transition.Transition.TransitionListener {

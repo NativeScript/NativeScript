@@ -11,7 +11,7 @@ export function getNativeItemsCount(bar: segmentedBarModule.SegmentedBar): numbe
 }
 
 export function checkNativeItemsTextColor(bar: segmentedBarModule.SegmentedBar): boolean {
-	var isValid = true;
+	let isValid = true;
 
 	// for (var tabIndex = 0; tabIndex < bar.android.getTabWidget().getTabCount(); tabIndex++) {
 	//     var tabChild = <android.view.ViewGroup>bar.android.getTabWidget().getChildTabViewAt(tabIndex);
@@ -21,7 +21,7 @@ export function checkNativeItemsTextColor(bar: segmentedBarModule.SegmentedBar):
 	// }
 
 	for (let i = 0, itemsLength = bar.items.length; i < itemsLength; i++) {
-		let textView = <android.widget.TextView>bar.items[0].nativeViewProtected;
+		const textView = <android.widget.TextView>bar.items[0].nativeViewProtected;
 		isValid = bar.color && bar.color.android === textView.getCurrentTextColor();
 	}
 
@@ -32,7 +32,7 @@ export function setNativeSelectedIndex(bar: segmentedBarModule.SegmentedBar, ind
 	(<android.widget.TabHost>bar.android).setCurrentTab(index);
 }
 
-export var checkBackgroundColorUpdatedAfterItemSelected = function (bar: segmentedBarModule.SegmentedBar): boolean {
+export const checkBackgroundColorUpdatedAfterItemSelected = function (bar: segmentedBarModule.SegmentedBar): boolean {
 	let isValid = 0;
 	bar.selectedIndex = 0;
 	bar.selectedTextColor = new Color('green');

@@ -8,8 +8,8 @@ export function easeAnimate(args) {
 	const item: SegmentedBarItem = select.items[select.selectedIndex];
 	const easeType: string = clicked.text;
 	const extent = 128;
-	let duration = easeType === 'spring' ? 800 : 500;
-	let delay = easeType === 'spring' ? 0 : 200;
+	const duration = easeType === 'spring' ? 800 : 500;
+	const delay = easeType === 'spring' ? 0 : 200;
 	let animateKey: string = null;
 	let animateValueTo: any = null;
 	let animateValueFrom: any = null;

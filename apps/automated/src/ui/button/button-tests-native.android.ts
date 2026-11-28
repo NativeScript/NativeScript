@@ -10,7 +10,7 @@ export function getNativeTextWrap(button: Button): boolean {
 }
 
 export function getNativeFontSize(button: Button): number {
-	let density = Utils.layout.getDisplayDensity();
+	const density = Utils.layout.getDisplayDensity();
 
 	return button.android.getTextSize() / density;
 }
@@ -24,7 +24,7 @@ export function getNativeBackgroundColor(button: Button): Color {
 }
 
 export function getNativeTextAlignment(button: Button): string {
-	let gravity = button.android.getGravity();
+	const gravity = button.android.getGravity();
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
 		return CoreTypes.TextAlignment.left;

@@ -260,12 +260,14 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		// keeps `solid-js` resolving through the stable resolve.alias →
 		// `dist/dev.js` URL for the whole session, so there is a single core and
 		// no mid-boot reload. Mirrors Angular, which has run this way reliably.
+		// falls through
 		case 'solid':
 		// React (rendering through dominative via @nativescript-community/react)
 		// has the same single-instance requirement as Solid: two copies of `react`
 		// — one pre-bundled by Vite's depscanner, one served through `/ns/m/` —
 		// means two reconciler/dispatcher realms, so hooks/context silently break.
 		// Disable discovery under HMR so `react` resolves through one stable path.
+		// falls through
 		case 'react':
 			disableOptimizeDeps = hmrActive || process.env.NS_DISABLE_OPTIMIZEDEPS === '1' || process.env.NS_DISABLE_OPTIMIZEDEPS === 'true';
 			break;

@@ -10,7 +10,10 @@ export class TestPageMainViewModel extends Observable {
 
 	public basePath: string = '';
 
-	constructor(protected buttonsPanel: WrapLayout, protected _examples: Map<string, string>) {
+	constructor(
+		protected buttonsPanel: WrapLayout,
+		protected _examples: Map<string, string>,
+	) {
 		super();
 		if (this.shouldLoadBtns()) {
 			this.sortMap(this._examples);
@@ -46,10 +49,10 @@ export class TestPageMainViewModel extends Observable {
 	}
 
 	private loadButtons() {
-		var count = 0;
+		let count = 0;
 
 		this._examples.forEach((element, key) => {
-			var btn = new Button();
+			const btn = new Button();
 			if (platform.isAndroid) {
 				btn.style.height = 25;
 				btn.style.fontSize = 10;
@@ -66,10 +69,10 @@ export class TestPageMainViewModel extends Observable {
 			btn.on(
 				Button.tapEvent,
 				function (eventData) {
-					let text = btn.text;
+					const text = btn.text;
 					this.loadExample(text);
 				},
-				this
+				this,
 			);
 
 			btn.text = key;
@@ -79,7 +82,7 @@ export class TestPageMainViewModel extends Observable {
 	}
 
 	private sortMap(map: Map<string, string>) {
-		let arrayOfKeys = new Array<string>();
+		const arrayOfKeys = new Array<string>();
 		map.forEach((value, key, map) => {
 			arrayOfKeys.push(key);
 		});
@@ -95,7 +98,7 @@ export class TestPageMainViewModel extends Observable {
 			return a.localeCompare(b);
 		});
 
-		let sortedExamples = new Map<string, string>();
+		const sortedExamples = new Map<string, string>();
 		arrayOfKeys.forEach((k) => {
 			sortedExamples.set(k, this._examples.get(k));
 		});

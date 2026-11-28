@@ -15,12 +15,12 @@ const embeddedFontNames = ['FontAwesome', 'Pacifico', 'Sofia'];
 const fontStyles = [CoreTypes.FontStyle.normal, CoreTypes.FontStyle.italic];
 const fontWeights = [CoreTypes.FontWeight.thin, CoreTypes.FontWeight.extraLight, CoreTypes.FontWeight.light, CoreTypes.FontWeight.normal, CoreTypes.FontWeight.medium, CoreTypes.FontWeight.semiBold, CoreTypes.FontWeight.bold, CoreTypes.FontWeight.extraBold, CoreTypes.FontWeight.black];
 
-let green = new Color('Green');
-let red = new Color('Red');
-let white = new Color('White');
-let black = new Color('Black');
+const green = new Color('Green');
+const red = new Color('Red');
+const white = new Color('White');
+const black = new Color('Black');
 
-let compareIgnoreCase = function (a, b) {
+const compareIgnoreCase = function (a, b) {
 	return a.toLowerCase().localeCompare(b.toLowerCase());
 };
 
@@ -42,9 +42,9 @@ if (isIOS) {
 }
 
 export function onPageLoaded(args: NavigatedData) {
-	let page = <Page>args.object;
-	let scrollView = new ScrollView();
-	let stackLayout = new StackLayout();
+	const page = <Page>args.object;
+	const scrollView = new ScrollView();
+	const stackLayout = new StackLayout();
 	generateLabels(stackLayout);
 	scrollView.content = stackLayout;
 	page.content = scrollView;
@@ -56,7 +56,7 @@ function generateLabels(layout: StackLayout) {
 		layout.addChild(prepareTitle(genericFontFamilies[f], 20));
 		for (let s = 0; s < fontStyles.length; s++) {
 			for (let w = 0; w < fontWeights.length; w++) {
-				let view = prepareLabel(genericFontFamilies[f], fontStyles[s], fontWeights[w]);
+				const view = prepareLabel(genericFontFamilies[f], fontStyles[s], fontWeights[w]);
 				layout.addChild(view);
 			}
 		}
@@ -69,7 +69,7 @@ function generateLabels(layout: StackLayout) {
 		layout.addChild(prepareTitle(fontFamilies[f], 20));
 		for (let s = 0; s < fontStyles.length; s++) {
 			for (let w = 0; w < fontWeights.length; w++) {
-				let view = prepareLabel(fontFamilies[f], fontStyles[s], fontWeights[w]);
+				const view = prepareLabel(fontFamilies[f], fontStyles[s], fontWeights[w]);
 				layout.addChild(view);
 			}
 		}
@@ -79,7 +79,7 @@ function generateLabels(layout: StackLayout) {
 		layout.addChild(prepareTitle('Phone Fonts', 24));
 	}
 	for (let f = 0; f < fontNames.length; f++) {
-		let view = prepareLabel(fontNames[f], 'normal', 'normal');
+		const view = prepareLabel(fontNames[f], 'normal', 'normal');
 		layout.addChild(view);
 	}
 
@@ -87,13 +87,13 @@ function generateLabels(layout: StackLayout) {
 		layout.addChild(prepareTitle('Embedded Fonts', 24));
 	}
 	for (let f = 0; f < embeddedFontNames.length; f++) {
-		let view = prepareLabel(embeddedFontNames[f], 'normal', 'normal');
+		const view = prepareLabel(embeddedFontNames[f], 'normal', 'normal');
 		layout.addChild(view);
 	}
 }
 
 function prepareTitle(text: string, fontSize: number) {
-	let title = new Label();
+	const title = new Label();
 	title.text = text;
 	title.height = 100;
 	title.backgroundColor = black;
@@ -108,12 +108,12 @@ function prepareTitle(text: string, fontSize: number) {
 }
 
 function prepareLabel(fontFamily: string, fontStyle: string, fontWeight: string): View {
-	let label = new Label();
+	const label = new Label();
 	label['font-family'] = fontFamily;
-	let fontFamilyCss = `font-family: ${fontFamily}; `;
-	let fontStyleCss = fontStyle !== CoreTypes.FontStyle.normal ? `font-style: ${fontStyle}; ` : '';
-	let fontWeightCss = fontWeight !== CoreTypes.FontWeight.normal ? `font-weight: ${fontWeight}; ` : '';
-	let css = `${fontFamilyCss}${fontStyleCss}${fontWeightCss}`;
+	const fontFamilyCss = `font-family: ${fontFamily}; `;
+	const fontStyleCss = fontStyle !== CoreTypes.FontStyle.normal ? `font-style: ${fontStyle}; ` : '';
+	const fontWeightCss = fontWeight !== CoreTypes.FontWeight.normal ? `font-weight: ${fontWeight}; ` : '';
+	const css = `${fontFamilyCss}${fontStyleCss}${fontWeightCss}`;
 	label.text = `${typeUtils.getClass(label)} {${css}};`;
 	label.textWrap = true;
 	label.style.textAlignment = 'left';
@@ -122,9 +122,9 @@ function prepareLabel(fontFamily: string, fontStyle: string, fontWeight: string)
 	label.style.padding = '2';
 	label.setInlineStyle(css);
 	label.on('loaded', (args) => {
-		let sender = <Label>args.object;
+		const sender = <Label>args.object;
 		if (sender.ios) {
-			let uiFont = _getUIFont(label);
+			const uiFont = _getUIFont(label);
 			sender.text += `\niOS Font: ${uiFont.fontName};`;
 			if (genericFontFamilies.indexOf(fontFamily) !== -1) {
 				return;

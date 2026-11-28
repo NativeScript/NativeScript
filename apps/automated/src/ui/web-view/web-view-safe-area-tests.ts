@@ -22,7 +22,7 @@ export class WebViewSafeAreaTest extends UITest<WebView> {
 				waitUntilTestElementLayoutIsValid(ui.root);
 				test(ui);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -31,7 +31,7 @@ export class WebViewSafeAreaTest extends UITest<WebView> {
 	}
 
 	private getViews(template: string) {
-		let root = Builder.parse(template);
+		const root = Builder.parse(template);
 
 		return {
 			root,
@@ -60,7 +60,7 @@ export class WebViewSafeAreaTest extends UITest<WebView> {
 			({ list }) => {
 				this.webview_in_full_screen(list, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 

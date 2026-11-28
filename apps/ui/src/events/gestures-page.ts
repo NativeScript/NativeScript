@@ -2,7 +2,7 @@ import { Screen, StackLayout, Page, Label, Button, GestureEventData, RotationGes
 
 export function createPage() {
 	const stack = new StackLayout();
-	var stopButton = new Button();
+	const stopButton = new Button();
 	if (global.isAndroid) {
 		stopButton.height = 30;
 		stopButton.fontSize = 8;

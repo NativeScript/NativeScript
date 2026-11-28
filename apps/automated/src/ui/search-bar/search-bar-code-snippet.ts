@@ -11,7 +11,7 @@ export function onClear(args) {
 // << searchbar-clear
 // >> searchbar-submit
 export function onSubmit(args) {
-	var searchbar: SearchBar = <SearchBar>args.object;
+	const searchbar: SearchBar = <SearchBar>args.object;
 	console.log('Search submit result: ' + searchbar.text);
 }
 // << searchbar-submit
