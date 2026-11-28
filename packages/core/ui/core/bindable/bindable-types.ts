@@ -20,6 +20,22 @@ export interface BindingOptions {
 	 * An expression used for calculations (convertions) based on the value of the property.
 	 */
 	expression?: string;
+	/**
+	 * The expression compiled ahead of time, used in place of evaluating `expression`.
+	 */
+	compiled?: CompiledBinding;
+}
+
+/**
+ * A binding expression compiled ahead of time. Each closure takes the binding context as the expression evaluator sees
+ * it (binding resources and `$value`/`$parent`/`$parents` added) and the object whose keys take precedence over the
+ * context's, and returns what the evaluator returns for the same expression.
+ */
+export interface CompiledBinding {
+	/** The expression's value toward the target. */
+	get: (model: any, changed: any) => any;
+	/** The two-way update expression's value toward the source, converters taking `toModel`. */
+	back?: (model: any, changed: any) => any;
 }
 
 /**
