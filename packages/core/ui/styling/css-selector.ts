@@ -1000,8 +1000,7 @@ function pushDeclaration(declarations: Declaration[], property: string, value: s
 		return;
 	}
 
-	// A var()/calc() shorthand cannot be expanded yet - cascade one
-	// pending-substitution value per longhand instead.
+	// Cascade one pending-substitution value per longhand for deferred shorthands.
 	const pending = _pendingCssShorthandSubstitution(property, value);
 	if (pending) {
 		for (let i = 0, length = pending.length; i < length; i++) {

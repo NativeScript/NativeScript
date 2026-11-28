@@ -99,8 +99,8 @@ const kebabCasePattern = /-([a-z])/g;
 const kebabCaseReplacementFunc = (g: string) => g[1].toUpperCase();
 const pattern = /('|")(.*?)\1/;
 
-function evaluateCssVariable(view: ViewBase, name: string, value: string): string | null {
-	const evaluated = evaluateCssExpressions(view, name, value);
+function evaluateCssVariable(view: ViewBase, name: string, value: string, preserveMath: boolean): string | null {
+	const evaluated = evaluateCssExpressions(view, name, value, undefined, preserveMath);
 
 	return evaluated === unsetValue ? null : evaluated;
 }
@@ -113,7 +113,8 @@ function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, st
 				names = [];
 			}
 			names.push(property);
-			view.style.setScopedCssVariable(property, evaluateCssVariable(view, property, cssExpsProperties[property]));
+			const authored = cssExpsProperties[property];
+			view.style.setScopedCssVariable(property, evaluateCssVariable(view, property, authored, false), evaluateCssVariable(view, property, authored, true));
 		}
 	}
 	if (!names || names.length < 2 || !hasForwardCssVariableReference(names, cssExpsProperties)) {
@@ -123,9 +124,11 @@ function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, st
 	for (let pass = 1; pass < names.length; pass++) {
 		let changed = false;
 		for (const name of names) {
-			const value = evaluateCssVariable(view, name, cssExpsProperties[name]);
-			if (value !== view.style.getCssVariable(name)) {
-				view.style.setScopedCssVariable(name, value);
+			const authored = cssExpsProperties[name];
+			const value = evaluateCssVariable(view, name, authored, false);
+			const rawValue = evaluateCssVariable(view, name, authored, true);
+			if (value !== view.style.getCssVariable(name) || rawValue !== view.style.getCssVariable(name, true)) {
+				view.style.setScopedCssVariable(name, value, rawValue);
 				changed = true;
 			}
 		}
