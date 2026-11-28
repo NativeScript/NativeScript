@@ -1,9 +1,10 @@
 // Definitions.
 import { View } from '../../core/view';
+import type { ViewBase } from '../../core/view-base';
 
 // Types.
 import { isEventOrGesture } from '../../core/bindable';
-import { getBindingOptions, bindingConstants } from '../binding-builder';
+import { getBindingOptions, bindingConstants, getCompiledBinding } from '../binding-builder';
 import { profile } from '../../../profiling';
 import * as debugModule from '../../../utils/debug';
 import { Device } from '../../../platform';
@@ -11,7 +12,8 @@ import { sanitizeModuleName } from '../../../utils/common';
 import { resolveModuleName } from '../../../module-name-resolver';
 
 export interface ComponentModule {
-	component: View;
+	// Any element: a view, or what a view holds (an ActionItem, a Span).
+	component: ViewBase;
 	exports: any;
 }
 
@@ -58,8 +60,8 @@ const CODE_FILE = 'codeFile';
 const CSS_FILE = 'cssFile';
 const IMPORT = 'import';
 
-const createComponentInstance = profile('createComponentInstance', (elementName: string, namespace: string): { instance: View; instanceModule: Object } => {
-	let instance: View;
+const createComponentInstance = profile('createComponentInstance', (elementName: string, namespace: string | undefined): { instance: ViewBase; instanceModule: Object } => {
+	let instance: ViewBase;
 	let instanceModule: Object;
 	// Get module id.
 	let resolvedModuleName;
@@ -101,7 +103,7 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 	return { instance, instanceModule };
 });
 
-const getComponentModuleExports = profile('getComponentModuleExports', (instance: View, moduleExports: Object, attributes: Object): Object => {
+const getComponentModuleExports = profile('getComponentModuleExports', (instance: ViewBase, moduleExports: Object, attributes: Object): Object => {
 	if (attributes) {
 		const codeFileAttribute = attributes[CODE_FILE] || attributes[IMPORT];
 		if (codeFileAttribute) {
@@ -140,10 +142,11 @@ const applyComponentCss = profile('applyComponentCss', (instance: View, moduleNa
 	}
 });
 
-const applyComponentAttributes = profile('applyComponentAttributes', (instance: View, instanceModule: Object, moduleExports: Object, attributes: Object) => {
+const applyComponentAttributes = profile('applyComponentAttributes', (instance: ViewBase, instanceModule: Object, moduleExports: Object, attributes: Object, bindingKey?: string) => {
 	if (instance && instanceModule) {
 		for (let attr in attributes) {
 			const attrValue = <string>attributes[attr];
+			const attrKey = bindingKey && bindingKey + attr;
 
 			if (attr.indexOf(':') !== -1) {
 				const platformName = attr.split(':')[0].trim();
@@ -156,7 +159,8 @@ const applyComponentAttributes = profile('applyComponentAttributes', (instance: 
 			}
 
 			if (attr.indexOf('.') !== -1) {
-				let subObj = instance;
+				// A dotted attribute (`ios.position`) sets a member of what the instance holds, any object.
+				let subObj: any = instance;
 				const properties = attr.split('.');
 				const subPropName = properties[properties.length - 1];
 
@@ -167,16 +171,16 @@ const applyComponentAttributes = profile('applyComponentAttributes', (instance: 
 				}
 
 				if (subObj !== undefined && subObj !== null) {
-					setPropertyValue(subObj, instanceModule, moduleExports, subPropName, attrValue);
+					setPropertyValue(subObj, instanceModule, moduleExports, subPropName, attrValue, attrKey);
 				}
 			} else {
-				setPropertyValue(instance, instanceModule, moduleExports, attr, attrValue);
+				setPropertyValue(instance, instanceModule, moduleExports, attr, attrValue, attrKey);
 			}
 		}
 	}
 });
 
-export function getComponentModule(elementName: string, namespace: string, attributes: Object, moduleExports: Object, moduleNamePath?: string, isRootComponent?: boolean): ComponentModule {
+export function getComponentModule(elementName: string, namespace: string | undefined, attributes: Object, moduleExports: Object, moduleNamePath?: string, isRootComponent?: boolean, bindingKey?: string): ComponentModule {
 	// Support lower-case-dashed component declaration in the XML (https://github.com/NativeScript/NativeScript/issues/309).
 	elementName = elementName
 		.split('-')
@@ -186,10 +190,10 @@ export function getComponentModule(elementName: string, namespace: string, attri
 	const { instance, instanceModule } = createComponentInstance(elementName, namespace, null);
 	moduleExports = getComponentModuleExports(instance, <any>moduleExports, attributes);
 	if (isRootComponent) {
-		applyComponentCss(instance, moduleNamePath, attributes);
+		applyComponentCss(<View>instance, moduleNamePath, attributes);
 	}
 
-	applyComponentAttributes(instance, instanceModule, moduleExports, attributes);
+	applyComponentAttributes(instance, instanceModule, moduleExports, attributes, bindingKey);
 
 	let componentModule;
 	if (instance && instanceModule) {
@@ -199,7 +203,10 @@ export function getComponentModule(elementName: string, namespace: string, attri
 	return componentModule;
 }
 
-export function setPropertyValue(instance: View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any) {
+/**
+ * `bindingKey`: the attribute's key in the compiled binding table (`registerCompiledBinding`).
+ */
+export function setPropertyValue(instance: any, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any, bindingKey?: string) {
 	// Note: instanceModule can be null if we are loading custom component with no code-behind.
 	if (isBinding(propertyValue) && instance.bind) {
 		const bindOptions = getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
@@ -209,6 +216,7 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
 				targetProperty: bindOptions[bindingConstants.targetProperty],
 				expression: bindOptions[bindingConstants.expression],
 				twoWay: bindOptions[bindingConstants.twoWay],
+				compiled: bindingKey ? getCompiledBinding(bindingKey) : undefined,
 			},
 			bindOptions[bindingConstants.source],
 		);
@@ -243,6 +251,6 @@ function isBinding(value: any): boolean {
 
 // For example, ListView.itemTemplateSelector
 const KNOWN_FUNCTIONS = 'knownFunctions';
-function isKnownFunction(name: string, instance: View): boolean {
-	return instance.constructor && KNOWN_FUNCTIONS in instance.constructor && (instance.constructor[KNOWN_FUNCTIONS] as string).indexOf(name) !== -1;
+function isKnownFunction(name: string, instance: ViewBase | object): boolean {
+	return instance.constructor && KNOWN_FUNCTIONS in instance.constructor && (instance.constructor[KNOWN_FUNCTIONS] as string[]).indexOf(name) !== -1;
 }

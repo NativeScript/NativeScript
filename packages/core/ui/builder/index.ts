@@ -74,7 +74,7 @@ export class Builder {
 		} else if (entry.moduleName) {
 			const moduleName = sanitizeModuleName(entry.moduleName);
 			const resolvedCodeModuleName = resolveModuleName(moduleName, ''); //`${moduleName}.xml`;
-			const moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName) : null;
+			const moduleExports = resolvedCodeModuleName ? loadCodeModule(resolvedCodeModuleName) : null;
 			if (moduleExports && moduleExports.createPage) {
 				// Exports has a createPage() method
 				const view = moduleExports.createPage();
@@ -112,7 +112,7 @@ export class Builder {
 			const exports = context ? getExports(context) : undefined;
 			const componentModule = parseInternal(value, exports);
 
-			return componentModule && componentModule.component;
+			return componentModule && <View>componentModule.component;
 		}
 	}
 
@@ -130,7 +130,7 @@ export class Builder {
 			componentModule = loadCustomComponent(pathOrOptions.path, pathOrOptions.name, pathOrOptions.attributes, pathOrOptions.exports, pathOrOptions.page, true);
 		}
 
-		return componentModule && componentModule.component;
+		return componentModule && <View>componentModule.component;
 	}
 
 	/**
@@ -180,13 +180,57 @@ export function createViewFromEntry(entry: ViewEntry): View {
 	return Builder.createViewFromEntry(entry);
 }
 
+/**
+ * Builds an XML file's view tree without parsing it, as the Builder would from its text: `exports` is the context the
+ * Builder would parse it with, `moduleName` the module it loads it for, `xmlModule` the file as the resolver named it.
+ */
+export type PageFactory = (exports: any, moduleName: string, xmlModule: string) => View;
+
+const pageFactories = new Map<string, PageFactory>();
+const pageCodeModules = new Map<string, string>();
+const ownedCodeModules = new Map<string, any>();
+
+/**
+ * Registers the factory of the XML file `xmlModule` (as the module name resolver names it, without a leading `./`);
+ * `undefined` removes it. The resolver still picks the file, so qualified variants keep their own factories.
+ * `codeModule`/`codeExports`: the file's code-behind as the resolver names it and the very object `global.loadModule`
+ * returns for it, which core then takes without loading the module.
+ */
+export function registerPageFactory(xmlModule: string, factory?: PageFactory, codeModule?: string, codeExports?: any): void {
+	const owned = pageCodeModules.get(xmlModule);
+	if (owned !== undefined) {
+		pageCodeModules.delete(xmlModule);
+		ownedCodeModules.delete(owned);
+	}
+	if (factory) {
+		pageFactories.set(xmlModule, factory);
+		if (codeModule) {
+			pageCodeModules.set(xmlModule, codeModule);
+			ownedCodeModules.set(codeModule, codeExports);
+		}
+	} else {
+		pageFactories.delete(xmlModule);
+	}
+}
+
+function loadCodeModule(resolvedCodeModuleName: string): any {
+	const name = resolvedCodeModuleName.startsWith('./') ? resolvedCodeModuleName.substring(2) : resolvedCodeModuleName;
+
+	return ownedCodeModules.has(name) ? ownedCodeModules.get(name) : global.loadModule(resolvedCodeModuleName);
+}
+
 function loadInternal(moduleName: string, moduleExports: any): ComponentModule {
 	let componentModule: ComponentModule;
 	const resolvedXmlModule = resolveModuleName(moduleName, 'xml');
 
 	if (resolvedXmlModule) {
-		const text = global.loadModule(resolvedXmlModule);
-		componentModule = parseInternal(text, moduleExports, resolvedXmlModule, moduleName);
+		const factory = pageFactories.get(resolvedXmlModule.startsWith('./') ? resolvedXmlModule.substring(2) : resolvedXmlModule);
+		if (factory) {
+			componentModule = { component: factory(moduleExports, moduleName, resolvedXmlModule), exports: moduleExports };
+		} else {
+			const text = global.loadModule(resolvedXmlModule);
+			componentModule = parseInternal(text, moduleExports, resolvedXmlModule, moduleName);
+		}
 	}
 
 	const componentView = componentModule && componentModule.component;
@@ -205,7 +249,7 @@ function loadInternal(moduleName: string, moduleExports: any): ComponentModule {
 	return componentModule;
 }
 
-export function loadCustomComponent(componentNamespace: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: View, isRootComponent = true, moduleNamePath?: string): ComponentModule {
+export function loadCustomComponent(componentNamespace: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: View, isRootComponent = true, moduleNamePath?: string, bindingKey?: string): ComponentModule {
 	if (!parentPage && context) {
 		// Read the parent page that was passed down below
 		// https://github.com/NativeScript/NativeScript/issues/1639
@@ -226,7 +270,7 @@ export function loadCustomComponent(componentNamespace: string, componentName?: 
 		let subExports = context;
 		if (resolvedCodeModuleName) {
 			// Component has registered code module.
-			subExports = global.loadModule(resolvedCodeModuleName);
+			subExports = loadCodeModule(resolvedCodeModuleName);
 		}
 
 		// Pass the parent page down the chain in case of custom components nested on many levels. Use the context for piggybacking.
@@ -242,12 +286,12 @@ export function loadCustomComponent(componentNamespace: string, componentName?: 
 		// Attributes will be transferred to the custom component
 		if (isDefined(result) && isDefined(result.component) && isDefined(attributes)) {
 			for (const attr in attributes) {
-				setPropertyValue(result.component, subExports, context, attr, attributes[attr]);
+				setPropertyValue(result.component, subExports, context, attr, attributes[attr], bindingKey && bindingKey + attr);
 			}
 		}
 	} else {
 		// Custom components without XML
-		result = getComponentModule(componentName, componentNamespace, attributes, context, moduleNamePath, isRootComponent);
+		result = getComponentModule(componentName, componentNamespace, attributes, context, moduleNamePath, isRootComponent, bindingKey);
 
 		// The namespace is the JS module and the (componentName is the name of the class in the module)
 		// So if there is no componentNamespace/componentName.{qualifiers}.css we should also look for
@@ -294,7 +338,7 @@ function parseInternal(value: string, context: any, xmlModule?: string, moduleNa
 						// no-op
 					};
 
-		(start = new xml2ui.XmlStringParser(errorFormat)).pipe(new xml2ui.PlatformFilter()).pipe(new xml2ui.XmlStateParser((ui = new xml2ui.ComponentParser(context, errorFormat, componentSourceTracker, moduleName))));
+		(start = new xml2ui.XmlStringParser(errorFormat)).pipe(new xml2ui.PlatformFilter()).pipe(new xml2ui.XmlStateParser((ui = new xml2ui.ComponentParser(context, errorFormat, componentSourceTracker, moduleName, xmlModule))));
 
 		start.parse(value);
 
@@ -480,6 +524,7 @@ export namespace xml2ui {
 		templateItems: Array<string>;
 		errorFormat: ErrorFormatter;
 		sourceTracker: SourceTracker;
+		xmlModule?: string;
 	}
 
 	/**
@@ -538,7 +583,7 @@ export namespace xml2ui {
 			return this._templateProperty.elementName;
 		}
 
-		private parseStartElement(prefix: string, namespace: string, elementName: string, attributes: Object) {
+		private parseStartElement(prefix: string | undefined, namespace: string | undefined, elementName: string, attributes: Object) {
 			if (this._state === TemplateParser.State.EXPECTING_START) {
 				this._state = TemplateParser.State.PARSING;
 			} else if (this._state === TemplateParser.State.FINISHED) {
@@ -578,7 +623,7 @@ export namespace xml2ui {
 
 					(start = new xml2ui.XmlArgsReplay(this._recordedXmlStream, errorFormat))
 						// No platform filter, it has been filtered already
-						.pipe(new XmlStateParser((ui = new ComponentParser(context, errorFormat, sourceTracker))));
+						.pipe(new XmlStateParser((ui = new ComponentParser(context, errorFormat, sourceTracker, undefined, this._templateProperty.xmlModule))));
 
 					start.replay();
 
@@ -663,6 +708,7 @@ export namespace xml2ui {
 			errorFormat: ErrorFormatter,
 			sourceTracker: SourceTracker,
 			private moduleName?: string,
+			private xmlModule?: string,
 		) {
 			this.context = context;
 			this.error = errorFormat;
@@ -671,9 +717,10 @@ export namespace xml2ui {
 
 		@profile
 		private buildComponent(args: xml.ParserEvent): ComponentModule {
+			const bindingKey = this.xmlModule && args.position ? `${this.xmlModule.startsWith('./') ? this.xmlModule.substring(2) : this.xmlModule}:${args.position.line}:${args.position.column}:` : undefined;
 			if (args.prefix && args.namespace) {
 				// Custom components
-				return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView, !this.currentRootView, this.moduleName);
+				return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView, !this.currentRootView, this.moduleName, bindingKey);
 			} else {
 				// Default components
 				let namespace = args.namespace;
@@ -682,7 +729,7 @@ export namespace xml2ui {
 					namespace = undefined;
 				}
 
-				return getComponentModule(args.elementName, namespace, args.attributes, this.context, this.moduleName, !this.currentRootView);
+				return getComponentModule(args.elementName, namespace, args.attributes, this.context, this.moduleName, !this.currentRootView, bindingKey);
 			}
 		}
 
@@ -712,6 +759,7 @@ export namespace xml2ui {
 							templateItems: [],
 							errorFormat: this.error,
 							sourceTracker: this.sourceTracker,
+							xmlModule: this.xmlModule,
 						});
 					}
 
@@ -724,6 +772,7 @@ export namespace xml2ui {
 							templateItems: [],
 							errorFormat: this.error,
 							sourceTracker: this.sourceTracker,
+							xmlModule: this.xmlModule,
 						});
 						complexProperty.parser = parser;
 
@@ -746,7 +795,7 @@ export namespace xml2ui {
 							this.rootComponentModule = componentModule;
 
 							if (this.rootComponentModule) {
-								this.currentRootView = this.rootComponentModule.component;
+								this.currentRootView = <View>this.rootComponentModule.component;
 
 								if ((<any>this.currentRootView).exports) {
 									this.context = (<any>this.currentRootView).exports;
