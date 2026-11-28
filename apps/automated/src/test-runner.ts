@@ -173,6 +173,11 @@ allTests['VIEW-LAYOUT-EVENT'] = viewLayoutChangedEventTests;
 import * as styleTests from './ui/styling/style-tests';
 allTests['STYLE'] = styleTests;
 
+import * as variableFontTests from './ui/styling/variable-font-tests';
+if (__APPLE__) {
+	allTests['VARIABLE-FONT'] = variableFontTests;
+}
+
 import * as visualStateTests from './ui/styling/visual-state-tests';
 allTests['VISUAL-STATE'] = visualStateTests;
 
