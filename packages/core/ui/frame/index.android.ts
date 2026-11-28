@@ -180,6 +180,11 @@ export class Frame extends FrameBase {
 		}
 
 		const manager = this._getFragmentManager();
+		// _onAttachedToWindow navigates once the parent's fragment is added
+		if (!manager) {
+			return;
+		}
+
 		const entry = this._currentEntry;
 		const isNewEntry = !this._cachedTransitionState || entry !== this._cachedTransitionState.entry;
 
@@ -695,7 +700,7 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 	public fragmentForPage(entry: BackstackEntry): any {
 		const tag = entry && entry.fragmentTag;
 		if (tag) {
-			return this.owner._getFragmentManager().findFragmentByTag(tag);
+			return this.owner._getFragmentManager()?.findFragmentByTag(tag);
 		}
 
 		return undefined;

@@ -1,6 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { isIOS, isAndroid, Label, StackLayout, Frame, Page, ListView, ItemEventData, TabView, TabViewItem, Button } from '@nativescript/core';
+import { isIOS, isAndroid, Label, StackLayout, Frame, Page, ListView, ItemEventData, TabView, TabViewItem, Button, View } from '@nativescript/core';
 
 const ASYNC = 2;
 
@@ -66,11 +66,26 @@ function _clickHandlerFactory(index: number) {
 	};
 }
 
-function _createFrameView(): Frame {
+function _createFrameView(content?: View): Frame {
 	const frame = new Frame();
-	frame.navigate({ create: () => new Page() });
+	frame.navigate({
+		create: () => {
+			const page = new Page();
+			if (content) {
+				page.content = content;
+			}
+
+			return page;
+		},
+	});
 
 	return frame;
+}
+
+function frameFragmentIsAdded(frame: Frame): boolean {
+	const fragment = frame._currentEntry?.fragment;
+
+	return !!fragment && fragment.isAdded();
 }
 
 export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
@@ -79,13 +94,17 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
 
 	let tabViewPage: Page;
 	let tabView: TabView;
+	let tabFrame: Frame;
+	let nestedFrame: Frame;
 
 	const pageFactory = function (): Page {
 		tabView = _createTabView();
 		const items = Array<TabViewItem>();
 		const tabViewitem = new TabViewItem();
 		tabViewitem.title = 'Item1';
-		tabViewitem.view = _createFrameView();
+		nestedFrame = _createFrameView();
+		tabFrame = _createFrameView(nestedFrame);
+		tabViewitem.view = tabFrame;
 		items.push(tabViewitem);
 
 		const tabViewitem2 = new TabViewItem();
@@ -115,6 +134,62 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
 
 	// make sure the app did not crash
 	TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty());
+
+	// https://github.com/NativeScript/NativeScript/issues/11676
+	if (isAndroid) {
+		TKUnit.waitUntilReady(() => frameFragmentIsAdded(nestedFrame));
+		TKUnit.assertNotNull(nestedFrame.currentPage, 'Nested frame should show its page');
+		TKUnit.assertTrue(nestedFrame._getFragmentManager().equals((<any>tabFrame)._getChildFragmentManager()), 'Nested frame should use the fragment manager of its parent frame');
+		TKUnit.assertTrue(nestedFrame.navigationQueueIsEmpty(), 'Nested frame should finish its navigation');
+	}
+}
+
+export function testBackNavigationToFrameWithNestedTabViewWithFramesShouldWork() {
+	// https://github.com/NativeScript/NativeScript/issues/11676
+	const topFrame = Frame.topmost();
+
+	let outerPage: Page;
+	let outerFrame: Frame;
+	let tabView: TabView;
+	let tabFrame: Frame;
+
+	const pageFactory = function (): Page {
+		tabView = _createTabView();
+		const tabViewItem = new TabViewItem();
+		tabViewItem.title = 'Item1';
+		tabFrame = _createFrameView();
+		tabViewItem.view = tabFrame;
+		tabView.items = [tabViewItem];
+
+		outerFrame = _createFrameView(tabView);
+
+		outerPage = new Page();
+		outerPage.content = outerFrame;
+
+		return outerPage;
+	};
+
+	helper.waitUntilNavigatedFrom(() => topFrame.navigate(pageFactory), topFrame);
+
+	TKUnit.waitUntilReady(() => topFrame.currentPage === outerPage);
+	TKUnit.waitUntilReady(() => tabViewIsFullyLoaded(tabView));
+
+	// navigate to a different page
+	helper.waitUntilNavigatedFrom(() => topFrame.navigate({ create: () => new Page(), animated: false }), topFrame);
+
+	// navigate back to the page whose nested frame holds the tabview with frames
+	topFrame.goBack();
+
+	// make sure the app did not crash
+	TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty());
+
+	if (isAndroid) {
+		TKUnit.waitUntilReady(() => frameFragmentIsAdded(tabFrame));
+		TKUnit.assertNotNull(tabFrame.currentPage, 'Tab frame should show its page');
+		TKUnit.assertTrue(tabView._getFragmentManager().equals((<any>outerFrame)._getChildFragmentManager()), 'Tab view should use the fragment manager of its parent frame');
+		TKUnit.assertTrue(tabFrame._getFragmentManager().equals((<any>tabView.items[0])._getChildFragmentManager()), 'Tab frame should use the fragment manager of its tab');
+		TKUnit.assertTrue(tabFrame.navigationQueueIsEmpty(), 'Tab frame should finish its navigation');
+	}
 }
 
 export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere() {

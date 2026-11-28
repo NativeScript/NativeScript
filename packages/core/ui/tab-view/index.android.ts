@@ -218,12 +218,12 @@ function initializeNativeClasses() {
 			}
 
 			if (!this.mCurTransaction) {
-				const fragmentManager = owner._getFragmentManager();
-				this.mCurTransaction = fragmentManager.beginTransaction();
+				this.mCurTransaction = owner._getFragmentManager()?.beginTransaction();
 			}
 
 			const fragment: androidx.fragment.app.Fragment = <androidx.fragment.app.Fragment>object;
-			this.mCurTransaction.detach(fragment);
+			// Without the parent's fragment the tab fragments are already gone
+			this.mCurTransaction?.detach(fragment);
 
 			if (this.mCurrentPrimaryItem === fragment) {
 				this.mCurrentPrimaryItem = null;
@@ -394,6 +394,10 @@ export class TabViewItem extends TabViewItemBase {
 	public _getChildFragmentManager(): androidx.fragment.app.FragmentManager {
 		const tabView = this.parent as TabView;
 		const fragmentManager: androidx.fragment.app.FragmentManager = tabView._getFragmentManager();
+		if (!fragmentManager) {
+			return null;
+		}
+
 		const tabFragmentTag = tabView._getTabFragmentTagByIndex(this.index);
 		const tabFragment = fragmentManager.findFragmentByTag(tabFragmentTag);
 
@@ -655,6 +659,10 @@ export class TabView extends TabViewBase {
 
 	private disposeCurrentFragments(): void {
 		const fragmentManager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
+		if (!fragmentManager) {
+			return;
+		}
+
 		const transaction = fragmentManager.beginTransaction();
 		const fragments: androidNative.Array<androidx.fragment.app.Fragment> = fragmentManager.getFragments().toArray();
 
