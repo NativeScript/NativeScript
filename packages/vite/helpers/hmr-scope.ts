@@ -1,55 +1,8 @@
-// Defines which files HMR is allowed to react to; an allowlist driven by the
-// project's own configuration.
-
-import { getProjectAppAbsolutePath } from './utils.js';
-import { getTsConfigAliasRoots } from './ts-config-paths.js';
-import { normalizeModuleId } from './normalize-id.js';
-
-// Canonical root form: forward slashes, uppercase Windows drive, no trailing slash.
-function asRoot(p: string): string {
-	return normalizeModuleId(String(p || '')).replace(/\/+$/, '');
-}
-
 /**
- * Absolute directories HMR is allowed to react to:
- *   - the app source dir (`appPath`, default `src`)
- *   - shared-library roots from tsconfig `paths` (monorepo libs)
- *
- * Pass the project's tsconfig data (`{ paths, baseUrl }` from `getTsConfigData`)
- * to include configured workspace libraries. Always includes the app source dir.
- */
-export function getHmrSourceRoots(tsConfig?: { paths?: Record<string, string[]>; baseUrl?: string }): string[] {
-	const roots = new Set<string>();
-	const appDir = asRoot(getProjectAppAbsolutePath());
-	if (appDir) roots.add(appDir);
-	for (const aliasRoot of getTsConfigAliasRoots({ paths: tsConfig?.paths, baseUrl: tsConfig?.baseUrl })) {
-		const r = asRoot(aliasRoot);
-		if (r) roots.add(r);
-	}
-	return [...roots];
-}
-
-/**
- * True when `file` lives inside one of the HMR source roots (app source dir or a
- * configured shared-library root). Accepts absolute paths with either separator
- * style and strips any query/hash suffix (`…/app.component.ts?ngResource`).
- */
-export function isWithinHmrScope(file: string, roots: string[]): boolean {
-	if (!file || !roots || roots.length === 0) return false;
-	const f = normalizeModuleId(String(file).replace(/[?#].*$/, ''));
-	for (const root of roots) {
-		if (!root) continue;
-		if (f === root || f.startsWith(root + '/')) return true;
-	}
-	return false;
-}
-
-/**
- * Minimal glob list for `server.watch.ignored`. This is a *performance* guard,
- * NOT the correctness gate (that's the {@link isWithinHmrScope} allowlist applied
- * in `handleHotUpdate`). It keeps chokidar from walking the large native/generated
- * trees that live under the app root. Vite already ignores `node_modules` and
- * `.git` by default; these are the NativeScript-specific additions.
+ * Minimal glob list for `server.watch.ignored`. It keeps chokidar from walking
+ * the large native/generated trees that live under the app root. Vite already
+ * ignores `node_modules` and `.git` by default; these are the NativeScript-specific
+ * additions.
  */
 export function getHmrWatchIgnoreGlobs(distOutputFolder?: string): string[] {
 	const globs = ['**/platforms/**', '**/hooks/**', '**/App_Resources/**', '**/.ns-vite-build/**'];
@@ -63,4 +16,25 @@ export function getHmrWatchIgnoreGlobs(distOutputFolder?: string): string[] {
 		}
 	}
 	return globs;
+}
+
+const GLOB_SPECIAL = /[*?[\]{}()!]/g;
+
+/**
+ * `server.watch.ignored` negations that let Vite's watcher report edits to
+ * the named installed packages (`--env.watchNodeModules`). A negation wins
+ * over every ignore glob, in any order.
+ *
+ * Chokidar skips an ignored directory's contents, except with macOS
+ * FSEvents, which filters events instead. So the `node_modules` and scope
+ * directories on the way are un-ignored too, as directories only: their
+ * other entries stay ignored. Never all of `node_modules`, which would also
+ * watch the optimizer's cache directory.
+ */
+export function getNodeModulesWatchGlobs(packageNames: Iterable<string>): string[] {
+	const escape = (value: string) => value.replace(GLOB_SPECIAL, '\\$&');
+	const names = [...new Set(packageNames)];
+	if (!names.length) return [];
+	const scopes = new Set(names.filter((name) => name.startsWith('@') && name.includes('/')).map((name) => name.split('/')[0]));
+	return ['!**/node_modules', ...[...scopes].map((scope) => `!**/node_modules/${escape(scope)}`), ...names.map((name) => `!**/node_modules/${escape(name)}/**`)];
 }

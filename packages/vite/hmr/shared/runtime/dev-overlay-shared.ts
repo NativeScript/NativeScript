@@ -1,24 +1,20 @@
 /**
- * Internals shared by the dev-overlay backends (boot placeholder, in-tree
- * live overlay, iOS UIWindow overlay): the per-session runtime state held on
- * `globalThis`, core-class resolution that respects the realm rule, and
- * snapshot/text formatting. Not part of the public overlay API — import
+ * Internals shared by the dev-overlay backends (in-tree live overlay, iOS
+ * UIWindow overlay, Android DecorView overlay): the per-session runtime state,
+ * core-class resolution, and snapshot/text formatting. Not part of the public overlay API — import
  * `dev-overlay.ts` for that.
  */
 
-import { DEFAULT_SNAPSHOT, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
+// The modules bundle-entry-points and the boot's Application import evaluate
+// anyway; the core barrel would pull more of core ahead of the app's polyfills.
+import { Application } from '@nativescript/core/application';
+import { Color } from '@nativescript/core/color';
+import { Frame, GridLayout, Label, StackLayout } from '@nativescript/core/ui';
+import { DEFAULT_SNAPSHOT, type HmrOverlayAction, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
 import { getGlobalScope } from './global-scope.js';
-import { getVendorRequire } from './vendor-resolve.js';
 
-const DEFAULT_OVERLAY_POSITION: HmrOverlayPosition = 'top';
-
-export type BootOverlayRefs = {
-	page: any;
-	root: any;
-	titleLabel: any;
-	statusLabel: any;
-	activityIndicator?: any;
-};
+/** Where the live overlay renders: the toast chip at the top, with a slide-in and safe-area padding. */
+export const HMR_OVERLAY_POSITION: HmrOverlayPosition = 'top';
 
 export type LiveOverlayRefs = {
 	page: any;
@@ -26,6 +22,9 @@ export type LiveOverlayRefs = {
 	overlay: any;
 	titleLabel: any;
 	statusLabel: any;
+	codeLabel?: any;
+	actionButton?: any;
+	currentAction?: HmrOverlayAction;
 	// Previous visibility/position so we only fire the slide-in
 	// animation on hidden→visible transitions or when the position
 	// actually changes (avoids re-animating every progress tick
@@ -45,6 +44,16 @@ export type IosOverlayRefs = {
 	panel: any;
 	titleLabel: any;
 	statusLabel: any;
+	codeLabel: any;
+	actionButton: any;
+	// Keeps the tap handler alive: UIKit holds a button target weakly.
+	actionHandler: any;
+	currentAction?: HmrOverlayAction;
+	// Window coordinates of the button while one is shown; in toast mode the
+	// window takes touches only there, so the app stays usable around it.
+	actionHitRect: { x: number; y: number; width: number; height: number } | null;
+	// False when the pass-through window subclass could not be defined.
+	passThrough: boolean;
 	// See LiveOverlayRefs comment — same animation gating semantics.
 	wasVisible: boolean;
 	currentPosition: HmrOverlayPosition;
@@ -57,6 +66,9 @@ export type AndroidOverlayRefs = {
 	panelBackground: any;
 	titleLabel: any;
 	statusLabel: any;
+	codeLabel: any;
+	actionButton: any;
+	currentAction?: HmrOverlayAction;
 	density: number;
 	wasVisible: boolean;
 	currentPosition: HmrOverlayPosition;
@@ -64,7 +76,6 @@ export type AndroidOverlayRefs = {
 
 export type HmrOverlayRuntimeState = {
 	snapshot: HmrOverlaySnapshot;
-	bootRefs: BootOverlayRefs | null;
 	liveRefs: LiveOverlayRefs | null;
 	iosRefs: IosOverlayRefs | null;
 	iosBuildFailed: boolean;
@@ -86,93 +97,53 @@ export type HmrOverlayRuntimeState = {
 	// 'received' (i.e., a new save fires) so each cycle is timed
 	// independently.
 	updateCycleStartedAt: number;
+	// Set by the 'restart-required' update stage. Only a new process clears
+	// it, so the live overlay keeps showing it over later update,
+	// connection and hide calls.
+	restartRequired: boolean;
 };
 
 export function getOverlayGlobal(): any {
 	return getGlobalScope();
 }
 
-/**
- * Resolve the configured live-overlay position.
- *
- * Reads `globalThis.__NS_HMR_OVERLAY_POSITION__` so a project can
- * override the default at boot time (e.g. inside `app.ts` before the
- * Vite session bootstraps). Falls back to 'top' which gives the
- * toast-style chip with a slide-in animation and safe-area padding.
- */
-export function getHmrDevOverlayPosition(): HmrOverlayPosition {
-	const g = getOverlayGlobal();
-	const stored = g.__NS_HMR_OVERLAY_POSITION__;
-	if (stored === 'top' || stored === 'bottom' || stored === 'center') {
-		return stored;
-	}
-	return DEFAULT_OVERLAY_POSITION;
-}
+let runtimeState: HmrOverlayRuntimeState | null = null;
 
 export function getRuntimeState(): HmrOverlayRuntimeState {
-	const g = getOverlayGlobal();
-	if (!g.__NS_HMR_DEV_OVERLAY_STATE__) {
-		g.__NS_HMR_DEV_OVERLAY_STATE__ = {
-			snapshot: { ...DEFAULT_SNAPSHOT },
-			bootRefs: null,
-			liveRefs: null,
-			iosRefs: null,
-			iosBuildFailed: false,
-			androidRefs: null,
-			androidBuildFailed: false,
-			verbose: false,
-			updateAutoHideTimer: null,
-			updateCycleStartedAt: 0,
-		} satisfies HmrOverlayRuntimeState;
-	}
-	const state = g.__NS_HMR_DEV_OVERLAY_STATE__ as Partial<HmrOverlayRuntimeState>;
-	// Backfill newer fields for legacy state objects (e.g. after hot reload)
-	// so we never observe an undefined iosRefs/iosBuildFailed at runtime.
-	if (typeof state.iosRefs === 'undefined') state.iosRefs = null;
-	if (typeof state.iosBuildFailed === 'undefined') state.iosBuildFailed = false;
-	if (typeof state.androidRefs === 'undefined') state.androidRefs = null;
-	if (typeof state.androidBuildFailed === 'undefined') state.androidBuildFailed = false;
-	if (typeof state.updateAutoHideTimer === 'undefined') state.updateAutoHideTimer = null;
-	if (typeof state.updateCycleStartedAt !== 'number') state.updateCycleStartedAt = 0;
-	return state as HmrOverlayRuntimeState;
+	runtimeState ||= {
+		snapshot: { ...DEFAULT_SNAPSHOT },
+		liveRefs: null,
+		iosRefs: null,
+		iosBuildFailed: false,
+		androidRefs: null,
+		androidBuildFailed: false,
+		verbose: false,
+		updateAutoHideTimer: null,
+		updateCycleStartedAt: 0,
+		restartRequired: false,
+	};
+	return runtimeState;
 }
+
+// Read on use, not at evaluation: the overlay draws only after core has booted.
+const coreExports: Record<string, () => unknown> = {
+	Application: () => Application,
+	Color: () => Color,
+	Frame: () => Frame,
+	GridLayout: () => GridLayout,
+	Label: () => Label,
+	StackLayout: () => StackLayout,
+};
 
 export function resolveCoreExport(name: string): any {
 	const g = getOverlayGlobal();
-	try {
-		const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
-		if (reg && typeof reg.get === 'function') {
-			const mod = reg.get('@nativescript/core');
-			const ns = (mod && (mod.default ?? mod)) || mod;
-			if (ns && ns[name]) {
-				return ns[name];
-			}
-		}
-	} catch {}
 	try {
 		if (g && g[name]) {
 			return g[name];
 		}
 	} catch {}
 	try {
-		const req = getVendorRequire();
-		if (req) {
-			const mod = req('@nativescript/core');
-			const ns = (mod && (mod.default ?? mod)) || mod;
-			if (ns && ns[name]) {
-				return ns[name];
-			}
-		}
-	} catch {}
-	try {
-		const nativeReq = g.__nativeRequire;
-		if (typeof nativeReq === 'function') {
-			const mod = nativeReq('@nativescript/core', '/');
-			const ns = (mod && (mod.default ?? mod)) || mod;
-			if (ns && ns[name]) {
-				return ns[name];
-			}
-		}
+		return coreExports[name]?.();
 	} catch {}
 	return undefined;
 }
@@ -186,6 +157,19 @@ export function asColor(value: string): any {
 	} catch {}
 	return value as any;
 }
+
+/** Runs the shown action's tap handler; a throwing handler must not take the overlay down. */
+export function runOverlayAction(action: HmrOverlayAction | undefined): void {
+	if (!action) return;
+	try {
+		action.onTap();
+	} catch (err) {
+		console.warn('[ns-hmr-overlay] overlay action failed:', (err as any)?.message || err);
+	}
+}
+
+/** Most lines of `code` any backend draws, so the button stays on screen. */
+export const MAX_CODE_LINES = 14;
 
 export function formatStatusText(snapshot: HmrOverlaySnapshot): string {
 	const progressText = typeof snapshot.progress === 'number' ? ` (${Math.round(Number(snapshot.progress))}%)` : '';

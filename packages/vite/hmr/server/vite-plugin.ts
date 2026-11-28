@@ -1,63 +1,55 @@
-import type { Plugin, ResolvedConfig } from 'vite';
-import { createRequire } from 'node:module';
+import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 import fs from 'node:fs';
+import net from 'node:net';
 import path from 'path';
-import { pathToFileURL } from 'url';
-import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
-import { resolveDeviceReachableHost } from '../../helpers/dev-host.js';
-import { setUserDefineEntries } from '../../helpers/global-defines.js';
-import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
-const require = createRequire(import.meta.url);
+import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, VITE_HMR_WS_PROTOCOL, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
+import type { NsHmrStartOptions } from '../client/index.js';
+import { deviceUrlForGraphUrl, viteUrlForFile } from './vite-url.js';
+import { IMPORT_MAP_PATH, NS_DEV_SESSION_PATH } from './dev-routes.js';
+import { registerDevBootRoutes } from './dev-boot-routes.js';
+import { createDeviceRequestMiddleware, useFirst } from './device-requests.js';
+import { getServerOrigin } from './server-origin.js';
+import { devWsTokenFile, publishDevWsToken } from '../../helpers/dev-ws-token.js';
+import { devServerAddressOf } from '../../helpers/ns-cli-plugins.js';
+import { DEV_BOOT_RESOLVED } from '../../helpers/dev-boot-bundle.js';
+import { startDevOutput, type DevOutputOptions } from './dev-output.js';
+import { fileURLToPath } from 'node:url';
 
-const VIRTUAL_ID = 'virtual:ns-hmr-client';
-const RESOLVED_ID = '\0' + VIRTUAL_ID;
+const runtimeFile = (relToHmrServer: string) => fileURLToPath(new URL(relToHmrServer, import.meta.url));
 
-export function computeClientImportSpecifier(options: { projectRoot: string; clientFsPath: string }) {
-	const { projectRoot, clientFsPath } = options;
-	let clientImport = clientFsPath;
-	try {
-		const fsPosix = clientFsPath.replace(/\\/g, '/');
-		const rel = path.relative(projectRoot, clientFsPath);
-		const relPosix = rel.replace(/\\/g, '/');
+/** This package's directory (`@nativescript/vite`), as the running copy is installed. */
+export const nsVitePackageDir = (): string => runtimeFile('../../');
 
-		if (path.isAbsolute(rel)) {
-			clientImport = pathToFileURL(clientFsPath).toString();
-		} else {
-			// Prefer routing via the absolute fs path's `node_modules/...` tail. This
-			// covers monorepo / pnpm setups where node_modules is hoisted ABOVE the
-			// project root and `path.relative` would otherwise produce a
-			// "../../node_modules/..." specifier. That relative form is sent to the
-			// device's bootstrap as `__NS_BROWSER_RUNTIME_CLIENT_IMPORT__`, where the
-			// URL constructor resolves it against `${origin}/__ns_dev__/client` and
-			// collapses the leading `..` segments back to `${origin}/node_modules/...`.
-			// That URL bypasses the `/ns/m/` AST-normalizer pipeline (which strips
-			// browser-only `/@vite/client` imports), so the on-device HTTP loader
-			// eventually tries to fetch `/@vite/client` and fails with
-			// "HTTP import failed (status=0)" / "Instantiation failed (http-loader)".
-			const lastNm = fsPosix.lastIndexOf('/node_modules/');
-			if (lastNm !== -1) {
-				return `/ns/m${fsPosix.slice(lastNm)}`;
-			}
-
-			// Monorepo dist symlink (e.g. `"@nativescript/vite": "file:../../dist/packages/vite"`):
-			// require.resolve follows the node_modules symlink to its REAL path under
-			// the workspace root, which contains no `/node_modules/` segment. The
-			// `../../dist/...` relative form below would resolve on-device to
-			// `${origin}/dist/...`, which Vite's middleware 404s (outside root, not
-			// /@fs/). Route through /ns/m with a workspace-root-relative path so the
-			// fetch goes through the same served-module pipeline as everything else.
-			const wsRoot = getMonorepoWorkspaceRoot(projectRoot)?.replace(/\\/g, '/');
-			if (wsRoot && fsPosix.startsWith(wsRoot + '/')) {
-				return `/ns/m/${fsPosix.slice(wsRoot.length + 1)}`;
-			}
-
-			const normalizedRel = (relPosix.startsWith('.') ? relPosix : `/${relPosix}`).replace(/\/+/g, '/');
-			clientImport = normalizedRel.startsWith('/node_modules/') ? `/ns/m${normalizedRel}` : normalizedRel;
-		}
-	} catch {
-		clientImport = clientFsPath.replace(/\\/g, '/');
+/** The `@nativescript/core` entry file as the client environment resolves it. */
+export async function resolveCoreEntryFile(server: Pick<ViteDevServer, 'config' | 'environments'>): Promise<string> {
+	const resolvedCore = await server.environments.client.pluginContainer.resolveId('@nativescript/core', path.join(server.config.root, 'index.html'));
+	// Use the resolver's id verbatim (no realpath): it is what Vite's import
+	// analysis serves, symlinked or not (the CLI runs with --preserve-symlinks).
+	const coreFile = resolvedCore?.id?.split('?')[0];
+	if (!coreFile) {
+		throw new Error('Unable to resolve @nativescript/core from the project root');
 	}
-	return clientImport;
+	return coreFile;
+}
+
+/**
+ * Vite URL prefixes of the packages that evaluate once per process even when
+ * they are served from outside `node_modules` (`/@fs/…`): `@nativescript/core`
+ * and this package's dev client. An edit under them restarts the app
+ * (`hmr/server/app-restart.ts`).
+ */
+export async function resolveNonEvictableViteUrlPrefixes(server: ViteDevServer): Promise<string[]> {
+	const root = server.config.root;
+	const coreFile = await resolveCoreEntryFile(server);
+	return [`${viteUrlForFile(corePackageDir(coreFile), root)}/`, `${viteUrlForFile(nsVitePackageDir(), root)}/`];
+}
+
+/** The `@nativescript/core` package directory of its resolved entry file. */
+export function corePackageDir(coreFile: string): string {
+	const posix = coreFile.replace(/\\/g, '/');
+	const marker = '/@nativescript/core/';
+	const at = posix.lastIndexOf(marker);
+	return at >= 0 ? posix.slice(0, at + marker.length - 1) : path.posix.dirname(posix);
 }
 
 export function resolveProjectMainEntryPath(projectRoot: string) {
@@ -74,675 +66,293 @@ export function resolveProjectMainEntryPath(projectRoot: string) {
 	}
 }
 
-export function createNsDevSessionDescriptor(options: { projectRoot: string; requestHost: string; platform: NsDevPlatform; sessionId: string; secure?: boolean; mainEntryPathname?: string }): NsDevSessionDescriptor {
-	const protocol = options.secure ? 'https' : 'http';
-	const wsProtocol = options.secure ? 'wss' : 'ws';
-	const origin = `${protocol}://${options.requestHost}`;
+type WsOptionsLike = { path?: string; port?: number; clientPort?: number };
+
+export type ViteHmrWsConfig = Pick<ResolvedConfig, 'base' | 'webSocketToken'> & { server: Pick<ResolvedConfig['server'], 'port' | 'hmr'> & { ws?: unknown } };
+
+/**
+ * Vite's HMR WebSocket URL for the device: `base` + the ws path, on the ws
+ * port when it differs from the server's, with the token Vite checks whenever
+ * the upgrade carries an `Origin` header (the Android socket sends one).
+ * Vite 8.0 reads these options from `server.hmr`; later 8.x releases from
+ * `server.ws`.
+ */
+export function resolveViteHmrWsUrl(origin: string, config: ViteHmrWsConfig): string {
+	const isObject = (value: unknown): value is WsOptionsLike => !!value && typeof value === 'object';
+	const server = config.server;
+	const wsOptions = isObject(server.ws) ? server.ws : isObject(server.hmr) ? server.hmr : undefined;
+	const url = new URL(origin);
+	url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+	const wsPort = wsOptions?.clientPort || wsOptions?.port;
+	if (wsPort && wsPort !== server.port) {
+		url.port = String(wsPort);
+	}
+	url.pathname = path.posix.join(config.base || '/', wsOptions?.path || '');
+	url.search = config.webSocketToken ? `?token=${encodeURIComponent(config.webSocketToken)}` : '';
+	return url.toString();
+}
+
+export { NS_DEV_SESSION_PATH };
+
+const NS_DEV_CLIENT_ID = 'virtual:ns-dev-client';
+const NS_DEV_CLIENT_RESOLVED = '\0' + NS_DEV_CLIENT_ID;
+/** The root-relative URL the device requests the dev client bootstrap under. */
+export const NS_DEV_CLIENT_DEVICE_PATH = deviceUrlForGraphUrl(NS_DEV_CLIENT_RESOLVED);
+
+export function createNsDevSessionDescriptor(options: { projectRoot: string; origin: string; wsUrl: string; platform: NsDevPlatform; sessionId: string; mainEntryPathname?: string }): NsDevSessionDescriptor {
+	const origin = options.origin.replace(/\/$/, '');
 	const entryPathname = options.mainEntryPathname || resolveProjectMainEntryPath(options.projectRoot);
-	// Canonical (untagged) entry URL. Boot-progress instrumentation is
-	// injected self-gating by the /ns/m module server (the snippet no-ops
-	// once `__NS_HMR_BOOT_COMPLETE__` flips), so the entry URL needs no
-	// `__ns_boot__` decoration — module identity IS the URL.
-	const canonicalEntryPathname = entryPathname.startsWith('/ns/m/') ? entryPathname : `/ns/m${entryPathname.startsWith('/') ? entryPathname : `/${entryPathname}`}`;
 
 	return {
 		sessionId: options.sessionId,
 		origin,
-		entryUrl: `${origin}${canonicalEntryPathname}`,
-		clientUrl: `${origin}/__ns_dev__/client`,
-		wsUrl: `${wsProtocol}://${options.requestHost}/ns-hmr`,
+		entryUrl: `${origin}${entryPathname}`,
+		clientUrl: `${origin}${NS_DEV_CLIENT_DEVICE_PATH}`,
+		wsUrl: options.wsUrl,
+		wsProtocol: VITE_HMR_WS_PROTOCOL,
 		platform: options.platform,
-		runtimeConfigUrl: `${origin}/ns/import-map.json`,
+		runtimeConfigUrl: `${origin}${IMPORT_MAP_PATH}`,
 		hostModules: [...NS_DEFAULT_HOST_MODULES],
 		features: { ...NS_DEFAULT_DEV_FEATURE_FLAGS },
 	};
 }
 
-function resolveBootstrapImportUrl(origin: string, clientImport: string): string {
-	const normalizedOrigin = origin.replace(/\/$/, '');
-	if (!clientImport) {
-		return clientImport;
+/**
+ * The dev client bootstrap, served through Vite's transform like any module
+ * so import analysis writes the URL of everything it imports. The session
+ * bootstrap imports it before the app entry; it starts the HMR client once
+ * the app has launched.
+ */
+export function createNsDevClientModuleCode(start: NsHmrStartOptions): string {
+	return `import { nsDev } from '@nativescript/vite/hmr/shared/runtime/dev-globals.js';
+
+const startOptions = ${JSON.stringify(start)};
+
+// The HMR socket opens only once the app has booted: socket traffic racing
+// the boot-time module fetches has crashed the native runtime.
+function startHmrClientAfterBoot() {
+	if (!nsDev().bootComplete) {
+		setTimeout(startHmrClientAfterBoot, 100);
+		return;
 	}
-	if (/^(?:https?|file):\/\//i.test(clientImport)) {
-		return clientImport;
-	}
-	if (clientImport.startsWith('/')) {
-		return `${normalizedOrigin}${clientImport}`;
-	}
-	try {
-		return new URL(clientImport, `${normalizedOrigin}/__ns_dev__/client`).toString();
-	} catch {
-		return clientImport;
-	}
+	import('@nativescript/vite/hmr/client/index.js')
+		.then((mod) => mod.start(startOptions))
+		.catch((error) => console.error('[ns-dev-client] failed to start the HMR client', error));
+}
+startHmrClientAfterBoot();
+`;
 }
 
-export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin: string; clientImport: string; hotContextImport?: string; verbose?: boolean }) {
-	const normalizedOrigin = options.origin.replace(/\/$/, '');
-	const resolvedClientImport = resolveBootstrapImportUrl(normalizedOrigin, options.clientImport);
-	const vendorBundleUrl = `${normalizedOrigin}/@nativescript/vendor.mjs`;
-	const vendorBootstrapUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js`;
-	const resolvedHotContextImport = resolveBootstrapImportUrl(normalizedOrigin, options.hotContextImport || '/ns/m/node_modules/@nativescript/vite/hmr/client/hot-context.js');
-	const entryRuntimeUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js`;
-	const cssHandlerUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/client/css-handler.js`;
-	// Canonical, unversioned core-bridge URL (see helpers/ns-core-url.ts) — the
-	// app graph already loaded this exact URL during boot, so importing it here
-	// resolves to the SAME module record/realm instead of minting a new one.
-	const coreBridgeUrl = `${normalizedOrigin}/ns/core`;
-
-	const launchBridgeUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/launch-bridge.js`;
-
-	return `
-import { installVendorBootstrap as __nsBrowserRuntimeInstallVendorBootstrap } from ${JSON.stringify(vendorBootstrapUrl)};
-import { vendorManifest as __nsBrowserRuntimeVendorManifest, __nsVendorModuleMap as __nsBrowserRuntimeVendorModuleMap } from ${JSON.stringify(vendorBundleUrl)};
-import { installNsHotRegistry as __nsBrowserRuntimeInstallHotRegistry } from ${JSON.stringify(resolvedHotContextImport)};
-import { installLaunchNotificationBridge as __nsBrowserRuntimeInstallLaunchBridge } from ${JSON.stringify(launchBridgeUrl)};
-import * as __nsBrowserRuntimeCoreBridge from ${JSON.stringify(coreBridgeUrl)};
-import { installHttpCoreCssSupport as __nsBrowserRuntimeInstallHttpCoreCssSupport } from ${JSON.stringify(entryRuntimeUrl)};
-
-// Seeded app.css must land in the /ns/core realm before the app entry
-// evaluates, as it does in non-HMR builds. Views mounted unstyled are
-// restyled later, but anything that caches measurements on first layout
-// (iOS ListView row heights) keeps the unstyled sizes.
-try {
-	__nsBrowserRuntimeInstallHttpCoreCssSupport(__nsBrowserRuntimeCoreBridge, ${options.verbose ? 'true' : 'false'});
-} catch (cssErr) {
-	console.warn('[ns-browser-runtime-client] pre-entry app.css install failed', cssErr);
-}
-
-// Launch-notification bridge — must precede the app entry (this wrapper is
-// imported by the session bootstrap BEFORE the entry graph). Passing the
-// /ns/core realm's Application: that is the instance app code gets, and the
-// only deterministic wrap point (the full HMR client evaluates async and
-// loses the race against the entry). See shared/runtime/launch-bridge.ts.
-try {
-	const __nsCoreNs = __nsBrowserRuntimeCoreBridge && (__nsBrowserRuntimeCoreBridge.default ?? __nsBrowserRuntimeCoreBridge);
-	__nsBrowserRuntimeInstallLaunchBridge(__nsCoreNs && __nsCoreNs.Application);
-} catch (launchBridgeErr) {
-	console.warn('[ns-browser-runtime-client] launch-notification bridge install failed', launchBridgeErr);
-}
-
-// Install the JS hot registry FIRST: every served app module's injected
-// prelude reads globalThis.__NS_HOT_REGISTRY__ at evaluation time, and this
-// bootstrap is imported before the entry graph (see session-bootstrap.ts).
-try {
-	__nsBrowserRuntimeInstallHotRegistry();
-} catch (hotErr) {
-	console.warn('[ns-browser-runtime-client] failed to install hot registry', hotErr);
-}
-
-const __NS_BROWSER_RUNTIME_WS_URL__ = ${JSON.stringify(options.wsUrl)};
-const __NS_BROWSER_RUNTIME_ORIGIN__ = ${JSON.stringify(options.origin)};
-const __NS_BROWSER_RUNTIME_CLIENT_IMPORT__ = ${JSON.stringify(resolvedClientImport)};
-const __NS_BROWSER_RUNTIME_VERBOSE__ = ${options.verbose ? 'true' : 'false'};
-let __nsBrowserRuntimeHmrClientStartPromise;
-let __nsBrowserRuntimeSocket;
-let __nsBrowserRuntimeSocketReconnectTimer;
-let __nsBrowserRuntimeDelegationTimer;
-let __nsBrowserRuntimeDelegationWarningIssued = false;
-let __nsBrowserRuntimeBootWaitWarningIssued = false;
-
-function __nsBrowserRuntimeWithSocketRole(url, role) {
-	try {
-		const resolved = new URL(url);
-		resolved.searchParams.set('ns_hmr_role', role);
-		return resolved.toString();
-	} catch {
-		const sep = url.includes('?') ? '&' : '?';
-		return url + sep + 'ns_hmr_role=' + encodeURIComponent(role);
-	}
-}
-
-const __NS_BROWSER_RUNTIME_FALLBACK_WS_URL__ = __nsBrowserRuntimeWithSocketRole(__NS_BROWSER_RUNTIME_WS_URL__, 'bootstrap');
-const __NS_BROWSER_RUNTIME_FULL_CLIENT_WS_URL__ = __nsBrowserRuntimeWithSocketRole(__NS_BROWSER_RUNTIME_WS_URL__, 'full');
-
-function __nsBrowserRuntimeEnsureVendorBootstrap() {
-	__nsBrowserRuntimeInstallVendorBootstrap(__nsBrowserRuntimeVendorManifest, __nsBrowserRuntimeVendorModuleMap, __NS_BROWSER_RUNTIME_VERBOSE__);
-	const registry = globalThis.__nsVendorRegistry;
-	if (!(registry && typeof registry.get === 'function')) {
-		throw new Error('NativeScript vendor registry was not initialized');
-	}
-}
-
-// Pure-JS CSS apply for the bootstrap fallback client. Prefers the HTTP
-// core realm applier installed by the entry runtime
-// (__NS_HMR_APPLY_CSS__), then falls back to Application.addCss through
-// the vendor realm. No native CSS hook exists anymore.
-function __nsBrowserRuntimeApplyCss(cssText) {
-	if (typeof cssText !== 'string' || !cssText.length) {
-		return false;
-	}
-	try {
-		const applyInCoreRealm = globalThis.__NS_HMR_APPLY_CSS__;
-		if (typeof applyInCoreRealm === 'function') {
-			applyInCoreRealm(cssText, true);
-			return true;
-		}
-	} catch (cssErr) {
-		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.warn('[ns-browser-runtime-client] __NS_HMR_APPLY_CSS__ threw', cssErr);
-		}
-	}
-	try {
-		const registry = globalThis.__nsVendorRegistry;
-		const coreMod = registry && typeof registry.get === 'function' ? registry.get('@nativescript/core') : null;
-		const core = (coreMod && (coreMod.default || coreMod)) || coreMod;
-		const Application = core && core.Application;
-		if (Application && typeof Application.addCss === 'function') {
-			Application.addCss(cssText);
-			try {
-				const rootView = typeof Application.getRootView === 'function' ? Application.getRootView() : null;
-				// Inlined counterpart of shared/runtime/restyle-roots.ts: this
-				// function is serialized into the injected client, so it cannot
-				// import. A presented modal is its own root and would otherwise
-				// keep the stylesheet it was presented with.
-				const restyle = (v) => {
-					try {
-						if (v && typeof v._onCssStateChange === 'function') v._onCssStateChange();
-					} catch {}
-				};
-				restyle(rootView);
-				const modals = rootView && typeof rootView._getRootModalViews === 'function' ? rootView._getRootModalViews() || [] : [];
-				for (const modal of modals) restyle(modal);
-			} catch {}
-			return true;
-		}
-	} catch (cssErr) {
-		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.warn('[ns-browser-runtime-client] Application.addCss fallback threw', cssErr);
-		}
-	}
-	if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-		console.warn('[ns-browser-runtime-client] no CSS applier available; skipping CSS update');
+function sendCorsPreflight(req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse): boolean {
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+	if (req.method === 'OPTIONS') {
+		res.statusCode = 204;
+		res.end();
+		return true;
 	}
 	return false;
 }
 
-async function __nsBrowserRuntimeInstallHttpCoreCssApplier() {
-	// Monorepo / per-module core dev boots ship a minimal vendor bundle with NO
-	// @nativescript/core, so neither quick applier above exists. Install the
-	// same HTTP-core-realm applier the http-bootloader fallback path uses
-	// (entry-runtime's installHttpCoreCssSupport): it prefers the pre-parsed
-	// app.css AST (globalThis.__NS_HMR_APP_CSS_AST__), applies the seeded CSS,
-	// flips __NS_HMR_HTTP_APP_CSS_APPLIED__, and installs __NS_HMR_APPLY_CSS__
-	// so later live CSS edits land in the core realm the app actually uses.
-	try {
-		const entryRuntime = await import(${JSON.stringify(entryRuntimeUrl)});
-		const installHttpCoreCssSupport = entryRuntime && entryRuntime.installHttpCoreCssSupport;
-		if (typeof installHttpCoreCssSupport !== 'function') {
-			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-				console.warn('[ns-browser-runtime-client] entry runtime is missing installHttpCoreCssSupport; skipping CSS install');
+// The device keeps the `wsUrl` (and its `?token=`) it booted with, while
+// `server.restart()` resolves a new config with a new random token. This
+// module stays loaded across restarts, so it pins one token per process.
+let processWebSocketToken: string | undefined;
+
+/**
+ * Gives every config resolved in this process the first one's
+ * `webSocketToken`, and `publish`es it for the HMR build, which bakes it into
+ * `bundle.mjs` (when this server doesn't write `bundle.mjs` itself).
+ */
+export function pinWebSocketToken(config: { webSocketToken: string }, publish: (token: string) => void): void {
+	processWebSocketToken ??= config.webSocketToken;
+	config.webSocketToken = processWebSocketToken;
+	publish(processWebSocketToken);
+}
+
+const THIN_VITE_CLIENT_FILE = runtimeFile('../client/thin-vite-client.js');
+const THIN_VITE_CLIENT_SPECIFIER = '@nativescript/vite/hmr/client/thin-vite-client.js';
+
+/**
+ * Serves the device HMR client (`hmr/client/thin-vite-client.ts`) as Vite's
+ * `/@vite/client`. Vite aliases that URL to `/@fs/<vite>/dist/client/client.mjs`
+ * before any plugin resolves it; resolving that id to our file keeps the
+ * device URL `/@vite/client` and resolves the client's relative imports from
+ * this package.
+ *
+ * The file is resolved by bare specifier, as the dev boot and client bootstrap
+ * import this package: a linked install is otherwise reached both through its
+ * symlink and its real path, and the modules the client shares with them load
+ * twice.
+ */
+export function nsViteClientPlugin(): Plugin {
+	const clientIds = new Set<string>(['/@vite/client']);
+	let root = process.cwd();
+	return {
+		name: 'nativescript-vite-client',
+		apply: 'serve',
+		enforce: 'pre',
+		configResolved(config) {
+			root = config.root;
+			for (const alias of config.resolve.alias) {
+				const matches = alias.find instanceof RegExp ? alias.find.test('/@vite/client') : alias.find === '/@vite/client';
+				if (matches && typeof alias.replacement === 'string') clientIds.add(alias.replacement);
 			}
-			return false;
-		}
-		const coreBridge = await import(${JSON.stringify(coreBridgeUrl)});
-		const applier = installHttpCoreCssSupport(coreBridge, __NS_BROWSER_RUNTIME_VERBOSE__);
-		if (applier && __NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.info('[ns-entry] app.css applied in HTTP core realm');
-		}
-		return !!applier;
-	} catch (cssErr) {
-		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.warn('[ns-browser-runtime-client] HTTP core realm CSS install failed', cssErr);
-		}
-		return false;
-	}
-}
-
-async function __nsBrowserRuntimeReplaySeededCss() {
-	const cssText = globalThis.__NS_HMR_APP_CSS__;
-	if (typeof cssText !== 'string' || !cssText.length || globalThis.__NS_HMR_HTTP_APP_CSS_APPLIED__) {
-		return;
-	}
-	if (__nsBrowserRuntimeApplyCss(cssText)) {
-		globalThis.__NS_HMR_HTTP_APP_CSS_APPLIED__ = true;
-		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.info('[ns-entry] app.css applied in HTTP core realm');
-		}
-		return;
-	}
-	await __nsBrowserRuntimeInstallHttpCoreCssApplier();
-}
-
-async function __nsBrowserRuntimeFetchText(url) {
-	try {
-		if (typeof globalThis.fetch === 'function') {
-			const res = await globalThis.fetch(url);
-			return await res.text();
-		}
-		const Http = globalThis.Http;
-		if (Http && typeof Http.getString === 'function') {
-			return await Http.getString(url);
-		}
-	} catch (error) {
-		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.warn('[ns-browser-runtime-client] failed to fetch text', url, error);
-		}
-	}
-	return '';
-}
-
-let __nsBrowserRuntimeCssHandlerPromise;
-function __nsBrowserRuntimeLoadCssHandler() {
-	if (!__nsBrowserRuntimeCssHandlerPromise) {
-		__nsBrowserRuntimeCssHandlerPromise = import(${JSON.stringify(cssHandlerUrl)}).catch((error) => {
-			// Allow a retry on the next update instead of caching the failure.
-			__nsBrowserRuntimeCssHandlerPromise = undefined;
-			throw error;
-		});
-	}
-	return __nsBrowserRuntimeCssHandlerPromise;
-}
-
-async function __nsBrowserRuntimeHandleCssUpdates(msg) {
-	const updates = Array.isArray(msg?.updates) ? msg.updates : [];
-	if (!updates.length) {
-		return;
-	}
-	// Delegate to the shared client css-handler — the ONE fetch+apply pipeline
-	// for bootstrap and full client alike, honoring per-update tags (a
-	// component styleUrls update must replace under its own tag; the inline
-	// applier below only knows the global stylesheet).
-	try {
-		const cssHandler = await __nsBrowserRuntimeLoadCssHandler();
-		if (cssHandler && typeof cssHandler.handleCssUpdates === 'function') {
-			await cssHandler.handleCssUpdates(updates, __NS_BROWSER_RUNTIME_ORIGIN__);
-			return;
-		}
-	} catch (cssHandlerErr) {
-		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.warn('[ns-browser-runtime-client] shared css-handler unavailable; using inline fallback', cssHandlerErr);
-		}
-	}
-	// Inline fallback (css-handler import failed): GLOBAL updates only. The
-	// inline applier replaces under the global app.css tag, so applying a
-	// component-tagged update here would clobber the global stylesheet.
-	for (const update of updates) {
-		if (update && typeof update.tag === 'string' && update.tag) {
-			console.warn('[ns-browser-runtime-client] skipped component CSS update (tagged applier unavailable):', update.tag);
-			continue;
-		}
-		const cssPath = update?.path || update?.acceptedPath || '';
-		if (!cssPath) {
-			continue;
-		}
-		const timestamp = update?.timestamp || Date.now();
-		const sep = cssPath.includes('?') ? '&' : '?';
-		const url = __NS_BROWSER_RUNTIME_ORIGIN__ + cssPath + sep + 'direct=1&t=' + String(timestamp);
-		const cssText = await __nsBrowserRuntimeFetchText(url);
-		if (typeof cssText === 'string' && cssText.length) {
-			__nsBrowserRuntimeApplyCss(cssText);
-		}
-	}
-}
-
-function __nsBrowserRuntimeHandleAngularUpdate() {
-	const reboot = globalThis.__reboot_ng_modules__;
-	if (typeof reboot !== 'function') {
-		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.warn('[ns-browser-runtime-client] Angular reboot hook unavailable');
-		}
-		return;
-	}
-	try {
-		globalThis.__NS_HMR_IMPORT_NONCE__ = (typeof globalThis.__NS_HMR_IMPORT_NONCE__ === 'number' ? globalThis.__NS_HMR_IMPORT_NONCE__ : 0) + 1;
-	} catch {}
-	try {
-		globalThis.__NS_DEV_RESET_IN_PROGRESS__ = true;
-	} catch {}
-	try {
-		reboot(false);
-	} finally {
-		try {
-			globalThis.__NS_DEV_RESET_IN_PROGRESS__ = false;
-		} catch {}
-	}
-}
-
-function __nsBrowserRuntimeHandleSocketMessage(msg) {
-	if (!msg || typeof msg.type !== 'string') {
-		return;
-	}
-	if (msg.type === 'ns:hmr-full-graph') {
-		globalThis.__NS_HMR_BROWSER_RUNTIME_GRAPH_VERSION__ = typeof msg.version === 'number' ? msg.version : 0;
-		return;
-	}
-	if (globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__) {
-		return;
-	}
-	if (msg.type === 'ns:angular-update') {
-		__nsBrowserRuntimeHandleAngularUpdate();
-		return;
-	}
-	if (msg.type === 'ns:css-updates') {
-		void __nsBrowserRuntimeHandleCssUpdates(msg);
-	}
-}
-
-function __nsBrowserRuntimeScheduleReconnect() {
-	if (__nsBrowserRuntimeSocketReconnectTimer) {
-		return;
-	}
-	__nsBrowserRuntimeSocketReconnectTimer = setTimeout(() => {
-		__nsBrowserRuntimeSocketReconnectTimer = null;
-		__nsBrowserRuntimeConnectSocket();
-	}, 1000);
-}
-
-function __nsBrowserRuntimeClearDelegationTimer() {
-	if (__nsBrowserRuntimeDelegationTimer) {
-		clearTimeout(__nsBrowserRuntimeDelegationTimer);
-		__nsBrowserRuntimeDelegationTimer = null;
-	}
-}
-
-function __nsBrowserRuntimeCloseFallbackSocket(reason) {
-	__nsBrowserRuntimeClearDelegationTimer();
-	const ws = __nsBrowserRuntimeSocket;
-	if (ws) {
-		try {
-			ws.onopen = null;
-			ws.onmessage = null;
-			ws.onerror = null;
-			ws.onclose = null;
-		} catch {}
-		try {
-			ws.close();
-		} catch {}
-	}
-	__nsBrowserRuntimeSocket = null;
-	globalThis.__NS_HMR_BROWSER_RUNTIME_SOCKET_READY__ = false;
-	if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-		console.info('[ns-browser-runtime-client] delegated to full HMR client; closing bootstrap fallback socket', reason || 'delegated');
-	}
-}
-
-function __nsBrowserRuntimeWaitForDelegation(startedAt) {
-	if (globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__) {
-		__nsBrowserRuntimeClearDelegationTimer();
-		return;
-	}
-	if (globalThis.__NS_HMR_CLIENT_SOCKET_READY__) {
-		globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__ = true;
-		__nsBrowserRuntimeCloseFallbackSocket('full-client-ready');
-		return;
-	}
-	if (!__nsBrowserRuntimeDelegationWarningIssued && Date.now() - startedAt >= 10000) {
-		__nsBrowserRuntimeDelegationWarningIssued = true;
-		// Verbose-only: the 10s threshold trips on every real Angular
-		// cold boot. The bootstrap fallback keeps running; the message
-		// is diagnostic, not actionable.
-		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.warn('[ns-browser-runtime-client] full HMR client did not confirm websocket readiness; keeping bootstrap fallback active');
-		}
-		__nsBrowserRuntimeClearDelegationTimer();
-		return;
-	}
-	__nsBrowserRuntimeDelegationTimer = setTimeout(() => {
-		__nsBrowserRuntimeDelegationTimer = null;
-		__nsBrowserRuntimeWaitForDelegation(startedAt);
-	}, 100);
-}
-
-function __nsBrowserRuntimeTrackDelegation() {
-	if (globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__) {
-		return;
-	}
-	__nsBrowserRuntimeDelegationWarningIssued = false;
-	__nsBrowserRuntimeClearDelegationTimer();
-	__nsBrowserRuntimeWaitForDelegation(Date.now());
-}
-
-function __nsBrowserRuntimeConnectSocket() {
-	const WebSocketCtor = globalThis.WebSocket;
-	if (typeof WebSocketCtor !== 'function') {
-		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-			console.warn('[ns-browser-runtime-client] WebSocket API unavailable');
-		}
-		__nsBrowserRuntimeScheduleReconnect();
-		return;
-	}
-	try {
-		if (__nsBrowserRuntimeSocket) {
-			const readyState = __nsBrowserRuntimeSocket.readyState;
-			const openState = typeof __nsBrowserRuntimeSocket.OPEN === 'number' ? __nsBrowserRuntimeSocket.OPEN : 1;
-			const connectingState = typeof WebSocketCtor.CONNECTING === 'number' ? WebSocketCtor.CONNECTING : 0;
-			if (readyState === openState || readyState === connectingState) {
-				return;
-			}
-		}
-		const ws = new WebSocketCtor(__NS_BROWSER_RUNTIME_FALLBACK_WS_URL__);
-		__nsBrowserRuntimeSocket = ws;
-		ws.onopen = () => {
-			globalThis.__NS_HMR_BROWSER_RUNTIME_SOCKET_READY__ = true;
-			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-				console.info('[ns-browser-runtime-client] connected', __NS_BROWSER_RUNTIME_FALLBACK_WS_URL__);
-			}
-		};
-		ws.onmessage = (event) => {
-			try {
-				const raw = typeof event?.data === 'string' ? event.data : String(event?.data || '');
-				if (!raw) {
-					return;
-				}
-				__nsBrowserRuntimeHandleSocketMessage(JSON.parse(raw));
-			} catch (error) {
-				if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-					console.warn('[ns-browser-runtime-client] failed to process websocket message', error);
-				}
-			}
-		};
-		ws.onerror = (error) => {
-			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-				console.warn('[ns-browser-runtime-client] websocket error', error);
-			}
-		};
-		ws.onclose = () => {
-			if (__nsBrowserRuntimeSocket === ws) {
-				__nsBrowserRuntimeSocket = null;
-			}
-			globalThis.__NS_HMR_BROWSER_RUNTIME_SOCKET_READY__ = false;
-			__nsBrowserRuntimeScheduleReconnect();
-		};
-	} catch (error) {
-		console.warn('[ns-browser-runtime-client] failed to create websocket', error);
-		__nsBrowserRuntimeScheduleReconnect();
-	}
-}
-
-async function __nsBrowserRuntimeEnsureFullClientStarted() {
-	if (!__nsBrowserRuntimeHmrClientStartPromise) {
-		__nsBrowserRuntimeHmrClientStartPromise = import(__NS_BROWSER_RUNTIME_CLIENT_IMPORT__)
-			.then((mod) => {
-				const start = mod?.default;
-				if (typeof start !== 'function') {
-					throw new Error('NativeScript HMR client bootstrap is missing a default export');
-				}
-				start({ wsUrl: __NS_BROWSER_RUNTIME_FULL_CLIENT_WS_URL__ });
-				__nsBrowserRuntimeTrackDelegation();
-			})
-			.catch((error) => {
-				globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__ = false;
-				// Settle readiness so pending navigations fail instead of hanging.
-				try { globalThis.__NS_CLIENT_STRATEGY_RESOLVE__?.(); } catch {}
-				console.error('[ns-browser-runtime-client] failed to start full NativeScript HMR client', __NS_BROWSER_RUNTIME_CLIENT_IMPORT__, error);
-				throw error;
-			});
-	}
-	return __nsBrowserRuntimeHmrClientStartPromise;
-}
-
-__nsBrowserRuntimeEnsureVendorBootstrap();
-
-
-if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__) {
-	globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__ = true;
-	globalThis.__NS_HTTP_ORIGIN__ = __NS_BROWSER_RUNTIME_ORIGIN__;
-	// Deferred strategy readiness; the full client settles it later.
-	if (!globalThis.__NS_CLIENT_STRATEGY_READY__) {
-		globalThis.__NS_CLIENT_STRATEGY_READY__ = new Promise((resolve) => {
-			globalThis.__NS_CLIENT_STRATEGY_RESOLVE__ = resolve;
-		});
-	}
-	__nsBrowserRuntimeConnectSocket();
-	const __nsBrowserRuntimeBootWaitStartedAt = Date.now();
-	const __nsBrowserRuntimeWaitForBoot = () => {
-		if (globalThis.__NS_HMR_BOOT_COMPLETE__) {
-			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-				console.info('[ns-browser-runtime-client] boot complete observed; starting full HMR client');
-			}
-			void __nsBrowserRuntimeReplaySeededCss();
-			void __nsBrowserRuntimeEnsureFullClientStarted();
-		} else if (globalThis.__NS_ENTRY_ERROR__) {
-			// Boot failed; settle readiness so pending navigations reject.
-			try { globalThis.__NS_CLIENT_STRATEGY_RESOLVE__?.(); } catch {}
-			setTimeout(__nsBrowserRuntimeWaitForBoot, 100);
-		} else {
-			if (!__nsBrowserRuntimeBootWaitWarningIssued && Date.now() - __nsBrowserRuntimeBootWaitStartedAt >= 10000) {
-				__nsBrowserRuntimeBootWaitWarningIssued = true;
-				// Verbose-only: real Angular cold boots routinely take
-				// 15-30s through importing-main. The poller keeps watching
-				// __NS_HMR_BOOT_COMPLETE__; until it flips this looks like
-				// an error to users but is purely informational.
-				// (No backticks: this script body is embedded in a template
-				// literal in vite-plugin.ts.)
-				if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-					console.warn('[ns-browser-runtime-client] boot completion was not observed; full HMR client start is still pending');
-				}
-			}
-			setTimeout(__nsBrowserRuntimeWaitForBoot, 100);
-		}
+		},
+		async resolveId(id, _importer, options) {
+			if (this.environment?.name !== 'client' || !clientIds.has(id)) return null;
+			const resolved = await this.resolve(THIN_VITE_CLIENT_SPECIFIER, path.join(root, 'index.html'), { ...options, skipSelf: true });
+			return resolved && !resolved.external ? resolved.id.split('?', 1)[0] : THIN_VITE_CLIENT_FILE;
+		},
 	};
-	__nsBrowserRuntimeWaitForBoot();
-}
-`;
 }
 
-export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?: boolean }): Plugin {
+const toPosix = (value: string) => value.replace(/\\/g, '/').replace(/\/+$/, '');
+
+function realpathOrSelf(dir: string): string {
+	try {
+		return fs.realpathSync(dir);
+	} catch {
+		return dir;
+	}
+}
+
+/**
+ * Adds `dirs` to the resolved `server.fs.allow`, as given and as real paths:
+ * the resolver yields symlinked ids under `--preserve-symlinks` and real paths
+ * otherwise. Vite reads the list on every check, so entries added after
+ * config resolution count. Files the device requests directly (import-map
+ * targets, the core URLs of Android app components) are checked against it
+ * before any import analysis marks them safe.
+ */
+export function allowServedDirs(config: { server: { fs: { allow: string[] } } }, dirs: Iterable<string>): void {
+	const allow = config.server.fs.allow;
+	for (const candidate of servedDirForms(dirs)) {
+		if (!allow.includes(candidate)) allow.push(candidate);
+	}
+}
+
+/** Each directory as given and as its real path, POSIX, without a trailing slash. */
+export function servedDirForms(dirs: Iterable<string>): string[] {
+	const out = new Set<string>();
+	for (const dir of dirs) {
+		out.add(toPosix(path.resolve(dir)));
+		out.add(toPosix(realpathOrSelf(path.resolve(dir))));
+	}
+	return [...out];
+}
+
+/**
+ * Device requests pass Vite's host check, which rejects a hostname it doesn't
+ * know; `NS_HMR_HOST` may name one. IPs and `localhost` always pass.
+ */
+export function allowDeviceHost(config: { server: { allowedHosts: string[] | true } }, envHost: string | undefined = process.env.NS_HMR_HOST): void {
+	const allowedHosts = config.server.allowedHosts;
+	if (!envHost || allowedHosts === true) return;
+	let hostname: string;
+	try {
+		hostname = new URL(`http://${envHost}`).hostname;
+	} catch {
+		return;
+	}
+	if (!hostname || hostname.startsWith('[') || net.isIP(hostname) || allowedHosts.includes(hostname)) return;
+	allowedHosts.push(hostname);
+}
+
+export interface NsHmrClientPluginOptions {
+	platform: NsDevPlatform;
+	verbose?: boolean;
+	/** Set when this server writes the dev output itself (`dev-output.ts`), with no HMR build next to it. */
+	devOutput?: DevOutputOptions;
+}
+
+export function nsHmrClientVitePlugin(opts: NsHmrClientPluginOptions): Plugin {
 	let config: ResolvedConfig | undefined;
+	let devServer: ViteDevServer | undefined;
 	const sessionId = new Date().toISOString();
 
 	return {
 		name: 'ns-hmr-client',
+		resolveId(id) {
+			if (this.environment?.name !== 'client') return null;
+			return id === NS_DEV_CLIENT_ID || id === NS_DEV_CLIENT_RESOLVED ? NS_DEV_CLIENT_RESOLVED : null;
+		},
+		load(id) {
+			if (id !== NS_DEV_CLIENT_RESOLVED || !devServer) return null;
+			// Every value here is fixed for the process (origin, pinned token,
+			// root), so Vite's cached transform of this module stays valid.
+			const origin = getServerOrigin(devServer);
+			const session = createNsDevSessionDescriptor({
+				projectRoot: devServer.config.root,
+				origin,
+				wsUrl: resolveViteHmrWsUrl(origin, devServer.config),
+				platform: opts.platform,
+				sessionId,
+			});
+			return createNsDevClientModuleCode({
+				wsUrl: session.wsUrl,
+				wsProtocol: session.wsProtocol,
+				entryUrl: session.entryUrl,
+				origin: session.origin,
+				root: devServer.config.root,
+			});
+		},
 		configResolved(c) {
 			config = c;
-			// Capture app-configured `__FOO__` defines so HMR-served modules get a
-			// const shim for them (Vite's text-substitution doesn't reach raw-served
-			// modules; without a shim a free `__FOO__` is mis-bound to /ns/rt → wrong
-			// value under HMR vs the production bundle). See setUserDefineEntries.
-			setUserDefineEntries(c.define as Record<string, unknown> | undefined);
-		},
-		resolveId(id) {
-			if (id === VIRTUAL_ID) return RESOLVED_ID;
-			return null;
+			if (c.command === 'serve') {
+				// Vite checks upgrades against `config.webSocketToken` of the config
+				// it hands to `configResolved`, so pinning it here is what it uses.
+				pinWebSocketToken(c as { webSocketToken: string }, opts.devOutput ? () => {} : (token) => publishDevWsToken(devWsTokenFile(c.root, devServerAddressOf(c.server).port), token));
+				allowServedDirs(c, [nsVitePackageDir()]);
+				// Vite freezes a copy of `allowedHosts` when it creates the server.
+				allowDeviceHost(c);
+			}
 		},
 		configureServer(server) {
-			server.middlewares.use((req, res, next) => {
+			devServer = server;
+			// One origin for every URL handed to the device: the one bundle.mjs
+			// was built with, never the request's Host header.
+			const getOrigin = () => getServerOrigin(server);
+			// The core directory comes from the client resolver, which may only
+			// run once the server has started; the first device request waits for it.
+			let coreAllowed: Promise<void> | undefined;
+			const allowCore = () =>
+				(coreAllowed ??= resolveCoreEntryFile(server)
+					.then((file) => allowServedDirs(server.config, [corePackageDir(file)]))
+					.catch((error) => server.config.logger.warn(`[ns-hmr] @nativescript/core is not in server.fs.allow: ${error?.message ?? error}`)));
+			useFirst(server.middlewares, createDeviceRequestMiddleware(server, getOrigin, allowCore));
+			server.middlewares.use(async (req, res, next) => {
 				try {
 					const url = new URL(req.url || '', 'http://localhost');
-					if (url.pathname === '/__ns_dev__/client') {
-						const requestHost = String(req.headers.host || 'localhost:5173');
-						const secure = !!config?.server?.https;
-						const origin = `${secure ? 'https' : 'http'}://${requestHost}`;
-						const wsUrl = `${secure ? 'wss' : 'ws'}://${requestHost}/ns-hmr`;
-						const clientFsPath = require.resolve('../client/index.js');
-						const projectRoot = config?.root || process.cwd();
-						const clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });
-						let hotContextImport: string | undefined;
-						try {
-							const hotContextFsPath = require.resolve('../client/hot-context.js');
-							hotContextImport = computeClientImportSpecifier({ projectRoot, clientFsPath: hotContextFsPath });
-						} catch {}
-						const code = createNsDevClientBootstrapCode({
-							origin,
-							wsUrl,
-							clientImport,
-							hotContextImport,
-							verbose: opts.verbose,
-						});
+					if (url.pathname !== NS_DEV_SESSION_PATH) return next();
+					if (sendCorsPreflight(req, res)) return;
 
-						res.setHeader('Access-Control-Allow-Origin', '*');
-						res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-						if (req.method === 'OPTIONS') {
-							res.statusCode = 204;
-							res.end();
-							return;
-						}
-
-						res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-						res.end(code);
-						return;
-					}
-					if (url.pathname !== '/__ns_dev__/session') return next();
-
-					res.setHeader('Access-Control-Allow-Origin', '*');
-					res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-					if (req.method === 'OPTIONS') {
-						res.statusCode = 204;
-						res.end();
-						return;
-					}
-
+					const origin = getOrigin();
 					const descriptor = createNsDevSessionDescriptor({
 						projectRoot: config?.root || process.cwd(),
-						requestHost: String(req.headers.host || 'localhost:5173'),
+						origin,
+						wsUrl: resolveViteHmrWsUrl(origin, server.config),
 						platform: opts.platform,
 						sessionId,
-						secure: !!config?.server?.https,
 					});
 
-					res.setHeader('Content-Type', 'application/json');
-					res.end(JSON.stringify(descriptor, null, 2));
+					// A module, so the device loads it through the module loader during boot.
+					res.setHeader('Content-Type', 'application/javascript');
+					res.end(`export default ${JSON.stringify(descriptor, null, 2)};\n`);
 				} catch (error: any) {
 					res.statusCode = 500;
 					res.setHeader('Content-Type', 'application/json');
 					res.end(JSON.stringify({ error: error?.message || 'Failed to build NativeScript dev session descriptor' }));
 				}
 			});
-		},
-		load(id) {
-			if (id !== RESOLVED_ID) return null;
-
-			/**
-			 * Use a POSIX-style import specifier for the client entry to avoid
-			 * Windows drive-letter paths (e.g. "D:\\...") accidentally
-			 * becoming bare import ids that Rollup/Vite cannot resolve.
-			 * We still resolve the real filesystem path for correctness, but convert it to a project-relative POSIX path before interpolating it into the generated module.
-			 **/
-			const clientFsPath = require.resolve('../client/index.js');
-			// Prefer project root when available; otherwise fall back to cwd.
-			const projectRoot = config?.root || process.cwd();
-			const clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });
-
-			// Build ws url from Vite server info. Routes through the same
-			// canonical helper as `main-entry.ts` / `base.ts` so the
-			// websocket endpoint embedded in `bundle.mjs` and every other
-			// `/ns/*` URL share one origin string — required by the iOS
-			// HTTP ESM cache identity rule, and necessary for Android
-			// emulators that can't reach `0.0.0.0` / `localhost`.
-			const port = Number(config?.server?.port || 5173);
-			// Pass `port` through so the Android emulator path attempts
-			// `adb reverse tcp:<port> tcp:<port>` before falling back to
-			// `10.0.2.2`. The websocket URL and bundle.mjs URLs both
-			// flow from this same helper, so they stay byte-identical
-			// (required by the iOS HTTP ESM cache identity rule).
-			const { host } = resolveDeviceReachableHost({
-				host: config?.server?.host,
-				platform: opts.platform,
-				port,
+			const bootRoutes = registerDevBootRoutes(server, {
+				// Ids as Vite's transform middleware passes them on (`/@id/__x00__` unwrapped).
+				bootGraphUrls: () => [DEV_BOOT_RESOLVED, NS_DEV_CLIENT_RESOLVED, resolveProjectMainEntryPath(server.config.root)],
 			});
-			const secure = !!config?.server?.https;
-			const protocol = secure ? 'wss' : 'ws';
-			const wsUrl = `${protocol}://${host}:${port}/ns-hmr`;
-
-			// Import client and start it with explicit ws URL
-			const banner = opts.verbose ? `console.log('[ns-hmr-client] starting client -> ${wsUrl} (HTTP loader enabled via __NS_HTTP_ORIGIN__)');` : '';
-			return {
-				code: `
-import startViteHMR from "${clientImport}";
-${banner}
-startViteHMR({ wsUrl: ${JSON.stringify(wsUrl)} });
-`,
-				moduleType: 'js',
+			if (opts.devOutput) startDevOutput(server, { ...opts.devOutput, verbose: opts.verbose }, bootRoutes.warmedUp);
+			// After Vite's own middlewares, ahead of its error handler.
+			return () => {
+				server.middlewares.use(bootRoutes.errorHandler);
 			};
 		},
 	};

@@ -3,6 +3,7 @@ import fs from 'fs';
 import type { Plugin, ResolvedConfig } from 'vite';
 import { getProjectRootPath } from './project.js';
 import { getProjectAppRelativePath } from './utils.js';
+import { getCliFlags } from './cli-flags.js';
 import type { Platform } from './platform-types.js';
 
 const projectRoot = getProjectRootPath();
@@ -74,6 +75,41 @@ function getComponentOutputName(componentPath: string): string {
 	const basename = path.basename(componentPath);
 	// Remove .android.ts, .android.js, .ts, .js extensions
 	return basename.replace(/\.(android\.)?(ts|js)$/, '');
+}
+
+const APPLICATION_BASE = /\bextends\s+(?:android\.app\.Application|androidx\.multidex\.MultiDexApplication)\b|\b(?:android\.app\.Application|androidx\.multidex\.MultiDexApplication)\.extend\s*\(/;
+
+/**
+ * Whether a component's source declares a custom `Application` class (it
+ * extends `android.app.Application` or `MultiDexApplication` directly).
+ * Android instantiates that class before any JavaScript runs, so under HMR it
+ * is the one component that still needs its binding generated at build time
+ * and its JavaScript on disk; every other component is served.
+ */
+export function isApplicationComponent(source: string): boolean {
+	return APPLICATION_BASE.test(source);
+}
+
+function readsAsApplicationComponent(absolutePath: string): boolean {
+	try {
+		return isApplicationComponent(fs.readFileSync(absolutePath, 'utf-8'));
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * The components the Android dev boot module imports from the dev server
+ * under HMR, ahead of the app entry: a named `extend` generates its class
+ * into the app's class loader before Android instantiates it.
+ */
+export function getServedAppComponents(): Array<{ absolutePath: string; outputName: string }> {
+	return getResolvedAppComponents('android').filter((component) => !readsAsApplicationComponent(component.absolutePath));
+}
+
+/** The custom `Application` component, the one Android app component that is built to disk under HMR. */
+export function getApplicationAppComponent(): { absolutePath: string; outputName: string } | undefined {
+	return getResolvedAppComponents('android').find((component) => readsAsApplicationComponent(component.absolutePath));
 }
 
 /**
@@ -160,6 +196,10 @@ export function appComponentsPlugin(options: AppComponentsOptions): Plugin {
 	}
 
 	let config: ResolvedConfig;
+	// Under Android HMR only a custom Application is built; the dev boot module
+	// serves the others (`getServedAppComponents`).
+	let buildsApplicationOnly = false;
+	const buildInputs = () => Array.from(resolvedComponents.values()).filter(({ absolutePath }) => !buildsApplicationOnly || readsAsApplicationComponent(absolutePath));
 
 	return {
 		name: 'nativescript-app-components',
@@ -186,8 +226,9 @@ export function appComponentsPlugin(options: AppComponentsOptions): Plugin {
 		},
 
 		// Modify the Vite config to support multiple entry points
-		config(userConfig) {
-			if (resolvedComponents.size === 0) return null;
+		config(userConfig, env) {
+			buildsApplicationOnly = platform === 'android' && env.mode === 'development' && !!getCliFlags()?.hmr;
+			if (buildInputs().length === 0) return null;
 
 			// We need to modify the output.entryFileNames to handle multiple entries
 			return {
@@ -214,7 +255,7 @@ export function appComponentsPlugin(options: AppComponentsOptions): Plugin {
 
 		// Modify rollup options to add additional entry points
 		options(inputOptions) {
-			if (resolvedComponents.size === 0) return null;
+			if (buildInputs().length === 0) return null;
 
 			// Get current input
 			const currentInput = inputOptions.input;
@@ -232,7 +273,7 @@ export function appComponentsPlugin(options: AppComponentsOptions): Plugin {
 			}
 
 			// Add app component entries - use the actual file path directly
-			for (const [, { absolutePath, outputName }] of resolvedComponents) {
+			for (const { absolutePath, outputName } of buildInputs()) {
 				newInput[outputName] = absolutePath;
 			}
 

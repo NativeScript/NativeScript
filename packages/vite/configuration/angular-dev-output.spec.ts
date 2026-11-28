@@ -4,11 +4,6 @@ vi.mock('@analogjs/vite-plugin-angular', () => ({
 	default: vi.fn(() => []),
 }));
 
-vi.mock('../hmr/frameworks/angular/build/angular-linker.js', () => ({
-	angularLinkerVitePlugin: vi.fn(() => ({ name: 'mock-angular-linker-pre' })),
-	angularLinkerVitePluginPost: vi.fn(() => ({ name: 'mock-angular-linker-post' })),
-}));
-
 vi.mock('../helpers/cli-flags.js', () => ({
 	getCliFlags: vi.fn(() => ({})),
 }));
@@ -28,36 +23,25 @@ vi.mock('./base.js', () => ({
 
 import { angularConfig } from './angular.js';
 import angular from '@analogjs/vite-plugin-angular';
+import { getCliFlags } from '../helpers/cli-flags.js';
 
 const angularPluginFactory = vi.mocked(angular);
 
 describe('angularConfig non-HMR development output', () => {
-	it('enables the Angular compilation API for development no-HMR builds', () => {
-		angularPluginFactory.mockClear();
+	it('never enables the Angular compilation API', () => {
+		for (const mode of ['development', 'production']) {
+			angularPluginFactory.mockClear();
 
-		angularConfig({ mode: 'development' });
+			angularConfig({ mode });
 
-		expect(angularPluginFactory).toHaveBeenCalledWith(
-			expect.objectContaining({
-				experimental: {
-					useAngularCompilationAPI: true,
-				},
-			}),
-		);
-	});
-
-	it('keeps the Angular compilation API disabled outside development no-HMR mode', () => {
-		angularPluginFactory.mockClear();
-
-		angularConfig({ mode: 'production' });
-
-		expect(angularPluginFactory).toHaveBeenCalledWith(
-			expect.objectContaining({
-				experimental: {
-					useAngularCompilationAPI: false,
-				},
-			}),
-		);
+			expect(angularPluginFactory).toHaveBeenCalledWith(
+				expect.objectContaining({
+					experimental: {
+						useAngularCompilationAPI: false,
+					},
+				}),
+			);
+		}
 	});
 
 	it('disables chunk splitting for development rebuilds', () => {
@@ -69,6 +53,20 @@ describe('angularConfig non-HMR development output', () => {
 		expect('chunkFileNames' in output).toBe(false);
 	});
 
+	it('keeps chunk splitting for the HMR build even when NODE_ENV is production', () => {
+		vi.mocked(getCliFlags).mockReturnValueOnce({ hmr: true } as any);
+		vi.stubEnv('NODE_ENV', 'production');
+		try {
+			const config = angularConfig({ mode: 'development' });
+			const output = (config.build as any).rolldownOptions.output;
+
+			expect(output.codeSplitting).toBeUndefined();
+			expect(typeof output.manualChunks).toBe('function');
+		} finally {
+			vi.unstubAllEnvs();
+		}
+	});
+
 	it('keeps the base chunking strategy outside development no-HMR mode', () => {
 		const config = angularConfig({ mode: 'production' });
 		const output = (config.build as any).rolldownOptions.output;
@@ -76,5 +74,13 @@ describe('angularConfig non-HMR development output', () => {
 		expect(output.codeSplitting).toBeUndefined();
 		expect(typeof output.manualChunks).toBe('function');
 		expect(output.chunkFileNames).toBe('[name]-[hash].mjs');
+	});
+});
+
+describe('angularConfig optimizeDeps', () => {
+	it('leaves the dev dependency policy to the base config', () => {
+		const config = angularConfig({ mode: 'development' });
+		expect(config.optimizeDeps).toBeUndefined();
+		expect((config.plugins ?? []).flat().map((p: any) => p?.name)).not.toContain('ns-disable-optimize-deps');
 	});
 });

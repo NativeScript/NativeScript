@@ -16,7 +16,7 @@ interface PackageJson {
 }
 
 const RUNTIME_DEPS = {
-	'@valor/nativescript-websockets': '^2.0.2',
+	'@valor/nativescript-websockets': '^2.0.4',
 } as const;
 
 function readPackageJson(): PackageJson {

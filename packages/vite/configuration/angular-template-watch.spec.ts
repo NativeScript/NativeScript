@@ -11,11 +11,6 @@ vi.mock('./base.js', () => ({
 	baseConfig: vi.fn(() => ({})),
 }));
 
-vi.mock('../hmr/frameworks/angular/build/angular-linker.js', () => ({
-	angularLinkerVitePlugin: vi.fn(() => ({ name: 'mock-angular-linker-pre' })),
-	angularLinkerVitePluginPost: vi.fn(() => ({ name: 'mock-angular-linker-post' })),
-}));
-
 vi.mock('../helpers/cli-flags.js', () => ({
 	getCliFlags: vi.fn(() => ({})),
 }));
@@ -212,19 +207,5 @@ describe('angular-template-deps watch invalidation', () => {
 		} finally {
 			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
 		}
-	});
-
-	it('does not instrument components with Windows-form node_modules ids', () => {
-		const plugins = getAngularPlugins();
-		const discover = plugins.find((plugin) => plugin?.name === 'ns-component-hmr-register');
-		const inject = plugins.find((plugin) => plugin?.name === 'ns-component-hmr-register-post');
-		if (!discover || !inject) {
-			throw new Error('component registration plugins not found');
-		}
-		const windowsNodeModulesId = 'C:\\repo\\node_modules\\component-pkg\\example.component.ts';
-
-		discover.transform?.('@Component({})\nexport class ExampleComponent {}', windowsNodeModulesId);
-
-		expect(inject.transform?.('export class ExampleComponent {}', windowsNodeModulesId)).toBeNull();
 	});
 });

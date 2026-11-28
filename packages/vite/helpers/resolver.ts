@@ -1,4 +1,4 @@
-import type { Plugin } from 'vite';
+import type { DevEnvironment, Plugin } from 'vite';
 import path from 'path';
 import { resolveNativeScriptPlatformModule } from './utils.js';
 import { normalizeModuleId } from './normalize-id.js';
@@ -18,7 +18,7 @@ export default function NativeScriptPlugin(options: { platform: 'ios' | 'android
 		name: 'vite:nativescript',
 		enforce: 'pre',
 
-		resolveId(source, importer) {
+		async resolveId(source, importer, resolveOptions) {
 			const platform = options.platform;
 			if (!platform || !importer || source.startsWith('.') === false) {
 				return null;
@@ -26,17 +26,23 @@ export default function NativeScriptPlugin(options: { platform: 'ios' | 'android
 
 			const resolved = path.resolve(path.dirname(normalizeImporterId(importer)), source);
 			const file = resolveNativeScriptPlatformModule(resolved, ['.ts', '.js'], platform);
-			if (file) {
-				// Canonicalize before handing the id to Rolldown. `path.resolve`
-				// emits backslashes on Windows; the @nativescript/core alias and
-				// Vite's own resolver emit forward slashes. Returning the raw
-				// backslash form here makes Rolldown treat the same core file as a
-				// second module, double-evaluating widthProperty.register. No-op on
-				// POSIX. See normalize-id.ts for the full rationale.
-				return normalizeModuleId(file);
+			if (!file) {
+				return null;
 			}
-
-			return null;
+			// Canonicalize before handing the id to Rolldown. `path.resolve`
+			// emits backslashes on Windows; the @nativescript/core alias and
+			// Vite's own resolver emit forward slashes. Returning the raw
+			// backslash form here makes Rolldown treat the same core file as a
+			// second module, double-evaluating widthProperty.register. No-op on
+			// POSIX. See normalize-id.ts for the full rationale.
+			const id = normalizeModuleId(file);
+			// With a dep optimizer, Vite's resolver versions node_modules files
+			// (`?v=`); resolving the platform file through it keeps one URL per
+			// file however the file is reached.
+			if ((this.environment as DevEnvironment | undefined)?.depsOptimizer) {
+				return (await this.resolve(id, importer, { ...resolveOptions, skipSelf: true })) ?? id;
+			}
+			return id;
 		},
 
 		transform(code, id) {

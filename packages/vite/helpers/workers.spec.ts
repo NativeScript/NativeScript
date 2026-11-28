@@ -1,415 +1,234 @@
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { createServer, type Plugin, type ViteDevServer } from 'vite';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { neutralizeWorkerImportMeta, viteWorkerAssetPathToNsMUrl, workerHmrUrlPlugin } from './workers.js';
+import { neutralizeWorkerImportMeta, toModuleWorkerUrl, workerHmrUrlPlugin } from './workers.js';
+import { NS_DEV_EXPR } from '../hmr/shared/runtime/dev-globals.js';
+import { NS_BEFORE_RERUN_EVENT, NS_UPDATE_RERUN_EVENT } from '../hmr/shared/protocol.js';
+import { HMRClient, HMRContext } from '../hmr/client/hmr-client.js';
+import { nsRerunPlugin } from '../hmr/server/update-gate.js';
 
-// --- viteWorkerAssetPathToNsMUrl ---------------------------------------
-//
-// This helper takes Vite's emitted dev-server worker asset path (project-
-// relative or `/@fs/`-absolute), strips the rewritable file extension, and
-// returns the canonical `/ns/m/<rel>` URL the NativeScript HMR middleware
-// serves. It must:
-//
-//   * Map project-relative paths the same way `/ns/m/` does (drop `.ts`,
-//     `.js`, `.mjs`, `.cjs`, `.tsx`, `.jsx`).
-//   * Map `/@fs/` paths that fall *under* the project or workspace root
-//     by stripping the matching prefix.
-//   * Refuse to map URLs without the `worker_file` query (so non-worker
-//     `new URL(..., import.meta.url)` calls — assets, generic URLs — are
-//     left to Vite's default handling).
-//   * Refuse to map `/@fs/` paths outside both the project and the
-//     workspace root (we'd have nowhere safe to anchor them; Vite's
-//     default behaviour is fine for those).
-//
-// The fixed POSIX paths below stand in for a typical Nx workspace layout
-// (`<workspace>/apps/<app>/src/...`) so the assertions don't depend on the
-// machine running them.
+// Fixed POSIX paths standing in for an Nx workspace layout, so the assertions
+// don't depend on the machine running them.
 const PROJECT_ROOT = '/abs/workspace/apps/console';
-const WORKSPACE_ROOT = '/abs/workspace';
 
-describe('viteWorkerAssetPathToNsMUrl', () => {
-	it('maps a project-relative TS worker asset to /ns/m/ with the extension stripped', () => {
-		const result = viteWorkerAssetPathToNsMUrl('/src/workers/light-controller/light-controller.worker.ts?worker_file&type=classic', PROJECT_ROOT, WORKSPACE_ROOT);
-		expect(result).toBe('/ns/m/src/workers/light-controller/light-controller.worker');
+describe('toModuleWorkerUrl', () => {
+	it('asks for a module worker, whatever type Vite inferred', () => {
+		expect(toModuleWorkerUrl('/src/workers/light.worker.ts?worker_file&type=classic')).toBe('/src/workers/light.worker.ts?worker_file&type=module');
+		expect(toModuleWorkerUrl('/src/foo.worker.ts?worker_file&type=module')).toBe('/src/foo.worker.ts?worker_file&type=module');
+		expect(toModuleWorkerUrl('/src/foo.worker.ts?worker_file&type=ignore')).toBe('/src/foo.worker.ts?worker_file&type=module');
+		expect(toModuleWorkerUrl('/src/foo.worker.ts?worker_file')).toBe('/src/foo.worker.ts?worker_file&type=module');
 	});
 
-	it('strips every rewritable extension Vite may emit (.ts/.tsx/.mjs/.cjs/.js/.jsx)', () => {
-		for (const ext of ['ts', 'tsx', 'mjs', 'cjs', 'js', 'jsx']) {
-			const result = viteWorkerAssetPathToNsMUrl(`/src/workers/foo.worker.${ext}?worker_file&type=classic`, PROJECT_ROOT, WORKSPACE_ROOT);
-			expect(result).toBe('/ns/m/src/workers/foo.worker');
-		}
+	it('keeps /@fs/ paths and other query params', () => {
+		expect(toModuleWorkerUrl('/@fs/abs/workspace/libs/utils/src/index.worker.ts?worker_file&type=classic')).toBe('/@fs/abs/workspace/libs/utils/src/index.worker.ts?worker_file&type=module');
+		expect(toModuleWorkerUrl('/src/foo.worker.ts?something=1&worker_file&type=classic')).toBe('/src/foo.worker.ts?worker_file&type=module&something=1');
 	});
 
-	it('refuses to map URLs without the `worker_file` query (non-worker import.meta.url sites)', () => {
-		// Generic `new URL('./foo.png', import.meta.url)` lookalikes — these
-		// are the asset/url-loader path that NS already tolerates because
-		// they're wrapped in try/catch. We must not rewrite them.
-		expect(viteWorkerAssetPathToNsMUrl('/src/assets/foo.png?import', PROJECT_ROOT, WORKSPACE_ROOT)).toBeNull();
-		expect(viteWorkerAssetPathToNsMUrl('/src/foo.ts', PROJECT_ROOT, WORKSPACE_ROOT)).toBeNull();
-	});
-
-	it('handles `worker_file` as a bare flag, with `&` continuation, and as the final query key', () => {
-		// All three forms are how Vite spells the marker depending on the
-		// surrounding query options. The helper must accept every shape.
-		expect(viteWorkerAssetPathToNsMUrl('/src/foo.worker.ts?worker_file', PROJECT_ROOT, WORKSPACE_ROOT)).toBe('/ns/m/src/foo.worker');
-		expect(viteWorkerAssetPathToNsMUrl('/src/foo.worker.ts?worker_file=1', PROJECT_ROOT, WORKSPACE_ROOT)).toBe('/ns/m/src/foo.worker');
-		expect(viteWorkerAssetPathToNsMUrl('/src/foo.worker.ts?worker_file&type=classic', PROJECT_ROOT, WORKSPACE_ROOT)).toBe('/ns/m/src/foo.worker');
-		expect(viteWorkerAssetPathToNsMUrl('/src/foo.worker.ts?something=1&worker_file&type=classic', PROJECT_ROOT, WORKSPACE_ROOT)).toBe('/ns/m/src/foo.worker');
-	});
-
-	it('rejects empty / non-string input defensively', () => {
-		expect(viteWorkerAssetPathToNsMUrl('', PROJECT_ROOT, WORKSPACE_ROOT)).toBeNull();
-		expect(viteWorkerAssetPathToNsMUrl(undefined as any, PROJECT_ROOT, WORKSPACE_ROOT)).toBeNull();
-		expect(viteWorkerAssetPathToNsMUrl(null as any, PROJECT_ROOT, WORKSPACE_ROOT)).toBeNull();
-	});
-
-	describe('/@fs/ absolute paths (Vite uses these for files outside the project root)', () => {
-		it('maps a path under the project root by stripping the project-root prefix', () => {
-			const fsPath = `/@fs${PROJECT_ROOT}/src/workers/foo.worker.ts?worker_file&type=classic`;
-			expect(viteWorkerAssetPathToNsMUrl(fsPath, PROJECT_ROOT, WORKSPACE_ROOT)).toBe('/ns/m/src/workers/foo.worker');
-		});
-
-		it('falls back to the workspace root for monorepo lib paths outside the app dir', () => {
-			// `libs/xplat/...` sits outside `apps/console/` but inside the workspace,
-			// which is the common monorepo case for shared lib files imported from
-			// a worker entry. The helper should anchor at the workspace root.
-			const fsPath = `/@fs${WORKSPACE_ROOT}/libs/xplat/utils/src/index.worker.ts?worker_file&type=classic`;
-			expect(viteWorkerAssetPathToNsMUrl(fsPath, PROJECT_ROOT, WORKSPACE_ROOT)).toBe('/ns/m/libs/xplat/utils/src/index.worker');
-		});
-
-		it('returns null for absolute paths that fall outside both the project and the workspace root', () => {
-			// We can't safely map e.g. /Users/foo/global/Library/... — there's no
-			// route prefix that would resolve to that on the device. Better to
-			// leave Vite's default behaviour in place and let any breakage
-			// surface as a clear "module not found" rather than a wrong-route
-			// 404 from NS.
-			const fsPath = '/@fs/Users/foo/elsewhere/random.worker.ts?worker_file&type=classic';
-			expect(viteWorkerAssetPathToNsMUrl(fsPath, PROJECT_ROOT, WORKSPACE_ROOT)).toBeNull();
-		});
-
-		it('returns null when the workspace root is unknown and the path is outside the project', () => {
-			const fsPath = `/@fs${WORKSPACE_ROOT}/libs/xplat/utils/src/index.worker.ts?worker_file&type=classic`;
-			// No workspace root → only project-root anchoring is available.
-			expect(viteWorkerAssetPathToNsMUrl(fsPath, PROJECT_ROOT, null)).toBeNull();
-		});
+	it('refuses URLs that are not root-relative Vite worker URLs', () => {
+		expect(toModuleWorkerUrl('/src/assets/foo.png?import')).toBeNull();
+		expect(toModuleWorkerUrl('/src/foo.ts')).toBeNull();
+		expect(toModuleWorkerUrl('/src/foo.ts?worker_file_x=1')).toBeNull();
+		expect(toModuleWorkerUrl('foo.worker.ts?worker_file')).toBeNull();
+		expect(toModuleWorkerUrl('')).toBeNull();
+		expect(toModuleWorkerUrl(undefined as any)).toBeNull();
 	});
 });
-
-// --- workerHmrUrlPlugin ------------------------------------------------
-//
-// The plugin runs as `enforce: 'post'` against Vite's already-transformed
-// dev output. The shape it must match is the canonical output of Vite's
-// built-in `workerImportMetaUrlPlugin`:
-//
-//   new Worker(new URL(/* @vite-ignore */ "/src/.../foo.worker.ts?worker_file&type=classic",
-//                      '' + import.meta.url))
-//
-// (See `workerImportMetaUrlPlugin` in vite/dist/node/chunks/node.js — the
-// `/* @vite-ignore */` and the empty-string `'' +` coercion are emitted
-// unconditionally, and the asset path may use single quotes, double
-// quotes, or backticks.) The plugin's job is to detect that exact shape
-// and rewrite it to a string URL that routes through `/ns/m/` so the
-// worker's transitive imports flow through our HMR pipeline.
-//
-// We test the plugin via its `Plugin.transform` hook directly, the same
-// pattern `configuration/angular-template-watch.spec.ts` uses for
-// `angular-template-deps`.
-
-function makeStubContext() {
-	return {
-		addWatchFile() {},
-	};
-}
-
-function configurePlugin(plugin: ReturnType<typeof workerHmrUrlPlugin>, projectRoot: string) {
-	// Vite calls `configResolved` once at startup with the resolved user
-	// config; we mirror that here with the minimal shape the plugin
-	// actually consumes (`config.root`). Workspace-root probing in the
-	// plugin's `configResolved` walks up via `findMonorepoWorkspaceRoot`
-	// looking for marker files (nx.json, pnpm-workspace.yaml, etc.). Our
-	// fake `/abs/workspace/...` path doesn't exist, so the walk returns
-	// `null` — which is exactly what we want for these tests, since the
-	// `/@fs/` mapping cases are all covered directly by
-	// `viteWorkerAssetPathToNsMUrl` above.
-	const configResolved = (plugin as any).configResolved as (config: any) => void;
-	configResolved.call(plugin, { root: projectRoot });
-}
 
 function callTransform(plugin: ReturnType<typeof workerHmrUrlPlugin>, code: string, id: string) {
 	const transform = (plugin as any).transform as (code: string, id: string) => any;
-	return transform.call(makeStubContext(), code, id);
+	return transform.call({}, code, id);
 }
 
+const viteWorker = (url: string, quote = '"') => `new Worker(new URL(/* @vite-ignore */${quote}${url}${quote}, ${quote === '`' ? '``' : quote + quote} + import.meta.url))`;
+
 describe('workerHmrUrlPlugin (transform)', () => {
-	it('rewrites the canonical Vite worker shape to a /ns/m/ string URL', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
+	it("rewrites Vite's dev worker shape to the module worker URL on the dev origin", () => {
+		const input = `export function create() {\n  return ${viteWorker('/src/workers/light.worker.ts?worker_file&type=classic')};\n}`;
+		const result = callTransform(workerHmrUrlPlugin(), input, path.join(PROJECT_ROOT, 'src/workers/index.ts'));
 
-		const input = ['export function CreateLightControllerWorker() {', '  return new Worker(new URL(/* @vite-ignore */"/src/workers/light-controller/light-controller.worker.ts?worker_file&type=classic", \'\' + import.meta.url));', '}'].join('\n');
-
-		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/workers/light-controller/index.ts'));
-
-		expect(result).not.toBeNull();
-		expect(result.code).toContain('"/ns/m/src/workers/light-controller/light-controller.worker"');
-		expect(result.code).toContain('__NS_HTTP_ORIGIN__');
-		// The ASSERT line: the new URL+import.meta.url indirection is gone,
-		// which is the entire reason this plugin exists.
+		expect(result.code).toContain(`__nsHmrTrackWorker(new Worker((${NS_DEV_EXPR}.httpOrigin || "").replace(/\\/+$/, "") + "/src/workers/light.worker.ts?worker_file&type=module"))`);
 		expect(result.code).not.toContain('new URL(');
 		expect(result.code).not.toContain('import.meta.url');
+		expect(result.map).toBeNull();
 	});
 
-	it('preserves the trailing options object (e.g. `{ name, type }`) when present', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
-
-		const input = "new Worker(new URL(/* @vite-ignore */\"/src/workers/foo.worker.ts?worker_file&type=classic\", '' + import.meta.url), { name: 'foo', type: 'classic' });";
-
-		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/index.ts'));
-
-		expect(result).not.toBeNull();
-		expect(result.code).toContain("{ name: 'foo', type: 'classic' }");
+	it('keeps the options argument', () => {
+		const input = `${viteWorker('/src/foo.worker.ts?worker_file&type=classic').slice(0, -1)}, { name: 'foo' });`;
+		const result = callTransform(workerHmrUrlPlugin(), input, path.join(PROJECT_ROOT, 'src/index.ts'));
+		expect(result.code).toContain(`"/src/foo.worker.ts?worker_file&type=module", { name: 'foo' }))`);
 	});
 
-	it('accepts every quote style Vite may emit for the asset path (single, double, backtick)', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
-
+	it('accepts every quote style Vite may emit', () => {
 		for (const quote of ["'", '"', '`']) {
-			const empty = quote === '`' ? '``' : `${quote}${quote}`;
-			const input = `new Worker(new URL(/* @vite-ignore */${quote}/src/workers/foo.worker.ts?worker_file&type=classic${quote}, ${empty} + import.meta.url));`;
-
-			const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/index.ts'));
-
-			expect(result, `failed for quote=${quote}`).not.toBeNull();
-			expect(result.code).toContain('"/ns/m/src/workers/foo.worker"');
+			const result = callTransform(workerHmrUrlPlugin(), viteWorker('/src/foo.worker.ts?worker_file&type=classic', quote), path.join(PROJECT_ROOT, 'src/index.ts'));
+			expect(result?.code, `quote ${quote}`).toContain('"/src/foo.worker.ts?worker_file&type=module"');
 		}
 	});
 
-	it('returns null (skips work) when the file contains no `new Worker` mention', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
+	it('rewrites every worker of a module and injects one owner helper', () => {
+		const input = [`export const a = ${viteWorker('/src/a.worker.ts?worker_file&type=classic')};`, `export const b = ${viteWorker('/@fs/elsewhere/b.worker.ts?worker_file&type=classic')};`].join('\n');
+		const result = callTransform(workerHmrUrlPlugin(), input, path.join(PROJECT_ROOT, 'src/index.ts'));
 
-		const code = 'export const x = 1;';
-		expect(callTransform(plugin, code, path.join(PROJECT_ROOT, 'src/foo.ts'))).toBeNull();
+		expect(result.code.match(/__nsHmrTrackWorker\(new Worker\(/g)).toHaveLength(2);
+		expect(result.code.match(/const __nsHmrTrackWorker = /g)).toHaveLength(1);
+		expect(result.code.indexOf('const __nsHmrTrackWorker = ')).toBe(0);
+		expect(result.code).toContain('"/@fs/elsewhere/b.worker.ts?worker_file&type=module"');
 	});
 
-	it('returns null (skips work) when the file mentions `new Worker` but has no Vite-shaped match', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
+	it("terminates the module's workers when it re-runs or is pruned, and leaves its dispose slot alone", async () => {
+		const { code } = callTransform(workerHmrUrlPlugin(), `function spawn() { return ${viteWorker('/src/foo.worker.ts?worker_file&type=classic')}; }`, path.join(PROJECT_ROOT, 'src/spawner.ts'));
+		class FakeWorker {
+			terminated = 0;
+			terminate() {
+				this.terminated++;
+			}
+		}
+		const client = new HMRClient({ error() {}, debug() {} });
+		const hot = new HMRContext(client, '/src/spawner.ts');
+		const spawn: () => FakeWorker = new Function('hot', 'Worker', `${code.replaceAll('import.meta.hot', 'hot')}\nreturn spawn;`)(hot, FakeWorker);
 
-		// Pre-Vite source — the user's untransformed code. By the time we
-		// run, Vite has already rewritten this; if we ever see it, it's
-		// because Vite *didn't* transform (e.g. wrong file type) and we
-		// shouldn't make it worse.
-		const code = "new Worker(new URL('./worker', import.meta.url));";
-		expect(callTransform(plugin, code, path.join(PROJECT_ROOT, 'src/foo.ts'))).toBeNull();
+		const first = spawn();
+		await client.notifyOwnerListeners(NS_BEFORE_RERUN_EVENT, {}, ['/src/other.ts']);
+		expect(first.terminated).toBe(0);
+		await client.notifyOwnerListeners(NS_BEFORE_RERUN_EVENT, {}, ['/src/spawner.ts']);
+		expect(first.terminated).toBe(1);
+
+		const second = spawn();
+		await client.prunePaths(['/src/spawner.ts']);
+		expect(second.terminated).toBe(1);
+		expect(first.terminated).toBe(1);
+		expect(client.disposeMap.has('/src/spawner.ts')).toBe(false);
 	});
 
-	it('skips files inside node_modules even if they contain a Vite worker shape', () => {
-		// We intentionally leave 3rd-party packages alone — anything they
-		// did with workers either already worked, or has its own
-		// downstream patch. Rewriting them risks routing 3rd-party worker
-		// code through `/ns/m/` paths that don't exist for that package.
+	it('leaves modules without a Vite worker URL alone', () => {
 		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
+		expect(callTransform(plugin, 'export const x = 1;', path.join(PROJECT_ROOT, 'src/foo.ts'))).toBeNull();
+		expect(callTransform(plugin, "new Worker(new URL('./worker', import.meta.url));", path.join(PROJECT_ROOT, 'src/foo.ts'))).toBeNull();
+		expect(callTransform(plugin, 'const u = new URL("./asset", import.meta.url); new WorkerSubclass();', path.join(PROJECT_ROOT, 'src/foo.ts'))).toBeNull();
+		expect(callTransform(plugin, viteWorker('/src/asset.png?import'), path.join(PROJECT_ROOT, 'src/foo.ts'))).toBeNull();
+	});
 
-		const code = 'new Worker(new URL(/* @vite-ignore */"/src/foo.worker.ts?worker_file&type=classic", \'\' + import.meta.url));';
+	it('skips node_modules and pre-bundled deps', () => {
+		const plugin = workerHmrUrlPlugin();
+		const code = viteWorker('/src/foo.worker.ts?worker_file&type=classic');
 		expect(callTransform(plugin, code, path.join(PROJECT_ROOT, 'node_modules/some-pkg/dist/index.js'))).toBeNull();
 		expect(callTransform(plugin, code, path.join(PROJECT_ROOT, '.vite/deps/foo.js'))).toBeNull();
 	});
-
-	it('returns null when the asset path is outside the project + workspace (we hand back to Vite)', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
-
-		const code = 'new Worker(new URL(/* @vite-ignore */"/@fs/Users/foo/elsewhere/random.worker.ts?worker_file&type=classic", \'\' + import.meta.url));';
-		// No mapping found → leave the original (broken-but-not-our-bug)
-		// shape so the developer sees Vite's error rather than a silent
-		// "wrong worker URL" runtime crash.
-		expect(callTransform(plugin, code, path.join(PROJECT_ROOT, 'src/foo.ts'))).toBeNull();
-	});
-
-	it('rewrites multiple worker creations in a single module', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
-
-		const input = ['export const a = new Worker(new URL(/* @vite-ignore */"/src/workers/effect/effect.worker.ts?worker_file&type=classic", \'\' + import.meta.url));', 'export const b = new Worker(new URL(/* @vite-ignore */"/src/workers/transition/transition.worker.ts?worker_file&type=classic", \'\' + import.meta.url));'].join('\n');
-
-		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/index.ts'));
-
-		expect(result).not.toBeNull();
-		expect(result.code).toContain('"/ns/m/src/workers/effect/effect.worker"');
-		expect(result.code).toContain('"/ns/m/src/workers/transition/transition.worker"');
-		expect(result.code).not.toContain('import.meta.url');
-	});
-
-	it('returns null for the source map (Vite recomposes from upstream maps; per-Worker shift is small)', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
-
-		const input = 'new Worker(new URL(/* @vite-ignore */"/src/workers/foo.worker.ts?worker_file&type=classic", \'\' + import.meta.url));';
-		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/index.ts'));
-
-		expect(result).not.toBeNull();
-		expect(result.map).toBeNull();
-	});
 });
 
-describe('workerHmrUrlPlugin (HMR auto-dispose helper)', () => {
-	// These specs cover the per-module worker auto-dispose behaviour: the
-	// plugin injects a small runtime helper at the top of any module it
-	// rewrites and wraps each `new Worker(...)` in
-	// `__nsHmrTrackWorker(...)`, which registers a per-module
-	// `import.meta.hot.dispose` callback (Vite spec) that terminates
-	// exactly the workers this module spawned when the module is replaced.
-	//
-	// Session-wide cleanup for spawns whose module is NOT replaced (e.g.
-	// Angular reboots re-running constructors) is owned by the global
-	// `Worker` constructor interception the session bootstrap installs
-	// (`hmr/shared/runtime/worker-tracking.ts`), not by this transform.
-	//
-	// The asserts below describe the OBSERVABLE contract — what the
-	// rewritten module body looks like — without binding the test suite
-	// to exact whitespace. If this contract regresses, replaced modules
-	// silently leak their workers until the next framework reboot.
+// spawner → (URL string) worker; worker → shared, only; main → spawner, shared.
+// `main` self-accepts, standing in for the app entry boundary.
+describe('worker graph in a real Vite dev server', () => {
+	let root: string;
+	let server: ViteDevServer | undefined;
+	let sent: any[];
 
-	it('injects the helper exactly once at the top of the rewritten module', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
+	const files: Record<string, string> = {
+		'package.json': JSON.stringify({ main: 'main.js' }),
+		'main.js': "import { spawn } from './spawner.js';\nimport { shared } from './shared.js';\nexport const app = [spawn, shared];\nif (import.meta.hot) import.meta.hot.accept();\n",
+		'spawner.js': "export function spawn() {\n\treturn new Worker(new URL('./worker.js', import.meta.url));\n}\n",
+		'worker.js': "import { shared } from './shared.js';\nimport { only } from './only.js';\nself.onmessage = () => postMessage([shared, only, __SPEC_DEFINE__]);\n",
+		'shared.js': "export const shared = 'shared';\n",
+		'only.js': "export const only = 'only';\n",
+	};
+	const WORKER_URL = '/worker.js?worker_file&type=module';
 
-		const input = ['export class AppComponent {', '  ngOnInit() {', '    this.worker = new Worker(new URL(/* @vite-ignore */"/src/app/sample.worker.ts?worker_file&type=classic", \'\' + import.meta.url));', '  }', '}'].join('\n');
-
-		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/app/app.component.ts'));
-
-		expect(result).not.toBeNull();
-		expect(result.code).toContain('__nsHmrTrackWorker');
-		// Helper must precede the user code — it has to be in scope by
-		// the time the wrapped `new Worker(...)` call runs.
-		const helperIdx = result.code.indexOf('__nsHmrTrackWorker = ');
-		const wrapIdx = result.code.indexOf('__nsHmrTrackWorker(new Worker');
-		expect(helperIdx).toBeGreaterThanOrEqual(0);
-		expect(wrapIdx).toBeGreaterThan(helperIdx);
-	});
-
-	it('wraps `new Worker(...)` in `__nsHmrTrackWorker(...)` so the worker auto-registers for cleanup', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
-
-		const input = 'const w = new Worker(new URL(/* @vite-ignore */"/src/workers/foo.worker.ts?worker_file&type=classic", \'\' + import.meta.url));';
-
-		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/index.ts'));
-
-		expect(result).not.toBeNull();
-		// The wrap is transparent — `__nsHmrTrackWorker(w)` returns `w`,
-		// so user code that assigns the result to a variable still gets
-		// a real Worker. The wrap is what enables the HMR cleanup to
-		// find this worker without the user changing any source.
-		expect(result.code).toMatch(/__nsHmrTrackWorker\(\s*new\s+Worker\(/);
-		expect(result.code).toMatch(/const\s+w\s*=\s*__nsHmrTrackWorker\(/);
-	});
-
-	it('wraps every `new Worker(...)` call in a multi-worker module', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
-
-		const input = ['const a = new Worker(new URL(/* @vite-ignore */"/src/workers/effect/effect.worker.ts?worker_file&type=classic", \'\' + import.meta.url));', 'const b = new Worker(new URL(/* @vite-ignore */"/src/workers/transition/transition.worker.ts?worker_file&type=classic", \'\' + import.meta.url));'].join('\n');
-
-		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/index.ts'));
-
-		expect(result).not.toBeNull();
-		// Both workers must be wrapped so each spawn registers with the
-		// module's dispose callback.
-		const wrapMatches = result.code.match(/__nsHmrTrackWorker\(\s*new\s+Worker\(/g) || [];
-		expect(wrapMatches.length).toBe(2);
-	});
-
-	it('does not inject the helper when no `new Worker` calls match (avoids polluting unrelated modules)', () => {
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
-
-		// File references `new Worker` and `import.meta.url` (so the
-		// fast-path short-circuit doesn't fire) but the URL doesn't
-		// match the Vite worker_file shape — we must hand it back to
-		// Vite untouched, which means NO helper injection either.
-		const input = 'const url = new URL("./asset", import.meta.url); const x = new WorkerSubclass();';
-
-		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/index.ts'));
-
-		// Either null (no modification) or a result that does not
-		// include the helper. Both shapes are correct; we encode the
-		// stricter contract: null means "no change needed".
-		if (result) {
-			expect(result.code).not.toContain('__nsHmrTrackWorker');
-			expect(result.code).not.toContain('__NS_HMR_WORKERS__');
-		} else {
-			expect(result).toBeNull();
+	async function start() {
+		root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'ns-worker-graph-')));
+		for (const [name, content] of Object.entries(files)) fs.writeFileSync(path.join(root, name), content);
+		sent = [];
+		const capture: Plugin = {
+			name: 'capture-sends',
+			configureServer(s) {
+				const original = s.ws.send.bind(s.ws) as (...args: any[]) => void;
+				(s.ws as any).send = (...args: any[]) => {
+					sent.push(typeof args[0] === 'string' ? { type: 'custom', event: args[0], data: args[1] } : args[0]);
+					return original(...args);
+				};
+			},
+		};
+		server = await createServer({
+			root,
+			configFile: false,
+			logLevel: 'silent',
+			appType: 'custom',
+			define: { __SPEC_DEFINE__: '"defined"' },
+			optimizeDeps: { noDiscovery: true, include: [] },
+			server: { middlewareMode: true, ws: false, watch: null },
+			// `capture` first, so its wrapper sees what the update gate sends.
+			plugins: [capture, nsRerunPlugin(), workerHmrUrlPlugin()],
+		});
+		const client = server.environments.client;
+		const transformed: Record<string, string> = {};
+		for (const url of ['/main.js', '/spawner.js', '/shared.js', WORKER_URL, '/only.js']) {
+			transformed[url] = (await client.transformRequest(url))!.code;
 		}
+		return transformed;
+	}
+
+	async function edit(name: string) {
+		const file = path.join(root, name);
+		fs.writeFileSync(file, fs.readFileSync(file, 'utf8') + '// edited\n');
+		server!.watcher.emit('change', file);
+		const isUpdate = (p: any) => p?.type === 'update' || p?.type === 'full-reload';
+		await expect.poll(() => sent.some(isUpdate), { timeout: 5000 }).toBe(true);
+		return sent.find(isUpdate);
+	}
+
+	afterEach(async () => {
+		await server?.close();
+		server = undefined;
+		fs.rmSync(root, { recursive: true, force: true });
 	});
 
-	it('helper source registers each worker for import.meta.hot.dispose cleanup', () => {
-		// We can't `new Function()`-evaluate the helper body anymore
-		// (it now contains `import.meta.hot` references which only
-		// resolve inside an actual ESM module). Instead, we assert on
-		// the SOURCE shape — the contract is "every worker spawn must
-		// opt the module into a standards-compliant
-		// `import.meta.hot.dispose` callback". A future contributor who
-		// removes the path would break per-module cleanup for replaced
-		// modules; this spec catches that. (The session-wide tracked
-		// Set is populated by the runtime `Worker` constructor
-		// interception, not by this injected helper.)
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
+	it('serves the spawner with a hot context and no graph edge to the worker', async () => {
+		const code = (await start())['/spawner.js'];
 
-		const input = 'const w = new Worker(new URL(/* @vite-ignore */"/src/workers/foo.worker.ts?worker_file&type=classic", \'\' + import.meta.url));';
-		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/index.ts'));
-		expect(result).not.toBeNull();
-
-		// The injected helper no longer touches the global Set — that is
-		// the constructor interception's job (single producer).
-		expect(result.code).not.toContain('__NS_HMR_WORKERS__');
-
-		// Standards-compliant Vite primitive. We MUST register
-		// a dispose so any plugin / framework that drains
-		// `import.meta.hot.dispose` callbacks (incl. our own hot
-		// registry's `runDispose`) catches this worker without needing
-		// NS-specific globals.
-		expect(result.code).toContain('import.meta.hot.dispose');
-		// Per-module Set + module-level guard so a single dispose
-		// registration covers every worker in the module.
-		expect(result.code).toContain('__nsModuleWorkers');
-		expect(result.code).toContain('__nsDisposeRegistered');
-		// The dispose callback must terminate every tracked worker.
-		expect(result.code).toMatch(/__nsW\.terminate\(\)/);
-		// And the disposer MUST re-arm `__nsDisposeRegistered = false`
-		// so the next worker spawn (post-Angular-reboot, but in the
-		// SAME module instance) registers a fresh disposer for the
-		// next HMR cycle. Without re-arm, only cycle #1 uses the
-		// dispose path and cycles #2+ fall through to the session-wide
-		// worker sweep — the observable behaviour stays correct but
-		// we're paying for two cleanup paths instead of one. This
-		// regression caught us during live testing.
-		expect(result.code).toMatch(/__nsDisposeRegistered\s*=\s*false/);
+		expect(code).toContain(`+ ${JSON.stringify(WORKER_URL)}))`);
+		expect(code).toContain('__vite__createHotContext("/spawner.js")');
+		const spawner = server!.environments.client.moduleGraph.getModuleById(path.join(root, 'spawner.js'))!;
+		expect([...spawner.importedModules].map((m) => m.url)).toEqual([]);
 	});
 
-	it('still wraps user code call sites with __nsHmrTrackWorker(new Worker(...))', () => {
-		// Belt-and-suspenders: even with the new dispose path, the
-		// outer wrap shape that downstream tooling depends on must
-		// remain stable. If a future change accidentally drops the
-		// wrap, the runtime path is the only thing keeping HMR sane.
-		const plugin = workerHmrUrlPlugin();
-		configurePlugin(plugin, PROJECT_ROOT);
+	it('imports /@vite/env first in the worker entry, so the worker realm gets the defines', async () => {
+		const code = (await start())[WORKER_URL];
 
-		const input = 'const w = new Worker(new URL(/* @vite-ignore */"/src/workers/foo.worker.ts?worker_file&type=classic", \'\' + import.meta.url));';
-		const result = callTransform(plugin, input, path.join(PROJECT_ROOT, 'src/index.ts'));
+		// Import analysis rewrites `/@vite/env` to Vite's env module file.
+		const firstImport = /import\s+(?:[^'"]*from\s+)?["']([^"']+)["']/.exec(code)![1];
+		expect(firstImport).toMatch(/^\/@fs\/.*\/vite\/dist\/client\/env\.mjs$/);
+		expect(code).not.toContain('importScripts');
+		expect(code).not.toContain('/@vite/client');
+		const env = (await server!.environments.client.transformRequest(firstImport))!.code;
+		expect(env).toContain('__SPEC_DEFINE__');
+	});
 
-		expect(result).not.toBeNull();
-		expect(result.code).toMatch(/__nsHmrTrackWorker\(\s*new\s+Worker\(/);
-		expect(result.code).toMatch(/const\s+w\s*=\s*__nsHmrTrackWorker\(/);
+	it('restarts the app on an edit to the worker entry', async () => {
+		await start();
+		expect((await edit('worker.js')).type).toBe('full-reload');
+	});
+
+	it('restarts the app on an edit to a module only the worker imports', async () => {
+		await start();
+		expect((await edit('only.js')).type).toBe('full-reload');
+	});
+
+	it('restarts the app on an edit to a module the worker shares with an accepted main-realm graph', async () => {
+		await start();
+		expect((await edit('shared.js')).type).toBe('full-reload');
+	});
+
+	it('re-runs the spawner in place on an edit to it, so its workers get `nativescript:beforeRerun`', async () => {
+		await start();
+		const payload = await edit('spawner.js');
+		expect(payload.type).toBe('update');
+		expect(payload.updates.map((u: any) => u.acceptedPath)).toEqual(['/main.js']);
+		const rerun = sent.find((p) => p?.event === NS_UPDATE_RERUN_EVENT);
+		expect(rerun.data.rerun).toContain('/spawner.js');
 	});
 });
-
-// tsFallbackTransformPlugin + angularWorkerUrlPreservePlugin specs moved with
-// their plugins to hmr/frameworks/angular/build/.
 
 // --- neutralizeWorkerImportMeta -----------------------------------------
 //

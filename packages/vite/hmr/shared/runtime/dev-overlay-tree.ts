@@ -1,252 +1,13 @@
 /**
- * In-tree overlay backend: the boot placeholder page and the live/update
- * toast chip rendered inside the app's own view tree (Android, and the iOS
- * fallback when the UIWindow backend can't build). Pure margin math
+ * In-tree overlay backend: the live/update toast chip rendered inside the
+ * app's own view tree (the fallback when neither the iOS UIWindow nor the
+ * Android DecorView backend can build). Pure margin math
  * (`computeAndroidToastMargin`) is exported separately so the safe-area rules
  * stay unit-testable without a device.
  */
 
-import { BOOT_PLACEHOLDER_MOTION, computeBootProgressFillScale, formatBootDetailLine, formatBootPrimaryLine } from './boot-placeholder-ui.js';
-import { BOOT_TITLE, type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
-import { asColor, formatStatusText, getHmrDevOverlayPosition, getOverlayGlobal, getRuntimeState, resolveCoreExport, type BootOverlayRefs, type LiveOverlayRefs } from './dev-overlay-shared.js';
-
-export function buildBootOverlayRefs(snapshot: HmrOverlaySnapshot): BootOverlayRefs | null {
-	const Page = resolveCoreExport('Page');
-	const StackLayout = resolveCoreExport('StackLayout');
-	const Label = resolveCoreExport('Label');
-	const ActivityIndicator = resolveCoreExport('ActivityIndicator');
-	if (!Page || !StackLayout || !Label) {
-		return null;
-	}
-
-	const page = new Page();
-	page.actionBarHidden = true;
-
-	const root = new StackLayout();
-	root.padding = 24;
-	root.verticalAlignment = 'middle';
-	root.horizontalAlignment = 'stretch';
-
-	const titleLabel = new Label();
-	titleLabel.text = BOOT_TITLE;
-	titleLabel.textAlignment = 'center';
-	titleLabel.textWrap = true;
-	titleLabel.fontSize = 22;
-	titleLabel.fontWeight = '600';
-
-	const statusLabel = new Label();
-	statusLabel.textAlignment = 'center';
-	statusLabel.textWrap = true;
-	statusLabel.fontSize = 14;
-	statusLabel.marginTop = 12;
-
-	const activityIndicator = ActivityIndicator
-		? (() => {
-				const indicator = new ActivityIndicator();
-				indicator.marginTop = 16;
-				indicator.width = 28;
-				indicator.height = 28;
-				indicator.horizontalAlignment = 'center';
-				return indicator;
-			})()
-		: null;
-
-	root.addChild(titleLabel);
-	root.addChild(statusLabel);
-	if (activityIndicator) {
-		root.addChild(activityIndicator);
-	}
-	page.content = root;
-
-	const refs: BootOverlayRefs = {
-		page,
-		root,
-		titleLabel,
-		statusLabel,
-		activityIndicator,
-	};
-	applySnapshotToBootRefs(refs, snapshot);
-	return refs;
-}
-
-export function applySnapshotToBootRefs(refs: BootOverlayRefs | null, snapshot: HmrOverlaySnapshot): void {
-	if (!refs) {
-		return;
-	}
-	refs.page.actionBarHidden = true;
-	refs.page.backgroundColor = asColor(snapshot.tone === 'error' ? '#b4181068' : '#a1771683');
-	refs.root.visibility = snapshot.visible && snapshot.mode === 'boot' ? 'visible' : 'collapse';
-	refs.titleLabel.text = BOOT_TITLE;
-	refs.titleLabel.color = asColor(snapshot.tone === 'error' ? '#b41810e6' : '#563e3fb1');
-	refs.statusLabel.text = formatStatusText(snapshot) || 'Preparing the HTTP HMR bootstrap (4%)';
-	refs.statusLabel.color = asColor(snapshot.tone === 'error' ? '#b41810e6' : '#563e3fb1');
-	if (refs.activityIndicator) {
-		refs.activityIndicator.busy = !!snapshot.busy;
-		refs.activityIndicator.visibility = snapshot.visible && snapshot.mode === 'boot' && snapshot.busy ? 'visible' : 'collapse';
-	}
-}
-
-function findBootActivityIndicator(): any {
-	const g = getOverlayGlobal();
-	if (g.__NS_DEV_BOOT_ACTIVITY_INDICATOR__) {
-		return g.__NS_DEV_BOOT_ACTIVITY_INDICATOR__;
-	}
-	try {
-		const frame = g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
-		if (!frame) return null;
-		const page = frame.currentPage || frame._currentEntry?.resolvedPage;
-		const content = page?.content;
-		const children = content?.getChildrenCount?.() || 0;
-		if (children >= 3) {
-			const indicator = content.getChildAt?.(2);
-			if (indicator && typeof indicator.busy !== 'undefined') {
-				g.__NS_DEV_BOOT_ACTIVITY_INDICATOR__ = indicator;
-				return indicator;
-			}
-		}
-	} catch {}
-	return null;
-}
-
-function findBootStatusLabel(): any {
-	const g = getOverlayGlobal();
-	// Try direct reference first
-	if (g.__NS_DEV_BOOT_STATUS_LABEL__) {
-		return g.__NS_DEV_BOOT_STATUS_LABEL__;
-	}
-	// Fallback: walk from placeholder root view
-	try {
-		const frame = g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
-		if (!frame) return null;
-		const page = frame.currentPage || frame._currentEntry?.resolvedPage;
-		if (!page) return null;
-		const content = page.content;
-		if (!content) return null;
-		// StackLayout with children: titleLabel, statusLabel
-		const children = content.getChildrenCount?.() || 0;
-		if (children >= 2) {
-			const label = content.getChildAt?.(1);
-			if (label && typeof label.text !== 'undefined') {
-				// Cache for next time
-				g.__NS_DEV_BOOT_STATUS_LABEL__ = label;
-				return label;
-			}
-		}
-	} catch {}
-	return null;
-}
-
-function findBootDetailLabel(): any {
-	const g = getOverlayGlobal();
-	return g.__NS_DEV_BOOT_DETAIL_LABEL__ || null;
-}
-
-function findBootProgressFill(): any {
-	const g = getOverlayGlobal();
-	return g.__NS_DEV_BOOT_PROGRESS_FILL__ || null;
-}
-
-export function updateBootStatusLabel(snapshot: HmrOverlaySnapshot): void {
-	const statusLabel = findBootStatusLabel();
-	const detailLabel = findBootDetailLabel();
-	const progressFill = findBootProgressFill();
-	const activityIndicator = findBootActivityIndicator();
-
-	// New (card) layout: phase line + detail line live in separate
-	// labels so the typography can differ. Legacy (single-label)
-	// layout: keep the original combined "phase (X%)\ndetail" text so
-	// nothing visually regresses for runtimes still attached to the
-	// older placeholder shape.
-	const hasSplitLabels = !!detailLabel;
-	const phaseLine = formatBootPrimaryLine(snapshot);
-	const detailLine = formatBootDetailLine(snapshot);
-	const combinedText = formatStatusText(snapshot) || 'Preparing the HTTP HMR bootstrap (4%)';
-
-	if (!statusLabel) {
-		if (activityIndicator) {
-			try {
-				activityIndicator.busy = !!snapshot.busy;
-				activityIndicator.visibility = snapshot.visible && snapshot.mode === 'boot' && snapshot.busy ? 'visible' : 'collapse';
-			} catch {}
-		}
-		applyBootProgressFill(progressFill, snapshot);
-		return;
-	}
-
-	try {
-		statusLabel.text = hasSplitLabels ? phaseLine || 'Preparing the HTTP HMR bootstrap' : combinedText;
-		// Card layout uses the calibrated phase-text colour from the
-		// palette; legacy single-label layout keeps the original muted
-		// brown so we don't visually regress mid-session.
-		const phaseColorHex = snapshot.tone === 'error' ? '#B91C1C' : hasSplitLabels ? '#475569' : '#563e3fb1';
-		statusLabel.color = asColor(phaseColorHex);
-		if (typeof statusLabel.requestLayout === 'function') {
-			statusLabel.requestLayout();
-		}
-		const parent = statusLabel.parent;
-		if (parent && typeof parent.requestLayout === 'function') {
-			parent.requestLayout();
-		}
-	} catch {}
-
-	if (detailLabel) {
-		try {
-			detailLabel.text = detailLine;
-			detailLabel.color = asColor(snapshot.tone === 'error' ? '#DC2626' : '#94A3B8');
-			detailLabel.visibility = detailLine ? 'visible' : 'collapse';
-		} catch {}
-	}
-
-	applyBootProgressFill(progressFill, snapshot);
-
-	if (activityIndicator) {
-		try {
-			activityIndicator.busy = !!snapshot.busy;
-			activityIndicator.visibility = snapshot.visible && snapshot.mode === 'boot' && snapshot.busy ? 'visible' : 'collapse';
-		} catch {}
-	}
-}
-
-// Drive the progress fill scaleX from the snapshot. Uses NS's view
-// animate API for a smooth 220 ms easeOut between heartbeat ticks; a
-// monotonic ratchet on `globalThis.__NS_DEV_BOOT_PROGRESS_LAST_SCALE__`
-// guards against the fill snapping backwards if a less-progressed
-// snapshot ever lands between ticks (mirrors the JS-side
-// `applyMonotonicBootProgress` contract).
-function applyBootProgressFill(progressFill: any, snapshot: HmrOverlaySnapshot): void {
-	if (!progressFill) return;
-	const g = getOverlayGlobal();
-	const isError = snapshot.tone === 'error';
-	progressFill.backgroundColor = asColor(isError ? '#B41810' : '#3B6FE5');
-	const targetScale = computeBootProgressFillScale(snapshot.progress ?? null);
-	const previousRaw = Number(g.__NS_DEV_BOOT_PROGRESS_LAST_SCALE__);
-	const previous = Number.isFinite(previousRaw) ? previousRaw : 0;
-	const next = Math.max(previous, targetScale);
-	g.__NS_DEV_BOOT_PROGRESS_LAST_SCALE__ = next;
-	try {
-		// NS view.animate scales around `originX`/`originY`; the
-		// placeholder builder pins `originX = 0` so the fill grows
-		// rightward. animate() may be unavailable in some headless
-		// test environments — fall through to a direct property set.
-		if (typeof progressFill.animate === 'function') {
-			progressFill
-				.animate({
-					scale: { x: next, y: 1 },
-					duration: BOOT_PLACEHOLDER_MOTION.progressDurationMs,
-					curve: 'easeOut',
-				})
-				.catch(() => {
-					try {
-						progressFill.scaleX = next;
-					} catch {}
-				});
-		} else {
-			progressFill.scaleX = next;
-		}
-	} catch {
-		progressFill.scaleX = next;
-	}
-}
+import { type HmrOverlayPosition, type HmrOverlaySnapshot } from './dev-overlay-snapshots.js';
+import { asColor, formatStatusText, HMR_OVERLAY_POSITION, getOverlayGlobal, getRuntimeState, MAX_CODE_LINES, resolveCoreExport, runOverlayAction, type LiveOverlayRefs } from './dev-overlay-shared.js';
 
 function resolveActivePage(): any {
 	try {
@@ -281,14 +42,7 @@ export type AndroidSafeAreaInsets = { top: number; bottom: number; left: number;
 // string.
 export type AndroidToastMargin = { top: number; right: number; bottom: number; left: number };
 
-function readCachedAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
-	const g = getOverlayGlobal();
-	const cached = g.__NS_HMR_ANDROID_SAFE_INSETS__;
-	if (cached && typeof cached.top === 'number') {
-		return cached as AndroidSafeAreaInsets;
-	}
-	return null;
-}
+let cachedAndroidSafeAreaInsets: AndroidSafeAreaInsets | null = null;
 
 /**
  * Read the Android system-bar safe-area insets (status bar / navigation
@@ -299,8 +53,8 @@ function readCachedAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
  * chip out from under the system bars (see `computeAndroidToastMargin`).
  *
  * Returns null on non-Android runtimes (iOS / web / vitest) so callers
- * fall back to base margins. The last good reading is cached on the
- * global so a transient null (e.g. insets queried before the decor view
+ * fall back to base margins. The last good reading is cached so a
+ * transient null (e.g. insets queried before the decor view
  * is attached) reuses the previous value instead of snapping the chip
  * back under the status bar.
  */
@@ -318,7 +72,7 @@ export function readAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
 		const decorView = activity?.getWindow?.()?.getDecorView?.();
 		const rootInsets = decorView?.getRootWindowInsets?.();
 		if (!rootInsets) {
-			return readCachedAndroidSafeAreaInsets();
+			return cachedAndroidSafeAreaInsets;
 		}
 
 		let density = 1;
@@ -357,10 +111,10 @@ export function readAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
 			left: px.left / density,
 			right: px.right / density,
 		};
-		g.__NS_HMR_ANDROID_SAFE_INSETS__ = insets;
+		cachedAndroidSafeAreaInsets = insets;
 		return insets;
 	} catch {
-		return readCachedAndroidSafeAreaInsets();
+		return cachedAndroidSafeAreaInsets;
 	}
 }
 
@@ -448,7 +202,7 @@ function buildLiveOverlayView(snapshot: HmrOverlaySnapshot): Omit<LiveOverlayRef
 	const panel = new StackLayout();
 	panel.horizontalAlignment = 'center';
 	// Vertical alignment is overridden in applySnapshotToLiveRefs
-	// based on getHmrDevOverlayPosition(); 'middle' is the default
+	// based on HMR_OVERLAY_POSITION; 'middle' is the default
 	panel.verticalAlignment = 'middle';
 	panel.width = 320;
 	panel.margin = 24;
@@ -466,17 +220,49 @@ function buildLiveOverlayView(snapshot: HmrOverlaySnapshot): Omit<LiveOverlayRef
 	statusLabel.fontSize = 13;
 	statusLabel.marginTop = 10;
 
+	const codeLabel = new Label();
+	codeLabel.textAlignment = 'left';
+	codeLabel.textWrap = true;
+	codeLabel.fontSize = 11;
+	codeLabel.fontFamily = 'monospace';
+	codeLabel.marginTop = 10;
+	codeLabel.visibility = 'collapse';
+	try {
+		codeLabel.maxLines = MAX_CODE_LINES;
+	} catch {}
+
 	panel.addChild(titleLabel);
 	panel.addChild(statusLabel);
-	overlay.addChild(panel);
+	panel.addChild(codeLabel);
 
-	const refs = {
+	const refs: Omit<LiveOverlayRefs, 'page' | 'wrapper'> = {
 		overlay,
 		titleLabel,
 		statusLabel,
+		codeLabel,
 		wasVisible: false,
-		currentPosition: getHmrDevOverlayPosition(),
+		currentPosition: HMR_OVERLAY_POSITION,
 	};
+
+	const Button = resolveCoreExport('Button');
+	if (Button) {
+		try {
+			const actionButton = new Button();
+			actionButton.marginTop = 10;
+			actionButton.fontSize = 14;
+			actionButton.fontWeight = 'bold';
+			actionButton.textTransform = 'none';
+			actionButton.color = asColor('#FFFFFFFF');
+			actionButton.backgroundColor = asColor('#b41810ff');
+			actionButton.borderRadius = 8;
+			actionButton.visibility = 'collapse';
+			// `ensureLiveOverlayRefs` copies these refs into the runtime state, which is what later snapshots update.
+			actionButton.on('tap', () => runOverlayAction(getRuntimeState().liveRefs?.currentAction));
+			panel.addChild(actionButton);
+			refs.actionButton = actionButton;
+		} catch {}
+	}
+	overlay.addChild(panel);
 	applySnapshotToLiveRefs(refs, snapshot);
 	return refs;
 }
@@ -533,7 +319,7 @@ export function ensureLiveOverlayRefs(snapshot: HmrOverlaySnapshot): LiveOverlay
 	return state.liveRefs;
 }
 
-export function applySnapshotToLiveRefs(refs: Pick<LiveOverlayRefs, 'overlay' | 'titleLabel' | 'statusLabel'> & Partial<Pick<LiveOverlayRefs, 'wasVisible' | 'currentPosition'>>, snapshot: HmrOverlaySnapshot): void;
+export function applySnapshotToLiveRefs(refs: Pick<LiveOverlayRefs, 'overlay' | 'titleLabel' | 'statusLabel'> & Partial<Pick<LiveOverlayRefs, 'wasVisible' | 'currentPosition' | 'codeLabel' | 'actionButton' | 'currentAction'>>, snapshot: HmrOverlaySnapshot): void;
 export function applySnapshotToLiveRefs(refs: null, snapshot: HmrOverlaySnapshot): void;
 export function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot): void {
 	if (!refs) {
@@ -545,7 +331,7 @@ export function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot)
 	// snapshot's tone and the configured overlay position.
 	const visible = snapshot.visible && (snapshot.mode === 'connection' || snapshot.mode === 'update');
 	const wasVisible = !!refs.wasVisible;
-	const position = getHmrDevOverlayPosition();
+	const position = HMR_OVERLAY_POSITION;
 	const previousPosition: HmrOverlayPosition = refs.currentPosition || position;
 	const isToast = position !== 'center';
 
@@ -555,6 +341,17 @@ export function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot)
 	const textColor = snapshot.tone === 'error' ? '#b41810e6' : snapshot.tone === 'success' ? '#0e6e2fff' : '#563e3fb1';
 	refs.titleLabel.color = asColor(textColor);
 	refs.statusLabel.color = asColor(textColor);
+	if (refs.codeLabel) {
+		refs.codeLabel.text = snapshot.code || '';
+		refs.codeLabel.color = asColor(textColor);
+		refs.codeLabel.visibility = snapshot.code ? 'visible' : 'collapse';
+	}
+	const hasAction = visible && !!snapshot.action && !!refs.actionButton;
+	refs.currentAction = hasAction ? snapshot.action : undefined;
+	if (refs.actionButton) {
+		refs.actionButton.text = snapshot.action?.label || '';
+		refs.actionButton.visibility = hasAction ? 'visible' : 'collapse';
+	}
 
 	// Backdrop tints (centered modal only). Toast modes use a fully
 	// transparent backdrop so the rest of the app stays visible AND
@@ -613,7 +410,7 @@ export function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot)
 			// long 'reconnecting' "Retrying ws://…" detail vs. the short
 			// 'offline' message). Without an explicit relayout the panel can
 			// retain the tallest height it ever measured, leaving an oversized
-			// gap between title and message. Mirrors updateBootStatusLabel.
+			// gap between title and message.
 			try {
 				refs.titleLabel.requestLayout?.();
 				refs.statusLabel.requestLayout?.();
@@ -624,8 +421,10 @@ export function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot)
 
 	// Touch passthrough for toast; centered mode keeps the
 	// blocking modal so the dim backdrop is meaningful.
+	// A shown button needs the overlay interactive; on iOS the full-page
+	// overlay then also takes the touches around the panel until the stage changes.
 	try {
-		refs.overlay.isUserInteractionEnabled = !isToast;
+		refs.overlay.isUserInteractionEnabled = !isToast || hasAction;
 	} catch {}
 
 	const positionChanged = previousPosition !== position;

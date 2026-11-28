@@ -1,200 +1,84 @@
 /**
- * Wire protocol for the `ns:*` HMR messages exchanged over the dev-server
- * WebSocket between the Vite dev server and the on-device client.
+ * NativeScript-specific HMR events. They travel as Vite custom events on Vite's
+ * own HMR WebSocket (`server.ws.send(event, data)` → `{ type: 'custom', event,
+ * data }`); every other message on that socket is stock Vite protocol.
  *
- * This is the single source of truth for message shapes. Server emit sites
- * annotate their payload objects with the matching interface here, so a field
- * rename or type drift becomes a compile error at the emit site instead of a
- * silent runtime mismatch the device only discovers at parse time. The client
- * dispatch (`switch (msg.type)`) consumes the `ServerToClientMessage` union and
- * uses {@link assertNeverNsMessage} for exhaustiveness.
- *
- * Pure types + one pure helper only — this module is in `hmr/shared` and must
- * not import from `hmr/server` or `hmr/client`.
- *
- * Direction is encoded by the two unions:
- *   - {@link ServerToClientMessage} — dev server → device (9 messages)
- *   - {@link ClientToServerMessage} — device → dev server (2 messages)
+ * Pure types and constants only: this module is shared by `hmr/server` and
+ * `hmr/client` and must not import from either.
  */
+import type { UpdateModules } from './update-modules.js';
 
-/** Module entry as carried inside the graph payloads (`ns:hmr-full-graph`, `ns:hmr-delta`). */
-export interface GraphModulePayload {
-	id: string;
-	deps: string[];
-	hash: string;
-}
+/**
+ * Device → server: a change can't be applied by a hot update (a Vite
+ * `full-reload`, a declined module, a teardown that threw). The server turns
+ * it into an app restart. Any device module may send it with
+ * `import.meta.hot.send(NS_RESTART_EVENT, { reason })`.
+ */
+export const NS_RESTART_EVENT = 'ns:restart';
 
-/** A single CSS update item nested inside an `ns:css-updates` batch. */
-export interface CssUpdateItem {
-	type: 'css-update';
-	path: string;
-	acceptedPath: string;
-	timestamp: number;
-	/**
-	 * Tag for the client's `addTaggedAdditionalCSS`/`removeTaggedAdditionalCSS`
-	 * remove+add pair, scoping the replace so repeated edits of the SAME source
-	 * swap cleanly instead of stacking. Omitted for the app entry CSS (the
-	 * client defaults to the shared `app.css` tag). Set to the component style
-	 * file's own path for `styleUrls` edits so a component's rules replace
-	 * independently of `app.css`.
-	 */
-	tag?: string;
-}
+/**
+ * Server → device: an app restart is needed. The device shows it and applies
+ * nothing further; without a CLI attached nobody else will restart it.
+ */
+export const NS_RESTART_REQUIRED_EVENT = 'ns:restart-required';
 
-/** A single Vue SFC registry entry carried inside `ns:vue-sfc-registry`. */
-export interface VueSfcRegistryEntry {
-	path: string;
-	fileName: string;
-	hmrId: string;
-	/** Always empty in HTTP-only mode (artifacts are fetched over HTTP, not pushed over WS). */
-	code: string;
-}
-
-/** Classified kind of a pending HMR update (used by `ns:hmr-pending`). */
-export type HmrPendingKind = 'ts' | 'css' | 'html' | 'unknown';
-
-// ──────────────────────────────────────────────────────────────────────────
-// Server → client
-// ──────────────────────────────────────────────────────────────────────────
-
-/** Angular hot-update broadcast: the device evicts `evictPaths` and re-fetches. */
-export interface AngularUpdateMessage {
-	type: 'ns:angular-update';
-	origin: string;
-	path: string;
-	version: number;
-	timestamp: number;
-	evictPaths: string[];
-	importerEntry: string;
-	/**
-	 * App stylesheet refresh produced by the same content-file edit. Angular
-	 * applies it inside the serialized reboot cycle so CSS replacement cannot
-	 * race view-tree teardown/recreation.
-	 */
-	cssUpdates?: CssUpdateItem[];
-	/** Legacy fallback the Angular client still reads; not emitted by the current server. */
-	entryCandidates?: string[];
-}
-
-/** Batched CSS hot-update broadcast (direct `.css` saves and Tailwind/PostCSS content edits). */
-export interface CssUpdatesMessage {
-	type: 'ns:css-updates';
-	origin: string;
-	updates: CssUpdateItem[];
-	/**
-	 * `connect-sync` marks the boot-time stylesheet sync pushed to a freshly
-	 * connected full client; the client applies it silently (no overlay). Full
-	 * rationale in `hmr/server/css-connect-sync.ts`.
-	 */
-	reason?: 'connect-sync';
-}
-
-/** Incremental module-graph delta broadcast on every graph mutation. */
-export interface HmrDeltaMessage {
-	type: 'ns:hmr-delta';
-	baseVersion: number;
-	newVersion: number;
-	changed: GraphModulePayload[];
-	removed: string[];
-}
-
-/** Full module-graph snapshot sent on connect and in response to `ns:hmr-resync-request`. */
-export interface HmrFullGraphMessage {
-	type: 'ns:hmr-full-graph';
-	version: number;
-	modules: GraphModulePayload[];
-}
-
-/** Early "change in flight" notification sent at the very start of `handleHotUpdate`. */
-export interface HmrPendingMessage {
-	type: 'ns:hmr-pending';
-	origin: string;
-	path: string;
-	kind: HmrPendingKind;
-	timestamp: number;
+export interface RestartEventData {
+	reason: string;
 }
 
 /**
- * Response to a legacy on-demand module fetch (Option A).
- *
- * No server emit site currently exists — the live module-fetch path resolves
- * HTTP URLs directly — but the client still handles this shape, so it is part
- * of the union for completeness. Shape is inferred from the consumer.
+ * Client-dispatched custom events around a soft reboot: an update whose
+ * boundary is the app entry. Listeners register with
+ * `import.meta.hot.on(event, cb)` and are awaited. Order:
+ * `vite:beforeUpdate` → `nativescript:beforeReboot` → the entry's
+ * `hot.dispose` → the new entry evaluates and the framework bootstraps →
+ * `nativescript:afterReboot` → `vite:afterUpdate`.
  */
-export interface ModuleResponseMessage {
-	type: 'ns:module-response';
-	requestId: number;
+export const NS_BEFORE_REBOOT_EVENT = 'nativescript:beforeReboot';
+export const NS_AFTER_REBOOT_EVENT = 'nativescript:afterReboot';
+
+export interface RebootEventData extends UpdateModules {
+	/** Vite URL of the app entry being re-evaluated. */
+	entry: string;
+	/** Set on `nativescript:afterReboot` when the new entry or its bootstrap failed. */
 	error?: string;
 }
 
-/** TypeScript-flavor module registry primed on connect; coalesced into the graph client-side. */
-export interface TsModuleRegistryMessage {
-	type: 'ns:ts-module-registry';
-	modules: string[];
-	ts: number;
-}
+/**
+ * Server → device, sent right before every `update` payload with a
+ * `js-update`: the edits behind it and the modules it re-evaluates, matched to
+ * the payload by `timestamp`. A custom event because Vite rebuilds its own
+ * `update` payloads and plugins (Analog) buffer them.
+ */
+export const NS_UPDATE_RERUN_EVENT = 'ns:rerun';
 
-/** Vue SFC registry sent on connect and in response to `ns:hmr-sfc-registry-request`. */
-export interface VueSfcRegistryMessage {
-	type: 'ns:vue-sfc-registry';
-	entries: VueSfcRegistryEntry[];
-	ts: number;
-}
-
-/** Mapping-only Vue SFC registry update emitted ahead of the artifact for a changed `.vue` file. */
-export interface VueSfcRegistryUpdateMessage {
-	type: 'ns:vue-sfc-registry-update';
-	path: string;
-	fileName: string;
-	ts: number;
-	version: number;
+export interface UpdateRerunEventData {
+	/** The `timestamp` of the first `js-update` of the payload it describes. */
+	timestamp: number;
+	/** Vite URLs of the edited files. */
+	changed: string[];
 	/**
-	 * Every script block in the SFC was byte-identical to the previous save, so
-	 * the client can patch live instances with `__VUE_HMR_RUNTIME__.rerender`
-	 * instead of `reload`. That is what lets the update reach a page pushed with
-	 * `$navigateTo` or a sheet shown with `$showModal`, neither of which
-	 * survives the remount `reload` performs on a parentless instance.
-	 * Absent means "assume not" — the client falls back to `reload`.
+	 * Vite URLs of every module the update re-evaluates: the edited modules and
+	 * their importer chains up to and including each boundary. Module URLs
+	 * without `t`/`import`, the form `createHotContext` owner paths take.
 	 */
-	rerenderOnly?: boolean;
+	rerun: string[];
+	/** The server's project root, so a module may look itself up by absolute file path. */
+	root: string;
 }
-
-// ──────────────────────────────────────────────────────────────────────────
-// Client → server
-// ──────────────────────────────────────────────────────────────────────────
-
-/** Device asks for a fresh full graph when its delta base version drifts from the server's. */
-export interface HmrResyncRequestMessage {
-	type: 'ns:hmr-resync-request';
-}
-
-/** Device asks the server to rebuild and re-broadcast the SFC registry. */
-export interface HmrSfcRegistryRequestMessage {
-	type: 'ns:hmr-sfc-registry-request';
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// Unions
-// ──────────────────────────────────────────────────────────────────────────
-
-/** Every `ns:*` message the dev server can send to the device. */
-export type ServerToClientMessage = AngularUpdateMessage | CssUpdatesMessage | HmrDeltaMessage | HmrFullGraphMessage | HmrPendingMessage | ModuleResponseMessage | TsModuleRegistryMessage | VueSfcRegistryMessage | VueSfcRegistryUpdateMessage;
-
-/** Every `ns:*` message the device can send back to the dev server. */
-export type ClientToServerMessage = HmrResyncRequestMessage | HmrSfcRegistryRequestMessage;
-
-/** Any `ns:*` HMR message, regardless of direction. */
-export type NsHmrMessage = ServerToClientMessage | ClientToServerMessage;
-
-/** The `type` discriminant of any `ns:*` HMR message. */
-export type NsHmrMessageType = NsHmrMessage['type'];
 
 /**
- * Exhaustiveness guard for `switch (msg.type)` dispatch over the message unions.
- * Reaching it means a new message type was added to the union but not handled;
- * TypeScript flags the unhandled branch at compile time and this throws if a
- * truly unexpected payload arrives at runtime.
+ * Client-dispatched to the listeners registered by the hot contexts of the
+ * modules about to re-run (`UpdateRerunEventData.rerun`), and to no other
+ * module, once per update, before any boundary's `hot.dispose`. Vite only
+ * disposes the boundary; this lets every other re-running module release what
+ * its old instance holds, e.g. `import.meta.hot?.on('nativescript:beforeRerun', () => off())`.
  */
-export function assertNeverNsMessage(message: never): never {
-	throw new Error(`Unhandled ns:* HMR message: ${JSON.stringify(message)}`);
+export const NS_BEFORE_RERUN_EVENT = 'nativescript:beforeRerun';
+
+export interface BeforeRerunEventData extends UpdateModules {
+	timestamp: number;
 }
+
+/** Client-dispatched before the device asks for an app restart or shows that one is required. Awaited, best effort. */
+export const NS_BEFORE_RESTART_EVENT = 'nativescript:beforeRestart';

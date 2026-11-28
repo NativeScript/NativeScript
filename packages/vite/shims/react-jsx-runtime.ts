@@ -1,17 +1,14 @@
 // NativeScript-safe JSX runtime shim for the React flavor (automatic JSX with
 // jsxImportSource: 'react').
 //
-// `react/jsx-runtime` and `react/jsx-dev-runtime` are CJS modules that re-export
-// their implementation through a conditional `module.exports = require('./cjs/…')`.
-// The dev server serves node_modules over `/ns/m` as raw transformed CJS, and
-// static named-export detection can't see through that conditional require — so on
-// device `import { jsx } from 'react/jsx-runtime'` fails with "does not provide an
-// export named 'jsx'". (The non-HMR rolldown build bundles them fine; this is the
-// HMR/dev path.)
+// The React flavor aliases `react/jsx-runtime` and `react/jsx-dev-runtime` (CJS
+// modules that re-export through a conditional `require('./cjs/…')`) to this
+// file in builds and in dev, so the real runtimes never reach the device and
+// are not in the flavor's `optimizeDeps.include`.
 //
-// This shim reimplements the runtime on top of `React.createElement` — `react` is
-// vendored (esbuild → working named exports), and createElement produces the exact
-// same elements the reconciler consumes. It is plain ESM with explicit
+// It reimplements the runtime on top of `React.createElement`, and must import
+// nothing but `react`, which dev serves pre-bundled with ESM named exports. createElement
+// produces the exact same elements the reconciler consumes. It is plain ESM with explicit
 // jsx/jsxs/jsxDEV/Fragment named exports and never imports the real runtime, so
 // there's no circular reference back through the alias.
 import { createElement, Fragment as ReactFragment } from 'react';

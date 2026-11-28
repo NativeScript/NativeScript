@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, realpathSync, rmSync, symlinkSync, writeFileSyn
 import { join } from 'path';
 import { tmpdir } from 'os';
 
-import { clearLinkedDependencyRootsCache, clearMonorepoWorkspaceRootCache, findMonorepoWorkspaceRoot, getDevServerFsAllow, getLinkedDependencyRoots, getMonorepoWorkspaceRoot } from './project.js';
+import { clearLinkedDependencyRootsCache, clearMonorepoWorkspaceRootCache, findMonorepoWorkspaceRoot, getDevServerFsAllow, getLinkedDependencyNames, getLinkedDependencyRoots, getMonorepoWorkspaceRoot } from './project.js';
 
 function createTempTree(): { root: string; cleanup: () => void } {
 	const root = mkdtempSync(join(tmpdir(), 'ns-vite-monorepo-'));
@@ -259,6 +259,30 @@ describe('getLinkedDependencyRoots', () => {
 			);
 
 			expect(getLinkedDependencyRoots(app)).toEqual([checkout, linkedIcons, themeCheckout]);
+		} finally {
+			cleanup();
+		}
+	});
+});
+
+describe('getLinkedDependencyNames', () => {
+	it('names the declared dependencies installed from outside any node_modules dir, hoisted ones included', () => {
+		const { root, cleanup } = createTempTree();
+		try {
+			const sandbox = realpathSync(root);
+			const app = join(sandbox, 'apps/app');
+			mkdirSync(join(app, 'node_modules'), { recursive: true });
+			mkdirSync(join(sandbox, 'libs/ui'), { recursive: true });
+			mkdirSync(join(sandbox, 'libs/hoisted'), { recursive: true });
+			mkdirSync(join(sandbox, 'node_modules/@scope'), { recursive: true });
+			mkdirSync(join(app, 'node_modules/registry'), { recursive: true });
+			mkdirSync(join(sandbox, 'store/node_modules/stored'), { recursive: true });
+			symlinkSync('../../../libs/ui', join(app, 'node_modules/ui'), 'dir');
+			symlinkSync('../../libs/hoisted', join(sandbox, 'node_modules/@scope/hoisted'), 'dir');
+			symlinkSync('../../../store/node_modules/stored', join(app, 'node_modules/stored'), 'dir');
+			writeFileSync(join(app, 'package.json'), JSON.stringify({ name: 'app', dependencies: { ui: '*', registry: '*', stored: '*', missing: '*' }, devDependencies: { '@scope/hoisted': '*' } }));
+
+			expect(getLinkedDependencyNames(app)).toEqual(['ui', '@scope/hoisted']);
 		} finally {
 			cleanup();
 		}
