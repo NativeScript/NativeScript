@@ -1,7 +1,12 @@
 import Config from 'webpack-chain';
+import { coerce } from 'semver';
 
 import { getProjectFilePath } from '../helpers/project';
-import { hasDependency } from '../helpers/dependencies';
+import {
+	getDependencyVersion,
+	getResolvedDependencyVersionForCheck,
+	hasDependency,
+} from '../helpers/dependencies';
 import { getPlatformName } from '../helpers/platform';
 import { env as _env, IWebpackEnv } from '../index';
 import { error } from '../helpers/log';
@@ -13,14 +18,30 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const platform = getPlatformName();
 	const mode = env.production ? 'production' : 'development';
 	const production = mode === 'production';
+	const isSvelte5 = (getSvelteMajorVersion() ?? 0) >= 5;
 
-	// target('node') is the default but causes svelte-loader to detect it as a "server" render, disabling HMR
-	// electron-main sneaks us past the target == 'node' check and gets us HMR
-	config.target('electron-main');
+	if (isSvelte5) {
+		// Without svelte-custom-renderer Svelte 5 resolves to its server build.
+		config.resolve.set('conditionNames', [
+			'svelte-custom-renderer',
+			'svelte',
+			'...',
+		]);
 
-	// turns out this isn't enough now. svelte uses "node" of which "electron-main" is a subset in its export map forcing imports
-	// for 'svelte' to 'ssr.mjs'. We define an alias here to force it back.
-	config.resolve.alias.set('svelte$', 'svelte/internal');
+		// Svelte's requestAnimationFrame loop (transitions, motion) needs esm-env's BROWSER.
+		config.module
+			.rule('svelte-esm-env')
+			.test(/[\\/]node_modules[\\/]esm-env[\\/]/)
+			.resolve.set('conditionNames', ['browser', '...']);
+	} else {
+		// target('node') is the default but causes svelte-loader to detect it as a "server" render, disabling HMR
+		// electron-main sneaks us past the target == 'node' check and gets us HMR
+		config.target('electron-main');
+
+		// turns out this isn't enough now. svelte uses "node" of which "electron-main" is a subset in its export map forcing imports
+		// for 'svelte' to 'ssr.mjs'. We define an alias here to force it back.
+		config.resolve.alias.set('svelte$', 'svelte/internal');
+	}
 
 	// svelte-hmr still references tns-core-modules, so we shim it here for compat.
 	config.resolve.alias.set('tns-core-modules', '@nativescript/core');
@@ -33,7 +54,27 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.module.rule('workers').test(/\.(js|ts|svelte)$/);
 
 	// add a rule for .svelte files
-	if (hasDependency('svelte-loader')) {
+	if (isSvelte5) {
+		// svelte-loader's hotReload (svelte-hmr) does not support Svelte 5.
+		config.module
+			.rule('svelte')
+			.test(/\.svelte$/)
+			.exclude.add(/node_modules/)
+			.end()
+			.use('svelte-loader')
+			.loader('svelte-loader')
+			.tap((options) => {
+				const svelteConfig = getSvelteConfig();
+				return {
+					...options,
+					compilerOptions: {
+						...svelteConfig?.compilerOptions,
+						dev: !production,
+					},
+					preprocess: svelteConfig?.preprocess,
+				};
+			});
+	} else if (hasDependency('svelte-loader')) {
 		// configure using svelte-loader
 		config.module
 			.rule('svelte')
@@ -98,6 +139,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// });
 
 	return config;
+}
+
+function getSvelteMajorVersion(): number | null {
+	const version =
+		getDependencyVersion('svelte') ??
+		getResolvedDependencyVersionForCheck('svelte', '5.0.0');
+
+	return coerce(version)?.major ?? null;
 }
 
 function getSvelteConfigPreprocessor(): any {
