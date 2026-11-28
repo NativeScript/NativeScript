@@ -225,11 +225,11 @@ export function test_InheritableStyleProperties_AreInherited() {
 export class TestButton extends Button {}
 
 export function test_InheritableStylePropertiesWhenUsedWithExtendedClass_AreInherited() {
-	let page = Frame.topmost().currentPage;
-	let redColor = new Color('red');
+	const page = Frame.topmost().currentPage;
+	const redColor = new Color('red');
 	page.style.color = redColor;
 
-	let newButton = new TestButton();
+	const newButton = new TestButton();
 	page.content = newButton;
 
 	TKUnit.assertEqual(newButton.style.color, redColor);
@@ -967,7 +967,7 @@ export function testBackgroundShorthand_With_EmptyBorder() {
 }
 
 export function test_automation_text_default_value() {
-	let view = new Button();
+	const view = new Button();
 	TKUnit.assertTrue(view.automationText === undefined, 'AutomationText default value should be UNDEFINED.');
 }
 
@@ -1038,7 +1038,7 @@ export function test_getActualSize() {
 }
 
 export function test_background_image_doesnt_throw() {
-	var btn = new Button();
+	const btn = new Button();
 	// There is no need to wait until image is downloaded.
 	// It was throwing an exception when starting the download...
 	btn.style.backgroundImage = 'https://www.bodybuilding.com/images/2016/june/8-benefits-to-working-out-in-the-morning-header-v2-830x467.jpg';
@@ -1048,21 +1048,21 @@ export function test_background_image_doesnt_throw() {
 }
 
 export function test_shorthand_property_sets_composite_properties() {
-	var view = new TestView('view1');
+	const view = new TestView('view1');
 	view.customShortHand = 'left,right';
 	TKUnit.assertEqual(view.customCssA, 'left', "Expected customCssAProperty to be 'left'.");
 	TKUnit.assertEqual(view.customCssB, 'right', "Expected customCssAProperty to be 'right'.");
 }
 
 export function test_shorthand_property_is_set_by_composite_properties() {
-	var view = new TestView('view1');
+	const view = new TestView('view1');
 	view.customCssA = 'left';
 	view.customCssB = 'right';
 	TKUnit.assertEqual(view.customShortHand, 'left,right');
 }
 
 export function test_shorthand_property_doesnt_cache() {
-	var view = new TestView('view1');
+	const view = new TestView('view1');
 	view.customShortHand = 'left,right';
 	TKUnit.assertEqual(view.customCssA, 'left', "Expected customCssA to be 'left' the first time.");
 	TKUnit.assertEqual(view.customCssB, 'right', "Expected customCssA to be 'right' the second time.");

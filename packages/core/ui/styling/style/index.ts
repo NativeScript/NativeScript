@@ -12,6 +12,7 @@ import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '
 import { ShadowCSSValues } from '../css-shadow';
 import { StrokeCSSValues } from '../css-stroke';
 import { ClipPathFunction } from '../clip-path-function';
+import type { CssPendingSubstitution } from '../../core/properties';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -286,6 +287,13 @@ export class Style extends Observable {
 	 * shadows, so this is what tells the css state its recorded values may be stale.
 	 */
 	public _localValueVersion: number;
+
+	/**
+	 * Local values specified with var()/calc(), by css name, with the variables their
+	 * last substitution read and what it produced. The cascade substitutes them again
+	 * when those variables change.
+	 */
+	public _localCssExpressions: Map<string, { specified: string | CssPendingSubstitution; substituted: unknown; reads: Map<string, string | null> }>;
 
 	public get view(): ViewBase {
 		if (this.viewRef) {

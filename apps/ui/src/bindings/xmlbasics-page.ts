@@ -4,11 +4,11 @@ import * as textFieldModule from '@nativescript/core/ui/text-field';
 import * as observable from '@nativescript/core/data/observable';
 
 export function stack0Loaded(args: observable.EventData) {
-	var source = new observable.Observable();
-	var stack0 = <stackLayoutModule.StackLayout>args.object;
-	var target = stack0.getViewById<textFieldModule.TextField>('tf');
-	var button = stack0.getViewById<textFieldModule.TextField>('btn');
-	var bindingOptions = {
+	const source = new observable.Observable();
+	const stack0 = <stackLayoutModule.StackLayout>args.object;
+	const target = stack0.getViewById<textFieldModule.TextField>('tf');
+	const button = stack0.getViewById<textFieldModule.TextField>('btn');
+	const bindingOptions = {
 		sourceProperty: 'textSource',
 		targetProperty: 'text', // ,
 		// twoWay: true
@@ -22,12 +22,12 @@ export function stack0Loaded(args: observable.EventData) {
 }
 
 export function stack1Loaded(args: observable.EventData) {
-	var stack1 = <stackLayoutModule.StackLayout>args.object;
+	const stack1 = <stackLayoutModule.StackLayout>args.object;
 	stack1.bindingContext = { text: 'Label' };
 }
 
 export function stack2Loaded(args: observable.EventData) {
-	var stack2 = <stackLayoutModule.StackLayout>args.object;
+	const stack2 = <stackLayoutModule.StackLayout>args.object;
 	stack2.bindingContext = {
 		myProperty: 'Button',
 		myFunction: () => {
@@ -37,6 +37,6 @@ export function stack2Loaded(args: observable.EventData) {
 }
 
 export function stack3Loaded(args: observable.EventData) {
-	var stack3 = <stackLayoutModule.StackLayout>args.object;
+	const stack3 = <stackLayoutModule.StackLayout>args.object;
 	stack3.bindingContext = { myItems: [{ text: 'Label1' }, { text: 'Label2' }] };
 }

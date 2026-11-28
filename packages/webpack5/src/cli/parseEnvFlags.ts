@@ -8,7 +8,7 @@ export function parseEnvFlags(flags: string[]): IWebpackEnv {
 	const env = {};
 
 	envFlags.map((flag) => {
-		let [_, name, v] = ENV_FLAG_RE.exec(flag);
+		const [_, name, v] = ENV_FLAG_RE.exec(flag);
 		let value: any = v;
 
 		// convert --env.foo to --env.foo=true

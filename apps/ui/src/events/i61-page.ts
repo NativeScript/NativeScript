@@ -5,13 +5,13 @@ import * as panelModule from '@nativescript/core/ui/layouts/stack-layout';
 export function createPage() {
 	// https://github.com/NativeScript/cross-platform-modules/issues/61
 
-	var stackPanel = new panelModule.StackLayout();
+	const stackPanel = new panelModule.StackLayout();
 	stackPanel.id = 'stackPanel';
 
-	var btn = new button.Button();
+	const btn = new button.Button();
 	btn.text = 'getViewById';
 
-	var page = new pages.Page();
+	const page = new pages.Page();
 	page.content = stackPanel;
 	page.getViewById<panelModule.StackLayout>('stackPanel').addChild(btn);
 

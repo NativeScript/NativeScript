@@ -3,13 +3,13 @@ import * as action from '@nativescript/core/ui/action-bar';
 
 import * as pages from '@nativescript/core/ui/page';
 
-var currentPage: pages.Page;
+let currentPage: pages.Page;
 // Event handler for Page "loaded" event attached in main-page.xml
 export function pageLoaded(args: observable.EventData) {
 	// Get the event sender
-	var page = <pages.Page>args.object;
+	const page = <pages.Page>args.object;
 	currentPage = page;
-	var textItem = new action.ActionItem();
+	const textItem = new action.ActionItem();
 	textItem.text = 'from loaded';
 	textItem.on('tap', () => {
 		console.log('item added in page.loaded tapped!!!');
@@ -20,7 +20,7 @@ export function pageLoaded(args: observable.EventData) {
 export function optionTap(args) {
 	console.log('item added form XML tapped!!!');
 }
-var i = 0;
+let i = 0;
 export function buttonTap(args: observable.EventData) {
 	currentPage.actionBar.title = 'hi ' + i++;
 

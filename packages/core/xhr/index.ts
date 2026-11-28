@@ -245,6 +245,8 @@ export class XMLHttpRequest {
 			this._options.content = Blob.InternalAccessor.getBuffer(data);
 		} else if (data instanceof ArrayBuffer) {
 			this._options.content = data;
+		} else if (ArrayBuffer.isView(data)) {
+			this._options.content = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
 		}
 
 		this._sendFlag = true;
@@ -402,10 +404,8 @@ export class Blob {
 			} else if (typeof chunk === 'string') {
 				const textEncoder = new TextEncoder();
 				dataChunks.push(textEncoder.encode(chunk));
-			} else if (chunk instanceof DataView) {
-				dataChunks.push(new Uint8Array(chunk.buffer.slice(0)));
 			} else if (chunk instanceof ArrayBuffer || ArrayBuffer.isView(chunk)) {
-				dataChunks.push(new Uint8Array(ArrayBuffer.isView(chunk) ? chunk.buffer.slice(0) : chunk.slice(0)));
+				dataChunks.push(new Uint8Array(ArrayBuffer.isView(chunk) ? chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength) : chunk.slice(0)));
 			} else {
 				const textEncoder = new TextEncoder();
 				dataChunks.push(textEncoder.encode(String(chunk)));

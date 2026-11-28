@@ -29,9 +29,9 @@ export function onButtonTap(args) {
 }
 
 function applyNextStyle(args) {
-	let page = <pages.Page>args.object.page;
-	let btn = <button.Button>args.object;
-	let gridElement = <GridLayout>page.getViewById('Container');
+	const page = <pages.Page>args.object.page;
+	const btn = <button.Button>args.object;
+	const gridElement = <GridLayout>page.getViewById('Container');
 
 	btn.text = tests[testIndex].name;
 	gridElement.backgroundImage = tests[testIndex].backgroundImage;

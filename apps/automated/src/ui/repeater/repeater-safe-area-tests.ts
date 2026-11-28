@@ -22,7 +22,7 @@ export class RepeaterSafeAreaTest extends UITest<Repeater> {
 				waitUntilTestElementLayoutIsValid(ui.root);
 				test(ui);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -31,7 +31,7 @@ export class RepeaterSafeAreaTest extends UITest<Repeater> {
 	}
 
 	private getViews(template: string) {
-		let root = Builder.parse(template);
+		const root = Builder.parse(template);
 
 		return {
 			root,
@@ -60,7 +60,7 @@ export class RepeaterSafeAreaTest extends UITest<Repeater> {
 			({ list }) => {
 				this.repeater_in_full_screen(list, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 

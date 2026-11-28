@@ -23,13 +23,13 @@ function createAnimationFromCSS(css: string, name: string): keyframeAnimation.Ke
 }
 
 function findSelectorInScope(scope: StyleScope, cssClass: string): SelectorCore {
-	let selectors = scope.query({ cssClasses: new Set([cssClass]) });
+	const selectors = scope.query({ cssClasses: new Set([cssClass]) });
 
 	return selectors[0];
 }
 
 export function test_ReadAnimationProperties() {
-	let animation = createAnimationFromCSS(
+	const animation = createAnimationFromCSS(
 		`.test {
 			animation-name: first;
 			animation-duration: 4s;
@@ -51,7 +51,7 @@ export function test_ReadAnimationProperties() {
 }
 
 export function test_ReadTheAnimationProperty() {
-	let animation = createAnimationFromCSS(
+	const animation = createAnimationFromCSS(
 		`.test {
 			animation: second 0.2s ease-out 1s 2;
 		}`,
@@ -106,7 +106,7 @@ export function test_ReadAnimationCurve() {
 		}`,
 		'test',
 	);
-	let curve = animation.curve;
+	const curve = animation.curve;
 	TKUnit.assert(curve.x1 === 0.1 && curve.y1 === 1.0 && curve.x2 === 0.5 && curve.y2 === 0.5);
 }
 
@@ -458,7 +458,7 @@ export function test_ReadRotateRad() {
 }
 
 export function test_ReadAnimationWithUnsortedKeyframes() {
-	let animation = createAnimationFromCSS(
+	const animation = createAnimationFromCSS(
 		`.test { animation-name: test; }
 		@keyframes test {
 			from { opacity: 0; }
@@ -484,8 +484,8 @@ export function test_ReadAnimationWithUnsortedKeyframes() {
 }
 
 export function test_ReadAnimationsWithCSSImport() {
-	let css = "@import 'ui/animation/test-page.css'; .test { animation-name: test-page-keyframes; }";
-	let animation = createAnimationFromCSS(css, 'test');
+	const css = "@import 'ui/animation/test-page.css'; .test { animation-name: test-page-keyframes; }";
+	const animation = createAnimationFromCSS(css, 'test');
 	TKUnit.assertEqual(animation.keyframes.length, 3);
 	TKUnit.assertEqual(animation.keyframes[1].declarations[0].property, 'backgroundColor');
 }
@@ -527,14 +527,14 @@ export function test_LoadTwoAnimationsWithTheSameName() {
 }
 
 export function test_LoadAnimationProgrammatically() {
-	let stack = new stackModule.StackLayout();
+	const stack = new stackModule.StackLayout();
 	helper.buildUIAndRunTest(stack, function (views) {
-		let page = views[1];
+		const page = views[1];
 		page.css = `@keyframes a {
 			from { opacity: 1; }
 			to { opacity: 0; }
 		}`;
-		let animation = page.getKeyframeAnimationWithName('a');
+		const animation = page.getKeyframeAnimationWithName('a');
 		TKUnit.assertEqual(animation.keyframes.length, 2);
 		TKUnit.assertEqual(animation.keyframes[1].declarations[0].property, 'opacity');
 		TKUnit.assertEqual(animation.keyframes[1].declarations[0].value, 0);
@@ -604,11 +604,11 @@ export function test_IgnoreNonMatchingNestedMediaQueryKeyframe() {
 }
 
 export function test_ExecuteCSSAnimation() {
-	let mainPage = helper.getCurrentPage();
+	const mainPage = helper.getCurrentPage();
 	mainPage.css = null;
-	let label = new labelModule.Label();
+	const label = new labelModule.Label();
 	label.text = 'label';
-	let stackLayout = new stackModule.StackLayout();
+	const stackLayout = new stackModule.StackLayout();
 	stackLayout.addChild(label);
 
 	mainPage.css = `@keyframes k {
@@ -623,7 +623,7 @@ export function test_ExecuteCSSAnimation() {
 
 	TKUnit.waitUntilReady(() => label.isLoaded);
 	label.className = 'l';
-	let green = new color.Color('green');
+	const green = new color.Color('green');
 	TKUnit.waitUntilReady(() => green.equals(<color.Color>label.backgroundColor), 1);
 	TKUnit.assertEqual(label.backgroundColor, green);
 }
@@ -657,10 +657,10 @@ export function test_ExecuteCSSAnimation() {
 //}
 
 export function test_ReadTwoAnimations() {
-	let scope = new StyleScope();
+	const scope = new StyleScope();
 	scope.css = '.test { animation: one 0.2s ease-out 1 2, two 2s ease-in; }';
 	scope.ensureSelectors();
-	let selector = findSelectorInScope(scope, 'test');
+	const selector = findSelectorInScope(scope, 'test');
 	TKUnit.assertEqual(scope.getAnimations(selector.ruleset).length, 2);
 	TKUnit.assertEqual(scope.getAnimations(selector.ruleset)[0].curve, CoreTypes.AnimationCurve.easeOut);
 	TKUnit.assertEqual(scope.getAnimations(selector.ruleset)[1].curve, CoreTypes.AnimationCurve.easeIn);
@@ -682,7 +682,7 @@ export function test_AnimationCurveInKeyframes() {
 	TKUnit.assertEqual(animation.keyframes[0].curve, CoreTypes.AnimationCurve.linear);
 	TKUnit.assertEqual(animation.keyframes[1].curve, undefined);
 	TKUnit.assertEqual(animation.keyframes[1].curve, undefined);
-	let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animation);
+	const realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animation);
 	TKUnit.assertEqual(realAnimation.animations[1].curve, CoreTypes.AnimationCurve.linear);
 	TKUnit.assertEqual(realAnimation.animations[2].curve, CoreTypes.AnimationCurve.easeIn);
 }
