@@ -3,10 +3,10 @@ import * as btns from '@nativescript/core/ui/button';
 import * as layout from '@nativescript/core/ui/layouts/stack-layout';
 
 export function createPage() {
-	var page = new pages.Page();
-	var linearLayout = new layout.StackLayout();
+	const page = new pages.Page();
+	const linearLayout = new layout.StackLayout();
 
-	var btn = addButton(linearLayout, 'left');
+	let btn = addButton(linearLayout, 'left');
 	btn.marginLeft = 100;
 	btn = addButton(linearLayout, 'center');
 	btn.marginTop = 100;
@@ -25,7 +25,7 @@ export function createPage() {
 }
 
 function addButton(layout: layout.StackLayout, text: 'left' | 'center' | 'right' | 'stretch') {
-	var btn = new btns.Button();
+	const btn = new btns.Button();
 	btn.text = text;
 	btn.horizontalAlignment = text;
 	layout.addChild(btn);

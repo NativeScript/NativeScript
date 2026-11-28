@@ -1,6 +1,26 @@
-import { MediaQueryType, matchQuery, parseQuery } from '.';
+import { MediaQueryType, isEvaluableMediaQuery, matchQuery, parseQuery } from '.';
 
 describe('css-mediaquery', () => {
+	describe('isEvaluableMediaQuery', () => {
+		it('accepts queries built only from evaluable features', () => {
+			expect(isEvaluableMediaQuery('(orientation: landscape)')).toBe(true);
+			expect(isEvaluableMediaQuery('only screen and (min-width: 100) and (max-height: 200)')).toBe(true);
+			expect(isEvaluableMediaQuery('(prefers-color-scheme: dark), (device-width: 1024)')).toBe(true);
+			expect(isEvaluableMediaQuery('screen')).toBe(true);
+		});
+
+		it('rejects queries with a feature the runtime cannot evaluate', () => {
+			expect(isEvaluableMediaQuery('(color-gamut: p3)')).toBe(false);
+			expect(isEvaluableMediaQuery('(orientation: landscape) and (hover: hover)')).toBe(false);
+			expect(isEvaluableMediaQuery('(orientation: landscape), (prefers-reduced-motion: reduce)')).toBe(false);
+		});
+
+		it('rejects invalid queries', () => {
+			expect(isEvaluableMediaQuery('some crap')).toBe(false);
+			expect(isEvaluableMediaQuery('48em')).toBe(false);
+		});
+	});
+
 	describe('parseQuery', () => {
 		it('should parse media queries without expressions', () => {
 			expect(parseQuery('screen')).toEqual([

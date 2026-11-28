@@ -19,8 +19,8 @@ export function stopFPSMeter() {
 	stop();
 }
 
-let timeouts = [];
-let intervals = [];
+const timeouts = [];
+const intervals = [];
 
 let reusableItem;
 let vcToggle;
@@ -90,7 +90,7 @@ export function makeReusable(args: EventData) {
 export function onReusableUnloaded(args: EventData) {
 	console.log('unloaded:', args.object);
 }
-var testLabel: Label;
+let testLabel: Label;
 
 export function test(args: any) {
 	const page = args.object.page;

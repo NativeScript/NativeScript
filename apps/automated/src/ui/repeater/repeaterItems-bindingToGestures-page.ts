@@ -1,5 +1,5 @@
 export function pageLoaded(args) {
-	var page = args.object;
+	const page = args.object;
 	page.bindingContext = {
 		items: [
 			{

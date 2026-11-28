@@ -16,7 +16,7 @@ export default function loader(content: string, map: any) {
 
 	// todo: revise if this is necessary
 	// todo: perhaps use postCSS and just build imports into a single file?
-	let dependencies = [];
+	const dependencies = [];
 	getAndRemoveImportRules(ast)
 		.map(extractUrlFromRule)
 		.map(createRequireUri)

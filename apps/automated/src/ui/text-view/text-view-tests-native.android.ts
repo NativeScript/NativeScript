@@ -18,7 +18,7 @@ export function getNativeHint(textView: TextView): string {
 }
 
 export function getNativeFontSize(textView: TextView): number {
-	let density = Utils.layout.getDisplayDensity();
+	const density = Utils.layout.getDisplayDensity();
 
 	return textView.android.getTextSize() / density;
 }
@@ -32,7 +32,7 @@ export function getNativeBackgroundColor(textView: TextView): Color {
 }
 
 export function getNativeTextAlignment(textView: TextView): string {
-	let gravity = textView.android.getGravity();
+	const gravity = textView.android.getGravity();
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
 		return CoreTypes.TextAlignment.left;

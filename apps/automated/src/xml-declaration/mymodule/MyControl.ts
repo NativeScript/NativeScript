@@ -4,10 +4,10 @@ export class MyControl extends StackLayout {
 	constructor() {
 		super();
 
-		var counter: number = 0;
+		let counter: number = 0;
 
-		var lbl = new Label();
-		var btn = new Button();
+		const lbl = new Label();
+		const btn = new Button();
 		btn.text = 'Tap me!';
 		btn.on(Button.tapEvent, (args: EventData) => {
 			lbl.text = 'Tap ' + counter++;

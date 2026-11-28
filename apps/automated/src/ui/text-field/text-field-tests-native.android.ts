@@ -10,13 +10,13 @@ export function getNativeHint(textField: TextField): string {
 }
 
 export function getNativeSecure(textField: TextField): boolean {
-	let inputType = textField.android.getInputType();
+	const inputType = textField.android.getInputType();
 
 	return (inputType & android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) === android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD || (inputType & android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD) === android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
 }
 
 export function getNativeFontSize(textField: TextField): number {
-	let density = Utils.layout.getDisplayDensity();
+	const density = Utils.layout.getDisplayDensity();
 
 	return textField.android.getTextSize() / density;
 }
@@ -34,7 +34,7 @@ export function getNativeBackgroundColor(textField: TextField): Color {
 }
 
 export function getNativeTextAlignment(textField: TextField): string {
-	var gravity = textField.android.getGravity();
+	const gravity = textField.android.getGravity();
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
 		return CoreTypes.TextAlignment.left;

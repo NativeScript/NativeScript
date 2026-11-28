@@ -7,7 +7,7 @@ function printDeviceInfoAndroid() {
 	console.log('android.os.Build.VERSION.SDK_INT = ' + android.os.Build.VERSION.SDK_INT); //android.os.Build.VERSION.SDK_INT = 19
 	console.log('android.os.Build.VERSION.CODENAME = ' + android.os.Build.VERSION.CODENAME); //android.os.Build.VERSION.CODENAME = REL
 	console.log('android.os.Build.VERSION.RELEASE = ' + android.os.Build.VERSION.RELEASE); //android.os.Build.VERSION.RELEASE = 4.4.4
-	var metrics: android.util.DisplayMetrics = Application.android.context.getResources().getDisplayMetrics();
+	const metrics: android.util.DisplayMetrics = Application.android.context.getResources().getDisplayMetrics();
 	console.log('metrics.density = ' + metrics.density); //metrics.density = 3
 	console.log('metrics.scaledDensity = ' + metrics.scaledDensity); //metrics.scaledDensity = 3
 	console.log('metrics.densityDpi = ' + metrics.densityDpi); //metrics.densityDpi = 480
@@ -16,7 +16,7 @@ function printDeviceInfoAndroid() {
 	console.log('metrics.widthPixels = ' + metrics.widthPixels); //metrics.widthPixels = 1080
 	console.log('metrics.heightPixels = ' + metrics.heightPixels); //metrics.heightPixels = 1776
 
-	var config = Application.android.context.getResources().getConfiguration();
+	const config = Application.android.context.getResources().getConfiguration();
 	console.log('config.screenWidthDp = ' + config.screenWidthDp);
 	console.log('config.screenHeightDp = ' + config.screenHeightDp);
 	console.log('config.smallestScreenWidthDp = ' + config.smallestScreenWidthDp);
@@ -24,7 +24,7 @@ function printDeviceInfoAndroid() {
 }
 
 function printDeviceInfoIOS() {
-	var device = UIDevice.currentDevice;
+	const device = UIDevice.currentDevice;
 	console.log('device.name = ' + device.name); //device.name = iPhone Simulator
 	console.log('device.systemName = ' + device.systemName); //device.systemName = iPhone OS
 	console.log('device.systemVersion = ' + device.systemVersion); //device.systemVersion = 8.1
@@ -32,7 +32,7 @@ function printDeviceInfoIOS() {
 	console.log('device.localizedModel = ' + device.localizedModel); //device.localizedModel = iPhone Simulator
 	console.log('device.userInterfaceIdiom = ' + device.userInterfaceIdiom); //device.userInterfaceIdiom = 0
 	console.log('device.batteryLevel = ' + device.batteryLevel); //device.batteryLevel = -1
-	var screen = UIScreen.mainScreen;
+	const screen = UIScreen.mainScreen;
 	console.log('screen = ' + screen);
 	console.log('screen.nativeBounds = ' + screen.nativeBounds.size.width + ', ' + screen.nativeBounds.size.height); //screen.nativeBounds = 640, 1136
 	console.log('screen.scale = ' + screen.scale); //screen.scale = 2
@@ -64,10 +64,10 @@ function print() {
 //print();
 
 export function createPage() {
-	var page = new Page();
-	var grid = new GridLayout();
+	const page = new Page();
+	const grid = new GridLayout();
 
-	var btn = new Button();
+	const btn = new Button();
 	btn.text = 'print';
 	btn.on('tap', (d) => {
 		print();

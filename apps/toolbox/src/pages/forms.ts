@@ -38,7 +38,7 @@ export class SampleData extends Observable {
 
 function formatPhoneNumber(value: string, useParens?: boolean) {
 	value = value.replace(/\D/g, '');
-	var size = value.length;
+	const size = value.length;
 	if (useParens) {
 		if (size > 0) {
 			value = '(' + value;

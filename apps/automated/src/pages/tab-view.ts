@@ -1,15 +1,15 @@
 import { Observable } from '@nativescript/core/data/observable';
 
-var vm = new Observable();
+const vm = new Observable();
 
 export function onPageLoaded(args) {
-	var page = args.object;
+	const page = args.object;
 	vm.set('firstTitle', 'fiiiirst');
 	vm.set('secondTitle', 'secondTitle');
 	vm.set('secondIcon', 'res://icon');
 	page.bindingContext = vm;
 }
-var i = 0;
+let i = 0;
 
 export function onTap() {
 	i++;
@@ -23,13 +23,13 @@ export function onTap() {
 }
 
 export function setStyle(args) {
-	var page = args.object.actionBar.page;
+	const page = args.object.actionBar.page;
 
 	page.css = 'TabView { color: red; }';
 }
 
 export function clearStyle(args) {
-	var page = args.object.actionBar.page;
+	const page = args.object.actionBar.page;
 
 	page.css = 'Page { background-color: red; }';
 }

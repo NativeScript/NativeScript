@@ -3,7 +3,7 @@ import { Button, StackLayout, GridLayout, Utils } from '@nativescript/core';
 import * as TKUnit from '../../tk-unit';
 import type { MeasuredView } from './layout-helper-types';
 
-var DELTA = 0.1;
+const DELTA = 0.1;
 
 @NativeClass
 class NativeButton extends android.widget.Button {

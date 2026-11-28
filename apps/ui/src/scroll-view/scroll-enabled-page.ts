@@ -1,7 +1,7 @@
 import { EventData, GestureStateTypes, PanGestureEventData, Page, View, ScrollView } from '@nativescript/core';
 
 export function pageLoaded(args: EventData) {
-	var page = <Page>args.object;
+	const page = <Page>args.object;
 }
 
 let currentDeltaY = 0;

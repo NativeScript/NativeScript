@@ -22,7 +22,7 @@ interface Candidate {
 interface DownleveledClass {
 	code: string;
 	map: any;
-	// Lines added in front of the transpiled class (the IIFE wrapper).
+	// Lines added in front of the transpiled class (separator newline and IIFE wrapper).
 	leadingLines: number;
 }
 
@@ -62,10 +62,11 @@ function downlevelClass(
 			),
 		);
 	}
-	const transpiledRaw = transpileResult.outputText.replace(
-		SOURCE_MAPPING_URL_RE,
-		'\n',
-	);
+	// TS 6+ emits a "use strict" prologue for snippets without imports/exports; it must not be spliced into the host file.
+	// Only the directive text is removed so line numbers in the snippet's source map stay valid.
+	const transpiledRaw = transpileResult.outputText
+		.replace(/^(\s*)(['"])use strict\2;?/, '$1')
+		.replace(SOURCE_MAPPING_URL_RE, '\n');
 	// force enumerable:true
 	let transpiled = transpiledRaw.replace(
 		/(Object\.defineProperty\(.*?{.*?)(enumerable:\s*false)(.*?}\))/gs,
@@ -106,6 +107,9 @@ function downlevelClass(
 	} catch (e) {
 		// ignore parsing safety guard failures – fallback to raw transpiled
 	}
+	// transpileModule drops the leading newline; keep statements apart.
+	transpiled = `\n${transpiled}`;
+	leadingLines += 1;
 	if (process.env.NATIVECLASS_DEBUG) {
 		loader.emitWarning(
 			new Error(
