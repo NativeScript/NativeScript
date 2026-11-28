@@ -8,7 +8,7 @@ export function navigatingTo(args: EventData) {
 
 export class SplitViewModel extends Observable {}
 
-let itemCallbacks: Array<(item: any) => void> = [];
+const itemCallbacks: Array<(item: any) => void> = [];
 export function setItemCallbacks(changeItem: Array<(item: any) => void>) {
 	itemCallbacks.push(...changeItem);
 }

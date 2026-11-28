@@ -60,11 +60,25 @@ class ListViewCell extends UITableViewCell {
 		}
 	}
 
+	public didMoveToSuperview(): void {
+		super.didMoveToSuperview();
+
+		// UIKit can put a cell back into the table without asking for it in tableView:cellForRowAtIndexPath:.
+		const listView = this.listView?.deref();
+		if (this.superview && listView && !listView._hasCellContent(this)) {
+			const indexPath = (listView.nativeViewProtected as UITableView)?.indexPathForCell(this);
+			if (indexPath) {
+				listView._prepareCellForDisplay(this, indexPath);
+			}
+		}
+	}
+
 	public get view(): View {
 		return this.owner ? this.owner.deref() : null;
 	}
 
 	public owner: WeakRef<View>;
+	public listView: WeakRef<ListView>;
 }
 
 @NativeClass
@@ -166,18 +180,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
 		if (owner) {
 			const template = owner.sectioned ? owner._getItemTemplateInSection(indexPath.section, indexPath.row) : owner._getItemTemplate(indexPath.row);
 			cell = <ListViewCell>(tableView.dequeueReusableCellWithIdentifier(template.key) || ListViewCell.initWithEmptyBackground());
-			owner._prepareCell(cell, indexPath);
-
-			const cellView: View = cell.view;
-			if (cellView && cellView.isLayoutRequired) {
-				// Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called
-				// from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
-				const width = layout.getMeasureSpecSize(owner.widthMeasureSpec);
-				const rowHeight = owner._effectiveRowHeight;
-				const cellHeight = rowHeight > 0 ? rowHeight : owner.getHeight(indexPath.row, indexPath.section);
-				cellView.iosOverflowSafeAreaEnabled = false;
-				View.layoutChild(owner, cellView, 0, 0, width, cellHeight);
-			}
+			owner._prepareCellForDisplay(cell, indexPath);
 		} else {
 			cell = <ListViewCell>ListViewCell.initWithEmptyBackground();
 		}
@@ -204,6 +207,11 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 
 	public tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath) {
 		const owner = this._owner?.deref();
+		// UIKit also announces cells it has already taken out of the table and will drop; preparing
+		// those would keep them and their item views in the ListView's map for good.
+		if (owner && cell instanceof ListViewCell && cell.superview && !owner._hasCellContent(cell)) {
+			owner._prepareCellForDisplay(cell, indexPath);
+		}
 		if (owner && indexPath.row === owner.items.length - 1) {
 			owner.notify(<EventData>{
 				eventName: LOADMOREITEMS,
@@ -315,6 +323,11 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 
 	public tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath) {
 		const owner = this._owner?.deref();
+		// UIKit also announces cells it has already taken out of the table and will drop; preparing
+		// those would keep them and their item views in the ListView's map for good.
+		if (owner && cell instanceof ListViewCell && cell.superview && !owner._hasCellContent(cell)) {
+			owner._prepareCellForDisplay(cell, indexPath);
+		}
 		if (owner && indexPath.row === owner.items.length - 1) {
 			owner.notify(<EventData>{
 				eventName: LOADMOREITEMS,
@@ -867,8 +880,6 @@ export class ListView extends ListViewBase {
 			if (!cell.view) {
 				cell.owner = new WeakRef(view);
 			} else if (cell.view !== view) {
-				// Remove view from super view now as nativeViewProtected will be null afterwards
-				(<UIView>cell.view.nativeViewProtected)?.removeFromSuperview();
 				this._removeContainer(cell);
 				cell.owner = new WeakRef(view);
 			}
@@ -882,6 +893,9 @@ export class ListView extends ListViewBase {
 				view._listViewItemIndex = indexPath.row;
 			}
 			this._map.set(cell, view);
+			if (cell.listView?.deref() !== this) {
+				cell.listView = new WeakRef(this);
+			}
 
 			// We expect that views returned from itemLoading are new (e.g. not reused).
 			if (view && !view.parent) {
@@ -897,8 +911,33 @@ export class ListView extends ListViewBase {
 		return cellHeight;
 	}
 
+	public _hasCellContent(cell: ListViewCell): boolean {
+		const view = cell.view;
+
+		return !!view && this._map.get(cell) === view;
+	}
+
+	public _prepareCellForDisplay(cell: ListViewCell, indexPath: NSIndexPath): void {
+		this._prepareCell(cell, indexPath);
+
+		const cellView: View = cell.view;
+		if (cellView && cellView.isLayoutRequired) {
+			// Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called
+			// from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
+			const width = layout.getMeasureSpecSize(this.widthMeasureSpec);
+			const rowHeight = this._effectiveRowHeight;
+			const cellHeight = rowHeight > 0 ? rowHeight : this.getHeight(indexPath.row, indexPath.section);
+			cellView.iosOverflowSafeAreaEnabled = false;
+			View.layoutChild(this, cellView, 0, 0, width, cellHeight);
+		}
+	}
+
 	public _removeContainer(cell: ListViewCell): void {
 		const view: ItemView = cell.view;
+		// ListView does not detach its children's native views, and nativeViewProtected is gone after _removeView.
+		const root = view.parent instanceof ListView ? view : view.parent;
+		(root.nativeViewProtected as UIView)?.removeFromSuperview();
+
 		// This is to clear the StackLayout that is used to wrap ProxyViewContainer instances.
 		if (!(view.parent instanceof ListView)) {
 			this._removeView(view.parent);
@@ -912,6 +951,9 @@ export class ListView extends ListViewBase {
 		view._listViewSectionIndex = undefined;
 		this._preparingCell = preparing;
 		this._map.delete(cell);
+		// Drop the reference so the next prepare builds a new view rather than reviving this one: its graph
+		// is no longer rooted, so native parts of it (such as cached colors) may already be released.
+		cell.owner = undefined;
 	}
 
 	public _prepareHeader(headerCell: ListViewHeaderCell, section: number): number {
@@ -936,8 +978,6 @@ export class ListView extends ListViewBase {
 			if (!headerCell.view) {
 				headerCell.owner = new WeakRef(view);
 			} else if (headerCell.view !== view) {
-				// Remove old view and set new one
-				(<UIView>headerCell.view.nativeViewProtected)?.removeFromSuperview();
 				this._removeHeaderContainer(headerCell);
 				headerCell.owner = new WeakRef(view);
 			}
@@ -1058,6 +1098,9 @@ export class ListView extends ListViewBase {
 
 	public _removeHeaderContainer(headerCell: ListViewHeaderCell): void {
 		const view: View = headerCell.view;
+		const root = view.parent instanceof ListView ? view : view.parent;
+		(root.nativeViewProtected as UIView)?.removeFromSuperview();
+
 		// This is to clear the StackLayout that is used to wrap ProxyViewContainer instances.
 		if (!(view.parent instanceof ListView)) {
 			this._removeView(view.parent);
@@ -1069,6 +1112,7 @@ export class ListView extends ListViewBase {
 		view.parent._removeView(view);
 		this._preparingHeader = preparing;
 		this._headerMap.delete(headerCell);
+		headerCell.owner = undefined;
 	}
 
 	[separatorColorProperty.getDefault](): UIColor {

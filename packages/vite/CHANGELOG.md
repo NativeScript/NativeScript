@@ -1,3 +1,13 @@
+## 8.0.24 (2026-11-24)
+
+### 🩹 Fixes
+
+- **vite:** apply plugins from dependency nativescript.vite.mjs configs ([#11669](https://github.com/NativeScript/NativeScript/pull/11669))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.23 (2026-11-09)
 
 ### 🩹 Fixes

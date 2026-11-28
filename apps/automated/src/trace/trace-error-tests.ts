@@ -18,7 +18,7 @@ export function test_DefaultErrorHandler_throws() {
 			Trace.error(new Error('TEST'));
 		},
 		'DefaultErrorHandler should throw.',
-		'TEST'
+		'TEST',
 	);
 }
 
@@ -51,7 +51,7 @@ export function test_trace_error_should_create_error_from_string() {
 
 export function test_trace_error_should_pass_errors() {
 	let called = false;
-	let testError = new Error('TEST');
+	const testError = new Error('TEST');
 	let actualError: Error;
 
 	Trace.setErrorHandler({

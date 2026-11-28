@@ -26,6 +26,7 @@ const NON_ANIMATED_TRANSITION = 'non-animated';
 
 let navDepth: number = -1;
 let navControllerDelegate: UINavigationControllerDelegate = null;
+let transitionControllerDelegate: UINavigationControllerDelegate = null;
 
 export class Frame extends FrameBase {
 	viewController: UINavigationControllerImpl;
@@ -83,6 +84,7 @@ export class Frame extends FrameBase {
 		// This was the last frame so we can get rid of the controller delegate reference
 		if (this._isFrameStackEmpty()) {
 			navControllerDelegate = null;
+			transitionControllerDelegate = null;
 		}
 
 		if (this._ios) {
@@ -133,20 +135,28 @@ export class Frame extends FrameBase {
 		const animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
 		if (animated) {
 			navigationTransition = this._getNavigationTransition(backstackEntry.entry);
-			if (navigationTransition) {
-				viewController[TRANSITION] = navigationTransition;
-			}
+			viewController[TRANSITION] = navigationTransition;
 		} else {
 			//https://github.com/NativeScript/NativeScript/issues/1787
 			viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
 		}
 
-		if (!navControllerDelegate) {
-			navControllerDelegate = UINavigationControllerDelegateImpl.new();
+		// UIKit disables content Back when custom animation callbacks are advertised.
+		let delegate: UINavigationControllerDelegate;
+		if (navigationTransition) {
+			if (!transitionControllerDelegate) {
+				transitionControllerDelegate = UINavigationControllerTransitionDelegateImpl.new();
+			}
+			delegate = transitionControllerDelegate;
+		} else {
+			if (!navControllerDelegate) {
+				navControllerDelegate = UINavigationControllerDelegateImpl.new();
+			}
+			delegate = navControllerDelegate;
 		}
 
-		this._ios.controller.delegate = navControllerDelegate;
-		viewController[DELEGATE] = navControllerDelegate;
+		this._ios.controller.delegate = delegate;
+		viewController[DELEGATE] = delegate;
 
 		const nativeTransition = _getNativeTransition(navigationTransition, true, this.direction);
 		if (!nativeTransition && navigationTransition) {
@@ -433,9 +443,33 @@ class TransitionDelegate extends NSObject {
 	};
 }
 
+function navigationControllerDidShow(navigationController: UINavigationControllerImpl, viewController: UIViewController, animated: boolean): void {
+	if (Trace.isEnabled()) {
+		Trace.write('Frame.navigationController.DID_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
+	}
+	const owner = navigationController.owner;
+	if (owner) {
+		owner._onViewControllerShown(viewController);
+	}
+	IOSHelper.invalidateStatusBarAppearance(navigationController, 'navigationControllerDidShowViewControllerAnimated');
+}
+
 @NativeClass
 class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
+
+	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationControllerImpl, viewController: UIViewController, animated: boolean): void {
+		navigationControllerDidShow(navigationController, viewController, animated);
+	}
+}
+
+@NativeClass
+class UINavigationControllerTransitionDelegateImpl extends NSObject implements UINavigationControllerDelegate {
+	public static ObjCProtocols = [UINavigationControllerDelegate];
+
+	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationControllerImpl, viewController: UIViewController, animated: boolean): void {
+		navigationControllerDidShow(navigationController, viewController, animated);
+	}
 
 	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationControllerImpl, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
 		let viewController: UIViewController;
@@ -504,17 +538,6 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		}
 
 		return null;
-	}
-
-	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationControllerImpl, viewController: UIViewController, animated: boolean): void {
-		if (Trace.isEnabled()) {
-			Trace.write('Frame.navigationController.DID_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
-		}
-		const owner = navigationController.owner;
-		if (owner) {
-			owner._onViewControllerShown(viewController);
-		}
-		IOSHelper.invalidateStatusBarAppearance(navigationController, 'navigationControllerDidShowViewControllerAnimated');
 	}
 }
 

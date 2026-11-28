@@ -32,39 +32,39 @@ interface StringPropertyDescriptor {
 }
 
 export function createPage() {
-	var page = new pages.Page();
-	var grid = new gridModule.GridLayout();
+	const page = new pages.Page();
+	const grid = new gridModule.GridLayout();
 	grid.addRow(new gridModule.ItemSpec());
 	grid.addRow(new gridModule.ItemSpec());
 	page.content = grid;
 
-	var count = 0;
-	var control = new btns.Button();
+	let count = 0;
+	const control = new btns.Button();
 	control.text = 'test control';
 	control.on(btns.Button.tapEvent, (data) => {
 		control.text = 'count: ' + count++;
 	});
 	grid.addChild(control);
 
-	var scrollView = new scroll.ScrollView();
+	const scrollView = new scroll.ScrollView();
 	gridModule.GridLayout.setRow(scrollView, 1);
 	grid.addChild(scrollView);
-	var stack = new stacks.StackLayout();
+	const stack = new stacks.StackLayout();
 	scrollView.content = stack;
 
 	function createNumericPropertyUI(desc: NumericProeprtyDescriptor) {
-		var lbl = new labels.Label();
+		const lbl = new labels.Label();
 		lbl.text = desc.name;
 		lbl.horizontalAlignment = 'left';
 		stack.addChild(lbl);
 
-		var slider = new sliders.Slider();
+		const slider = new sliders.Slider();
 		slider.minValue = desc.min;
 		slider.maxValue = desc.max;
 		slider.value = desc.value;
 		stack.addChild(slider);
 
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'value',
 			targetProperty: desc.name,
 		};
@@ -72,17 +72,17 @@ export function createPage() {
 	}
 
 	function createBooleanPropertyUI(desc: BoolPropertyDescriptor) {
-		var lbl = new labels.Label();
+		const lbl = new labels.Label();
 		lbl.text = desc.name;
 		lbl.horizontalAlignment = 'left';
 		stack.addChild(lbl);
 
-		var sw = new switches.Switch();
+		const sw = new switches.Switch();
 		sw.checked = desc.value;
 		sw.horizontalAlignment = 'left';
 		stack.addChild(sw);
 
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'checked',
 			targetProperty: desc.name,
 		};
@@ -90,16 +90,16 @@ export function createPage() {
 	}
 
 	function createStringPropertyUI(desc: StringPropertyDescriptor) {
-		var lbl = new labels.Label();
+		const lbl = new labels.Label();
 		lbl.text = desc.name;
 		lbl.horizontalAlignment = 'left';
 		stack.addChild(lbl);
 
-		var txt = new textView.TextView();
+		const txt = new textView.TextView();
 		txt.text = desc.value;
 		stack.addChild(txt);
 
-		var options: BindingOptions = {
+		const options: BindingOptions = {
 			sourceProperty: 'text',
 			targetProperty: desc.name,
 		};

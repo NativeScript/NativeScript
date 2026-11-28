@@ -1,6 +1,26 @@
-import { MediaQueryType, matchQuery, parseQuery } from '.';
+import { MediaQueryType, isEvaluableMediaQuery, matchQuery, parseQuery } from '.';
 
 describe('css-mediaquery', () => {
+	describe('isEvaluableMediaQuery', () => {
+		it('accepts queries built only from evaluable features', () => {
+			expect(isEvaluableMediaQuery('(orientation: landscape)')).toBe(true);
+			expect(isEvaluableMediaQuery('only screen and (min-width: 100) and (max-height: 200)')).toBe(true);
+			expect(isEvaluableMediaQuery('(prefers-color-scheme: dark), (device-width: 1024)')).toBe(true);
+			expect(isEvaluableMediaQuery('screen')).toBe(true);
+		});
+
+		it('rejects queries with a feature the runtime cannot evaluate', () => {
+			expect(isEvaluableMediaQuery('(color-gamut: p3)')).toBe(false);
+			expect(isEvaluableMediaQuery('(orientation: landscape) and (hover: hover)')).toBe(false);
+			expect(isEvaluableMediaQuery('(orientation: landscape), (prefers-reduced-motion: reduce)')).toBe(false);
+		});
+
+		it('rejects invalid queries', () => {
+			expect(isEvaluableMediaQuery('some crap')).toBe(false);
+			expect(isEvaluableMediaQuery('48em')).toBe(false);
+		});
+	});
+
 	describe('parseQuery', () => {
 		it('should parse media queries without expressions', () => {
 			expect(parseQuery('screen')).toEqual([
@@ -15,6 +35,22 @@ describe('css-mediaquery', () => {
 				{
 					inverse: true,
 					type: MediaQueryType.screen,
+					features: [],
+				},
+			]);
+
+			expect(parseQuery('TV')).toEqual([
+				{
+					inverse: false,
+					type: 'tv',
+					features: [],
+				},
+			]);
+
+			expect(parseQuery('not speech')).toEqual([
+				{
+					inverse: true,
+					type: 'speech',
 					features: [],
 				},
 			]);
@@ -87,9 +123,23 @@ describe('css-mediaquery', () => {
 				expect(
 					matchQuery('not screen and (orientation: portrait)', {
 						type: MediaQueryType.screen,
-						orientation: 'landscape',
+						orientation: 'portrait',
 					}),
 				).toBe(false);
+			});
+
+			it('should return true when the features of a `not` query do not match', () => {
+				expect(
+					matchQuery('not screen and (orientation: portrait)', {
+						type: MediaQueryType.screen,
+						orientation: 'landscape',
+					}),
+				).toBe(true);
+				expect(matchQuery('not all and (min-width: 600)', { type: MediaQueryType.screen, width: 400 })).toBe(true);
+			});
+
+			it('should return true when the type of a `not` query does not match', () => {
+				expect(matchQuery('not print and (min-width: 100)', { type: MediaQueryType.screen, width: 800 })).toBe(true);
 			});
 
 			it('should not disrupt an OR query', () => {
@@ -112,6 +162,36 @@ describe('css-mediaquery', () => {
 
 			it('should return true for inverted value', () => {
 				expect(matchQuery('not screen and (min-width: 48px)', { width: 24 })).toBe(true);
+			});
+		});
+
+		describe('Unknown and deprecated media types', () => {
+			it('should return false for unknown and deprecated media types', () => {
+				expect(matchQuery('tv', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('speech', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('handheld', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('projection', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('unknown', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('only tv', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('tv and (min-width: 100px)', { type: MediaQueryType.screen, width: 800 })).toBe(false);
+			});
+
+			it('should return true when negating unknown or deprecated media types with `not`', () => {
+				expect(matchQuery('not tv', { type: MediaQueryType.screen })).toBe(true);
+				expect(matchQuery('not speech', { type: MediaQueryType.screen })).toBe(true);
+				expect(matchQuery('not unknown', { type: MediaQueryType.screen })).toBe(true);
+				expect(matchQuery('not tv and (min-width: 100px)', { type: MediaQueryType.screen, width: 800 })).toBe(true);
+			});
+
+			it('should treat reserved media type keywords as never-matching (`not all`)', () => {
+				expect(matchQuery('not only', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('not not', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('not and', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('not or', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('not layer', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('and', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('or', { type: MediaQueryType.screen })).toBe(false);
+				expect(matchQuery('layer', { type: MediaQueryType.screen })).toBe(false);
 			});
 		});
 	});

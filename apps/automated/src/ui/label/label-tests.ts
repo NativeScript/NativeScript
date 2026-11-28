@@ -534,7 +534,7 @@ export class LabelTest extends testModule.UITest<Label> {
 		TKUnit.assertEqual(label.text, secondExpValue);
 	}
 
-	private expectedTextAlignment: 'right' = 'right';
+	private expectedTextAlignment = 'right' as const;
 	public testLocalTextAlignmentFromCss() {
 		const label = this.testView;
 		this.testPage.css = 'label { text-align: ' + this.expectedTextAlignment + '; }';
@@ -625,11 +625,11 @@ export class LabelTest extends testModule.UITest<Label> {
 	// }
 
 	public test_applying_disabled_visual_State_when_label_is_disable = function () {
-		let view = this.testView;
-		let page = this.testPage;
+		const view = this.testView;
+		const page = this.testPage;
 		this.waitUntilTestElementIsLoaded();
-		let expectedColor = '#FF0000FF';
-		let expectedNormalizedColor = '#FF0000';
+		const expectedColor = '#FF0000FF';
+		const expectedNormalizedColor = '#FF0000';
 
 		page.css = 'label:disabled { background-color: ' + expectedColor + '; }';
 
@@ -637,12 +637,12 @@ export class LabelTest extends testModule.UITest<Label> {
 
 		helper.waitUntilLayoutReady(view);
 
-		let actualResult = labelTestsNative.getNativeBackgroundColor(view);
+		const actualResult = labelTestsNative.getNativeBackgroundColor(view);
 		TKUnit.assert(actualResult.hex === expectedNormalizedColor, 'Actual: ' + actualResult.hex + '; Expected: ' + expectedNormalizedColor);
 	};
 
 	public test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
-		let view = this.testView;
+		const view = this.testView;
 		view.text = 'NormalText';
 		this.waitUntilTestElementIsLoaded();
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
@@ -653,8 +653,8 @@ export class LabelTest extends testModule.UITest<Label> {
 	}
 
 	public test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
-		let view = this.testView;
-		let formattedString = helper._generateFormattedString();
+		const view = this.testView;
+		const formattedString = helper._generateFormattedString();
 		this.waitUntilTestElementIsLoaded();
 		view.formattedText = formattedString;
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
@@ -669,13 +669,13 @@ export class LabelTest extends testModule.UITest<Label> {
 			return;
 		}
 
-		let label = new Label();
+		const label = new Label();
 		label.text = initialValue;
-		let host = setup(label);
+		const host = setup(label);
 
 		host.addChild(label);
 
-		let mainPage = helper.getCurrentPage();
+		const mainPage = helper.getCurrentPage();
 		mainPage.content = host;
 
 		// Check if view is loaded and layout is valid
@@ -696,7 +696,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	public test_SettingTextWhenInFixedSizeGridShouldNotRequestLayout() {
 		this.requestLayoutFixture(false, '', (label) => {
 			label.textWrap = false;
-			let host = new GridLayout();
+			const host = new GridLayout();
 			host.width = 100;
 			host.height = 100;
 
@@ -707,7 +707,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	public test_ChangingTextWhenInFixedSizeGridShouldNotRequestLayout() {
 		this.requestLayoutFixture(false, 'Hello World', (label) => {
 			label.textWrap = false;
-			let host = new GridLayout();
+			const host = new GridLayout();
 			host.width = 100;
 			host.height = 100;
 
@@ -718,7 +718,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	public test_SettingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
 		this.requestLayoutFixture(false, '', (label) => {
 			label.textWrap = false;
-			let host = new StackLayout();
+			const host = new StackLayout();
 			label.width = 100;
 			label.height = 100;
 
@@ -729,7 +729,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	public test_ChangingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
 		this.requestLayoutFixture(false, 'Hello World', (label) => {
 			label.textWrap = false;
-			let host = new StackLayout();
+			const host = new StackLayout();
 			label.width = 100;
 			label.height = 100;
 
@@ -740,7 +740,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	public test_SettingTextWhenSizedToContentShouldInvalidate() {
 		this.requestLayoutFixture(true, '', (label) => {
 			label.textWrap = false;
-			let host = new StackLayout();
+			const host = new StackLayout();
 			host.orientation = 'horizontal';
 
 			return host;
@@ -750,7 +750,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	public test_ChangingTextWhenSizedToContentShouldInvalidate() {
 		this.requestLayoutFixture(true, 'Hello World', (label) => {
 			label.textWrap = false;
-			let host = new StackLayout();
+			const host = new StackLayout();
 			host.orientation = 'horizontal';
 
 			return host;
@@ -760,7 +760,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	public test_SettingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldRequestLayout() {
 		this.requestLayoutFixture(true, '', (label) => {
 			label.textWrap = false;
-			let host = new StackLayout();
+			const host = new StackLayout();
 			host.width = 100;
 
 			return host;
@@ -770,7 +770,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	public test_ChangingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldNotRequestLayout() {
 		this.requestLayoutFixture(false, 'Hello World', (label) => {
 			label.textWrap = false;
-			let host = new StackLayout();
+			const host = new StackLayout();
 			host.width = 100;
 
 			return host;
@@ -780,7 +780,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	public test_SettingTextOnMultilineLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldRequestLayout() {
 		this.requestLayoutFixture(true, '', (label) => {
 			label.textWrap = true;
-			let host = new StackLayout();
+			const host = new StackLayout();
 			host.width = 100;
 
 			return host;
@@ -790,7 +790,7 @@ export class LabelTest extends testModule.UITest<Label> {
 	public test_ChangingTextOnMultilineLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldRequestLayout() {
 		this.requestLayoutFixture(true, 'Hello World', (label) => {
 			label.textWrap = true;
-			let host = new StackLayout();
+			const host = new StackLayout();
 			host.width = 100;
 
 			return host;

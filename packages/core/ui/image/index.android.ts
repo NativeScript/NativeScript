@@ -29,8 +29,6 @@ function initializeImageLoadedListener() {
 	class ImageLoadedListenerImpl extends java.lang.Object implements org.nativescript.widgets.image.Worker.OnImageLoadedListener {
 		constructor(public owner: Image) {
 			super();
-
-			return global.__native(this);
 		}
 
 		public handlesImageUpdate(): boolean {

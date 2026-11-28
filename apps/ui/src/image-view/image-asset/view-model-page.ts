@@ -8,13 +8,13 @@ let _cameraImageSrc = null;
 export class ImageViewModel extends observable.Observable {
 	constructor() {
 		super();
-		let asset = new imageAssetModule.ImageAsset('~/resources/images/splashscreen.png');
+		const asset = new imageAssetModule.ImageAsset('~/resources/images/splashscreen.png');
 		asset.options = {
 			width: 300,
 			height: 300,
 			keepAspectRatio: true,
 		};
-		let source = new ImageSource();
+		const source = new ImageSource();
 		source.fromAsset(asset).then(
 			(source) => {
 				this.set('cameraImageAsset', asset);
@@ -22,7 +22,7 @@ export class ImageViewModel extends observable.Observable {
 			},
 			(error) => {
 				console.log(error);
-			}
+			},
 		);
 	}
 
@@ -42,4 +42,4 @@ export class ImageViewModel extends observable.Observable {
 		_cameraImageSrc = value;
 	}
 }
-export var imageViewModel = new ImageViewModel();
+export const imageViewModel = new ImageViewModel();

@@ -16,7 +16,7 @@ jest.mock(
 describe('react configuration', () => {
 	const platforms = ['ios', 'android'];
 
-	for (let platform of platforms) {
+	for (const platform of platforms) {
 		describe(`> ${platform} >`, () => {
 			it(`base config`, () => {
 				init({

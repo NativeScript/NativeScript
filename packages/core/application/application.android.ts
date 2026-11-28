@@ -188,11 +188,7 @@ function initNativeScriptLifecycleCallbacks() {
 			// This callback runs for every activity in the process, not just NativeScript ones,
 			// so an empty registry here means the app really has no window left.
 			if (activity.isFinishing() && Application.android._getWindows().length === 0) {
-				Application.android.notify({
-					eventName: Application.exitEvent,
-					object: Application.android,
-					android: activity,
-				});
+				Application.android.notifyExit({ android: activity });
 			}
 
 			// TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
@@ -461,8 +457,6 @@ const BroadcastReceiver = lazy(() => {
 		constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
 			super();
 			this._onReceiveCallback = onReceiveCallback;
-
-			return global.__native(this);
 		}
 
 		public onReceive(context: android.content.Context, intent: android.content.Intent) {
@@ -792,12 +786,20 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 
 		const context = this.context ?? this.getNativeApplication();
 		const intent = new android.content.Intent();
-		const startActivity = this.startActivity;
+		const windowActivities = this._getWindows()
+			.filter((window) => window.state === 'attached' && !window._surfaceGone)
+			.map((window) => (window as AndroidNativeWindow).activity);
+		// startActivity/foregroundActivity can be third-party (SDK) activities, which must never be relaunched as a window.
+		const startActivity = [this.startActivity, this.foregroundActivity, ...windowActivities].find((activity) => activity && 'isNativeScriptActivity' in activity && !activity.isFinishing() && !activity.isDestroyed());
 
 		if (startActivity) {
 			intent.setClass(context, startActivity.getClass());
 		} else {
-			intent.setClassName(context, 'org.nativescript.NativeScriptActivity');
+			const component = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName())?.getComponent();
+			if (!component) {
+				throw new Error('Unable to open a window: no NativeScript activity or launch activity was found.');
+			}
+			intent.setComponent(component);
 		}
 
 		let flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK | android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
@@ -1327,8 +1329,6 @@ function ensureNativeClasses() {
 	class TNSAccessibilityDelegateImpl extends AccessibilityDelegate {
 		constructor() {
 			super();
-
-			return global.__native(this);
 		}
 
 		private getTnsView(androidView: android.view.View) {

@@ -5,15 +5,15 @@ import * as stackLayoutModule from '@nativescript/core/ui/layouts/stack-layout';
 import * as observableModule from '@nativescript/core/data/observable';
 
 export function createPage() {
-	var page = new pageModule.Page();
-	var stack = new stackLayoutModule.StackLayout();
-	var sourceOneWay = new observableModule.Observable();
-	var sourceTwoWay = new observableModule.Observable();
-	var targetOneWay = new textFieldModule.TextField();
-	var targetTwoWay = new textFieldModule.TextField();
-	var buttonOneWay = new buttonModule.Button();
-	var buttonTwoWay = new buttonModule.Button();
-	var buttonSetText = new buttonModule.Button();
+	const page = new pageModule.Page();
+	const stack = new stackLayoutModule.StackLayout();
+	const sourceOneWay = new observableModule.Observable();
+	const sourceTwoWay = new observableModule.Observable();
+	const targetOneWay = new textFieldModule.TextField();
+	const targetTwoWay = new textFieldModule.TextField();
+	const buttonOneWay = new buttonModule.Button();
+	const buttonTwoWay = new buttonModule.Button();
+	const buttonSetText = new buttonModule.Button();
 
 	targetOneWay.id = 'textFieldOneWay';
 	targetTwoWay.id = 'textFieldTwoWay';
@@ -35,7 +35,7 @@ export function createPage() {
 	stack.addChild(buttonSetText);
 
 	// OneWay Binding
-	var bindingOptionOneWay = {
+	const bindingOptionOneWay = {
 		sourceProperty: 'textSource',
 		targetProperty: 'text',
 		twoWay: false,
@@ -55,7 +55,7 @@ export function createPage() {
 	stack.addChild(buttonOneWay);
 
 	// TwoWay Binding
-	var bindingOptionTwoWay = {
+	const bindingOptionTwoWay = {
 		sourceProperty: 'textSource',
 		targetProperty: 'text',
 		twoWay: true,

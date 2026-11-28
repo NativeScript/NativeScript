@@ -25,14 +25,17 @@ function initializeClickListener(): void {
 	@NativeClass
 	@Interfaces([android.view.View.OnClickListener])
 	class ClickListenerImpl extends java.lang.Object implements android.view.View.OnClickListener {
-		constructor(public owner: Button) {
-			super();
+		// Weak: the button's native view holds this listener, so a strong owner would be
+		// a cycle that only disposeNativeView breaks.
+		public owner: WeakRef<Button>;
 
-			return global.__native(this);
+		constructor(owner: Button) {
+			super();
+			this.owner = new WeakRef(owner);
 		}
 
 		public onClick(v: android.view.View): void {
-			const owner = this.owner;
+			const owner = this.owner?.deref();
 			if (owner) {
 				owner._emit(ButtonBase.tapEvent);
 			}

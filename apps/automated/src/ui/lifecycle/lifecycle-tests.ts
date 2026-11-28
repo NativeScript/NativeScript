@@ -135,7 +135,7 @@ export function test_css_sets_properties() {
 	});
 
 	const expectedChangesAfterClearingClasses = [1, 2, 2, 2];
-	for (var i = 0; i < buttons.length; i++) {
+	for (let i = 0; i < buttons.length; i++) {
 		TKUnit.assertEqual(buttons[i].colorSetNativeCount, expectedChangesAfterClearingClasses[i], `Expected ${buttons[i].id} native set after clear.`);
 		TKUnit.assertEqual(buttons[i].colorPropertyChangeCount, expectedChangesAfterClearingClasses[i], `Expected ${buttons[i].id} change notifications after clear.`);
 	}

@@ -63,7 +63,7 @@ describe('angular configuration', () => {
 		getDependencyVersionSpy.mockRestore();
 	});
 
-	for (let platform of platforms) {
+	for (const platform of platforms) {
 		it(`for ${platform}`, () => {
 			init({
 				[platform]: true,

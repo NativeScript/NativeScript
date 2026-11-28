@@ -136,7 +136,7 @@ export class Frame extends FrameBase {
 
 		// _onAttachedToWindow called from OS again after it was detach
 		// still happens with androidx.fragment:1.3.2
-		const activity = androidUtils.getCurrentActivity();
+		const activity = this._android.activity;
 		const lifecycleState = (activity as androidx.fragment.app.FragmentActivity)?.getLifecycle?.()?.getCurrentState() || androidx.lifecycle.Lifecycle.State.CREATED;
 		if ((this._manager && this._manager.isDestroyed()) || !lifecycleState.isAtLeast(androidx.lifecycle.Lifecycle.State.CREATED)) {
 			return;
@@ -243,6 +243,10 @@ export class Frame extends FrameBase {
 		}
 
 		super.onLoaded();
+		// Recreation can attach the native view before Activity reaches CREATED.
+		if (!this._attachedToWindow && this.nativeViewProtected?.isAttachedToWindow()) {
+			this._onAttachedToWindow();
+		}
 	}
 
 	private disposeCurrentFragment(): void {
@@ -881,7 +885,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 	@profile
 	public onSaveInstanceState(activity: androidx.appcompat.app.AppCompatActivity, outState: android.os.Bundle, superFunc: Function): void {
 		superFunc.call(activity, outState);
-		const rootView = this._rootView;
+		const rootView = this.getRootViewShownBy(activity);
 		if (rootView instanceof Frame) {
 			outState.putInt(INTENT_EXTRA, rootView.android.frameId);
 			rootView._saveFragmentsState();
@@ -926,6 +930,10 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 
 		const rootView = this._rootView;
+		if (rootView && rootView._context !== activity && !isEmbedded()) {
+			this.setActivityContent(activity, null, false);
+		}
+
 		if (rootView && !rootView.isLoaded && !isEmbedded()) {
 			rootView.callLoaded();
 		}
@@ -939,7 +947,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			Trace.write('NativeScriptActivity.onStop();', Trace.categories.NativeLifecycle);
 		}
 
-		const rootView = this._rootView;
+		const rootView = this.getRootViewShownBy(activity);
 		if (rootView && rootView.isLoaded && !isEmbedded()) {
 			rootView.callUnloaded();
 		}
@@ -970,7 +978,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 				Trace.write('NativeScriptActivity.onDestroy();', Trace.categories.NativeLifecycle);
 			}
 
-			const rootView = this._rootView;
+			const rootView = this.getRootViewShownBy(activity);
 			if (rootView) {
 				rootView._tearDownUI(true);
 			}
@@ -1088,6 +1096,10 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		Application.android.notify(resultArgs);
 	}
 
+	private getRootViewShownBy(activity: any): View | undefined {
+		return this._rootView?._context === activity ? this._rootView : undefined;
+	}
+
 	public resetActivityContent(activity: androidx.appcompat.app.AppCompatActivity, view?: View): void {
 		if (this._rootView) {
 			const manager = this._rootView._getFragmentManager();
@@ -1159,6 +1171,10 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 
 		activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
+
+		if (rootView.isLoaded && rootView._context !== activity && !isEmbedded()) {
+			rootView.callUnloaded();
+		}
 
 		// setup view as styleScopeHost
 		rootView._setupAsRootView(activity);

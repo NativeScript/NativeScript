@@ -9,7 +9,7 @@ let originalInspectorGlobal: InspectorCommands & InspectorEvents;
 
 let currentInspector: InspectorCommands & InspectorEvents;
 function getTestInspector(): InspectorCommands & InspectorEvents {
-	let inspector = {
+	const inspector = {
 		getDocument(): any {
 			return {};
 		},
@@ -83,7 +83,7 @@ export function setUp(): void {
 		currentInspector = getTestInspector();
 		global.__inspector = currentInspector;
 	} else {
-		let domInspector = getIOSDOMInspector();
+		const domInspector = getIOSDOMInspector();
 		currentInspector = getTestInspector();
 		domInspector.events = currentInspector;
 	}
@@ -367,15 +367,15 @@ export function test_inspector_ui_setAttributeAsText_set_new_property() {
 
 export function test_inspector_ui_removeNode() {
 	let childNodeRemovedCalled = false;
-	let stack = new StackLayout();
-	let label = new Label();
+	const stack = new StackLayout();
+	const label = new Label();
 	stack.addChild(label);
 
 	stack.ensureDomNode();
 	label.ensureDomNode();
 
-	let expectedParentId = stack.domNode.nodeId;
-	let expectedNodeId = label.domNode.nodeId;
+	const expectedParentId = stack.domNode.nodeId;
+	const expectedNodeId = label.domNode.nodeId;
 
 	currentInspector.childNodeRemoved = (parentId, nodeId) => {
 		childNodeRemovedCalled = true;

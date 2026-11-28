@@ -17,6 +17,8 @@ const RE_MEDIA_QUERY = /^(?:(only|not)?\s*([_a-z][_a-z0-9-]*)|(\([^\)]+\)))(?:\s
 	RE_LENGTH_UNIT = /(em|rem|px|cm|mm|in|pt|pc)?\s*$/,
 	RE_RESOLUTION_UNIT = /(dpi|dpcm|dppx)?\s*$/;
 
+const RESERVED_MEDIA_TYPES = new Set(['only', 'not', 'and', 'or', 'layer']);
+
 export enum MediaQueryType {
 	all = 'all',
 	print = 'print',
@@ -37,7 +39,7 @@ export interface MediaQueryEnvironmentParams {
 
 export interface MediaQueryExpression {
 	inverse: boolean;
-	type: MediaQueryType;
+	type: MediaQueryType | string;
 	features: MediaQueryFeature[];
 }
 
@@ -47,8 +49,38 @@ export interface MediaQueryFeature {
 	value: string;
 }
 
+const EVALUABLE_FEATURES = new Set<string>(['width', 'height', 'device-width', 'device-height', 'orientation', 'prefers-color-scheme']);
+
+const parsedQueryCache = new Map<string, MediaQueryExpression[]>();
+
+function getParsedQuery(mediaQuery: string): MediaQueryExpression[] {
+	let expressions = parsedQueryCache.get(mediaQuery);
+	if (!expressions) {
+		expressions = parseQuery(mediaQuery);
+		parsedQueryCache.set(mediaQuery, expressions);
+	}
+
+	return expressions;
+}
+
+/**
+ * Whether a media query is valid and uses only features the runtime can evaluate.
+ * @param mediaQuery The media query string.
+ */
+export function isEvaluableMediaQuery(mediaQuery: string): boolean {
+	let expressions: MediaQueryExpression[];
+
+	try {
+		expressions = getParsedQuery(mediaQuery);
+	} catch {
+		return false;
+	}
+
+	return expressions.every((query) => query.features.every((feature) => EVALUABLE_FEATURES.has(feature.property)));
+}
+
 export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentParams): boolean {
-	const expressions = parseQuery(mediaQuery);
+	const expressions = getParsedQuery(mediaQuery);
 
 	return expressions.some((query) => {
 		const { type, inverse, features } = query;
@@ -57,9 +89,9 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 		// equal for a match.
 		const typeMatch = query.type === 'all' || values.type === query.type;
 
-		// Quit early when `type` doesn't match, but take "not" into account
-		if ((typeMatch && inverse) || !(typeMatch || inverse)) {
-			return false;
+		// `not` negates the whole query, the type included.
+		if (!typeMatch) {
+			return inverse;
 		}
 
 		const expressionsMatch = features.every((feature) => {
@@ -114,7 +146,7 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 			}
 		});
 
-		return (expressionsMatch && !inverse) || (!expressionsMatch && inverse);
+		return inverse ? !expressionsMatch : expressionsMatch;
 	});
 }
 
@@ -135,9 +167,14 @@ export function parseQuery(mediaQuery: string): MediaQueryExpression[] {
 		const type = captures[2];
 		const featureString = ((captures[3] || '') + (captures[4] || '')).trim();
 
+		const mediaType = type ? type.toLowerCase() : MediaQueryType.all;
+		if (RESERVED_MEDIA_TYPES.has(mediaType)) {
+			return { inverse: true, type: MediaQueryType.all, features: [] };
+		}
+
 		const expression: MediaQueryExpression = {
 			inverse: !!modifier && modifier.toLowerCase() === 'not',
-			type: MediaQueryType[type ? type.toLowerCase() : 'all'] ?? 'all',
+			type: mediaType,
 			features: [],
 		};
 

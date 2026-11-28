@@ -2,7 +2,7 @@ import { EventData, Observable } from '@nativescript/core/data/observable';
 import { Page } from '@nativescript/core/ui/page';
 
 export function navigatingTo(args: EventData) {
-	let page = <Page>args.object;
+	const page = <Page>args.object;
 	page.bindingContext = new ImagesTemplateViewModel();
 }
 

@@ -1,15 +1,16 @@
 import * as helper from '../ui-helper';
-import { Color, Device, CoreTypes, Trace, SharedTransition, NavigationEntry, NavigationTransition, Page, platformNames, GridLayout } from '@nativescript/core';
+import * as TKUnit from '../tk-unit';
+import { Color, Device, CoreTypes, Trace, SharedTransition, NavigationEntry, NavigationTransition, Page, platformNames, GridLayout, Frame, Utils } from '@nativescript/core';
 import { CustomTransition, CustomSharedElementPageTransition } from './custom-transition';
 
 function _testTransition(navigationTransition: NavigationTransition) {
-	var testId = `Transition[${JSON.stringify(navigationTransition)}]`;
+	const testId = `Transition[${JSON.stringify(navigationTransition)}]`;
 	if (Trace.isEnabled()) {
 		Trace.write(`Testing ${testId}`, Trace.categories.Test);
 	}
-	var navigationEntry: NavigationEntry = {
+	const navigationEntry: NavigationEntry = {
 		create: function (): Page {
-			let page = new Page();
+			const page = new Page();
 			page.id = testId;
 			page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
 
@@ -31,7 +32,7 @@ export function test_Transitions() {
 		return page;
 	});
 
-	var transitions;
+	let transitions;
 	if (__APPLE__) {
 		transitions = ['curl'];
 	} else {
@@ -50,6 +51,45 @@ export function test_Transitions() {
 	});
 
 	// helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: false });
+}
+
+function collectJsAndJavaGarbage() {
+	for (let i = 0; i < 3; i++) {
+		Utils.GC();
+		java.lang.System.gc();
+		java.lang.System.runFinalization();
+		TKUnit.wait(0.05);
+	}
+}
+
+export function test_Transitions_SurviveGarbageCollectionBeforeGoingBack() {
+	if (!__ANDROID__) {
+		return;
+	}
+
+	helper.navigate(() => {
+		const page = new Page();
+		page.id = 'TransitionsGcTestPage_MAIN';
+
+		return page;
+	});
+
+	helper.navigateWithEntry({
+		create: () => {
+			const page = new Page();
+			page.id = 'TransitionsGcTestPage_SECOND';
+
+			return page;
+		},
+		animated: true,
+		transition: { name: 'slide', duration: 20 },
+	});
+
+	// The back navigation reuses the transitions the forward one created.
+	collectJsAndJavaGarbage();
+	helper.goBack();
+
+	TKUnit.assertEqual(Frame.topmost().currentPage.id, 'TransitionsGcTestPage_MAIN', 'goBack should land on the first page');
 }
 
 export function test_SharedElementTransitions(done) {
@@ -82,7 +122,7 @@ export function test_SharedElementTransitions(done) {
 	}
 	const navigationEntry: NavigationEntry = {
 		create(): Page {
-			let page = new Page();
+			const page = new Page();
 			page.id = testId;
 			page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
 			const grid = new GridLayout();
