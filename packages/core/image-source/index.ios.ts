@@ -205,7 +205,8 @@ export class ImageSource implements ImageSourceDefinition {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
 				const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
-				const main_queue = dispatch_get_current_queue();
+				// The caller's operation queue when it has one, else main: dispatch_get_current_queue is deprecated.
+				const main_queue = NSOperationQueue.currentQueue?.underlyingQueue ?? NSOperationQueue.mainQueue.underlyingQueue;
 				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
 				dispatch_async(background_queue, () => {
 					const uiImage = UIImage.imageWithData(data);
@@ -380,7 +381,7 @@ export class ImageSource implements ImageSourceDefinition {
 				if (quality) {
 					quality = (quality - 0) / (100 - 0); // Normalize quality on a scale of 0 to 1
 				}
-				const main_queue = dispatch_get_current_queue();
+				const main_queue = NSOperationQueue.currentQueue?.underlyingQueue ?? NSOperationQueue.mainQueue.underlyingQueue;
 				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
 				dispatch_async(background_queue, () => {
 					const data = getImageData(this.ios, format, quality);
@@ -409,7 +410,7 @@ export class ImageSource implements ImageSourceDefinition {
 
 		const data = getImageData(this.ios, format, quality);
 		if (data) {
-			res = data.base64Encoding();
+			res = data.base64EncodedStringWithOptions(0 as NSDataBase64EncodingOptions);
 		}
 
 		return res;
@@ -425,12 +426,12 @@ export class ImageSource implements ImageSourceDefinition {
 				if (quality) {
 					quality = (quality - 0) / (100 - 0); // Normalize quality on a scale of 0 to 1
 				}
-				const main_queue = dispatch_get_current_queue();
+				const main_queue = NSOperationQueue.currentQueue?.underlyingQueue ?? NSOperationQueue.mainQueue.underlyingQueue;
 				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
 				dispatch_async(background_queue, () => {
 					const data = getImageData(this.ios, format, quality);
 					if (data) {
-						result = data.base64Encoding();
+						result = data.base64EncodedStringWithOptions(0 as NSDataBase64EncodingOptions);
 					}
 					dispatch_async(main_queue, () => {
 						resolve(result);
@@ -462,7 +463,7 @@ export class ImageSource implements ImageSourceDefinition {
 			if (!this.ios) {
 				reject(null);
 			}
-			const main_queue = dispatch_get_current_queue();
+			const main_queue = NSOperationQueue.currentQueue?.underlyingQueue ?? NSOperationQueue.mainQueue.underlyingQueue;
 			const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
 			dispatch_async(background_queue, () => {
 				const size: CGSize = this.ios.size;

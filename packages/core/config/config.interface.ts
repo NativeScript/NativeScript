@@ -1,6 +1,6 @@
 import type { InstrumentationMode } from '../profiling';
 
-interface IConfigPlatform {
+export interface IConfigPlatform {
 	/**
 	 * App's bundle id
 	 */

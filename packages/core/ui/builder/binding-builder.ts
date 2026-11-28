@@ -1,5 +1,22 @@
+import type { CompiledBinding } from '../core/bindable/bindable-types';
+
 // regex that contains all symbols applicable for expression used to AI detect an expression.
 const expressionSymbolsRegex = /[\+\-\*\/%\?:<>=!\|&\(\)^~]|^`.*\$\{.+\}.*`$/;
+
+const compiledBindings = new Map<string, CompiledBinding>();
+
+/**
+ * Registers a binding expression compiled ahead of time for the XML attribute at `key`: `file:line:column:attribute`,
+ * the file as the module name resolver names it without a leading `./`, the element's start-tag position, and the
+ * attribute name as written (`ios:text`).
+ */
+export function registerCompiledBinding(key: string, binding: CompiledBinding): void {
+	compiledBindings.set(key, binding);
+}
+
+export function getCompiledBinding(key: string): CompiledBinding | undefined {
+	return compiledBindings.get(key);
+}
 
 export namespace bindingConstants {
 	export const sourceProperty = 'sourceProperty';

@@ -290,7 +290,7 @@ export namespace ios {
 		};
 	}
 
-	export function generateClipPath(view: View, bounds: CGRect): UIBezierPath {
+	export function generateClipPath(view: View, bounds: CGRect): any /* CGPathRef */ {
 		const background = view.style.backgroundInternal;
 		const { origin, size } = bounds;
 
@@ -305,7 +305,7 @@ export namespace ios {
 			return;
 		}
 
-		let path: UIBezierPath;
+		let path: any; /* CGPathRef */
 		const clipPath = background.clipPath;
 
 		if (clipPath instanceof ClipPathFunction) {
@@ -1203,7 +1203,7 @@ function generateShadowMaskPath(bounds: CGRect, boxShadow: BoxShadow, innerClipP
 	return maskPath;
 }
 
-function rectPath(value: string, position: Position): UIBezierPath {
+function rectPath(value: string, position: Position): any /* CGPathRef */ {
 	const arr = value.split(/[\s]+/);
 	const top = cssValueToDeviceIndependentPixels(arr[0], position.top);
 	const right = cssValueToDeviceIndependentPixels(arr[1], position.right);
@@ -1213,7 +1213,7 @@ function rectPath(value: string, position: Position): UIBezierPath {
 	return UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right - left, bottom - top)).CGPath;
 }
 
-function insetPath(value: string, position: Position): UIBezierPath {
+function insetPath(value: string, position: Position): any /* CGPathRef */ {
 	const arr = value.split(/[\s]+/);
 
 	let topString: string;
@@ -1244,7 +1244,7 @@ function insetPath(value: string, position: Position): UIBezierPath {
 	return UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right - left, bottom - top)).CGPath;
 }
 
-function circlePath(value: string, position: Position): UIBezierPath {
+function circlePath(value: string, position: Position): any /* CGPathRef */ {
 	const arr = value.split(/[\s]+/);
 	const radius = cssValueToDeviceIndependentPixels(arr[0], (position.right > position.bottom ? position.bottom : position.right) / 2);
 	const y = cssValueToDeviceIndependentPixels(arr[2], position.bottom);
@@ -1253,7 +1253,7 @@ function circlePath(value: string, position: Position): UIBezierPath {
 	return UIBezierPath.bezierPathWithArcCenterRadiusStartAngleEndAngleClockwise(CGPointMake(x, y), radius, 0, 360, true).CGPath;
 }
 
-function ellipsePath(value: string, position: Position): UIBezierPath {
+function ellipsePath(value: string, position: Position): any /* CGPathRef */ {
 	const arr = value.split(/[\s]+/);
 
 	const rX = cssValueToDeviceIndependentPixels(arr[0], position.right);
@@ -1269,7 +1269,7 @@ function ellipsePath(value: string, position: Position): UIBezierPath {
 	return UIBezierPath.bezierPathWithOvalInRect(CGRectMake(left, top, width, height)).CGPath;
 }
 
-function polygonPath(value: string, position: Position): UIBezierPath {
+function polygonPath(value: string, position: Position): any /* CGPathRef */ {
 	const path = CGPathCreateMutable();
 
 	let firstPoint: Point;

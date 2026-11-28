@@ -12,7 +12,8 @@ import { calc } from '@csstools/css-calc';
 export { unsetValue } from './property-shared';
 
 const cssPropertyNames: string[] = [];
-const cssShorthandConverters = new Map<string, (value: string) => [any, any][]>();
+// Probed with `unsetValue` (getCssShorthandLonghands) as well as called with values, so typed for any value.
+const cssShorthandConverters = new Map<string, (value: any) => [any, any][]>();
 const cssShorthandLonghands = new Map<string, string[]>();
 // Bumped per shorthand registration, so rules parsed before it can still expand it.
 let cssShorthandsVersion = 0;
@@ -1656,7 +1657,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = `${options.cssName}`;
-		cssShorthandConverters.set(options.cssName, options.converter as (value: string) => [any, any][]);
+		cssShorthandConverters.set(options.cssName, options.converter as (value: any) => [any, any][]);
 		cssShorthandsVersion++;
 
 		const converter = options.converter;
@@ -1861,7 +1862,7 @@ export function applyAllNativeSetters(view: ViewBase): void {
 	const style = view.style;
 	symbols = Object.getOwnPropertySymbols(style);
 	for (const symbol of symbols) {
-		const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
+		const property: CssProperty<any, any> | CssAnimationProperty<any, any> = cssSymbolPropertyMap[symbol];
 		if (!property) {
 			continue;
 		}
@@ -1900,7 +1901,7 @@ export function resetNativeView(view: ViewBase): void {
 
 	symbols = Object.getOwnPropertySymbols(style);
 	for (const symbol of symbols) {
-		const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
+		const property: CssProperty<any, any> | CssAnimationProperty<any, any> = cssSymbolPropertyMap[symbol];
 		if (!property) {
 			continue;
 		}

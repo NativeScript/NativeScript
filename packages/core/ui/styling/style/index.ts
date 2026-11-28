@@ -261,9 +261,10 @@ export class Style extends Observable {
 	public iosAccessibilityMinFontScale: number;
 	public iosAccessibilityMaxFontScale: number;
 
+	// Values are stylesheet text, or the converted values of expanded shorthand longhands.
 	public PropertyBag: {
-		new (): { [property: string]: string };
-		prototype: { [property: string]: string };
+		new (): { [property: string]: any };
+		prototype: { [property: string]: any };
 	};
 
 	public viewRef: WeakRef<ViewBase>;
@@ -290,6 +291,6 @@ export class Style extends Observable {
 	}
 }
 Style.prototype.PropertyBag = class {
-	[property: string]: string;
+	[property: string]: any;
 };
 Style.prototype._localValueVersion = 0;
